@@ -14,52 +14,148 @@
     <behaviors:ParameterTemplateSelector x:Key="ParamSelector">
       <behaviors:ParameterTemplateSelector.NumericTemplate>
         <DataTemplate DataType="{x:Type models:ParameterViewModel}">
-          <DockPanel Margin="0,3">
-            <TextBlock DockPanel.Dock="Left"
-                       Width="100"
+          <Grid Margin="0,3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="100" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
                        VerticalAlignment="Center"
                        FontSize="11"
                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                        Text="{Binding Name}" />
-            <TextBox FontSize="11"
-                     Padding="6,4"
-                     Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                     BorderBrush="{StaticResource ConsoleBorderBrush}"
-                     Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                     Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}" />
-          </DockPanel>
+            <StackPanel Grid.Column="1">
+              <TextBox FontSize="11"
+                       Padding="6,4"
+                       Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}"
+                       ToolTip="{Binding ValidationMessage}">
+                <TextBox.Style>
+                  <Style TargetType="TextBox">
+                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsValid}" Value="False">
+                        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBox.Style>
+              </TextBox>
+              <TextBlock Margin="2,2,0,0"
+                         FontSize="10"
+                         Foreground="{StaticResource ErrorColorBrush}"
+                         Text="{Binding ValidationMessage}">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsValid}" Value="False">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </StackPanel>
+          </Grid>
         </DataTemplate>
       </behaviors:ParameterTemplateSelector.NumericTemplate>
       <behaviors:ParameterTemplateSelector.TextTemplate>
         <DataTemplate DataType="{x:Type models:ParameterViewModel}">
-          <DockPanel Margin="0,3">
-            <TextBlock DockPanel.Dock="Left"
-                       Width="100"
+          <Grid Margin="0,3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="100" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
                        VerticalAlignment="Center"
                        FontSize="11"
                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                        Text="{Binding Name}" />
-            <TextBox FontSize="11"
-                     Padding="6,4"
-                     Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                     BorderBrush="{StaticResource ConsoleBorderBrush}"
-                     Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                     Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}" />
-          </DockPanel>
+            <StackPanel Grid.Column="1">
+              <TextBox FontSize="11"
+                       Padding="6,4"
+                       Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       Text="{Binding StringValue, UpdateSourceTrigger=PropertyChanged}"
+                       ToolTip="{Binding ValidationMessage}">
+                <TextBox.Style>
+                  <Style TargetType="TextBox">
+                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsValid}" Value="False">
+                        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBox.Style>
+              </TextBox>
+              <TextBlock Margin="2,2,0,0"
+                         FontSize="10"
+                         Foreground="{StaticResource ErrorColorBrush}"
+                         Text="{Binding ValidationMessage}">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsValid}" Value="False">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </StackPanel>
+          </Grid>
         </DataTemplate>
       </behaviors:ParameterTemplateSelector.TextTemplate>
       <behaviors:ParameterTemplateSelector.BoolTemplate>
         <DataTemplate DataType="{x:Type models:ParameterViewModel}">
-          <DockPanel Margin="0,3">
-            <TextBlock DockPanel.Dock="Left"
-                       Width="100"
+          <Grid Margin="0,3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="100" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
                        VerticalAlignment="Center"
                        FontSize="11"
                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                        Text="{Binding Name}" />
-            <CheckBox VerticalAlignment="Center"
-                      IsChecked="{Binding RawValue}" />
-          </DockPanel>
+            <StackPanel Grid.Column="1">
+              <Border Padding="6,4"
+                      BorderThickness="1"
+                      ToolTip="{Binding ValidationMessage}">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsValid}" Value="False">
+                        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+                <CheckBox VerticalAlignment="Center"
+                          IsChecked="{Binding BoolValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              </Border>
+              <TextBlock Margin="2,2,0,0"
+                         FontSize="10"
+                         Foreground="{StaticResource ErrorColorBrush}"
+                         Text="{Binding ValidationMessage}">
+                <TextBlock.Style>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsValid}" Value="False">
+                        <Setter Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </TextBlock.Style>
+              </TextBlock>
+            </StackPanel>
+          </Grid>
         </DataTemplate>
       </behaviors:ParameterTemplateSelector.BoolTemplate>
     </behaviors:ParameterTemplateSelector>

@@ -4934,6 +4934,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── coverage-report.md
+│   │   ├── dk1-baseline-trust-thresholds.md
+│   │   ├── dk1-pilot-parity-runbook.md
+│   │   ├── dk1-trust-rationale-mapping.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
 │   │   ├── example-validation.md
@@ -7679,6 +7682,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── MainPageUiWorkflowTests.cs
 │   │       ├── NavigationPageSmokeTests.cs
 │   │       ├── PageLifecycleCleanupTests.cs
+│   │       ├── PlotRenderBehaviorTests.cs
 │   │       ├── QuantScriptPageTests.cs
 │   │       ├── ResearchWorkspaceShellSmokeTests.cs
 │   │       ├── ResearchWorkspaceShellWorkflowTests.cs
@@ -7697,6 +7701,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-604 directories, 6953 files
+604 directories, 6957 files
 ```
 <!-- readme-tree end -->
