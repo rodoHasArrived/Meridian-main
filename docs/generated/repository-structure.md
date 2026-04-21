@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-21 06:44:13 UTC. Do not edit manually.
+> Auto-generated on 2026-04-21 19:49:10 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4715,7 +4715,11 @@ Meridian-main
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── CHANGELOG.md
+│   │   ├── contract-compatibility-matrix.md
 │   │   ├── coverage-report.md
+│   │   ├── dk1-baseline-trust-thresholds.md
+│   │   ├── dk1-pilot-parity-runbook.md
+│   │   ├── dk1-trust-rationale-mapping.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
 │   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
@@ -4816,6 +4820,7 @@ Meridian-main
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
+│   ├── check_contract_compatibility_gate.py
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
@@ -7470,6 +7475,7 @@ Meridian-main
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
 │   │   │   ├── PageLifecycleCleanupTests.cs
+│   │   │   ├── PlotRenderBehaviorTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── ResearchWorkspaceShellSmokeTests.cs
 │   │   │   ├── ResearchWorkspaceShellWorkflowTests.cs

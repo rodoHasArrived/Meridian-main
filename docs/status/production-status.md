@@ -67,6 +67,42 @@ The current working tree reinforces that direction rather than changing it. WPF 
 ## Active Gaps By Wave
 
 Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
+### Wave 1: Closed provider confidence and checkpoint gate
+
+- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
+- backfill checkpoint reliability and Parquet L2 flush behavior are closed Wave 1 sub-gates backed by repo tests, including retry-safe L2 flush retention on failed or cancelled writes
+- Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
+- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, and the latest generated validation summary instead of architecture intent
+
+### Wave 2: Paper-trading cockpit hardening
+
+- the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
+- session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
+- live-readiness claims must remain downstream of a trustworthy paper workflow
+
+#### Cockpit hardened acceptance gate (objective pass/fail)
+
+“Cockpit hardened” is **Pass** only when all three scenario acceptance criteria below are green in CI and locally reproducible. It is **Fail** if any criterion is red.
+
+| Scenario acceptance criterion | Pass evidence | Fail condition |
+| --- | --- | --- |
+| `/api/execution/*` to `/api/promotion/*` continuity | `Scenario_SessionCloseReplayAndPromotionReview_BacktestToPaperFlowRemainsContinuousAndAuditable` proves one operator flow can create/close/replay a paper session, evaluate promotion eligibility, approve promotion, and see both execution and promotion evidence in returned contracts. | Any break in endpoint contract continuity, missing promotion-history visibility, or missing audit linkage (`PromotionId`/actor/correlation) in the same scenario run. |
+| Session persistence + replay verification | The same continuity scenario asserts `/api/execution/sessions/{sessionId}/replay` returns `ReplaySource=DurableFillLog`, `IsConsistent=true`, empty mismatches, and deterministic replayed cash after persisted fills. | Replay endpoint unavailable, inconsistent replay state, mismatch reasons present for the deterministic baseline, or missing durable-fill-log provenance fields. |
+| Promotion decision visibility + audit rationale | `Scenario_RiskTriggeredPromotionRejection_DecisionRemainsVisibleWithBlockingRationale` verifies blocked promotion evaluations expose policy reasons (`BlockingReasons`) and rejected decisions keep explicit operator rationale in the decision payload. | Evaluation omits blocking rationale for an ineligible run, or rejection response does not carry an explicit reason suitable for operator audit/review. |
+
+Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
+
+### Wave 3: Shared run / portfolio / ledger continuity
+
+- the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
+- portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
+- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration
+
+### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
+
+- Security Master is a delivered baseline, not an open foundation item
+- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
+- the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
 
 Use this file for readiness evidence and operator-facing risk notes; use [`ROADMAP.md`](ROADMAP.md) for full wave sequencing.
 

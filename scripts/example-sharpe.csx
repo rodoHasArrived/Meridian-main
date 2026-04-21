@@ -8,28 +8,40 @@
 ///   1. Open the QuantScript page (sidebar → QuantScript).
 ///   2. Make sure you have local bar data for the chosen symbol (run a backfill
 ///      first if needed: `dotnet run -- --backfill --backfill-symbols SPY ...`).
-///   3. Adjust the parameters in the sidebar or edit the Param<T> calls below.
-///   4. Click Run (▶) to execute.
+///   3. Set Symbol / From / To / Interval in the toolbar if desired.
+///   4. Optionally override values in-script below.
+///   5. Click Run (▶) to execute.
 ///
-/// Parameters (overridable from the sidebar):
-///   Symbol          — ticker to analyse      (default: "SPY")
-///   LookbackMonths  — history window          (default: 12)
+/// Parameters (optional overrides):
+///   SymbolOverride   — explicit ticker override
+///   LookbackMonths   — optional trailing-month override when no date override is supplied
 ///   RiskFreeRate    — annual Rf for Sharpe    (default: 0.04)
+///
+/// Default behavior:
+///   Symbol/From/To/Interval come from the QuantScript toolbar via Context* helpers.
+///   If toolbar values are absent, this script falls back to SPY and a 12-month lookback.
 
 // ── Parameters ───────────────────────────────────────────────────────────────
 
-var symbol         = Param<string>("Symbol",         "SPY",  description: "Ticker symbol to analyse");
-var lookbackMonths = Param<int>   ("LookbackMonths", 12,     min: 1, max: 120,
-                                   description: "Number of months of history to load");
+var contextSymbol = ContextSymbol;
+var contextFrom = ContextFrom;
+var contextTo = ContextTo;
+var contextInterval = ContextInterval ?? "daily";
+
+var symbol         = Param<string>("SymbolOverride",
+                                   string.IsNullOrWhiteSpace(contextSymbol) ? "SPY" : contextSymbol!,
+                                   description: "Ticker symbol override (defaults to toolbar symbol)");
+var lookbackMonths = Param<int>   ("LookbackMonths", 12, min: 1, max: 120,
+                                   description: "Fallback months when toolbar dates are absent");
 var riskFreeRate   = Param<double>("RiskFreeRate",   0.04,   min: 0.0, max: 0.20,
                                    description: "Annual risk-free rate (e.g. 0.04 = 4%)");
 
 // ── Load price data ───────────────────────────────────────────────────────────
 
-var toDate   = DateTime.Today;
-var fromDate = toDate.AddMonths(-lookbackMonths);
+var toDate = (contextTo ?? DateOnly.FromDateTime(DateTime.Today)).ToDateTime(TimeOnly.MinValue);
+var fromDate = (contextFrom ?? DateOnly.FromDateTime(toDate.AddMonths(-lookbackMonths))).ToDateTime(TimeOnly.MinValue);
 
-Print($"Loading {symbol} from {fromDate:d} to {toDate:d} …");
+Print($"Loading {symbol} ({contextInterval}) from {fromDate:d} to {toDate:d} …");
 
 var prices = Data.Prices(symbol, fromDate, toDate);
 
