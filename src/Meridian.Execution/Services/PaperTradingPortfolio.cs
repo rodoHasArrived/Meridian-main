@@ -235,7 +235,7 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         // Append a new open lot for lot-level tracking.
         // Only whole-share fills produce a tracked lot; fractional fills are skipped
         // to avoid silent truncation of the long quantity.
-        if (qty == decimal.Truncate(qty) && qty > 0)
+        if (qty == decimal.Truncate(qty))
         {
             pos.Lots.AddLast(new OpenLot(
                 LotId: Guid.NewGuid(),
@@ -314,7 +314,7 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         // FIFO lot-level close: drain from the front of the lot queue.
         // Only whole-share closes drain lots; fractional closes are skipped to avoid
         // silent truncation and to stay consistent with lot-open behaviour.
-        if (closeQty == decimal.Truncate(closeQty) && pos.Lots.Count > 0)
+        if (closeQty == decimal.Truncate(closeQty))
         {
             var closeFillId = Guid.NewGuid();
             var remaining = checked((long)closeQty);
