@@ -16,6 +16,7 @@ These are the plan documents that directly support the current path to the core 
 | [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Release-readiness checklist for workstation hardening |
 | [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint backlog for workstation delivery |
 | [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation productization blueprint across web and WPF |
+| [meridian-analytics-productization-blueprint.md](meridian-analytics-productization-blueprint.md) | Research -> Trading -> Governance analytics productization blueprint for notebooks, comparison, exports, handoff, and governed artifacts |
 | [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, reconciliation, and reporting blueprint on top of shared seams |
 | [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sequenced Wave 4 governance and fund-operations slices |
 | [security-master-productization-roadmap.md](security-master-productization-roadmap.md) | Delivered Security Master baseline plus Wave 4 follow-ons |

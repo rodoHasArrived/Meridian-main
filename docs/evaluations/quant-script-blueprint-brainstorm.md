@@ -1,10 +1,44 @@
 # QuantScriptEnvironment Blueprint — Brainstorm & Critical Evaluation
 
-**Date:** 2026-03-18 (updated 2026-04-16) | **Mode:** Problem-Focused + UX/Information Design
+**Date:** 2026-03-18 (updated 2026-04-21) | **Mode:** Problem-Focused + UX/Information Design
 **Input:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint)
 **Focus:** (1) Design improvements, (2) Usefulness audit, (3) Interface maximisation
 
 > **Previous sessions covered:** L3 inference, Python SDK, DuckDB, symbol health, VWAP/TWAP algorithms, provider SLA. **This session:** First deep evaluation of the QuantScript blueprint — covering gaps in the design, honest usefulness scoring, and interface-level rethinking to maximise versatility and ease of use across all three personas.
+
+---
+
+## 2026-04-21 Update — Repo Reality Check After Baseline Delivery
+
+This document should now be read as a **historical critique plus follow-on backlog**, not as the authoritative current-state QuantScript specification. Since the original March brainstorm and the April 16 implementation-readiness addendum, QuantScript moved from blueprint to implemented baseline across `src/Meridian.QuantScript/`, `src/Meridian.Wpf/Views/QuantScriptPage.xaml`, `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs`, notebook persistence in `src/Meridian.QuantScript/Documents/`, and checkpoint-aware cell replay in `src/Meridian.QuantScript/Compilation/NotebookExecutionSession.cs`.
+
+The authoritative current-state references are:
+
+- `docs/plans/quant-script-environment-blueprint.md`
+- `docs/plans/quant-script-page-implementation-guide.md`
+
+### What has already landed in the repository
+
+| Brainstorm theme | 2026-04-21 status | Evidence / note |
+|---|---|---|
+| Cell-based execution | **Implemented baseline** | Notebook documents, multi-cell ViewModel flow, and stale-cell replay are already in repo. |
+| Low-boilerplate backtest path | **Partially implemented** | `BacktestProxy` already supports a fluent path via `WithSymbols(...).OnBar(...).RunAsync()` backed by `LambdaBacktestStrategy`. |
+| Flattened return-series stats and plotting | **Partially implemented** | `ReturnSeries` already owns instance-level stats plus `Plot()`, `PlotCumulative()`, and `PlotDrawdown()` helpers. |
+| Script and notebook persistence | **Implemented baseline** | The current page and notebook store persist reusable QuantScript artifacts, which removes one of the biggest adoption blockers called out below. |
+
+### What remains the highest-value post-baseline backlog
+
+- **Async-first script APIs still matter.** `DataProxy` and `BacktestProxy` still rely on synchronous `.GetAwaiter().GetResult()` wrappers, so the original async-native criticism remains valid.
+- **Parameter registration is still the old model.** `[ScriptParam]` remains the active extraction mechanism; the runtime `Param(...)` alternative is still worth evaluating if reliability or ergonomics become a problem.
+- **Run-history comparison is still open.** Persisted notebooks are not the same thing as saved run records with side-by-side metric and equity-curve comparison.
+- **Beginner guidance still needs to grow.** A baseline sample script exists, but the broader template-gallery idea remains good follow-on work for hobbyist adoption.
+- **Richer multi-series alignment stays optional.** The heavier `AlignedSeries` / dataframe-style surface is still research-depth work, not a blocker for the shipped baseline.
+
+### Important interpretation note
+
+The April 16 handoff section below deliberately narrowed MVP scope and deferred notebook-style cells to a later phase. The repository has since moved past that specific plan and implemented notebook execution earlier than this brainstorm expected. As a result, statements later in this file such as "No cell-based execution" or similar gap language should be read as **historical pre-implementation observations**, not current product-state claims.
+
+Keep the remainder of this document for rationale, prioritisation logic, and follow-on idea quality. When this evaluation conflicts with the newer blueprint or page implementation guide, the newer docs win.
 
 ---
 
