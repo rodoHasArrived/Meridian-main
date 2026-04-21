@@ -311,4 +311,39 @@ public sealed class ScriptRunnerTests
         second.CompilationErrors.Should().NotBeEmpty();
         second.Checkpoint.Should().BeSameAs(first.Checkpoint);
     }
+
+    [Fact]
+    public async Task RunAsync_UsesFreshPerInvocationPlotQueue_NotInjectedQueueState()
+    {
+        var injectedQueue = new PlotQueue();
+        injectedQueue.Enqueue(new PlotRequest("leftover", PlotType.Line));
+        injectedQueue.Complete();
+
+        var runner = BuildRunner(plotQueue: injectedQueue);
+        var result = await runner.RunAsync("Print(\"no plots\")", NoParams);
+
+        result.Success.Should().BeTrue();
+        result.Plots.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunAsync_PlotsDoNotLeakAcrossRuns()
+    {
+        var runner = BuildRunner();
+        const string emitPlotSource = """
+            var r = new ReturnSeries(
+                "T",
+                ReturnKind.Arithmetic,
+                new[] { new ReturnPoint(new DateOnly(2024, 1, 1), 0.01) });
+            r.Plot("run1");
+            """;
+
+        var first = await runner.RunAsync(emitPlotSource, NoParams);
+        var second = await runner.RunAsync("Print(\"second\")", NoParams);
+
+        first.Success.Should().BeTrue();
+        first.Plots.Should().ContainSingle(p => p.Title == "run1");
+        second.Success.Should().BeTrue();
+        second.Plots.Should().BeEmpty();
+    }
 }
