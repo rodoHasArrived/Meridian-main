@@ -698,6 +698,21 @@ export interface SecurityIdentifierEntry {
   provider: string | null;
 }
 
+export interface SecurityAliasEntry {
+  aliasId: string;
+  securityId: string;
+  aliasKind: string;
+  aliasValue: string;
+  provider: string | null;
+  scope: "Operations" | "Collector" | "Execution" | "Migration";
+  reason: string | null;
+  createdBy: string;
+  createdAt: string;
+  validFrom: string;
+  validTo: string | null;
+  isEnabled: boolean;
+}
+
 export interface SecurityIdentityDrillIn {
   securityId: string;
   displayName: string;
@@ -707,6 +722,7 @@ export interface SecurityIdentityDrillIn {
   effectiveFrom: string;
   effectiveTo: string | null;
   identifiers: SecurityIdentifierEntry[];
+  aliases: SecurityAliasEntry[];
 }
 
 export interface SecurityMasterConflict {
