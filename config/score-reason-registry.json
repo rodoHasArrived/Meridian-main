@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "updatedAtUtc": "2026-04-20T00:00:00Z",
+  "reasons": [
+    {
+      "code": "LATENCY_SPIKE",
+      "category": "latency",
+      "description": "Latency moved above configured threshold and contributed to degradation."
+    },
+    {
+      "code": "GAP_BURST",
+      "category": "integrity",
+      "description": "Gap rate/duration increased and reduced quality score."
+    },
+    {
+      "code": "SEQUENCE_DUPLICATE",
+      "category": "integrity",
+      "description": "Duplicate or out-of-order sequence behavior impacted score."
+    },
+    {
+      "code": "MANUAL_OVERRIDE",
+      "category": "operations",
+      "description": "Manual operator action overrode normal score behavior."
+    },
+    {
+      "code": "CONNECTION_UNSTABLE",
+      "category": "connectivity",
+      "description": "Connection instability and/or missed heartbeats increased degradation."
+    },
+    {
+      "code": "ERROR_RATE_ELEVATED",
+      "category": "reliability",
+      "description": "High error rate above threshold contributed to degradation."
+    },
+    {
+      "code": "RECONNECT_BURST",
+      "category": "connectivity",
+      "description": "Reconnect frequency indicates unstable connectivity."
+    }
+  ]
+}

@@ -198,6 +198,12 @@ public sealed class ProviderDegradationScorer : IDisposable
 
         composite = Math.Clamp(composite, 0.0, 1.0);
 
+        var reasons = BuildReasons(
+            connectionScore * _config.ConnectionWeight,
+            latencyScore * _config.LatencyWeight,
+            errorScore * _config.ErrorRateWeight,
+            reconnectScore * _config.ReconnectWeight);
+
         return new ProviderDegradationScore(
             ProviderName: providerName,
             CompositeScore: composite,
@@ -209,7 +215,75 @@ public sealed class ProviderDegradationScorer : IDisposable
             IsDegraded: composite >= _config.DegradationThreshold,
             P95LatencyMs: latencyHistogram?.P95Ms ?? 0,
             IsConnected: connectionStatus?.IsConnected ?? false,
+            Reasons: reasons,
             EvaluatedAt: DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>
+    /// Computes score and reason-code deltas between two score snapshots.
+    /// </summary>
+    public static ProviderDegradationScoreDelta ComputeDelta(
+        in ProviderDegradationScore previous,
+        in ProviderDegradationScore current)
+    {
+        var reasonDeltas = BuildReasonDeltas(previous.Reasons, current.Reasons);
+        return new ProviderDegradationScoreDelta(
+            ProviderName: current.ProviderName,
+            PreviousCompositeScore: previous.CompositeScore,
+            CurrentCompositeScore: current.CompositeScore,
+            CompositeScoreDelta: current.CompositeScore - previous.CompositeScore,
+            ReasonDeltas: reasonDeltas);
+    }
+
+    private static IReadOnlyList<ProviderScoreReason> BuildReasons(
+        double connectionContribution,
+        double latencyContribution,
+        double errorContribution,
+        double reconnectContribution)
+    {
+        var reasons = new List<ProviderScoreReason>(4);
+
+        AddReason(reasons, ProviderReasonCodes.ConnectionUnstable, connectionContribution);
+        AddReason(reasons, ProviderReasonCodes.LatencySpike, latencyContribution);
+        AddReason(reasons, ProviderReasonCodes.ErrorRateElevated, errorContribution);
+        AddReason(reasons, ProviderReasonCodes.ReconnectBurst, reconnectContribution);
+
+        return reasons
+            .OrderByDescending(r => Math.Abs(r.Contribution))
+            .ThenBy(r => r.Code, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static IReadOnlyList<ProviderReasonDelta> BuildReasonDeltas(
+        IReadOnlyList<ProviderScoreReason> previous,
+        IReadOnlyList<ProviderScoreReason> current)
+    {
+        var previousByCode = previous.ToDictionary(r => r.Code, r => r.Contribution, StringComparer.Ordinal);
+        var currentByCode = current.ToDictionary(r => r.Code, r => r.Contribution, StringComparer.Ordinal);
+
+        var allCodes = previousByCode.Keys
+            .Concat(currentByCode.Keys)
+            .Distinct(StringComparer.Ordinal);
+
+        return allCodes
+            .Select(code =>
+            {
+                var oldValue = previousByCode.GetValueOrDefault(code, 0.0);
+                var newValue = currentByCode.GetValueOrDefault(code, 0.0);
+                return new ProviderReasonDelta(code, oldValue, newValue, newValue - oldValue);
+            })
+            .Where(delta => Math.Abs(delta.Delta) > 1e-12)
+            .OrderByDescending(delta => Math.Abs(delta.Delta))
+            .ThenBy(delta => delta.Code, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static void AddReason(ICollection<ProviderScoreReason> reasons, string code, double contribution)
+    {
+        if (Math.Abs(contribution) <= 1e-12)
+            return;
+
+        reasons.Add(new ProviderScoreReason(code, contribution));
     }
 
     /// <summary>
@@ -397,7 +471,36 @@ public readonly record struct ProviderDegradationScore(
     bool IsDegraded,
     double P95LatencyMs,
     bool IsConnected,
+    IReadOnlyList<ProviderScoreReason> Reasons,
     DateTimeOffset EvaluatedAt);
+
+public static class ProviderReasonCodes
+{
+    public const string LatencySpike = "LATENCY_SPIKE";
+    public const string GapBurst = "GAP_BURST";
+    public const string SequenceDuplicate = "SEQUENCE_DUPLICATE";
+    public const string ManualOverride = "MANUAL_OVERRIDE";
+    public const string ConnectionUnstable = "CONNECTION_UNSTABLE";
+    public const string ErrorRateElevated = "ERROR_RATE_ELEVATED";
+    public const string ReconnectBurst = "RECONNECT_BURST";
+}
+
+public readonly record struct ProviderScoreReason(
+    string Code,
+    double Contribution);
+
+public readonly record struct ProviderReasonDelta(
+    string Code,
+    double PreviousContribution,
+    double CurrentContribution,
+    double Delta);
+
+public readonly record struct ProviderDegradationScoreDelta(
+    string ProviderName,
+    double PreviousCompositeScore,
+    double CurrentCompositeScore,
+    double CompositeScoreDelta,
+    IReadOnlyList<ProviderReasonDelta> ReasonDeltas);
 
 /// <summary>
 /// Event raised when a provider becomes degraded.
