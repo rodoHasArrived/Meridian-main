@@ -142,6 +142,12 @@ export interface PaperSessionReplayVerification {
   currentPortfolio: ExecutionPortfolioSnapshot | null;
   replayPortfolio: ExecutionPortfolioSnapshot;
   verifiedAt: string;
+  comparedFillCount: number;
+  comparedOrderCount: number;
+  comparedLedgerEntryCount: number;
+  lastPersistedFillAt: string | null;
+  lastPersistedOrderUpdateAt: string | null;
+  verificationAuditId: string | null;
 }
 
 export interface ExecutionAuditEntry {

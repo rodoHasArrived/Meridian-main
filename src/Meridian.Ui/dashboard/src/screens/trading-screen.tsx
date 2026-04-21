@@ -960,6 +960,14 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     <p className="mt-1 text-xs text-muted-foreground">
                       Source: {sessionReplayVerification.replaySource} · Verified at {sessionReplayVerification.verifiedAt}
                     </p>
+                    <div className="mt-2 grid gap-1 text-xs text-foreground sm:grid-cols-2">
+                      <span>Compared fills: {sessionReplayVerification.comparedFillCount}</span>
+                      <span>Compared orders: {sessionReplayVerification.comparedOrderCount}</span>
+                      <span>Compared ledger entries: {sessionReplayVerification.comparedLedgerEntryCount}</span>
+                      <span>Verification audit: {sessionReplayVerification.verificationAuditId ?? "Unavailable"}</span>
+                      <span>Last persisted fill: {sessionReplayVerification.lastPersistedFillAt ?? "N/A"}</span>
+                      <span>Last persisted order update: {sessionReplayVerification.lastPersistedOrderUpdateAt ?? "N/A"}</span>
+                    </div>
                     {sessionReplayVerification.mismatchReasons.length > 0 && (
                       <ul className="mt-2 space-y-1 text-xs text-foreground">
                         {sessionReplayVerification.mismatchReasons.slice(0, 3).map((reason) => (

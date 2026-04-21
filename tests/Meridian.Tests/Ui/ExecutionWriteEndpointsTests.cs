@@ -306,6 +306,12 @@ public sealed class ExecutionWriteEndpointsTests
             replayVerification.MismatchReasons.Should().BeEmpty();
             replayVerification.CurrentPortfolio.Should().NotBeNull();
             replayVerification.ReplayPortfolio.Cash.Should().Be(124_000m);
+            replayVerification.ComparedFillCount.Should().Be(1);
+            replayVerification.ComparedOrderCount.Should().Be(0);
+            replayVerification.ComparedLedgerEntryCount.Should().Be(0);
+            replayVerification.LastPersistedFillAt.Should().NotBeNull();
+            replayVerification.LastPersistedOrderUpdateAt.Should().BeNull();
+            replayVerification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
         }
 
         var auditResponse = await client.GetAsync(UiApiRoutes.ExecutionAudit);
@@ -375,6 +381,8 @@ public sealed class ExecutionWriteEndpointsTests
             replay.ReplaySource.Should().Be("DurableFillLog");
             replay.MismatchReasons.Should().BeEmpty();
             replay.ReplayPortfolio.Cash.Should().Be(98_990m);
+            replay.ComparedFillCount.Should().Be(1);
+            replay.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
 
             evaluation.IsEligible.Should().BeTrue();
             evaluation.SourceMode.Should().Be(RunType.Backtest);
@@ -490,7 +498,8 @@ public sealed class ExecutionWriteEndpointsTests
             NullLogger<ExecutionServices.JsonlFilePaperSessionStore>.Instance));
         services.AddSingleton<ExecutionServices.PaperSessionPersistenceService>(sp => new ExecutionServices.PaperSessionPersistenceService(
             NullLogger<ExecutionServices.PaperSessionPersistenceService>.Instance,
-            sp.GetRequiredService<ExecutionServices.IPaperSessionStore>()));
+            sp.GetRequiredService<ExecutionServices.IPaperSessionStore>(),
+            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
     }
 
     private static void RegisterPromotionServices(
