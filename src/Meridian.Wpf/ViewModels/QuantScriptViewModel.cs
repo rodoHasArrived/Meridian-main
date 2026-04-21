@@ -293,6 +293,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         var checkpoint = startIndex > 0 ? _session.GetPreviousCheckpoint(identities, startIndex) : null;
         var currentIndex = startIndex;
         var succeeded = true;
+        var totalTargetCells = endIndex - startIndex + 1;
+        var completedCells = 0;
 
         try
         {
@@ -327,7 +329,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                     break;
                 }
 
-                ProgressFraction = (double)(index - startIndex + 1) / (endIndex - startIndex + 1);
+                completedCells++;
+                ProgressFraction = (double)completedCells / totalTargetCells;
             }
 
             if (succeeded)
@@ -340,6 +343,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            succeeded = false;
             StatusText = "Cancelled";
             AppendConsole("Script was cancelled.", ConsoleEntryKind.Warning);
             MarkCellsStaleFrom(currentIndex);
@@ -347,6 +351,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
+            succeeded = false;
             _logger.LogError(ex, "Unhandled error in QuantScript runner");
             StatusText = "Error";
             AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
@@ -358,7 +363,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             _runStopwatch?.Stop();
             _elapsedTimer?.Stop();
             IsRunning = false;
-            ProgressFraction = 1.0;
+            if (succeeded)
+                ProgressFraction = 1.0;
         }
     }
 
