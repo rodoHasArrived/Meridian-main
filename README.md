@@ -7682,6 +7682,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── MainPageUiWorkflowTests.cs
 │   │       ├── NavigationPageSmokeTests.cs
 │   │       ├── PageLifecycleCleanupTests.cs
+│   │       ├── PlotRenderBehaviorTests.cs
 │   │       ├── QuantScriptPageTests.cs
 │   │       ├── ResearchWorkspaceShellSmokeTests.cs
 │   │       ├── ResearchWorkspaceShellWorkflowTests.cs
@@ -7700,6 +7701,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-604 directories, 6956 files
+604 directories, 6957 files
 ```
 <!-- readme-tree end -->
