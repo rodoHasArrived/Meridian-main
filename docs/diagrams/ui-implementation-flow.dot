@@ -18,7 +18,7 @@ digraph UiImplementationFlow {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 186f5da1da15\nTransient pages in App.xaml.cs: 105\nNavigation tags: 77"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 8eb59ceafcd5\nTransient pages in App.xaml.cs: 32\nNavigation tags: 0"];
   app [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="App.xaml.cs\nHost + DI composition"];
   window [shape=component, fillcolor="#2563eb", color="#93c5fd", label="MainWindow.xaml(.cs)\nRoot frame + global shortcuts"];
   page [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="MainPage.xaml(.cs)\nSidebar shell + command palette"];
@@ -40,11 +40,11 @@ digraph UiImplementationFlow {
     label="Primary navigation pages";
     color="#334155";
     style="rounded";
-    section_1 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Primary navigation pages\n2 page classes\n2 transient registrations"];
+    section_1 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Primary navigation pages\n2 page classes\n0 transient registrations"];
     views -> section_1;
-    section_1_DashboardPage [label="Dashboard\nDashboardPage\nDI transient", fillcolor="#111827"];
+    section_1_DashboardPage [label="Dashboard\nDashboardPage\nNot in App DI", fillcolor="#111827"];
     section_1 -> section_1_DashboardPage;
-    section_1_WatchlistPage [label="Watchlist\nWatchlistPage\nDI transient", fillcolor="#111827"];
+    section_1_WatchlistPage [label="Watchlist\nWatchlistPage\nNot in App DI", fillcolor="#111827"];
     section_1 -> section_1_WatchlistPage;
   }
 
@@ -52,13 +52,13 @@ digraph UiImplementationFlow {
     label="Data Sources pages";
     color="#334155";
     style="rounded";
-    section_2 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data Sources pages\n3 page classes\n3 transient registrations"];
+    section_2 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data Sources pages\n3 page classes\n0 transient registrations"];
     views -> section_2;
-    section_2_ProviderPage [label="Provider\nProviderPage\nDI transient", fillcolor="#111827"];
+    section_2_ProviderPage [label="Provider\nProviderPage\nNot in App DI", fillcolor="#111827"];
     section_2 -> section_2_ProviderPage;
-    section_2_ProviderHealthPage [label="Provider Health\nProviderHealthPage\nDI transient", fillcolor="#111827"];
+    section_2_ProviderHealthPage [label="Provider Health\nProviderHealthPage\nNot in App DI", fillcolor="#111827"];
     section_2 -> section_2_ProviderHealthPage;
-    section_2_DataSourcesPage [label="Data Sources\nDataSourcesPage\nDI transient", fillcolor="#111827"];
+    section_2_DataSourcesPage [label="Data Sources\nDataSourcesPage\nNot in App DI", fillcolor="#111827"];
     section_2 -> section_2_DataSourcesPage;
   }
 
@@ -66,23 +66,23 @@ digraph UiImplementationFlow {
     label="Data Management pages";
     color="#334155";
     style="rounded";
-    section_3 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data Management pages\n10 page classes\n10 transient registrations"];
+    section_3 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data Management pages\n10 page classes\n0 transient registrations"];
     views -> section_3;
-    section_3_LiveDataViewerPage [label="Live Data Viewer\nLiveDataViewerPage\nDI transient", fillcolor="#111827"];
+    section_3_LiveDataViewerPage [label="Live Data Viewer\nLiveDataViewerPage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_LiveDataViewerPage;
-    section_3_SymbolsPage [label="Symbols\nSymbolsPage\nDI transient", fillcolor="#111827"];
+    section_3_SymbolsPage [label="Symbols\nSymbolsPage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_SymbolsPage;
-    section_3_SymbolMappingPage [label="Symbol Mapping\nSymbolMappingPage\nDI transient", fillcolor="#111827"];
+    section_3_SymbolMappingPage [label="Symbol Mapping\nSymbolMappingPage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_SymbolMappingPage;
-    section_3_SymbolStoragePage [label="Symbol Storage\nSymbolStoragePage\nDI transient", fillcolor="#111827"];
+    section_3_SymbolStoragePage [label="Symbol Storage\nSymbolStoragePage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_SymbolStoragePage;
-    section_3_StoragePage [label="Storage\nStoragePage\nDI transient", fillcolor="#111827"];
+    section_3_StoragePage [label="Storage\nStoragePage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_StoragePage;
-    section_3_BackfillPage [label="Backfill\nBackfillPage\nDI transient", fillcolor="#111827"];
+    section_3_BackfillPage [label="Backfill\nBackfillPage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_BackfillPage;
-    section_3_PortfolioImportPage [label="Portfolio Import\nPortfolioImportPage\nDI transient", fillcolor="#111827"];
+    section_3_PortfolioImportPage [label="Portfolio Import\nPortfolioImportPage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_PortfolioImportPage;
-    section_3_IndexSubscriptionPage [label="Index Subscription\nIndexSubscriptionPage\nDI transient", fillcolor="#111827"];
+    section_3_IndexSubscriptionPage [label="Index Subscription\nIndexSubscriptionPage\nNot in App DI", fillcolor="#111827"];
     section_3 -> section_3_IndexSubscriptionPage;
     section_3_more [shape=note, fillcolor="#0f172a", color="#64748b", label="+ 2 more page classes"];
     section_3 -> section_3_more;
@@ -92,21 +92,21 @@ digraph UiImplementationFlow {
     label="Monitoring pages";
     color="#334155";
     style="rounded";
-    section_4 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Monitoring pages\n7 page classes\n7 transient registrations"];
+    section_4 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Monitoring pages\n7 page classes\n1 transient registrations"];
     views -> section_4;
-    section_4_DataQualityPage [label="Data Quality\nDataQualityPage\nDI transient", fillcolor="#111827"];
+    section_4_DataQualityPage [label="Data Quality\nDataQualityPage\nNot in App DI", fillcolor="#111827"];
     section_4 -> section_4_DataQualityPage;
     section_4_QualityArchivePage [label="Quality Archive\nQualityArchivePage\nDI transient", fillcolor="#111827"];
     section_4 -> section_4_QualityArchivePage;
-    section_4_CollectionSessionPage [label="Collection Session\nCollectionSessionPage\nDI transient", fillcolor="#111827"];
+    section_4_CollectionSessionPage [label="Collection Session\nCollectionSessionPage\nNot in App DI", fillcolor="#111827"];
     section_4 -> section_4_CollectionSessionPage;
-    section_4_ArchiveHealthPage [label="Archive Health\nArchiveHealthPage\nDI transient", fillcolor="#111827"];
+    section_4_ArchiveHealthPage [label="Archive Health\nArchiveHealthPage\nNot in App DI", fillcolor="#111827"];
     section_4 -> section_4_ArchiveHealthPage;
-    section_4_ServiceManagerPage [label="Service Manager\nServiceManagerPage\nDI transient", fillcolor="#111827"];
+    section_4_ServiceManagerPage [label="Service Manager\nServiceManagerPage\nNot in App DI", fillcolor="#111827"];
     section_4 -> section_4_ServiceManagerPage;
-    section_4_SystemHealthPage [label="System Health\nSystemHealthPage\nDI transient", fillcolor="#111827"];
+    section_4_SystemHealthPage [label="System Health\nSystemHealthPage\nNot in App DI", fillcolor="#111827"];
     section_4 -> section_4_SystemHealthPage;
-    section_4_DiagnosticsPage [label="Diagnostics\nDiagnosticsPage\nDI transient", fillcolor="#111827"];
+    section_4_DiagnosticsPage [label="Diagnostics\nDiagnosticsPage\nNot in App DI", fillcolor="#111827"];
     section_4 -> section_4_DiagnosticsPage;
   }
 
@@ -114,23 +114,23 @@ digraph UiImplementationFlow {
     label="Tools pages";
     color="#334155";
     style="rounded";
-    section_5 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Tools pages\n9 page classes\n9 transient registrations"];
+    section_5 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Tools pages\n9 page classes\n0 transient registrations"];
     views -> section_5;
-    section_5_DataExportPage [label="Data Export\nDataExportPage\nDI transient", fillcolor="#111827"];
+    section_5_DataExportPage [label="Data Export\nDataExportPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_DataExportPage;
-    section_5_DataSamplingPage [label="Data Sampling\nDataSamplingPage\nDI transient", fillcolor="#111827"];
+    section_5_DataSamplingPage [label="Data Sampling\nDataSamplingPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_DataSamplingPage;
-    section_5_TimeSeriesAlignmentPage [label="Time Series Alignment\nTimeSeriesAlignmentPage\nDI transient", fillcolor="#111827"];
+    section_5_TimeSeriesAlignmentPage [label="Time Series Alignment\nTimeSeriesAlignmentPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_TimeSeriesAlignmentPage;
-    section_5_ExportPresetsPage [label="Export Presets\nExportPresetsPage\nDI transient", fillcolor="#111827"];
+    section_5_ExportPresetsPage [label="Export Presets\nExportPresetsPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_ExportPresetsPage;
-    section_5_AnalysisExportPage [label="Analysis Export\nAnalysisExportPage\nDI transient", fillcolor="#111827"];
+    section_5_AnalysisExportPage [label="Analysis Export\nAnalysisExportPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_AnalysisExportPage;
-    section_5_AnalysisExportWizardPage [label="Analysis Export Wizard\nAnalysisExportWizardPage\nDI transient", fillcolor="#111827"];
+    section_5_AnalysisExportWizardPage [label="Analysis Export Wizard\nAnalysisExportWizardPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_AnalysisExportWizardPage;
-    section_5_EventReplayPage [label="Event Replay\nEventReplayPage\nDI transient", fillcolor="#111827"];
+    section_5_EventReplayPage [label="Event Replay\nEventReplayPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_EventReplayPage;
-    section_5_PackageManagerPage [label="Package Manager\nPackageManagerPage\nDI transient", fillcolor="#111827"];
+    section_5_PackageManagerPage [label="Package Manager\nPackageManagerPage\nNot in App DI", fillcolor="#111827"];
     section_5 -> section_5_PackageManagerPage;
     section_5_more [shape=note, fillcolor="#0f172a", color="#64748b", label="+ 1 more page classes"];
     section_5 -> section_5_more;
@@ -140,19 +140,19 @@ digraph UiImplementationFlow {
     label="Analytics & Visualization pages";
     color="#334155";
     style="rounded";
-    section_6 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Analytics & Visualization pages\n6 page classes\n6 transient registrations"];
+    section_6 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Analytics & Visualization pages\n6 page classes\n0 transient registrations"];
     views -> section_6;
-    section_6_AdvancedAnalyticsPage [label="Advanced Analytics\nAdvancedAnalyticsPage\nDI transient", fillcolor="#111827"];
+    section_6_AdvancedAnalyticsPage [label="Advanced Analytics\nAdvancedAnalyticsPage\nNot in App DI", fillcolor="#111827"];
     section_6 -> section_6_AdvancedAnalyticsPage;
-    section_6_ChartingPage [label="Charting\nChartingPage\nDI transient", fillcolor="#111827"];
+    section_6_ChartingPage [label="Charting\nChartingPage\nNot in App DI", fillcolor="#111827"];
     section_6 -> section_6_ChartingPage;
-    section_6_OrderBookPage [label="Order Book\nOrderBookPage\nDI transient", fillcolor="#111827"];
+    section_6_OrderBookPage [label="Order Book\nOrderBookPage\nNot in App DI", fillcolor="#111827"];
     section_6 -> section_6_OrderBookPage;
-    section_6_DataCalendarPage [label="Data Calendar\nDataCalendarPage\nDI transient", fillcolor="#111827"];
+    section_6_DataCalendarPage [label="Data Calendar\nDataCalendarPage\nNot in App DI", fillcolor="#111827"];
     section_6 -> section_6_DataCalendarPage;
-    section_6_RunMatPage [label="Run Mat\nRunMatPage\nDI transient", fillcolor="#111827"];
+    section_6_RunMatPage [label="Run Mat\nRunMatPage\nNot in App DI", fillcolor="#111827"];
     section_6 -> section_6_RunMatPage;
-    section_6_QuantScriptPage [label="Quant Script\nQuantScriptPage\nDI transient", fillcolor="#111827"];
+    section_6_QuantScriptPage [label="Quant Script\nQuantScriptPage\nNot in App DI", fillcolor="#111827"];
     section_6 -> section_6_QuantScriptPage;
   }
 
@@ -160,13 +160,13 @@ digraph UiImplementationFlow {
     label="Storage & Maintenance pages";
     color="#334155";
     style="rounded";
-    section_7 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Storage & Maintenance pages\n3 page classes\n3 transient registrations"];
+    section_7 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Storage & Maintenance pages\n3 page classes\n0 transient registrations"];
     views -> section_7;
-    section_7_StorageOptimizationPage [label="Storage Optimization\nStorageOptimizationPage\nDI transient", fillcolor="#111827"];
+    section_7_StorageOptimizationPage [label="Storage Optimization\nStorageOptimizationPage\nNot in App DI", fillcolor="#111827"];
     section_7 -> section_7_StorageOptimizationPage;
-    section_7_RetentionAssurancePage [label="Retention Assurance\nRetentionAssurancePage\nDI transient", fillcolor="#111827"];
+    section_7_RetentionAssurancePage [label="Retention Assurance\nRetentionAssurancePage\nNot in App DI", fillcolor="#111827"];
     section_7 -> section_7_RetentionAssurancePage;
-    section_7_AdminMaintenancePage [label="Admin Maintenance\nAdminMaintenancePage\nDI transient", fillcolor="#111827"];
+    section_7_AdminMaintenancePage [label="Admin Maintenance\nAdminMaintenancePage\nNot in App DI", fillcolor="#111827"];
     section_7 -> section_7_AdminMaintenancePage;
   }
 
@@ -174,11 +174,11 @@ digraph UiImplementationFlow {
     label="Integrations pages";
     color="#334155";
     style="rounded";
-    section_8 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Integrations pages\n2 page classes\n2 transient registrations"];
+    section_8 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Integrations pages\n2 page classes\n0 transient registrations"];
     views -> section_8;
-    section_8_LeanIntegrationPage [label="Lean Integration\nLeanIntegrationPage\nDI transient", fillcolor="#111827"];
+    section_8_LeanIntegrationPage [label="Lean Integration\nLeanIntegrationPage\nNot in App DI", fillcolor="#111827"];
     section_8 -> section_8_LeanIntegrationPage;
-    section_8_MessagingHubPage [label="Messaging Hub\nMessagingHubPage\nDI transient", fillcolor="#111827"];
+    section_8_MessagingHubPage [label="Messaging Hub\nMessagingHubPage\nNot in App DI", fillcolor="#111827"];
     section_8 -> section_8_MessagingHubPage;
   }
 
@@ -186,9 +186,9 @@ digraph UiImplementationFlow {
     label="Backtesting pages";
     color="#334155";
     style="rounded";
-    section_9 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Backtesting pages\n1 page classes\n1 transient registrations"];
+    section_9 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Backtesting pages\n1 page classes\n0 transient registrations"];
     views -> section_9;
-    section_9_BacktestPage [label="Backtest\nBacktestPage\nDI transient", fillcolor="#111827"];
+    section_9_BacktestPage [label="Backtest\nBacktestPage\nNot in App DI", fillcolor="#111827"];
     section_9 -> section_9_BacktestPage;
   }
 
@@ -196,19 +196,19 @@ digraph UiImplementationFlow {
     label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow, risk)";
     color="#334155";
     style="rounded";
-    section_10 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow, risk)\n6 page classes\n6 transient registrations"];
+    section_10 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy Run workstation pages (browser, detail drill-ins, portfolio, ledger, cash flow, risk)\n6 page classes\n0 transient registrations"];
     views -> section_10;
-    section_10_StrategyRunsPage [label="Strategy Runs\nStrategyRunsPage\nDI transient", fillcolor="#111827"];
+    section_10_StrategyRunsPage [label="Strategy Runs\nStrategyRunsPage\nNot in App DI", fillcolor="#111827"];
     section_10 -> section_10_StrategyRunsPage;
-    section_10_RunDetailPage [label="Run Detail\nRunDetailPage\nDI transient", fillcolor="#111827"];
+    section_10_RunDetailPage [label="Run Detail\nRunDetailPage\nNot in App DI", fillcolor="#111827"];
     section_10 -> section_10_RunDetailPage;
-    section_10_RunPortfolioPage [label="Run Portfolio\nRunPortfolioPage\nDI transient", fillcolor="#111827"];
+    section_10_RunPortfolioPage [label="Run Portfolio\nRunPortfolioPage\nNot in App DI", fillcolor="#111827"];
     section_10 -> section_10_RunPortfolioPage;
-    section_10_RunLedgerPage [label="Run Ledger\nRunLedgerPage\nDI transient", fillcolor="#111827"];
+    section_10_RunLedgerPage [label="Run Ledger\nRunLedgerPage\nNot in App DI", fillcolor="#111827"];
     section_10 -> section_10_RunLedgerPage;
-    section_10_RunCashFlowPage [label="Run Cash Flow\nRunCashFlowPage\nDI transient", fillcolor="#111827"];
+    section_10_RunCashFlowPage [label="Run Cash Flow\nRunCashFlowPage\nNot in App DI", fillcolor="#111827"];
     section_10 -> section_10_RunCashFlowPage;
-    section_10_RunRiskPage [label="Run Risk\nRunRiskPage\nDI transient", fillcolor="#111827"];
+    section_10_RunRiskPage [label="Run Risk\nRunRiskPage\nNot in App DI", fillcolor="#111827"];
     section_10 -> section_10_RunRiskPage;
   }
 
@@ -216,9 +216,9 @@ digraph UiImplementationFlow {
     label="Position Blotter page";
     color="#334155";
     style="rounded";
-    section_11 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Position Blotter page\n1 page classes\n1 transient registrations"];
+    section_11 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Position Blotter page\n1 page classes\n0 transient registrations"];
     views -> section_11;
-    section_11_PositionBlotterPage [label="Position Blotter\nPositionBlotterPage\nDI transient", fillcolor="#111827"];
+    section_11_PositionBlotterPage [label="Position Blotter\nPositionBlotterPage\nNot in App DI", fillcolor="#111827"];
     section_11 -> section_11_PositionBlotterPage;
   }
 
@@ -226,11 +226,11 @@ digraph UiImplementationFlow {
     label="Multi-account & aggregate portfolio pages (Phase 6)";
     color="#334155";
     style="rounded";
-    section_12 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Multi-account & aggregate portfolio pages (Phase 6)\n2 page classes\n2 transient registrations"];
+    section_12 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Multi-account & aggregate portfolio pages (Phase 6)\n2 page classes\n0 transient registrations"];
     views -> section_12;
-    section_12_AccountPortfolioPage [label="Account Portfolio\nAccountPortfolioPage\nDI transient", fillcolor="#111827"];
+    section_12_AccountPortfolioPage [label="Account Portfolio\nAccountPortfolioPage\nNot in App DI", fillcolor="#111827"];
     section_12 -> section_12_AccountPortfolioPage;
-    section_12_AggregatePortfolioPage [label="Aggregate Portfolio\nAggregatePortfolioPage\nDI transient", fillcolor="#111827"];
+    section_12_AggregatePortfolioPage [label="Aggregate Portfolio\nAggregatePortfolioPage\nNot in App DI", fillcolor="#111827"];
     section_12 -> section_12_AggregatePortfolioPage;
   }
 
@@ -238,9 +238,9 @@ digraph UiImplementationFlow {
     label="Security Master workstation page";
     color="#334155";
     style="rounded";
-    section_13 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Security Master workstation page\n1 page classes\n1 transient registrations"];
+    section_13 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Security Master workstation page\n1 page classes\n0 transient registrations"];
     views -> section_13;
-    section_13_SecurityMasterPage [label="Security Master\nSecurityMasterPage\nDI transient", fillcolor="#111827"];
+    section_13_SecurityMasterPage [label="Security Master\nSecurityMasterPage\nNot in App DI", fillcolor="#111827"];
     section_13 -> section_13_SecurityMasterPage;
   }
 
@@ -248,9 +248,9 @@ digraph UiImplementationFlow {
     label="Direct Lending workstation page";
     color="#334155";
     style="rounded";
-    section_14 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Direct Lending workstation page\n1 page classes\n1 transient registrations"];
+    section_14 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Direct Lending workstation page\n1 page classes\n0 transient registrations"];
     views -> section_14;
-    section_14_DirectLendingPage [label="Direct Lending\nDirectLendingPage\nDI transient", fillcolor="#111827"];
+    section_14_DirectLendingPage [label="Direct Lending\nDirectLendingPage\nNot in App DI", fillcolor="#111827"];
     section_14 -> section_14_DirectLendingPage;
   }
 
@@ -258,86 +258,74 @@ digraph UiImplementationFlow {
     label="Data Browser page";
     color="#334155";
     style="rounded";
-    section_15 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data Browser page\n1 page classes\n1 transient registrations"];
+    section_15 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data Browser page\n1 page classes\n0 transient registrations"];
     views -> section_15;
-    section_15_DataBrowserPage [label="Data Browser\nDataBrowserPage\nDI transient", fillcolor="#111827"];
+    section_15_DataBrowserPage [label="Data Browser\nDataBrowserPage\nNot in App DI", fillcolor="#111827"];
     section_15 -> section_15_DataBrowserPage;
   }
 
   subgraph cluster_section_16 {
-    label="Workspace shell landing pages";
-    color="#334155";
-    style="rounded";
-    section_16 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Workspace shell landing pages\n2 page classes\n2 transient registrations"];
-    views -> section_16;
-    section_16_ResearchWorkspaceShellPage [label="Research Workspace Shell\nResearchWorkspaceShellPage\nDI transient", fillcolor="#111827"];
-    section_16 -> section_16_ResearchWorkspaceShellPage;
-    section_16_TradingWorkspaceShellPage [label="Trading Workspace Shell\nTradingWorkspaceShellPage\nDI transient", fillcolor="#111827"];
-    section_16 -> section_16_TradingWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_17 {
     label="Workspaces & Notifications pages";
     color="#334155";
     style="rounded";
-    section_17 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Workspaces & Notifications pages\n2 page classes\n2 transient registrations"];
-    views -> section_17;
-    section_17_WorkspacePage [label="Workspace\nWorkspacePage\nDI transient", fillcolor="#111827"];
-    section_17 -> section_17_WorkspacePage;
-    section_17_NotificationCenterPage [label="Notification Center\nNotificationCenterPage\nDI transient", fillcolor="#111827"];
-    section_17 -> section_17_NotificationCenterPage;
+    section_16 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Workspaces & Notifications pages\n2 page classes\n0 transient registrations"];
+    views -> section_16;
+    section_16_WorkspacePage [label="Workspace\nWorkspacePage\nNot in App DI", fillcolor="#111827"];
+    section_16 -> section_16_WorkspacePage;
+    section_16_NotificationCenterPage [label="Notification Center\nNotificationCenterPage\nNot in App DI", fillcolor="#111827"];
+    section_16 -> section_16_NotificationCenterPage;
   }
 
-  subgraph cluster_section_18 {
+  subgraph cluster_section_17 {
     label="Support & Setup pages";
     color="#334155";
     style="rounded";
-    section_18 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Support & Setup pages\n7 page classes\n7 transient registrations"];
-    views -> section_18;
-    section_18_HelpPage [label="Help\nHelpPage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_HelpPage;
-    section_18_WelcomePage [label="Welcome\nWelcomePage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_WelcomePage;
-    section_18_SettingsPage [label="Settings\nSettingsPage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_SettingsPage;
-    section_18_CredentialManagementPage [label="Credential Management\nCredentialManagementPage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_CredentialManagementPage;
-    section_18_KeyboardShortcutsPage [label="Keyboard Shortcuts\nKeyboardShortcutsPage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_KeyboardShortcutsPage;
-    section_18_SetupWizardPage [label="Setup Wizard\nSetupWizardPage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_SetupWizardPage;
-    section_18_AddProviderWizardPage [label="Add Provider Wizard\nAddProviderWizardPage\nDI transient", fillcolor="#111827"];
-    section_18 -> section_18_AddProviderWizardPage;
+    section_17 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Support & Setup pages\n7 page classes\n0 transient registrations"];
+    views -> section_17;
+    section_17_HelpPage [label="Help\nHelpPage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_HelpPage;
+    section_17_WelcomePage [label="Welcome\nWelcomePage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_WelcomePage;
+    section_17_SettingsPage [label="Settings\nSettingsPage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_SettingsPage;
+    section_17_CredentialManagementPage [label="Credential Management\nCredentialManagementPage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_CredentialManagementPage;
+    section_17_KeyboardShortcutsPage [label="Keyboard Shortcuts\nKeyboardShortcutsPage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_KeyboardShortcutsPage;
+    section_17_SetupWizardPage [label="Setup Wizard\nSetupWizardPage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_SetupWizardPage;
+    section_17_AddProviderWizardPage [label="Add Provider Wizard\nAddProviderWizardPage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_AddProviderWizardPage;
   }
 
-  subgraph cluster_section_19 {
+  subgraph cluster_section_18 {
     label="Activity Log page";
     color="#334155";
     style="rounded";
-    section_19 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Activity Log page\n1 page classes\n1 transient registrations"];
-    views -> section_19;
-    section_19_ActivityLogPage [label="Activity Log\nActivityLogPage\nDI transient", fillcolor="#111827"];
-    section_19 -> section_19_ActivityLogPage;
+    section_18 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Activity Log page\n1 page classes\n0 transient registrations"];
+    views -> section_18;
+    section_18_ActivityLogPage [label="Activity Log\nActivityLogPage\nNot in App DI", fillcolor="#111827"];
+    section_18 -> section_18_ActivityLogPage;
   }
 
-  subgraph cluster_section_20 {
+  subgraph cluster_section_19 {
     label="Plugin Management page";
     color="#334155";
     style="rounded";
-    section_20 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Plugin Management page\n1 page classes\n1 transient registrations"];
-    views -> section_20;
-    section_20_PluginManagementPage [label="Plugin Management\nPluginManagementPage\nDI transient", fillcolor="#111827"];
-    section_20 -> section_20_PluginManagementPage;
+    section_19 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Plugin Management page\n1 page classes\n1 transient registrations"];
+    views -> section_19;
+    section_19_PluginManagementPage [label="Plugin Management\nPluginManagementPage\nDI transient", fillcolor="#111827"];
+    section_19 -> section_19_PluginManagementPage;
   }
 
-  subgraph cluster_section_21 {
+  subgraph cluster_section_20 {
     label="AI Agent page";
     color="#334155";
     style="rounded";
-    section_21 [shape=folder, fillcolor="#0f172a", color="#64748b", label="AI Agent page\n1 page classes\n1 transient registrations"];
-    views -> section_21;
-    section_21_AgentPage [label="Agent\nAgentPage\nDI transient", fillcolor="#111827"];
-    section_21 -> section_21_AgentPage;
+    section_20 [shape=folder, fillcolor="#0f172a", color="#64748b", label="AI Agent page\n1 page classes\n1 transient registrations"];
+    views -> section_20;
+    section_20_AgentPage [label="Agent\nAgentPage\nDI transient", fillcolor="#111827"];
+    section_20 -> section_20_AgentPage;
   }
 
   { rank=min; generated; app; }

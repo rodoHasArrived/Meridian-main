@@ -5127,7 +5127,8 @@ Meridian-main
 │   │   ├── Strategies
 │   │   │   ├── AdvancedCarry
 │   │   │   │   ├── AdvancedCarryDecisionEngine.cs
-│   │   │   │   └── AdvancedCarryModels.cs
+│   │   │   │   ├── AdvancedCarryModels.cs
+│   │   │   │   └── CarryTradeBacktestStrategy.cs
 │   │   │   └── OptionsOverwrite
 │   │   │       ├── BlackScholesCalculator.cs
 │   │   │       ├── CoveredCallOverwriteStrategy.cs
@@ -6459,6 +6460,7 @@ Meridian-main
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CarryTradeBacktestViewModel.cs
 │       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
@@ -6553,6 +6555,7 @@ Meridian-main
 │       │   ├── BacktestPage.xaml.cs
 │       │   ├── BatchBacktestPage.xaml
 │       │   ├── BatchBacktestPage.xaml.cs
+│       │   ├── CarryTradeBacktestPage.xaml
 │       │   ├── ChartingPage.xaml
 │       │   ├── ChartingPage.xaml.cs
 │       │   ├── ClusterStatusPage.xaml

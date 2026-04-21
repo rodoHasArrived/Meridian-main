@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-17 11:27:46 UTC. Do not edit manually.
+> Auto-generated on 2026-04-20 04:11:07 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5016,7 +5016,8 @@ Meridian-main
 │   │   ├── Strategies
 │   │   │   ├── AdvancedCarry
 │   │   │   │   ├── AdvancedCarryDecisionEngine.cs
-│   │   │   │   └── AdvancedCarryModels.cs
+│   │   │   │   ├── AdvancedCarryModels.cs
+│   │   │   │   └── CarryTradeBacktestStrategy.cs
 │   │   │   └── OptionsOverwrite
 │   │   │       ├── BlackScholesCalculator.cs
 │   │   │       ├── CoveredCallOverwriteStrategy.cs
@@ -6348,6 +6349,7 @@ Meridian-main
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CarryTradeBacktestViewModel.cs
 │       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
@@ -6442,6 +6444,7 @@ Meridian-main
 │       │   ├── BacktestPage.xaml.cs
 │       │   ├── BatchBacktestPage.xaml
 │       │   ├── BatchBacktestPage.xaml.cs
+│       │   ├── CarryTradeBacktestPage.xaml
 │       │   ├── ChartingPage.xaml
 │       │   ├── ChartingPage.xaml.cs
 │       │   ├── ClusterStatusPage.xaml
