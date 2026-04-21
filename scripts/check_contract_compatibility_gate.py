@@ -101,7 +101,7 @@ def main() -> int:
 
     matrix_doc = Path(args.matrix_doc)
     matrix_updated = args.matrix_doc in changed_files
-    has_matrix_migration_note = migration_note_in_matrix(matrix_doc)
+    has_matrix_migration_note = migration_note_in_matrix(diff_range, args.matrix_doc)
     pr_body = load_pr_body(args.pr_body_file)
     has_pr_migration_note = migration_note_in_pr_body(pr_body)
 
