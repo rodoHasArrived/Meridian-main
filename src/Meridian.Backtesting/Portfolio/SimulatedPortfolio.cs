@@ -931,19 +931,18 @@ internal sealed class SimulatedPortfolio
             realised += lotProceeds - lotClose * coverPrice;
             shortSaleProceeds += lotProceeds;
 
-            // For short lots the "realised P&L" direction is inverted: we record as a
-            // ClosedLot with ClosePrice = coverPrice and EntryPrice = shortSalePrice.
-            // RealizedPnl on the record computes (coverPrice − entryPrice) × qty,
-            // which would be inverted for shorts, so we negate: store entryPrice as
-            // the short-sale price and closePrice as coverPrice; the caller negates sign.
+            // ClosedLot.RealizedPnl is computed as (ClosePrice - EntryPrice) × Quantity.
+            // For short covers, store EntryPrice as the cover price and ClosePrice as
+            // the original short-sale price so the closed-lot realised P&L matches the
+            // positive/negative sign of the realised amount calculated above.
             account.ClosedLots.Add(new ClosedLot(
                 LotId: lot.LotId,
                 Symbol: lot.Symbol,
                 Quantity: lotClose,
-                EntryPrice: lot.EntryPrice,    // short-sale price
+                EntryPrice: coverPrice,        // cover price
                 OpenedAt: lot.OpenedAt,
                 OpenFillId: lot.OpenFillId,
-                ClosePrice: coverPrice,        // cover price
+                ClosePrice: lot.EntryPrice,    // short-sale price
                 ClosedAt: closedAt,
                 CloseFillId: closeFillId,
                 AccountId: lot.AccountId));
