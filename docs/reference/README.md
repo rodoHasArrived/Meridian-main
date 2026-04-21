@@ -40,6 +40,7 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [Environment Variables](environment-variables.md) | Credential and configuration reference |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
+| [Export Preflight Rules](export-preflight-rules.md) | Export validation rule engine, rule IDs, and reuse pattern |
 
 See also: [DEPENDENCIES.md](../DEPENDENCIES.md) — full third-party package inventory.
 
