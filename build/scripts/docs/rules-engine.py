@@ -676,11 +676,15 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         if not paths_file.is_file():
             print(f"Error: paths file not found: {paths_file}", file=sys.stderr)
             return 1
-        include_paths = {
-            line.strip().replace("\\", "/")
-            for line in paths_file.read_text(encoding="utf-8").splitlines()
-            if line.strip()
-        }
+        try:
+            include_paths = {
+                line.strip().replace("\\", "/")
+                for line in paths_file.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            }
+        except OSError as exc:
+            print(f"Error: could not read paths file {paths_file}: {exc}", file=sys.stderr)
+            return 1
 
     # Load rules
     rules = load_rules(rules_path)
