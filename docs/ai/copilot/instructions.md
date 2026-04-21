@@ -4763,7 +4763,8 @@ Meridian-main
 │   │   ├── open-source-references.md
 │   │   ├── README.md
 │   │   ├── reconciliation-break-taxonomy.md
-│   │   └── research-briefing-workflow.md
+│   │   ├── research-briefing-workflow.md
+│   │   └── strategy-promotion-history.md
 │   ├── screenshots
 │   │   ├── desktop
 │   │   │   ├── wpf-backfill.png
@@ -4853,7 +4854,8 @@ Meridian-main
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
-│   │   └── TODO.md
+│   │   ├── TODO.md
+│   │   └── wave4-evidence-template.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
@@ -5114,7 +5116,8 @@ Meridian-main
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── IFundStructureService.cs
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
-│   │   │   └── InMemoryFundStructureService.cs
+│   │   │   ├── InMemoryFundStructureService.cs
+│   │   │   └── LedgerGroupingRules.cs
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   ├── ArchiveMaintenanceEndpoints.cs
@@ -5500,7 +5503,8 @@ Meridian-main
 │   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
-│   │   │   └── FundStructureQueries.cs
+│   │   │   ├── FundStructureQueries.cs
+│   │   │   └── LedgerGroupId.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── Pipeline
@@ -6249,8 +6253,10 @@ Meridian-main
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.cs
 │   │   │   ├── IAggregatePortfolioService.cs
 │   │   │   ├── InMemoryReconciliationRunRepository.cs
+│   │   │   ├── IReconciliationBreakQueueRepository.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
@@ -6263,6 +6269,8 @@ Meridian-main
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   └── StrategyRunReadService.cs
 │   │   ├── Storage
+│   │   │   ├── IPromotionRecordStore.cs
+│   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Strategies.csproj
@@ -7104,6 +7112,8 @@ Meridian-main
 │   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
+│   │   │   ├── FundStructure
+│   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -7170,6 +7180,7 @@ Meridian-main
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── OptionsChainServiceTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
 │   │   │   ├── Ui
@@ -7532,6 +7543,7 @@ Meridian-main
 │   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundLedgerReadServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
