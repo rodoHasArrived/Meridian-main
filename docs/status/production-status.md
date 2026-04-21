@@ -8,6 +8,23 @@ This document summarizes Meridian's current readiness posture and active deliver
 
 ---
 
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
+
+---
+
 ## Executive Summary
 
 Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
@@ -49,32 +66,9 @@ The current working tree reinforces that direction rather than changing it. WPF 
 
 ## Active Gaps By Wave
 
-### Wave 1: Closed provider confidence and checkpoint gate
+Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
 
-- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
-- backfill checkpoint reliability and Parquet L2 flush behavior are closed Wave 1 sub-gates backed by repo tests, including retry-safe L2 flush retention on failed or cancelled writes
-- Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
-- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, and the latest generated validation summary instead of architecture intent
-
-### Wave 2: Paper-trading cockpit hardening
-
-- the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
-- session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
-- live-readiness claims must remain downstream of a trustworthy paper workflow
-
-### Wave 3: Shared run / portfolio / ledger continuity
-
-- the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
-- portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
-- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration
-
-### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
-
-- Security Master is a delivered baseline, not an open foundation item
-- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
-- the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
-
-Waves 5 and 6 remain valid roadmap steps, but they sit after the Wave 1-4 core operator-readiness path. Optional advanced research / scale tracks do not change the current readiness posture.
+Use this file for readiness evidence and operator-facing risk notes; use [`ROADMAP.md`](ROADMAP.md) for full wave sequencing.
 
 ---
 
