@@ -64,15 +64,12 @@ public sealed class ScriptRunner : IScriptRunner
 
         var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
-
-        var compilationResult = new ScriptCompilationResult(
-            Success: true,
-            CompilationTime: TimeSpan.Zero,
-            Diagnostics: Array.Empty<ScriptDiagnostic>());
+        TimeSpan compileTime;
 
         if (checkpoint is null)
         {
-            compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+            var compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+            compileTime = compilationResult.CompilationTime;
 
             if (!compilationResult.Success)
             {
@@ -89,6 +86,11 @@ public sealed class ScriptRunner : IScriptRunner
                     TradesSummary: Array.Empty<string>(),
                     Checkpoint: checkpoint);
             }
+        }
+        else
+        {
+            // Continuations rely on Roslyn continuation diagnostics from ContinueWithAsync.
+            compileTime = TimeSpan.Zero;
         }
 
         using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -118,6 +120,7 @@ public sealed class ScriptRunner : IScriptRunner
         IReadOnlyList<ScriptDiagnostic> continuationDiagnostics = Array.Empty<ScriptDiagnostic>();
         ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
         var runPlotQueue = new PlotQueue();
+        TimeSpan continuationCompileTime = TimeSpan.Zero;
 
         await Task.Run(async () =>
         {
@@ -136,9 +139,12 @@ public sealed class ScriptRunner : IScriptRunner
                 }
                 else
                 {
+                    var continuationCompileWatch = Stopwatch.StartNew();
                     scriptState = await checkpoint.ScriptState
                         .ContinueWithAsync(source, cancellationToken: runCt)
                         .ConfigureAwait(false);
+                    continuationCompileWatch.Stop();
+                    continuationCompileTime = continuationCompileWatch.Elapsed;
                 }
 
                 nextCheckpoint = new ScriptExecutionCheckpoint(scriptState, globals);
@@ -152,6 +158,12 @@ public sealed class ScriptRunner : IScriptRunner
             }
             catch (CompilationErrorException ex)
             {
+                if (checkpoint is not null)
+                {
+                    continuationCompileTime = continuationCompileTime == TimeSpan.Zero
+                        ? wallClock.Elapsed
+                        : continuationCompileTime;
+                }
                 continuationDiagnostics = ex.Diagnostics
                     .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
                     .Select(MapDiagnostic)
@@ -174,11 +186,13 @@ public sealed class ScriptRunner : IScriptRunner
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
         var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0;
+        if (checkpoint is not null)
+            compileTime = continuationCompileTime;
 
         return new ScriptRunResult(
             Success: resultSuccess,
             Elapsed: wallClock.Elapsed,
-            CompileTime: compilationResult.CompilationTime,
+            CompileTime: compileTime,
             PeakMemoryBytes: peakMemory,
             CompilationErrors: continuationDiagnostics,
             RuntimeError: runtimeError,
