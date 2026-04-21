@@ -17,7 +17,7 @@ The current working tree reinforces that direction rather than changing it. WPF 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
 | Capability | Maturity | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Core event pipeline | Complete | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
 | Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
@@ -83,7 +83,7 @@ Waves 5 and 6 remain valid roadmap steps, but they sit after the Wave 1-4 core o
 Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the primary per-scenario evidence source. Current high-signal summary:
 
 | Provider | Posture | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Alpaca | Complete | Checked-in provider suites plus the stable `/api/execution/*` seam close the active core-provider row in repo evidence |
 | Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded under `artifacts/provider-validation/robinhood/2026-04-09/` |
 | Yahoo | Complete | Deterministic historical-provider and intraday contract evidence close the historical-only core-provider row |
@@ -104,6 +104,8 @@ Meridian can reasonably claim **core operator-readiness** when the wave-aligned 
 Waves 5 and 6 deepen the product and widen later claims, but they are not prerequisites for core operator-readiness.
 
 ---
+
+<a id="pre-production-checklist"></a>
 
 ## Immediate Readiness Checklist
 

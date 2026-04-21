@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndicatorConfiguration
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledIndicators
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SmaPeriods
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EmaPeriods
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RsiPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdFastPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdSlowPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdSignalPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerStdDev
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AtrPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StochKPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StochDPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StochSmoothPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdxPeriod
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxQuotesHistory
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -502,7 +502,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs

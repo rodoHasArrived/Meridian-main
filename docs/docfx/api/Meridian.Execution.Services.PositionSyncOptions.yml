@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionSyncOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionSyncOptions
     path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionSyncOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
@@ -77,9 +77,9 @@ items:
 
     <p>
 
-    Recognised values (case-insensitive): <code>"Alpaca"</code>, <code>"InteractiveBrokers"</code>,
+    Recognised values (case-insensitive): <code>"Alpaca"</code>, <code>"InteractiveBrokers"</code>.
 
-    <code>"StockSharp"</code>.  Any name not matching a registered provider is silently skipped.
+    Any name not matching a registered provider is silently skipped.
 
     Leave empty to accept the default discovery order (all registered providers are queried
 
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionSyncOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncInterval
     path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionSyncOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConsecutiveFailures
     path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionSyncOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackOffInterval
     path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionSyncOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DivergenceTolerance
     path: ../../src/Meridian.Execution/Services/PositionSyncOptions.cs

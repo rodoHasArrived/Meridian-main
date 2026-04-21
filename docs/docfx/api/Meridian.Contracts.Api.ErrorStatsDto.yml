@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorStatsDto
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalErrors
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorsInLastMinute
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorsInLastHour
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningCount
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCount
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalCount
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -306,7 +306,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastErrorTime
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs

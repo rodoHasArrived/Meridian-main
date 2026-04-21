@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineStatistics
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishedCount
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DroppedCount
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsumedCount
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentQueueSize
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeakQueueSize
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueCapacity
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageProcessingTimeUs
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSinceLastFlush
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
@@ -407,7 +407,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/EventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighWaterMarkWarned
     path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs

@@ -29,11 +29,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateProviderConnectionRequest
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 7
+    startLine: 8
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -67,11 +67,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 7
+    startLine: 8
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -125,11 +125,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 8
+    startLine: 9
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -154,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFamilyId
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 9
+    startLine: 10
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -183,11 +183,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 10
+    startLine: 11
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -212,11 +212,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionType
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 11
+    startLine: 12
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -241,11 +241,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionMode
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 12
+    startLine: 13
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -270,11 +270,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 13
+    startLine: 14
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -299,11 +299,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialReference
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 14
+    startLine: 15
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -328,11 +328,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstitutionId
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 15
+    startLine: 16
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -357,11 +357,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExternalAccountId
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 16
+    startLine: 17
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -386,11 +386,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scope
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 17
+    startLine: 18
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -415,11 +415,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 18
+    startLine: 19
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -444,11 +444,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 19
+    startLine: 20
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -473,11 +473,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProductionReady
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 20
+    startLine: 21
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

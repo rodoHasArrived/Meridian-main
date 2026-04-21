@@ -5,8 +5,9 @@ items:
   id: CreateFundRequest
   parent: Meridian.Contracts.FundStructure
   children:
-  - Meridian.Contracts.FundStructure.CreateFundRequest.#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  - Meridian.Contracts.FundStructure.CreateFundRequest.#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Guid})
   - Meridian.Contracts.FundStructure.CreateFundRequest.BaseCurrency
+  - Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId
   - Meridian.Contracts.FundStructure.CreateFundRequest.Code
   - Meridian.Contracts.FundStructure.CreateFundRequest.CreatedBy
   - Meridian.Contracts.FundStructure.CreateFundRequest.Description
@@ -23,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFundRequest
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 2
+    startLine: 33
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -45,30 +46,30 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.FundStructure.CreateFundRequest.#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
-  commentId: M:Meridian.Contracts.FundStructure.CreateFundRequest.#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
-  id: '#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)'
+- uid: Meridian.Contracts.FundStructure.CreateFundRequest.#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Guid})
+  commentId: M:Meridian.Contracts.FundStructure.CreateFundRequest.#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Guid})
+  id: '#ctor(System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.Nullable{System.Guid})'
   parent: Meridian.Contracts.FundStructure.CreateFundRequest
   langs:
   - csharp
   - vb
-  name: CreateFundRequest(Guid, string, string, string, DateTimeOffset, string, string?)
-  nameWithType: CreateFundRequest.CreateFundRequest(Guid, string, string, string, DateTimeOffset, string, string?)
-  fullName: Meridian.Contracts.FundStructure.CreateFundRequest.CreateFundRequest(System.Guid, string, string, string, System.DateTimeOffset, string, string?)
+  name: CreateFundRequest(Guid, string, string, string, DateTimeOffset, string, string?, Guid?)
+  nameWithType: CreateFundRequest.CreateFundRequest(Guid, string, string, string, DateTimeOffset, string, string?, Guid?)
+  fullName: Meridian.Contracts.FundStructure.CreateFundRequest.CreateFundRequest(System.Guid, string, string, string, System.DateTimeOffset, string, string?, System.Guid?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 2
+    startLine: 33
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public CreateFundRequest(Guid FundId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null)
+    content: public CreateFundRequest(Guid FundId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, Guid? BusinessId = null)
     parameters:
     - id: FundId
       type: System.Guid
@@ -84,11 +85,13 @@ items:
       type: System.String
     - id: Description
       type: System.String
-    content.vb: Public Sub New(FundId As Guid, Code As String, Name As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, Description As String = Nothing)
+    - id: BusinessId
+      type: System.Nullable{System.Guid}
+    content.vb: Public Sub New(FundId As Guid, Code As String, Name As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, Description As String = Nothing, BusinessId As Guid? = Nothing)
   overload: Meridian.Contracts.FundStructure.CreateFundRequest.#ctor*
-  nameWithType.vb: CreateFundRequest.New(Guid, String, String, String, DateTimeOffset, String, String)
-  fullName.vb: Meridian.Contracts.FundStructure.CreateFundRequest.New(System.Guid, String, String, String, System.DateTimeOffset, String, String)
-  name.vb: New(Guid, String, String, String, DateTimeOffset, String, String)
+  nameWithType.vb: CreateFundRequest.New(Guid, String, String, String, DateTimeOffset, String, String, Guid?)
+  fullName.vb: Meridian.Contracts.FundStructure.CreateFundRequest.New(System.Guid, String, String, String, System.DateTimeOffset, String, String, System.Guid?)
+  name.vb: New(Guid, String, String, String, DateTimeOffset, String, String, Guid?)
 - uid: Meridian.Contracts.FundStructure.CreateFundRequest.FundId
   commentId: P:Meridian.Contracts.FundStructure.CreateFundRequest.FundId
   id: FundId
@@ -103,11 +106,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 3
+    startLine: 34
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -132,11 +135,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 4
+    startLine: 35
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -161,11 +164,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 5
+    startLine: 36
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -190,11 +193,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 6
+    startLine: 37
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -219,11 +222,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 7
+    startLine: 38
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -248,11 +251,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 8
+    startLine: 39
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -277,11 +280,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 9
+    startLine: 40
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -292,6 +295,35 @@ items:
       type: System.String
     content.vb: Public Property Description As String
   overload: Meridian.Contracts.FundStructure.CreateFundRequest.Description*
+- uid: Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId
+  commentId: P:Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId
+  id: BusinessId
+  parent: Meridian.Contracts.FundStructure.CreateFundRequest
+  langs:
+  - csharp
+  - vb
+  name: BusinessId
+  nameWithType: CreateFundRequest.BusinessId
+  fullName: Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? BusinessId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property BusinessId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId*
 references:
 - uid: Meridian.Contracts.FundStructure
   commentId: N:Meridian.Contracts.FundStructure
@@ -599,7 +631,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.FundStructure.CreateFundRequest.#ctor*
   commentId: Overload:Meridian.Contracts.FundStructure.CreateFundRequest.#ctor
-  href: Meridian.Contracts.FundStructure.CreateFundRequest.html#Meridian_Contracts_FundStructure_CreateFundRequest__ctor_System_Guid_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_String_
+  href: Meridian.Contracts.FundStructure.CreateFundRequest.html#Meridian_Contracts_FundStructure_CreateFundRequest__ctor_System_Guid_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_String_System_Nullable_System_Guid__
   name: CreateFundRequest
   nameWithType: CreateFundRequest.CreateFundRequest
   fullName: Meridian.Contracts.FundStructure.CreateFundRequest.CreateFundRequest
@@ -633,6 +665,54 @@ references:
   name: DateTimeOffset
   nameWithType: DateTimeOffset
   fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
 - uid: Meridian.Contracts.FundStructure.CreateFundRequest.FundId*
   commentId: Overload:Meridian.Contracts.FundStructure.CreateFundRequest.FundId
   href: Meridian.Contracts.FundStructure.CreateFundRequest.html#Meridian_Contracts_FundStructure_CreateFundRequest_FundId
@@ -675,3 +755,9 @@ references:
   name: Description
   nameWithType: CreateFundRequest.Description
   fullName: Meridian.Contracts.FundStructure.CreateFundRequest.Description
+- uid: Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId
+  href: Meridian.Contracts.FundStructure.CreateFundRequest.html#Meridian_Contracts_FundStructure_CreateFundRequest_BusinessId
+  name: BusinessId
+  nameWithType: CreateFundRequest.BusinessId
+  fullName: Meridian.Contracts.FundStructure.CreateFundRequest.BusinessId

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Risk/CompositeRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeRiskValidator
     path: ../../src/Meridian.Risk/CompositeRiskValidator.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Risk/CompositeRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Risk/CompositeRiskValidator.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Risk/CompositeRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
     path: ../../src/Meridian.Risk/CompositeRiskValidator.cs

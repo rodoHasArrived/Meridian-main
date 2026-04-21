@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DerivativesConfig
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Underlyings
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDaysToExpiration
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrikeRange
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureGreeks
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureChainSnapshots
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChainSnapshotIntervalSeconds
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureOpenInterest
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpirationFilter
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DerivativesConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOptions
     path: ../../src/Meridian.Core/Config/DerivativesConfig.cs

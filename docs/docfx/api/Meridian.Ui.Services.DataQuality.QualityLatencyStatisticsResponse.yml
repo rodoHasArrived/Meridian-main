@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityLatencyStatisticsResponse
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalMeanMs
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP50Ms
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP90Ms
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP95Ms
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP99Ms
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs

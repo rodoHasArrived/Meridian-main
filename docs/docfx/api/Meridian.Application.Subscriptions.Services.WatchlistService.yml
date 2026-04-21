@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistService
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllWatchlistsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWatchlistSummariesAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -317,7 +317,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -387,7 +387,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -422,7 +422,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -460,7 +460,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWatchlistsForSymbolAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -498,7 +498,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -536,7 +536,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
@@ -574,7 +574,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReorderWatchlistsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs

@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilitiesResult
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 797
+    startLine: 579
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -52,11 +52,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 799
+    startLine: 581
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -81,11 +81,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 800
+    startLine: 582
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -110,11 +110,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 801
+    startLine: 583
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapOptionsEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs

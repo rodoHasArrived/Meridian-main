@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptimizationRecommendation
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PotentialSavingsBytes
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedFiles
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalFile
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedTime
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerformanceImpact
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs

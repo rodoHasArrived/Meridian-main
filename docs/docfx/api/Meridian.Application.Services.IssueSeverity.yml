@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/StartupSummary.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssueSeverity
     path: ../../src/Meridian.Application/Services/StartupSummary.cs
-    startLine: 429
+    startLine: 426
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -45,11 +45,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/StartupSummary.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
     path: ../../src/Meridian.Application/Services/StartupSummary.cs
-    startLine: 431
+    startLine: 428
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -71,11 +71,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/StartupSummary.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Application/Services/StartupSummary.cs
-    startLine: 432
+    startLine: 429
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -97,11 +97,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/StartupSummary.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Application/Services/StartupSummary.cs
-    startLine: 433
+    startLine: 430
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services

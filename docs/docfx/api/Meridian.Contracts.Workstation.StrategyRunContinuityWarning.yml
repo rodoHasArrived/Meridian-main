@@ -1,0 +1,475 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  id: StrategyRunContinuityWarning
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunContinuityWarning.#ctor(System.String,System.String)
+  - Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code
+  - Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunContinuityWarning
+  nameWithType: StrategyRunContinuityWarning
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunContinuityWarning
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 478
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Machine-readable continuity warning for shared run-centered workflows.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyRunContinuityWarning : IEquatable<StrategyRunContinuityWarning>'
+    content.vb: Public NotInheritable Class StrategyRunContinuityWarning Implements IEquatable(Of StrategyRunContinuityWarning)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.StrategyRunContinuityWarning}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.#ctor(System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.StrategyRunContinuityWarning.#ctor(System.String,System.String)
+  id: '#ctor(System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunContinuityWarning(string, string)
+  nameWithType: StrategyRunContinuityWarning.StrategyRunContinuityWarning(string, string)
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.StrategyRunContinuityWarning(string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 478
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Machine-readable continuity warning for shared run-centered workflows.
+  example: []
+  syntax:
+    content: public StrategyRunContinuityWarning(string Code, string Message)
+    parameters:
+    - id: Code
+      type: System.String
+    - id: Message
+      type: System.String
+    content.vb: Public Sub New(Code As String, Message As String)
+  overload: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.#ctor*
+  nameWithType.vb: StrategyRunContinuityWarning.New(String, String)
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.New(String, String)
+  name.vb: New(String, String)
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code
+  id: Code
+  parent: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: StrategyRunContinuityWarning.Code
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 479
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code*
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message
+  id: Message
+  parent: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: StrategyRunContinuityWarning.Message
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.StrategyRunContinuityWarning}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.StrategyRunContinuityWarning}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyRunContinuityWarning>
+  nameWithType: IEquatable<StrategyRunContinuityWarning>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.StrategyRunContinuityWarning>
+  nameWithType.vb: IEquatable(Of StrategyRunContinuityWarning)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.StrategyRunContinuityWarning)
+  name.vb: IEquatable(Of StrategyRunContinuityWarning)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+    name: StrategyRunContinuityWarning
+    href: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+    name: StrategyRunContinuityWarning
+    href: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunContinuityWarning.#ctor
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.html#Meridian_Contracts_Workstation_StrategyRunContinuityWarning__ctor_System_String_System_String_
+  name: StrategyRunContinuityWarning
+  nameWithType: StrategyRunContinuityWarning.StrategyRunContinuityWarning
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.StrategyRunContinuityWarning
+  nameWithType.vb: StrategyRunContinuityWarning.New
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.html#Meridian_Contracts_Workstation_StrategyRunContinuityWarning_Code
+  name: Code
+  nameWithType: StrategyRunContinuityWarning.Code
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Code
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.html#Meridian_Contracts_Workstation_StrategyRunContinuityWarning_Message
+  name: Message
+  nameWithType: StrategyRunContinuityWarning.Message
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.Message

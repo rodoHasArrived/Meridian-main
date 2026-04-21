@@ -5,14 +5,17 @@ items:
   id: FundSummaryDto
   parent: Meridian.Contracts.FundStructure
   children:
-  - Meridian.Contracts.FundStructure.FundSummaryDto.#ctor(System.Guid,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid})
+  - Meridian.Contracts.FundStructure.FundSummaryDto.#ctor(System.Guid,System.Nullable{System.Guid},System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.String)
   - Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds
   - Meridian.Contracts.FundStructure.FundSummaryDto.BaseCurrency
+  - Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId
   - Meridian.Contracts.FundStructure.FundSummaryDto.Code
+  - Meridian.Contracts.FundStructure.FundSummaryDto.Description
   - Meridian.Contracts.FundStructure.FundSummaryDto.EffectiveFrom
   - Meridian.Contracts.FundStructure.FundSummaryDto.EffectiveTo
   - Meridian.Contracts.FundStructure.FundSummaryDto.EntityIds
   - Meridian.Contracts.FundStructure.FundSummaryDto.FundId
+  - Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds
   - Meridian.Contracts.FundStructure.FundSummaryDto.IsActive
   - Meridian.Contracts.FundStructure.FundSummaryDto.Name
   - Meridian.Contracts.FundStructure.FundSummaryDto.SleeveIds
@@ -27,11 +30,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundSummaryDto
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 139
+    startLine: 120
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -49,33 +52,35 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.FundStructure.FundSummaryDto.#ctor(System.Guid,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid})
-  commentId: M:Meridian.Contracts.FundStructure.FundSummaryDto.#ctor(System.Guid,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid})
-  id: '#ctor(System.Guid,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid})'
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.#ctor(System.Guid,System.Nullable{System.Guid},System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.String)
+  commentId: M:Meridian.Contracts.FundStructure.FundSummaryDto.#ctor(System.Guid,System.Nullable{System.Guid},System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.String)
+  id: '#ctor(System.Guid,System.Nullable{System.Guid},System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.Collections.Generic.IReadOnlyList{System.Guid},System.String)'
   parent: Meridian.Contracts.FundStructure.FundSummaryDto
   langs:
   - csharp
   - vb
-  name: FundSummaryDto(Guid, string, string, string, bool, DateTimeOffset, DateTimeOffset?, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>)
-  nameWithType: FundSummaryDto.FundSummaryDto(Guid, string, string, string, bool, DateTimeOffset, DateTimeOffset?, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>)
-  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.FundSummaryDto(System.Guid, string, string, string, bool, System.DateTimeOffset, System.DateTimeOffset?, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>)
+  name: FundSummaryDto(Guid, Guid?, string, string, string, bool, DateTimeOffset, DateTimeOffset?, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, string?)
+  nameWithType: FundSummaryDto.FundSummaryDto(Guid, Guid?, string, string, string, bool, DateTimeOffset, DateTimeOffset?, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, IReadOnlyList<Guid>, string?)
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.FundSummaryDto(System.Guid, System.Guid?, string, string, string, bool, System.DateTimeOffset, System.DateTimeOffset?, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>, System.Collections.Generic.IReadOnlyList<System.Guid>, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 139
+    startLine: 120
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public FundSummaryDto(Guid FundId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> SleeveIds, IReadOnlyList<Guid> VehicleIds, IReadOnlyList<Guid> EntityIds, IReadOnlyList<Guid> AccountIds)
+    content: public FundSummaryDto(Guid FundId, Guid? BusinessId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> SleeveIds, IReadOnlyList<Guid> VehicleIds, IReadOnlyList<Guid> EntityIds, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> AccountIds, string? Description = null)
     parameters:
     - id: FundId
       type: System.Guid
+    - id: BusinessId
+      type: System.Nullable{System.Guid}
     - id: Code
       type: System.String
     - id: Name
@@ -94,13 +99,17 @@ items:
       type: System.Collections.Generic.IReadOnlyList{System.Guid}
     - id: EntityIds
       type: System.Collections.Generic.IReadOnlyList{System.Guid}
+    - id: InvestmentPortfolioIds
+      type: System.Collections.Generic.IReadOnlyList{System.Guid}
     - id: AccountIds
       type: System.Collections.Generic.IReadOnlyList{System.Guid}
-    content.vb: Public Sub New(FundId As Guid, Code As String, Name As String, BaseCurrency As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, SleeveIds As IReadOnlyList(Of Guid), VehicleIds As IReadOnlyList(Of Guid), EntityIds As IReadOnlyList(Of Guid), AccountIds As IReadOnlyList(Of Guid))
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(FundId As Guid, BusinessId As Guid?, Code As String, Name As String, BaseCurrency As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, SleeveIds As IReadOnlyList(Of Guid), VehicleIds As IReadOnlyList(Of Guid), EntityIds As IReadOnlyList(Of Guid), InvestmentPortfolioIds As IReadOnlyList(Of Guid), AccountIds As IReadOnlyList(Of Guid), Description As String = Nothing)
   overload: Meridian.Contracts.FundStructure.FundSummaryDto.#ctor*
-  nameWithType.vb: FundSummaryDto.New(Guid, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid))
-  fullName.vb: Meridian.Contracts.FundStructure.FundSummaryDto.New(System.Guid, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?, System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid))
-  name.vb: New(Guid, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid))
+  nameWithType.vb: FundSummaryDto.New(Guid, Guid?, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), String)
+  fullName.vb: Meridian.Contracts.FundStructure.FundSummaryDto.New(System.Guid, System.Guid?, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?, System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid), System.Collections.Generic.IReadOnlyList(Of System.Guid), String)
+  name.vb: New(Guid, Guid?, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), IReadOnlyList(Of Guid), String)
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto.FundId
   commentId: P:Meridian.Contracts.FundStructure.FundSummaryDto.FundId
   id: FundId
@@ -115,11 +124,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 140
+    startLine: 121
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -130,6 +139,35 @@ items:
       type: System.Guid
     content.vb: Public Property FundId As Guid
   overload: Meridian.Contracts.FundStructure.FundSummaryDto.FundId*
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId
+  commentId: P:Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId
+  id: BusinessId
+  parent: Meridian.Contracts.FundStructure.FundSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: BusinessId
+  nameWithType: FundSummaryDto.BusinessId
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? BusinessId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property BusinessId As Guid?
+  overload: Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId*
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto.Code
   commentId: P:Meridian.Contracts.FundStructure.FundSummaryDto.Code
   id: Code
@@ -144,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 141
+    startLine: 123
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -173,11 +211,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 142
+    startLine: 124
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -202,11 +240,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 143
+    startLine: 125
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -231,11 +269,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 144
+    startLine: 126
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -260,11 +298,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 145
+    startLine: 127
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -289,11 +327,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 146
+    startLine: 128
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -318,11 +356,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveIds
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 147
+    startLine: 129
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -347,11 +385,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleIds
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 148
+    startLine: 130
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -376,11 +414,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityIds
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 149
+    startLine: 131
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -391,6 +429,35 @@ items:
       type: System.Collections.Generic.IReadOnlyList{System.Guid}
     content.vb: Public Property EntityIds As IReadOnlyList(Of Guid)
   overload: Meridian.Contracts.FundStructure.FundSummaryDto.EntityIds*
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds
+  commentId: P:Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds
+  id: InvestmentPortfolioIds
+  parent: Meridian.Contracts.FundStructure.FundSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: InvestmentPortfolioIds
+  nameWithType: FundSummaryDto.InvestmentPortfolioIds
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvestmentPortfolioIds
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<Guid> InvestmentPortfolioIds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.Guid}
+    content.vb: Public Property InvestmentPortfolioIds As IReadOnlyList(Of Guid)
+  overload: Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds*
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds
   commentId: P:Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds
   id: AccountIds
@@ -405,11 +472,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountIds
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 150
+    startLine: 133
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -420,6 +487,35 @@ items:
       type: System.Collections.Generic.IReadOnlyList{System.Guid}
     content.vb: Public Property AccountIds As IReadOnlyList(Of Guid)
   overload: Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds*
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.Description
+  commentId: P:Meridian.Contracts.FundStructure.FundSummaryDto.Description
+  id: Description
+  parent: Meridian.Contracts.FundStructure.FundSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: FundSummaryDto.Description
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.FundStructure.FundSummaryDto.Description*
 references:
 - uid: Meridian.Contracts.FundStructure
   commentId: N:Meridian.Contracts.FundStructure
@@ -727,7 +823,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto.#ctor*
   commentId: Overload:Meridian.Contracts.FundStructure.FundSummaryDto.#ctor
-  href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto__ctor_System_Guid_System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__
+  href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto__ctor_System_Guid_System_Nullable_System_Guid__System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__System_Collections_Generic_IReadOnlyList_System_Guid__System_String_
   name: FundSummaryDto
   nameWithType: FundSummaryDto.FundSummaryDto
   fullName: Meridian.Contracts.FundStructure.FundSummaryDto.FundSummaryDto
@@ -742,6 +838,26 @@ references:
   name: Guid
   nameWithType: Guid
   fullName: System.Guid
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
 - uid: System.String
   commentId: T:System.String
   parent: System
@@ -926,6 +1042,12 @@ references:
   name: FundId
   nameWithType: FundSummaryDto.FundId
   fullName: Meridian.Contracts.FundStructure.FundSummaryDto.FundId
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId
+  href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto_BusinessId
+  name: BusinessId
+  nameWithType: FundSummaryDto.BusinessId
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.BusinessId
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto.Code*
   commentId: Overload:Meridian.Contracts.FundStructure.FundSummaryDto.Code
   href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto_Code
@@ -980,9 +1102,21 @@ references:
   name: EntityIds
   nameWithType: FundSummaryDto.EntityIds
   fullName: Meridian.Contracts.FundStructure.FundSummaryDto.EntityIds
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds
+  href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto_InvestmentPortfolioIds
+  name: InvestmentPortfolioIds
+  nameWithType: FundSummaryDto.InvestmentPortfolioIds
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.InvestmentPortfolioIds
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds*
   commentId: Overload:Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds
   href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto_AccountIds
   name: AccountIds
   nameWithType: FundSummaryDto.AccountIds
   fullName: Meridian.Contracts.FundStructure.FundSummaryDto.AccountIds
+- uid: Meridian.Contracts.FundStructure.FundSummaryDto.Description*
+  commentId: Overload:Meridian.Contracts.FundStructure.FundSummaryDto.Description
+  href: Meridian.Contracts.FundStructure.FundSummaryDto.html#Meridian_Contracts_FundStructure_FundSummaryDto_Description
+  name: Description
+  nameWithType: FundSummaryDto.Description
+  fullName: Meridian.Contracts.FundStructure.FundSummaryDto.Description

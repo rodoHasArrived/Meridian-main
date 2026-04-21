@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SimpleStatus
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetrievedAtUtc
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceProvider
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsStale
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AgeSeconds
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataProvenance
     path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs

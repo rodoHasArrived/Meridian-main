@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanResultsArtifactSummaryDto
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFormat
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestId
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlgorithmName
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResultsFilePath
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sections
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Artifacts
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -396,7 +396,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalReturn
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -437,7 +437,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualizedReturn
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -478,7 +478,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharpeRatio
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -519,7 +519,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDrawdown
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -560,7 +560,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalTrades
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -601,7 +601,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WinRate
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -642,7 +642,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProfitFactor
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs

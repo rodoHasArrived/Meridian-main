@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResponseResult
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSuccess
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsNotFound
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReasonPhrase
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorContent
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs

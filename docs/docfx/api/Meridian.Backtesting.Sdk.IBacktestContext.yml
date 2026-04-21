@@ -36,7 +36,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBacktestContext
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTime
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentDate
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastPrice
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -359,7 +359,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceBracketOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -395,7 +395,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceMarketOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -433,7 +433,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceMarketOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceLimitOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -513,7 +513,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceLimitOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -555,7 +555,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopMarketOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -595,7 +595,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopMarketOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -637,7 +637,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopLimitOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -679,7 +679,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceStopLimitOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -723,7 +723,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrder
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -754,7 +754,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelContingentOrders
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
@@ -788,7 +788,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs

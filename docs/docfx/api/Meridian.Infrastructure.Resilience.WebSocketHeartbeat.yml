@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketHeartbeat
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionLost
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PingsSent
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordPongReceived
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs

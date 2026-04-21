@@ -13,6 +13,7 @@ items:
   - Meridian.Contracts.Workstation.FundOperationsTab.Overview
   - Meridian.Contracts.Workstation.FundOperationsTab.Portfolio
   - Meridian.Contracts.Workstation.FundOperationsTab.Reconciliation
+  - Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
   - Meridian.Contracts.Workstation.FundOperationsTab.TrialBalance
   langs:
   - csharp
@@ -24,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundOperationsTab
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -51,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Overview
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -77,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -103,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Banking
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -129,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -155,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashFinancing
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -181,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Journal
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -207,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -233,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconciliation
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -259,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditTrail
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
@@ -269,6 +270,32 @@ items:
   namespace: Meridian.Contracts.Workstation
   syntax:
     content: AuditTrail = 8
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  id: ReportPack
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: ReportPack
+  nameWithType: FundOperationsTab.ReportPack
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportPack
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: ReportPack = 9
     return:
       type: Meridian.Contracts.Workstation.FundOperationsTab
 references:

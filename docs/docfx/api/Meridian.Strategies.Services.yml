@@ -25,6 +25,7 @@ items:
   - Meridian.Strategies.Services.ReconciliationRunService
   - Meridian.Strategies.Services.RunPositionContribution
   - Meridian.Strategies.Services.StrategyLifecycleManager
+  - Meridian.Strategies.Services.StrategyRunContinuityService
   - Meridian.Strategies.Services.StrategyRunReadService
   langs:
   - csharp
@@ -44,6 +45,7 @@ references:
   fullName: Meridian.Strategies.Services.AggregatePortfolioService
 - uid: Meridian.Strategies.Services.CashFlowProjectionService
   commentId: T:Meridian.Strategies.Services.CashFlowProjectionService
+  parent: Meridian.Strategies.Services
   href: Meridian.Strategies.Services.CashFlowProjectionService.html
   name: CashFlowProjectionService
   nameWithType: CashFlowProjectionService
@@ -174,6 +176,12 @@ references:
   name: StrategyLifecycleManager
   nameWithType: StrategyLifecycleManager
   fullName: Meridian.Strategies.Services.StrategyLifecycleManager
+- uid: Meridian.Strategies.Services.StrategyRunContinuityService
+  commentId: T:Meridian.Strategies.Services.StrategyRunContinuityService
+  href: Meridian.Strategies.Services.StrategyRunContinuityService.html
+  name: StrategyRunContinuityService
+  nameWithType: StrategyRunContinuityService
+  fullName: Meridian.Strategies.Services.StrategyRunContinuityService
 - uid: Meridian.Strategies.Services.StrategyRunReadService
   commentId: T:Meridian.Strategies.Services.StrategyRunReadService
   parent: Meridian.Strategies.Services

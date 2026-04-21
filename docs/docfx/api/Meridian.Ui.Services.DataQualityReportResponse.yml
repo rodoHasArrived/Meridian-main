@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityReportResponse
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportTime
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Grade
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolReports
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recommendations
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs

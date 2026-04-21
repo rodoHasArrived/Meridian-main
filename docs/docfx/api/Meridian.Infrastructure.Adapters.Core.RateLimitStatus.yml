@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsInWindow
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Window
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRateLimited
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeUntilReset
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsageRatio
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsagePercent
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs

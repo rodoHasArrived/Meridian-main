@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientConfiguration
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddDesktopHttpClients
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs

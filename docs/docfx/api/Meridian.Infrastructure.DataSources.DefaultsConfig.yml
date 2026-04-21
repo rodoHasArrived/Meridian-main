@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultsConfig
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryPolicy
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheck
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimits
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs

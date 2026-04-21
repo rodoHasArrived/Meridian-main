@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Position
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenLots
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsShort
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AbsoluteQuantity
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Position.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
     path: ../../src/Meridian.Backtesting.Sdk/Position.cs

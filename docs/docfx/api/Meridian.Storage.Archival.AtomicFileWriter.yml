@@ -9,6 +9,7 @@ items:
   - Meridian.Storage.Archival.AtomicFileWriter.AppendLinesAsync(System.String,System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
   - Meridian.Storage.Archival.AtomicFileWriter.ReplaceAsync(System.String,System.String,System.Boolean,System.Threading.CancellationToken)
   - Meridian.Storage.Archival.AtomicFileWriter.VerifyChecksumAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.AtomicFileWriter.Write(System.String,System.String)
   - Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(System.String,System.Byte[],System.Threading.CancellationToken)
   - Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(System.String,System.Func{System.IO.StreamWriter,System.Threading.Tasks.Task},System.Threading.CancellationToken)
   - Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(System.String,System.String,System.Threading.CancellationToken)
@@ -45,6 +46,45 @@ items:
   - System.Object.MemberwiseClone
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
+- uid: Meridian.Storage.Archival.AtomicFileWriter.Write(System.String,System.String)
+  commentId: M:Meridian.Storage.Archival.AtomicFileWriter.Write(System.String,System.String)
+  id: Write(System.String,System.String)
+  parent: Meridian.Storage.Archival.AtomicFileWriter
+  langs:
+  - csharp
+  - vb
+  name: Write(string, string)
+  nameWithType: AtomicFileWriter.Write(string, string)
+  fullName: Meridian.Storage.Archival.AtomicFileWriter.Write(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Write
+    path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Atomically writes content to a file.
+
+    Uses a temporary file with rename to ensure atomicity.
+  example: []
+  syntax:
+    content: public static void Write(string destinationPath, string content)
+    parameters:
+    - id: destinationPath
+      type: System.String
+    - id: content
+      type: System.String
+    content.vb: Public Shared Sub Write(destinationPath As String, content As String)
+  overload: Meridian.Storage.Archival.AtomicFileWriter.Write*
+  nameWithType.vb: AtomicFileWriter.Write(String, String)
+  fullName.vb: Meridian.Storage.Archival.AtomicFileWriter.Write(String, String)
+  name.vb: Write(String, String)
 - uid: Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(System.String,System.String,System.Threading.CancellationToken)
   commentId: M:Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(System.String,System.String,System.Threading.CancellationToken)
   id: WriteAsync(System.String,System.String,System.Threading.CancellationToken)
@@ -59,11 +99,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 21
+    startLine: 64
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -102,11 +142,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 62
+    startLine: 105
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -142,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 101
+    startLine: 144
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -182,11 +222,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 150
+    startLine: 193
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -227,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendLinesAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 203
+    startLine: 246
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -267,11 +307,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteWithChecksumAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 233
+    startLine: 276
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -307,11 +347,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChecksumAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 292
+    startLine: 335
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -345,11 +385,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/AtomicFileWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceAsync
     path: ../../src/Meridian.Storage/Archival/AtomicFileWriter.cs
-    startLine: 325
+    startLine: 368
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Archival
@@ -644,12 +684,12 @@ references:
   name: System
   nameWithType: System
   fullName: System
-- uid: Meridian.Storage.Archival.AtomicFileWriter.WriteAsync*
-  commentId: Overload:Meridian.Storage.Archival.AtomicFileWriter.WriteAsync
-  href: Meridian.Storage.Archival.AtomicFileWriter.html#Meridian_Storage_Archival_AtomicFileWriter_WriteAsync_System_String_System_String_System_Threading_CancellationToken_
-  name: WriteAsync
-  nameWithType: AtomicFileWriter.WriteAsync
-  fullName: Meridian.Storage.Archival.AtomicFileWriter.WriteAsync
+- uid: Meridian.Storage.Archival.AtomicFileWriter.Write*
+  commentId: Overload:Meridian.Storage.Archival.AtomicFileWriter.Write
+  href: Meridian.Storage.Archival.AtomicFileWriter.html#Meridian_Storage_Archival_AtomicFileWriter_Write_System_String_System_String_
+  name: Write
+  nameWithType: AtomicFileWriter.Write
+  fullName: Meridian.Storage.Archival.AtomicFileWriter.Write
 - uid: System.String
   commentId: T:System.String
   parent: System
@@ -661,6 +701,12 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
+- uid: Meridian.Storage.Archival.AtomicFileWriter.WriteAsync*
+  commentId: Overload:Meridian.Storage.Archival.AtomicFileWriter.WriteAsync
+  href: Meridian.Storage.Archival.AtomicFileWriter.html#Meridian_Storage_Archival_AtomicFileWriter_WriteAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: WriteAsync
+  nameWithType: AtomicFileWriter.WriteAsync
+  fullName: Meridian.Storage.Archival.AtomicFileWriter.WriteAsync
 - uid: System.Threading.CancellationToken
   commentId: T:System.Threading.CancellationToken
   parent: System.Threading

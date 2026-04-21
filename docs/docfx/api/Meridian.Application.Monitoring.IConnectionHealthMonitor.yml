@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IConnectionHealthMonitor
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnConnectionLost
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnConnectionRecovered
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnHeartbeatMissed
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterConnection
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterConnection
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHeartbeat
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordDataReceived
     path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs

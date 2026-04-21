@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthIssueResponse
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 153
+    startLine: 160
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 153
+    startLine: 160
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -96,11 +96,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 154
+    startLine: 161
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -125,11 +125,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 155
+    startLine: 162
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -154,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 156
+    startLine: 163
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

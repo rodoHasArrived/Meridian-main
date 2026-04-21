@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigTemplate
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 451
+    startLine: 436
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 453
+    startLine: 438
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -85,11 +85,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 454
+    startLine: 439
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -114,11 +114,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Json
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 455
+    startLine: 440
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -143,11 +143,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 456
+    startLine: 441
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -172,11 +172,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentVariables
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 457
+    startLine: 442
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services

@@ -1,0 +1,321 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  id: GovernanceCashFlowScopeKindDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Account
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Business
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Client
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Fund
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.InvestmentPortfolio
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.LedgerGroup
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Organization
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Sleeve
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Vehicle
+  langs:
+  - csharp
+  - vb
+  name: GovernanceCashFlowScopeKindDto
+  nameWithType: GovernanceCashFlowScopeKindDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceCashFlowScopeKindDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<GovernanceCashFlowScopeKindDto>))]
+
+      public enum GovernanceCashFlowScopeKindDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of GovernanceCashFlowScopeKindDto)))>
+
+      Public Enum GovernanceCashFlowScopeKindDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto}
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Organization
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Organization
+  id: Organization
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Organization
+  nameWithType: GovernanceCashFlowScopeKindDto.Organization
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Organization
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Organization
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Organization = 0
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Business
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Business
+  id: Business
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Business
+  nameWithType: GovernanceCashFlowScopeKindDto.Business
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Business
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Business
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Business = 1
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Client
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Client
+  id: Client
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Client
+  nameWithType: GovernanceCashFlowScopeKindDto.Client
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Client
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Client
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Client = 2
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Fund
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Fund
+  id: Fund
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Fund
+  nameWithType: GovernanceCashFlowScopeKindDto.Fund
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Fund
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fund
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Fund = 3
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Sleeve
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Sleeve
+  id: Sleeve
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Sleeve
+  nameWithType: GovernanceCashFlowScopeKindDto.Sleeve
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Sleeve
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sleeve
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Sleeve = 4
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Vehicle
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Vehicle
+  id: Vehicle
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Vehicle
+  nameWithType: GovernanceCashFlowScopeKindDto.Vehicle
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Vehicle
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vehicle
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Vehicle = 5
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.InvestmentPortfolio
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.InvestmentPortfolio
+  id: InvestmentPortfolio
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: InvestmentPortfolio
+  nameWithType: GovernanceCashFlowScopeKindDto.InvestmentPortfolio
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.InvestmentPortfolio
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvestmentPortfolio
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: InvestmentPortfolio = 6
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Account
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Account
+  id: Account
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: Account
+  nameWithType: GovernanceCashFlowScopeKindDto.Account
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.Account
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Account
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Account = 7
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.LedgerGroup
+  commentId: F:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.LedgerGroup
+  id: LedgerGroup
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  langs:
+  - csharp
+  - vb
+  name: LedgerGroup
+  nameWithType: GovernanceCashFlowScopeKindDto.LedgerGroup
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.LedgerGroup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerGroup
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: LedgerGroup = 8
+    return:
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.html
+  name: GovernanceCashFlowScopeKindDto
+  nameWithType: GovernanceCashFlowScopeKindDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizationType
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinMax
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ZScore
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Robust
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs

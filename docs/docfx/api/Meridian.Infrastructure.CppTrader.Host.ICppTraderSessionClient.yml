@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderSessionClient
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionKind
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs

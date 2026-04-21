@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetEventType
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dividend
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Coupon
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Payment
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashDistribution
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReturnOfCapital
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fee
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Split
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReverseSplit
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Merger
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Acquisition
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolChange
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpinOff
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delisting
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
@@ -394,7 +394,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
     path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs

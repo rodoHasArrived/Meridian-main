@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/StandardPresets.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StandardPresets
     path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/StandardPresets.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuantConnectFormat
     path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/StandardPresets.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PandasDataFrame
     path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/StandardPresets.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResearchNotebook
     path: ../../src/Meridian.Contracts/Export/StandardPresets.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/StandardPresets.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Contracts/Export/StandardPresets.cs

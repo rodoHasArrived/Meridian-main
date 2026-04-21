@@ -12,6 +12,8 @@ items:
   - Meridian.Contracts.Api.ProviderCatalog.GetCredentialFields(System.String)
   - Meridian.Contracts.Api.ProviderCatalog.GetProviderNotes(System.String)
   - Meridian.Contracts.Api.ProviderCatalog.GetProviderWarnings(System.String)
+  - Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries
+  - Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry(System.String)
   - Meridian.Contracts.Api.ProviderCatalog.GetStreamingProviders
   - Meridian.Contracts.Api.ProviderCatalog.InitializeFromRegistry(System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}},System.Func{System.String,Meridian.Contracts.Api.ProviderCatalogEntry})
   - Meridian.Contracts.Api.ProviderCatalog.RequiresCredentials(System.String)
@@ -28,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCatalog
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
@@ -80,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuntimeCatalogProvider
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
@@ -114,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuntimeCatalogEntryProvider
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
@@ -148,11 +150,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 470
+    startLine: 478
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -167,6 +169,36 @@ items:
       type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}
     content.vb: Public Shared Function GetAll() As IReadOnlyList(Of ProviderCatalogEntry)
   overload: Meridian.Contracts.Api.ProviderCatalog.GetAll*
+- uid: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries
+  commentId: M:Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries
+  id: GetStaticEntries
+  parent: Meridian.Contracts.Api.ProviderCatalog
+  langs:
+  - csharp
+  - vb
+  name: GetStaticEntries()
+  nameWithType: ProviderCatalog.GetStaticEntries()
+  fullName: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStaticEntries
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 492
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the built-in static catalog entries without consulting runtime providers.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<ProviderCatalogEntry> GetStaticEntries()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}
+    content.vb: Public Shared Function GetStaticEntries() As IReadOnlyList(Of ProviderCatalogEntry)
+  overload: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries*
 - uid: Meridian.Contracts.Api.ProviderCatalog.GetByType(Meridian.Contracts.Api.ProviderTypeKind)
   commentId: M:Meridian.Contracts.Api.ProviderCatalog.GetByType(Meridian.Contracts.Api.ProviderTypeKind)
   id: GetByType(Meridian.Contracts.Api.ProviderTypeKind)
@@ -181,11 +213,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByType
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 484
+    startLine: 497
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -214,11 +246,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProviders
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 493
+    startLine: 506
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -244,11 +276,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamingProviders
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 504
+    startLine: 517
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -274,11 +306,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 516
+    startLine: 529
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -315,11 +347,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 526
+    startLine: 539
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -340,6 +372,42 @@ items:
   nameWithType.vb: ProviderCatalog.Get(String)
   fullName.vb: Meridian.Contracts.Api.ProviderCatalog.Get(String)
   name.vb: Get(String)
+- uid: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry(System.String)
+  commentId: M:Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry(System.String)
+  id: GetStaticEntry(System.String)
+  parent: Meridian.Contracts.Api.ProviderCatalog
+  langs:
+  - csharp
+  - vb
+  name: GetStaticEntry(string)
+  nameWithType: ProviderCatalog.GetStaticEntry(string)
+  fullName: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStaticEntry
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets a built-in static catalog entry by ID without consulting runtime providers.
+  example: []
+  syntax:
+    content: public static ProviderCatalogEntry? GetStaticEntry(string providerId)
+    parameters:
+    - id: providerId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.ProviderCatalogEntry
+    content.vb: Public Shared Function GetStaticEntry(providerId As String) As ProviderCatalogEntry
+  overload: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry*
+  nameWithType.vb: ProviderCatalog.GetStaticEntry(String)
+  fullName.vb: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry(String)
+  name.vb: GetStaticEntry(String)
 - uid: Meridian.Contracts.Api.ProviderCatalog.GetProviderNotes(System.String)
   commentId: M:Meridian.Contracts.Api.ProviderCatalog.GetProviderNotes(System.String)
   id: GetProviderNotes(System.String)
@@ -354,11 +422,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderNotes
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 541
+    startLine: 560
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -393,11 +461,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderWarnings
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 548
+    startLine: 567
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -432,11 +500,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresCredentials
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 554
+    startLine: 573
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -468,11 +536,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCredentialFields
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 560
+    startLine: 579
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -504,11 +572,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeFromRegistry
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 569
+    startLine: 588
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -1069,6 +1137,12 @@ references:
     name: Generic
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries*
+  commentId: Overload:Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries
+  href: Meridian.Contracts.Api.ProviderCatalog.html#Meridian_Contracts_Api_ProviderCatalog_GetStaticEntries
+  name: GetStaticEntries
+  nameWithType: ProviderCatalog.GetStaticEntries
+  fullName: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries
 - uid: Meridian.Contracts.Api.ProviderCatalog.GetByType*
   commentId: Overload:Meridian.Contracts.Api.ProviderCatalog.GetByType
   href: Meridian.Contracts.Api.ProviderCatalog.html#Meridian_Contracts_Api_ProviderCatalog_GetByType_Meridian_Contracts_Api_ProviderTypeKind_
@@ -1135,6 +1209,12 @@ references:
   name: Get
   nameWithType: ProviderCatalog.Get
   fullName: Meridian.Contracts.Api.ProviderCatalog.Get
+- uid: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry*
+  commentId: Overload:Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry
+  href: Meridian.Contracts.Api.ProviderCatalog.html#Meridian_Contracts_Api_ProviderCatalog_GetStaticEntry_System_String_
+  name: GetStaticEntry
+  nameWithType: ProviderCatalog.GetStaticEntry
+  fullName: Meridian.Contracts.Api.ProviderCatalog.GetStaticEntry
 - uid: Meridian.Contracts.Api.ProviderCatalog.GetProviderNotes*
   commentId: Overload:Meridian.Contracts.Api.ProviderCatalog.GetProviderNotes
   href: Meridian.Contracts.Api.ProviderCatalog.html#Meridian_Contracts_Api_ProviderCatalog_GetProviderNotes_System_String_

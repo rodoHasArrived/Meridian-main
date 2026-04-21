@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyBucket
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowerBoundMs
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpperBoundMs
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Percentage
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs

@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgresDirectLendingService
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateLoanAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLoanAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetContractProjectionAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildStateFromHistoryAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTermsVersionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTermsVersionProjectionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -393,7 +393,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -436,7 +436,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivateLoanAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -479,7 +479,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicingStateAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -515,7 +515,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicingProjectionAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -551,7 +551,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDrawdownLotProjectionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -587,7 +587,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicingRevisionProjectionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -623,7 +623,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccrualEntryProjectionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -659,7 +659,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BookDrawdownAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -702,7 +702,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyRateResetAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -745,7 +745,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPrincipalPaymentAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -788,7 +788,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostDailyAccrualAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -831,7 +831,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyMixedPaymentAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -874,7 +874,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssessFeeAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -917,7 +917,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyWriteOffAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -960,7 +960,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChargePrepaymentPenaltyAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1003,7 +1003,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCashTransactionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1039,7 +1039,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPaymentAllocationsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1075,7 +1075,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFeeBalancesAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1111,7 +1111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestProjectionAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1149,7 +1149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProjectionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1185,7 +1185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProjectedCashFlowsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1221,7 +1221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1257,7 +1257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostJournalAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1293,7 +1293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1329,7 +1329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationRunsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1365,7 +1365,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationResultsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1401,7 +1401,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationExceptionsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1435,7 +1435,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveReconciliationExceptionAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1473,7 +1473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateServicerReportBatchAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1514,7 +1514,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicerReportBatchAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1550,7 +1550,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicerPositionLinesAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1586,7 +1586,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetServicerTransactionLinesAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1622,7 +1622,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRebuildCheckpointsAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1656,7 +1656,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAllAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1690,7 +1690,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPortfolioSummaryAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1724,7 +1724,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddCollateralAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1767,7 +1767,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveCollateralAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1810,7 +1810,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCollateralValueAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1853,7 +1853,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCollateralAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1889,7 +1889,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransitionLoanStatusAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1932,7 +1932,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TogglePikAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -1975,7 +1975,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RestructureLoanAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
@@ -2018,7 +2018,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmortizeDiscountPremiumAsync
     path: ../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs

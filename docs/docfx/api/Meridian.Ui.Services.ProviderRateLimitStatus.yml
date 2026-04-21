@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRateLimitStatus
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsPerMinute
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsUsed
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsRemaining
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetTime
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsagePercent
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsThrottled
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs

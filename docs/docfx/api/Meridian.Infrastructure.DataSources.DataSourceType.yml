@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceType
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Realtime
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hybrid
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs

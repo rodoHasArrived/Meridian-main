@@ -160,9 +160,6 @@ items:
   - uid: Meridian.Application.Composition.StreamingHostAdapter
     name: StreamingHostAdapter
     type: Class
-  - uid: Meridian.Application.Composition.WebHostAdapter
-    name: WebHostAdapter
-    type: Class
 - uid: Meridian.Application.Composition.Features
   name: Meridian.Application.Composition.Features
   type: Namespace
@@ -207,9 +204,6 @@ items:
     type: Class
   - uid: Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
     name: DesktopModeRunner
-    type: Class
-  - uid: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
-    name: WebModeRunner
     type: Class
 - uid: Meridian.Application.Composition.Startup.StartupModels
   name: Meridian.Application.Composition.Startup.StartupModels
@@ -264,20 +258,8 @@ items:
   - uid: Meridian.Application.Config.BackfillProvidersConfig
     name: BackfillProvidersConfig
     type: Class
-  - uid: Meridian.Application.Config.BinanceConfig
-    name: BinanceConfig
-    type: Class
-  - uid: Meridian.Application.Config.CQGConfig
-    name: CQGConfig
-    type: Class
-  - uid: Meridian.Application.Config.CQGConfigValidator
-    name: CQGConfigValidator
-    type: Class
   - uid: Meridian.Application.Config.CanonicalizationConfig
     name: CanonicalizationConfig
-    type: Class
-  - uid: Meridian.Application.Config.CoinbaseConfig
-    name: CoinbaseConfig
     type: Class
   - uid: Meridian.Application.Config.ConfigDtoMapper
     name: ConfigDtoMapper
@@ -378,8 +360,17 @@ items:
   - uid: Meridian.Application.Config.FredConfig
     name: FredConfig
     type: Class
+  - uid: Meridian.Application.Config.IBClientPortalOptions
+    name: IBClientPortalOptions
+    type: Class
+  - uid: Meridian.Application.Config.IBClientPortalOptionsValidator
+    name: IBClientPortalOptionsValidator
+    type: Class
   - uid: Meridian.Application.Config.IBOptions
     name: IBOptions
+    type: Class
+  - uid: Meridian.Application.Config.IBOptionsValidator
+    name: IBOptionsValidator
     type: Class
   - uid: Meridian.Application.Config.IConfigValidationStage
     name: IConfigValidationStage
@@ -390,17 +381,8 @@ items:
   - uid: Meridian.Application.Config.IConfigurationProvider
     name: IConfigurationProvider
     type: Interface
-  - uid: Meridian.Application.Config.IQFeedConfig
-    name: IQFeedConfig
-    type: Class
-  - uid: Meridian.Application.Config.IQFeedConfigValidator
-    name: IQFeedConfigValidator
-    type: Class
   - uid: Meridian.Application.Config.IndexOptionsConfig
     name: IndexOptionsConfig
-    type: Class
-  - uid: Meridian.Application.Config.KrakenConfig
-    name: KrakenConfig
     type: Class
   - uid: Meridian.Application.Config.NasdaqDataLinkConfig
     name: NasdaqDataLinkConfig
@@ -441,12 +423,6 @@ items:
   - uid: Meridian.Application.Config.ProviderRegistryConfig
     name: ProviderRegistryConfig
     type: Class
-  - uid: Meridian.Application.Config.RithmicConfig
-    name: RithmicConfig
-    type: Class
-  - uid: Meridian.Application.Config.RithmicConfigValidator
-    name: RithmicConfigValidator
-    type: Class
   - uid: Meridian.Application.Config.RobinhoodConfig
     name: RobinhoodConfig
     type: Class
@@ -470,18 +446,6 @@ items:
     type: Class
   - uid: Meridian.Application.Config.SourceRegistryConfig
     name: SourceRegistryConfig
-    type: Class
-  - uid: Meridian.Application.Config.StockSharpConfig
-    name: StockSharpConfig
-    type: Class
-  - uid: Meridian.Application.Config.StockSharpConfigValidator
-    name: StockSharpConfigValidator
-    type: Class
-  - uid: Meridian.Application.Config.StockSharpIBConfig
-    name: StockSharpIBConfig
-    type: Class
-  - uid: Meridian.Application.Config.StockSharpIBConfigValidator
-    name: StockSharpIBConfigValidator
     type: Class
   - uid: Meridian.Application.Config.StooqConfig
     name: StooqConfig
@@ -667,6 +631,25 @@ items:
   - uid: Meridian.Application.DirectLending.PostgresDirectLendingService
     name: PostgresDirectLendingService
     type: Class
+- uid: Meridian.Application.EnvironmentDesign
+  name: Meridian.Application.EnvironmentDesign
+  type: Namespace
+  items:
+  - uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+    name: EnvironmentDesignerService
+    type: Class
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+    name: IEnvironmentDesignService
+    type: Interface
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+    name: IEnvironmentPublishService
+    type: Interface
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+    name: IEnvironmentRuntimeProjectionService
+    type: Interface
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+    name: IEnvironmentValidationService
+    type: Interface
 - uid: Meridian.Application.Etl
   name: Meridian.Application.Etl
   type: Namespace
@@ -761,6 +744,22 @@ items:
   - uid: Meridian.Application.FundAccounts.InMemoryFundAccountService
     name: InMemoryFundAccountService
     type: Class
+- uid: Meridian.Application.FundStructure
+  name: Meridian.Application.FundStructure
+  type: Namespace
+  items:
+  - uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+    name: GovernanceSharedDataAccessService
+    type: Class
+  - uid: Meridian.Application.FundStructure.IFundStructureService
+    name: IFundStructureService
+    type: Interface
+  - uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+    name: IGovernanceSharedDataAccessService
+    type: Interface
+  - uid: Meridian.Application.FundStructure.InMemoryFundStructureService
+    name: InMemoryFundStructureService
+    type: Class
 - uid: Meridian.Application.Indicators
   name: Meridian.Application.Indicators
   type: Namespace
@@ -827,6 +826,12 @@ items:
   - uid: Meridian.Application.Monitoring.BadTickReason
     name: BadTickReason
     type: Enum
+  - uid: Meridian.Application.Monitoring.CalibrationComparisonSummary
+    name: CalibrationComparisonSummary
+    type: Class
+  - uid: Meridian.Application.Monitoring.CalibrationGateDecision
+    name: CalibrationGateDecision
+    type: Class
   - uid: Meridian.Application.Monitoring.CircuitBreakerDashboard
     name: CircuitBreakerDashboard
     type: Class
@@ -944,6 +949,15 @@ items:
   - uid: Meridian.Application.Monitoring.IReconnectionMetrics
     name: IReconnectionMetrics
     type: Interface
+  - uid: Meridian.Application.Monitoring.IncidentSeverity
+    name: IncidentSeverity
+    type: Enum
+  - uid: Meridian.Application.Monitoring.KernelPromotionDecision
+    name: KernelPromotionDecision
+    type: Class
+  - uid: Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService
+    name: KernelWeightGovernanceWorkflowService
+    type: Class
   - uid: Meridian.Application.Monitoring.LatencyBucket
     name: LatencyBucket
     type: Class
@@ -983,11 +997,23 @@ items:
   - uid: Meridian.Application.Monitoring.PrometheusReconnectionMetrics
     name: PrometheusReconnectionMetrics
     type: Class
+  - uid: Meridian.Application.Monitoring.ProviderCalibrationReportWriter
+    name: ProviderCalibrationReportWriter
+    type: Class
+  - uid: Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner
+    name: ProviderDegradationCalibrationRunner
+    type: Class
   - uid: Meridian.Application.Monitoring.ProviderDegradationConfig
     name: ProviderDegradationConfig
     type: Class
+  - uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+    name: ProviderDegradationKernelProfile
+    type: Class
   - uid: Meridian.Application.Monitoring.ProviderDegradationScore
     name: ProviderDegradationScore
+    type: Struct
+  - uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+    name: ProviderDegradationScoreDelta
     type: Struct
   - uid: Meridian.Application.Monitoring.ProviderDegradationScorer
     name: ProviderDegradationScorer
@@ -995,6 +1021,21 @@ items:
   - uid: Meridian.Application.Monitoring.ProviderDegradedEvent
     name: ProviderDegradedEvent
     type: Struct
+  - uid: Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset
+    name: ProviderIncidentCalibrationDataset
+    type: Class
+  - uid: Meridian.Application.Monitoring.ProviderIncidentWindow
+    name: ProviderIncidentWindow
+    type: Class
+  - uid: Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy
+    name: ProviderKernelCalibrationPolicy
+    type: Class
+  - uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+    name: ProviderKernelCalibrationSnapshot
+    type: Class
+  - uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+    name: ProviderKernelCalibrationSnapshotStore
+    type: Class
   - uid: Meridian.Application.Monitoring.ProviderLatencyConfig
     name: ProviderLatencyConfig
     type: Class
@@ -1016,11 +1057,20 @@ items:
   - uid: Meridian.Application.Monitoring.ProviderMetricsStatus
     name: ProviderMetricsStatus
     type: Class
+  - uid: Meridian.Application.Monitoring.ProviderReasonCodes
+    name: ProviderReasonCodes
+    type: Class
+  - uid: Meridian.Application.Monitoring.ProviderReasonDelta
+    name: ProviderReasonDelta
+    type: Struct
   - uid: Meridian.Application.Monitoring.ProviderReconciliation
     name: ProviderReconciliation
     type: Struct
   - uid: Meridian.Application.Monitoring.ProviderRecoveredEvent
     name: ProviderRecoveredEvent
+    type: Struct
+  - uid: Meridian.Application.Monitoring.ProviderScoreReason
+    name: ProviderScoreReason
     type: Struct
   - uid: Meridian.Application.Monitoring.ReconciliationReport
     name: ReconciliationReport
@@ -1036,6 +1086,9 @@ items:
     type: Class
   - uid: Meridian.Application.Monitoring.SchemaValidationService
     name: SchemaValidationService
+    type: Class
+  - uid: Meridian.Application.Monitoring.SeverityThresholdMetrics
+    name: SeverityThresholdMetrics
     type: Class
   - uid: Meridian.Application.Monitoring.SpreadMonitor
     name: SpreadMonitor
@@ -1497,6 +1550,24 @@ items:
   - uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
     name: IProviderFamilyCatalogService
     type: Interface
+  - uid: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+    name: KernelCriticalSeverityAlertThresholds
+    type: Class
+  - uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+    name: KernelDomainSnapshot
+    type: Class
+  - uid: Meridian.Application.ProviderRouting.KernelExecutionScope
+    name: KernelExecutionScope
+    type: Struct
+  - uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+    name: KernelLatencyPercentiles
+    type: Class
+  - uid: Meridian.Application.ProviderRouting.KernelObservabilityService
+    name: KernelObservabilityService
+    type: Class
+  - uid: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+    name: KernelObservabilitySnapshot
+    type: Class
   - uid: Meridian.Application.ProviderRouting.ProviderBindingService
     name: ProviderBindingService
     type: Class
@@ -1632,6 +1703,9 @@ items:
   - uid: Meridian.Application.SecurityMaster.ISecurityMasterImportService
     name: ISecurityMasterImportService
     type: Interface
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+    name: ISecurityMasterIngestStatusService
+    type: Interface
   - uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
     name: ISecurityMasterLedgerBridge
     type: Interface
@@ -1641,14 +1715,35 @@ items:
   - uid: Meridian.Application.SecurityMaster.ISecurityResolver
     name: ISecurityResolver
     type: Interface
+  - uid: Meridian.Application.SecurityMaster.NullSecurityMasterImportService
+    name: NullSecurityMasterImportService
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+    name: NullSecurityMasterQueryService
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.NullSecurityMasterService
+    name: NullSecurityMasterService
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+    name: NullTradingParametersBackfillService
+    type: Class
   - uid: Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
     name: PositionCorporateActionAdjustment
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.SecurityKindMapping
+    name: SecurityKindMapping
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus
+    name: SecurityMasterActiveImportStatus
     type: Class
   - uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
     name: SecurityMasterAggregateRebuilder
     type: Class
   - uid: Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService
     name: SecurityMasterCanonicalSymbolSeedService
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus
+    name: SecurityMasterCompletedImportStatus
     type: Class
   - uid: Meridian.Application.SecurityMaster.SecurityMasterConflictService
     name: SecurityMasterConflictService
@@ -1664,6 +1759,9 @@ items:
     type: Class
   - uid: Meridian.Application.SecurityMaster.SecurityMasterImportService
     name: SecurityMasterImportService
+    type: Class
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+    name: SecurityMasterIngestStatusSnapshot
     type: Class
   - uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
     name: SecurityMasterLedgerBridge
@@ -1990,6 +2088,9 @@ items:
     type: Class
   - uid: Meridian.Application.Services.OptionsChainService
     name: OptionsChainService
+    type: Class
+  - uid: Meridian.Application.Services.OptionsProviderStatus
+    name: OptionsProviderStatus
     type: Class
   - uid: Meridian.Application.Services.PluginLoadResult
     name: PluginLoadResult
@@ -2442,15 +2543,6 @@ items:
   - uid: Meridian.Application.UI.ExecuteMaintenanceRequest
     name: ExecuteMaintenanceRequest
     type: Class
-  - uid: Meridian.Application.UI.HtmlTemplateLoader
-    name: HtmlTemplateLoader
-    type: Class
-  - uid: Meridian.Application.UI.HtmlTemplateLoaderExtensions
-    name: HtmlTemplateLoaderExtensions
-    type: Class
-  - uid: Meridian.Application.UI.HtmlTemplateManager
-    name: HtmlTemplateManager
-    type: Class
   - uid: Meridian.Application.UI.ImportRequest
     name: ImportRequest
     type: Class
@@ -2634,12 +2726,6 @@ items:
   - uid: Meridian.Backtesting.Sdk.AssetEventType
     name: AssetEventType
     type: Enum
-  - uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-    name: BacktestArtifactCoverage
-    type: Class
-  - uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus
-    name: BacktestArtifactStatus
-    type: Enum
   - uid: Meridian.Backtesting.Sdk.BacktestCommissionKind
     name: BacktestCommissionKind
     type: Enum
@@ -2706,6 +2792,9 @@ items:
   - uid: Meridian.Backtesting.Sdk.IBacktestStrategy
     name: IBacktestStrategy
     type: Interface
+  - uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+    name: IntermediateMetrics
+    type: Struct
   - uid: Meridian.Backtesting.Sdk.LotSelectionMethod
     name: LotSelectionMethod
     type: Enum
@@ -2809,6 +2898,9 @@ items:
   - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
     name: CarryTailRiskEstimate
     type: Class
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+    name: CarryTradeBacktestStrategy
+    type: Class
   - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
     name: ExecutionPlan
     type: Class
@@ -2827,6 +2919,9 @@ items:
   - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact
     name: ScenarioImpact
     type: Class
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+    name: YieldCarryMode
+    type: Enum
 - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
   name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
   type: Namespace
@@ -2958,6 +3053,15 @@ items:
   - uid: Meridian.Contracts.Api.ErrorsResponseDto
     name: ErrorsResponseDto
     type: Class
+  - uid: Meridian.Contracts.Api.ExecutionBlotterSnapshotResponse
+    name: ExecutionBlotterSnapshotResponse
+    type: Class
+  - uid: Meridian.Contracts.Api.ExecutionPositionActionRequest
+    name: ExecutionPositionActionRequest
+    type: Class
+  - uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+    name: ExecutionPositionDetailResponse
+    type: Class
   - uid: Meridian.Contracts.Api.FailoverConfigRequest
     name: FailoverConfigRequest
     type: Class
@@ -3060,6 +3164,9 @@ items:
   - uid: Meridian.Contracts.Api.OptionsSummaryResponse
     name: OptionsSummaryResponse
     type: Class
+  - uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+    name: OptionsTrackedUnderlyingsResponse
+    type: Class
   - uid: Meridian.Contracts.Api.OrderBookLevelDto
     name: OrderBookLevelDto
     type: Class
@@ -3120,6 +3227,9 @@ items:
   - uid: Meridian.Contracts.Api.ProviderRouteScopeDto
     name: ProviderRouteScopeDto
     type: Class
+  - uid: Meridian.Contracts.Api.ProviderScoreReasonResponse
+    name: ProviderScoreReasonResponse
+    type: Struct
   - uid: Meridian.Contracts.Api.ProviderStatusResponse
     name: ProviderStatusResponse
     type: Class
@@ -3152,6 +3262,15 @@ items:
     type: Class
   - uid: Meridian.Contracts.Api.RunCertificationRequest
     name: RunCertificationRequest
+    type: Class
+  - uid: Meridian.Contracts.Api.SecurityMasterActiveImportStatusResponse
+    name: SecurityMasterActiveImportStatusResponse
+    type: Class
+  - uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+    name: SecurityMasterCompletedImportStatusResponse
+    type: Class
+  - uid: Meridian.Contracts.Api.SecurityMasterIngestStatusResponse
+    name: SecurityMasterIngestStatusResponse
     type: Class
   - uid: Meridian.Contracts.Api.ServiceHealthResult
     name: ServiceHealthResult
@@ -3469,9 +3588,6 @@ items:
   - uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
     name: BackfillSymbolPlanDto
     type: Class
-  - uid: Meridian.Contracts.Configuration.CQGOptionsDto
-    name: CQGOptionsDto
-    type: Class
   - uid: Meridian.Contracts.Configuration.DataSourceConfigDto
     name: DataSourceConfigDto
     type: Class
@@ -3484,14 +3600,17 @@ items:
   - uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
     name: ExtendedSymbolConfigDto
     type: Class
+  - uid: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+    name: IBClientPortalOptionsDto
+    type: Class
   - uid: Meridian.Contracts.Configuration.IBOptionsDto
     name: IBOptionsDto
     type: Class
-  - uid: Meridian.Contracts.Configuration.IQFeedOptionsDto
-    name: IQFeedOptionsDto
-    type: Class
   - uid: Meridian.Contracts.Configuration.IndexOptionsConfigDto
     name: IndexOptionsConfigDto
+    type: Class
+  - uid: Meridian.Contracts.Configuration.MeridianPathDefaults
+    name: MeridianPathDefaults
     type: Class
   - uid: Meridian.Contracts.Configuration.PolygonOptionsDto
     name: PolygonOptionsDto
@@ -3520,17 +3639,8 @@ items:
   - uid: Meridian.Contracts.Configuration.ProviderScopeDto
     name: ProviderScopeDto
     type: Class
-  - uid: Meridian.Contracts.Configuration.RithmicOptionsDto
-    name: RithmicOptionsDto
-    type: Class
   - uid: Meridian.Contracts.Configuration.SmartGroupCriteriaDto
     name: SmartGroupCriteriaDto
-    type: Class
-  - uid: Meridian.Contracts.Configuration.StockSharpIBOptionsDto
-    name: StockSharpIBOptionsDto
-    type: Class
-  - uid: Meridian.Contracts.Configuration.StockSharpOptionsDto
-    name: StockSharpOptionsDto
     type: Class
   - uid: Meridian.Contracts.Configuration.StorageConfigDto
     name: StorageConfigDto
@@ -4030,6 +4140,79 @@ items:
   - uid: Meridian.Contracts.Domain.Models.Trade
     name: Trade
     type: Class
+- uid: Meridian.Contracts.EnvironmentDesign
+  name: Meridian.Contracts.EnvironmentDesign
+  type: Namespace
+  items:
+  - uid: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+    name: CreateEnvironmentDraftRequest
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentContextMappingDto
+    name: EnvironmentContextMappingDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+    name: EnvironmentLaneArchetype
+    type: Enum
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto
+    name: EnvironmentLaneDefinitionDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+    name: EnvironmentLaneRuntimeDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLedgerGroupRuntimeDto
+    name: EnvironmentLedgerGroupRuntimeDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+    name: EnvironmentManagedScopeKind
+    type: Enum
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+    name: EnvironmentNodeDefinitionDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+    name: EnvironmentNodeKind
+    type: Enum
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeRemapDto
+    name: EnvironmentNodeRemapDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishChangeDto
+    name: EnvironmentPublishChangeDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto
+    name: EnvironmentPublishPreviewDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto
+    name: EnvironmentRelationshipDefinitionDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto
+    name: EnvironmentValidationIssueDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+    name: EnvironmentValidationSeverity
+    type: Enum
+  - uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+    name: OrganizationEnvironmentDefinitionDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentNodeRuntimeDto
+    name: PublishedEnvironmentNodeRuntimeDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+    name: PublishedEnvironmentRuntimeDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+    type: Class
+  - uid: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+    name: RollbackEnvironmentVersionRequest
+    type: Class
 - uid: Meridian.Contracts.Etl
   name: Meridian.Contracts.Etl
   type: Namespace
@@ -4210,8 +4393,26 @@ items:
   - uid: Meridian.Contracts.FundStructure.AccountTypeDto
     name: AccountTypeDto
     type: Enum
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureQuery
+    name: AccountingStructureQuery
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+    name: AccountingStructureViewDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.AdvisoryClientViewDto
+    name: AdvisoryClientViewDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+    name: AdvisoryStructureQuery
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
+    name: AdvisoryStructureViewDto
+    type: Class
   - uid: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
     name: AssignFundStructureNodeRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+    name: BackfillAccessSummaryDto
     type: Class
   - uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
     name: BankAccountDetailsDto
@@ -4222,14 +4423,38 @@ items:
   - uid: Meridian.Contracts.FundStructure.BankStatementLineDto
     name: BankStatementLineDto
     type: Class
+  - uid: Meridian.Contracts.FundStructure.BusinessKindDto
+    name: BusinessKindDto
+    type: Enum
+  - uid: Meridian.Contracts.FundStructure.BusinessSummaryDto
+    name: BusinessSummaryDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.ClientSegmentKind
+    name: ClientSegmentKind
+    type: Enum
+  - uid: Meridian.Contracts.FundStructure.ClientSummaryDto
+    name: ClientSummaryDto
+    type: Class
   - uid: Meridian.Contracts.FundStructure.CreateAccountRequest
     name: CreateAccountRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+    name: CreateBusinessRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.CreateClientRequest
+    name: CreateClientRequest
     type: Class
   - uid: Meridian.Contracts.FundStructure.CreateFundRequest
     name: CreateFundRequest
     type: Class
+  - uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+    name: CreateInvestmentPortfolioRequest
+    type: Class
   - uid: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
     name: CreateLegalEntityRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+    name: CreateOrganizationRequest
     type: Class
   - uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
     name: CreateSleeveRequest
@@ -4249,6 +4474,18 @@ items:
   - uid: Meridian.Contracts.FundStructure.FundAccountsDto
     name: FundAccountsDto
     type: Class
+  - uid: Meridian.Contracts.FundStructure.FundOperatingSliceDto
+    name: FundOperatingSliceDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+    name: FundOperatingStructureQuery
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.FundOperatingViewDto
+    name: FundOperatingViewDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto
+    name: FundSleeveOperatingViewDto
+    type: Class
   - uid: Meridian.Contracts.FundStructure.FundStructureAssignmentDto
     name: FundStructureAssignmentDto
     type: Class
@@ -4267,14 +4504,59 @@ items:
   - uid: Meridian.Contracts.FundStructure.FundStructureQuery
     name: FundStructureQuery
     type: Class
+  - uid: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    name: FundStructureSharedDataAccessDto
+    type: Class
   - uid: Meridian.Contracts.FundStructure.FundSummaryDto
     name: FundSummaryDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto
+    name: GovernanceCashFlowAccountViewDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto
+    name: GovernanceCashFlowBucketDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto
+    name: GovernanceCashFlowEntryDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto
+    name: GovernanceCashFlowLadderDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+    name: GovernanceCashFlowQuery
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto
+    name: GovernanceCashFlowScopeDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+    name: GovernanceCashFlowScopeKindDto
+    type: Enum
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+    name: GovernanceCashFlowVarianceBucketDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+    name: GovernanceCashFlowVarianceSummaryDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
+    name: GovernanceCashFlowViewDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto
+    name: HistoricalPriceAccessSummaryDto
     type: Class
   - uid: Meridian.Contracts.FundStructure.IngestBankStatementRequest
     name: IngestBankStatementRequest
     type: Class
   - uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
     name: IngestCustodianStatementRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+    name: InvestmentPortfolioSummaryDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.LedgerGroupId
+    name: LedgerGroupId
+    type: Struct
+  - uid: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
+    name: LedgerGroupSummaryDto
     type: Class
   - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
     name: LegalEntitySummaryDto
@@ -4284,6 +4566,15 @@ items:
     type: Enum
   - uid: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
     name: LinkFundStructureNodesRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+    name: OrganizationStructureGraphDto
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+    name: OrganizationStructureQuery
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+    name: OrganizationSummaryDto
     type: Class
   - uid: Meridian.Contracts.FundStructure.OwnershipLinkDto
     name: OwnershipLinkDto
@@ -4297,6 +4588,9 @@ items:
   - uid: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
     name: RecordAccountBalanceSnapshotRequest
     type: Class
+  - uid: Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto
+    name: SecurityMasterAccessSummaryDto
+    type: Class
   - uid: Meridian.Contracts.FundStructure.SleeveSummaryDto
     name: SleeveSummaryDto
     type: Class
@@ -4305,6 +4599,9 @@ items:
     type: Class
   - uid: Meridian.Contracts.FundStructure.UpdateCustodianAccountDetailsRequest
     name: UpdateCustodianAccountDetailsRequest
+    type: Class
+  - uid: Meridian.Contracts.FundStructure.VehicleOperatingViewDto
+    name: VehicleOperatingViewDto
     type: Class
   - uid: Meridian.Contracts.FundStructure.VehicleSummaryDto
     name: VehicleSummaryDto
@@ -4356,6 +4653,28 @@ items:
   - uid: Meridian.Contracts.Pipeline.RetryEnvelope
     name: RetryEnvelope
     type: Class
+- uid: Meridian.Contracts.RuleEvaluation
+  name: Meridian.Contracts.RuleEvaluation
+  type: Namespace
+  items:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionInput
+    name: DecisionInput
+    type: Class
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionReason
+    name: DecisionReason
+    type: Class
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult<TScore>
+    type: Class
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+    name: DecisionSeverity
+    type: Enum
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionTrace
+    name: DecisionTrace
+    type: Class
+  - uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+    name: IDecisionKernel<TInput, TScore>
+    type: Interface
 - uid: Meridian.Contracts.Schema
   name: Meridian.Contracts.Schema
   type: Namespace
@@ -4379,8 +4698,17 @@ items:
   name: Meridian.Contracts.SecurityMaster
   type: Namespace
   items:
+  - uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+    name: AmendConvertibleEquityTermsRequest
+    type: Class
+  - uid: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+    name: AmendPreferredEquityTermsRequest
+    type: Class
   - uid: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
     name: AmendSecurityTermsRequest
+    type: Class
+  - uid: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
+    name: ConvertibleEquityTermsDto
     type: Class
   - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
     name: CorporateActionDto
@@ -4397,9 +4725,15 @@ items:
   - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
     name: ISecurityMasterQueryService
     type: Interface
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+    name: ISecurityMasterRuntimeStatus
+    type: Interface
   - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService
     name: ISecurityMasterService
     type: Interface
+  - uid: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
+    name: PreferredEquityTermsDto
+    type: Class
   - uid: Meridian.Contracts.SecurityMaster.ResolveConflictRequest
     name: ResolveConflictRequest
     type: Class
@@ -4531,6 +4865,9 @@ items:
   - uid: Meridian.Contracts.Workstation.CashLadderBucketDto
     name: CashLadderBucketDto
     type: Class
+  - uid: Meridian.Contracts.Workstation.ClosedLotSummary
+    name: ClosedLotSummary
+    type: Class
   - uid: Meridian.Contracts.Workstation.EquityCurvePoint
     name: EquityCurvePoint
     type: Class
@@ -4555,23 +4892,59 @@ items:
   - uid: Meridian.Contracts.Workstation.FundLedgerSummary
     name: FundLedgerSummary
     type: Class
+  - uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+    name: FundNavAssetClassExposureDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+    name: FundNavAttributionSummaryDto
+    type: Class
   - uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext
     name: FundOperationsNavigationContext
     type: Class
   - uid: Meridian.Contracts.Workstation.FundOperationsTab
     name: FundOperationsTab
     type: Enum
+  - uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+    name: FundOperationsWorkspaceDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery
+    name: FundOperationsWorkspaceQuery
+    type: Class
   - uid: Meridian.Contracts.Workstation.FundPortfolioPosition
     name: FundPortfolioPosition
     type: Class
   - uid: Meridian.Contracts.Workstation.FundReconciliationItem
     name: FundReconciliationItem
     type: Class
+  - uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+    name: FundReportAssetClassSectionDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.FundReportPackPreviewDto
+    name: FundReportPackPreviewDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+    name: FundReportPackPreviewRequestDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.FundReportingProfileDto
+    name: FundReportingProfileDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.FundReportingSummaryDto
+    name: FundReportingSummaryDto
+    type: Class
   - uid: Meridian.Contracts.Workstation.FundTrialBalanceLine
     name: FundTrialBalanceLine
     type: Class
   - uid: Meridian.Contracts.Workstation.FundWorkspaceSummary
     name: FundWorkspaceSummary
+    type: Class
+  - uid: Meridian.Contracts.Workstation.GovernanceReportKindDto
+    name: GovernanceReportKindDto
+    type: Enum
+  - uid: Meridian.Contracts.Workstation.InsightFeed
+    name: InsightFeed
+    type: Class
+  - uid: Meridian.Contracts.Workstation.InsightWidget
+    name: InsightWidget
     type: Class
   - uid: Meridian.Contracts.Workstation.LedgerJournalLine
     name: LedgerJournalLine
@@ -4581,6 +4954,9 @@ items:
     type: Class
   - uid: Meridian.Contracts.Workstation.LedgerTrialBalanceLine
     name: LedgerTrialBalanceLine
+    type: Class
+  - uid: Meridian.Contracts.Workstation.OpenLotSummary
+    name: OpenLotSummary
     type: Class
   - uid: Meridian.Contracts.Workstation.PortfolioPositionSummary
     name: PortfolioPositionSummary
@@ -4624,6 +5000,30 @@ items:
   - uid: Meridian.Contracts.Workstation.ReconciliationSummary
     name: ReconciliationSummary
     type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+    name: ResearchBriefingAlert
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingDto
+    name: ResearchBriefingDto
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+    name: ResearchBriefingRun
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+    name: ResearchBriefingWorkspaceSummary
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    name: ResearchRunDrillInLinks
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+    name: ResearchSavedComparison
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+    name: ResearchSavedComparisonMode
+    type: Class
+  - uid: Meridian.Contracts.Workstation.ResearchWhatChangedItem
+    name: ResearchWhatChangedItem
+    type: Class
   - uid: Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest
     name: ResolveReconciliationBreakRequest
     type: Class
@@ -4648,6 +5048,9 @@ items:
   - uid: Meridian.Contracts.Workstation.RunFillSummary
     name: RunFillSummary
     type: Class
+  - uid: Meridian.Contracts.Workstation.RunLotSummary
+    name: RunLotSummary
+    type: Class
   - uid: Meridian.Contracts.Workstation.SecurityClassificationSummaryDto
     name: SecurityClassificationSummaryDto
     type: Class
@@ -4660,8 +5063,26 @@ items:
   - uid: Meridian.Contracts.Workstation.SecurityMasterWorkstationDto
     name: SecurityMasterWorkstationDto
     type: Class
+  - uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+    name: StrategyRunCashFlowDigest
+    type: Class
   - uid: Meridian.Contracts.Workstation.StrategyRunComparison
     name: StrategyRunComparison
+    type: Class
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+    name: StrategyRunContinuityDetail
+    type: Class
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityLineage
+    name: StrategyRunContinuityLineage
+    type: Class
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityLink
+    name: StrategyRunContinuityLink
+    type: Class
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityStatus
+    name: StrategyRunContinuityStatus
+    type: Class
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+    name: StrategyRunContinuityWarning
     type: Class
   - uid: Meridian.Contracts.Workstation.StrategyRunDetail
     name: StrategyRunDetail
@@ -4699,8 +5120,14 @@ items:
   - uid: Meridian.Contracts.Workstation.SymbolAttributionEntry
     name: SymbolAttributionEntry
     type: Class
+  - uid: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+    name: WorkstationSecurityCoverageStatus
+    type: Enum
   - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference
     name: WorkstationSecurityReference
+    type: Class
+  - uid: Meridian.Contracts.Workstation.WorkstationWatchlist
+    name: WorkstationWatchlist
     type: Class
 - uid: Meridian.Core.Performance
   name: Meridian.Core.Performance
@@ -4957,6 +5384,12 @@ items:
   - uid: Meridian.Execution.Margin.IMarginModel
     name: IMarginModel
     type: Interface
+  - uid: Meridian.Execution.Margin.MarginAccountType
+    name: MarginAccountType
+    type: Enum
+  - uid: Meridian.Execution.Margin.MarginCallStatus
+    name: MarginCallStatus
+    type: Class
   - uid: Meridian.Execution.Margin.MarginRequirement
     name: MarginRequirement
     type: Class
@@ -5044,6 +5477,15 @@ items:
   - uid: Meridian.Execution.Sdk.BrokeragePositionDto
     name: BrokeragePositionDto
     type: Class
+  - uid: Meridian.Execution.Sdk.BrokerageValidationEvaluator
+    name: BrokerageValidationEvaluator
+    type: Class
+  - uid: Meridian.Execution.Sdk.BrokerageValidationReport
+    name: BrokerageValidationReport
+    type: Class
+  - uid: Meridian.Execution.Sdk.BrokerageValidationState
+    name: BrokerageValidationState
+    type: Enum
   - uid: Meridian.Execution.Sdk.ExecutionMode
     name: ExecutionMode
     type: Enum
@@ -5064,6 +5506,9 @@ items:
     type: Interface
   - uid: Meridian.Execution.Sdk.IOrderManager
     name: IOrderManager
+    type: Interface
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
     type: Interface
   - uid: Meridian.Execution.Sdk.IPositionTracker
     name: IPositionTracker
@@ -5089,6 +5534,9 @@ items:
   - uid: Meridian.Execution.Sdk.OrderType
     name: OrderType
     type: Enum
+  - uid: Meridian.Execution.Sdk.PositionExtensions
+    name: PositionExtensions
+    type: Class
   - uid: Meridian.Execution.Sdk.PositionState
     name: PositionState
     type: Class
@@ -5184,6 +5632,9 @@ items:
   - uid: Meridian.Execution.Services.PaperSessionPersistenceService
     name: PaperSessionPersistenceService
     type: Class
+  - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+    name: PaperSessionReplayVerificationDto
+    type: Class
   - uid: Meridian.Execution.Services.PaperSessionSummaryDto
     name: PaperSessionSummaryDto
     type: Class
@@ -5258,6 +5709,9 @@ items:
     type: Class
   - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
     name: AlpacaMarketDataClient
+    type: Class
+  - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+    name: AlpacaOptionsChainProvider
     type: Class
   - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
     name: AlpacaProviderModule
@@ -5422,6 +5876,9 @@ items:
     type: Interface
   - uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
     name: IFilterableSymbolSearchProvider
+    type: Interface
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+    name: IHistoricalAggregateBarProvider
     type: Interface
   - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
     name: IHistoricalDataProvider
@@ -5666,6 +6123,9 @@ items:
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
     name: EnhancedIBConnectionManager
     type: Class
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
+    name: IBAccountSummaryUpdate
+    type: Class
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
     name: IBApiError
     type: Class
@@ -5705,6 +6165,9 @@ items:
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
     name: IBErrorSeverity
     type: Enum
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+    name: IBExecutionUpdate
+    type: Class
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBGenericTickTypes
     name: IBGenericTickTypes
     type: Class
@@ -5717,8 +6180,17 @@ items:
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataNotSubscribedException
     name: IBMarketDataNotSubscribedException
     type: Class
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+    name: IBOpenOrderUpdate
+    type: Class
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
+    name: IBOrderStatusUpdate
+    type: Class
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPacingViolationException
     name: IBPacingViolationException
+    type: Class
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
+    name: IBPositionUpdate
     type: Class
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSecurityNotFoundException
     name: IBSecurityNotFoundException
@@ -5735,6 +6207,9 @@ items:
   - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
     name: IBWhatToShow
     type: Class
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+    name: IIBBrokerageClient
+    type: Interface
 - uid: Meridian.Infrastructure.Adapters.NYSE
   name: Meridian.Infrastructure.Adapters.NYSE
   type: Namespace
@@ -5796,6 +6271,9 @@ items:
   - uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
     name: PolygonMarketDataClient
     type: Class
+  - uid: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+    name: PolygonOptionsChainProvider
+    type: Class
   - uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
     name: PolygonSecurityMasterIngestProvider
     type: Class
@@ -5818,49 +6296,11 @@ items:
   - uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
     name: RobinhoodMarketDataClient
     type: Class
+  - uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+    name: RobinhoodOptionsChainProvider
+    type: Class
   - uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
     name: RobinhoodSymbolSearchProvider
-    type: Class
-- uid: Meridian.Infrastructure.Adapters.StockSharp
-  name: Meridian.Infrastructure.Adapters.StockSharp
-  type: Namespace
-  items:
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectionState
-    name: ConnectionState
-    type: Enum
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities
-    name: ConnectorCapabilities
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics
-    name: ProviderHealthMetrics
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities
-    name: StockSharpConnectorCapabilities
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory
-    name: StockSharpConnectorFactory
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
-    name: StockSharpHistoricalDataProvider
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
-    name: StockSharpMarketDataClient
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
-    name: StockSharpSymbolSearchProvider
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
-    name: SubscriptionType
-    type: Enum
-- uid: Meridian.Infrastructure.Adapters.StockSharp.Converters
-  name: Meridian.Infrastructure.Adapters.StockSharp.Converters
-  type: Namespace
-  items:
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter
-    name: MessageConverter
-    type: Class
-  - uid: Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter
-    name: SecurityConverter
     type: Class
 - uid: Meridian.Infrastructure.Adapters.Stooq
   name: Meridian.Infrastructure.Adapters.Stooq
@@ -5878,6 +6318,9 @@ items:
     type: Class
   - uid: Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
     name: SyntheticMarketDataClient
+    type: Class
+  - uid: Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider
+    name: SyntheticOptionsChainProvider
     type: Class
 - uid: Meridian.Infrastructure.Adapters.Templates
   name: Meridian.Infrastructure.Adapters.Templates
@@ -7580,6 +8023,9 @@ items:
   - uid: Meridian.Storage.Services.QualityAssessment
     name: QualityAssessment
     type: Class
+  - uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+    name: QualityAssessmentMetadataUpdate
+    type: Class
   - uid: Meridian.Storage.Services.QualityDimension
     name: QualityDimension
     type: Class
@@ -7871,6 +8317,9 @@ items:
   - uid: Meridian.Strategies.Services.StrategyLifecycleManager
     name: StrategyLifecycleManager
     type: Class
+  - uid: Meridian.Strategies.Services.StrategyRunContinuityService
+    name: StrategyRunContinuityService
+    type: Class
   - uid: Meridian.Strategies.Services.StrategyRunReadService
     name: StrategyRunReadService
     type: Class
@@ -8090,12 +8539,6 @@ items:
   - uid: Meridian.Ui.Services.BackfillSchedule
     name: BackfillSchedule
     type: Class
-  - uid: Meridian.Ui.Services.BackfillScheduleCreateRequest
-    name: BackfillScheduleCreateRequest
-    type: Class
-  - uid: Meridian.Ui.Services.BackfillScheduleSummary
-    name: BackfillScheduleSummary
-    type: Class
   - uid: Meridian.Ui.Services.BackfillService
     name: BackfillService
     type: Class
@@ -8110,6 +8553,9 @@ items:
     type: Class
   - uid: Meridian.Ui.Services.BacktestOptions
     name: BacktestOptions
+    type: Class
+  - uid: Meridian.Ui.Services.BacktestResults
+    name: BacktestResults
     type: Class
   - uid: Meridian.Ui.Services.BacktestStartResponse
     name: BacktestStartResponse
@@ -8129,6 +8575,9 @@ items:
   - uid: Meridian.Ui.Services.BacktestSummary
     name: BacktestSummary
     type: Class
+  - uid: Meridian.Ui.Services.BacktestTradeRecord
+    name: BacktestTradeRecord
+    type: Class
   - uid: Meridian.Ui.Services.BatchExportSchedulerService
     name: BatchExportSchedulerService
     type: Class
@@ -8141,6 +8590,9 @@ items:
   - uid: Meridian.Ui.Services.BollingerBandsData
     name: BollingerBandsData
     type: Class
+  - uid: Meridian.Ui.Services.BoundedWindowMode
+    name: BoundedWindowMode
+    type: Enum
   - uid: Meridian.Ui.Services.BrowserArchiveFileInfo
     name: BrowserArchiveFileInfo
     type: Class
@@ -8438,6 +8890,9 @@ items:
   - uid: Meridian.Ui.Services.EnableResponse
     name: EnableResponse
     type: Class
+  - uid: Meridian.Ui.Services.EquityPoint
+    name: EquityPoint
+    type: Class
   - uid: Meridian.Ui.Services.ErrorCodeInfo
     name: ErrorCodeInfo
     type: Class
@@ -8728,6 +9183,9 @@ items:
     type: Class
   - uid: Meridian.Ui.Services.LeanIntegrationService
     name: LeanIntegrationService
+    type: Class
+  - uid: Meridian.Ui.Services.LeanResultsIngestResult
+    name: LeanResultsIngestResult
     type: Class
   - uid: Meridian.Ui.Services.LeanStatus
     name: LeanStatus
@@ -10138,6 +10596,12 @@ items:
   - uid: Meridian.Ui.Shared.LoginSessionService
     name: LoginSessionService
     type: Class
+  - uid: Meridian.Ui.Shared.ScoreExplanationProjection
+    name: ScoreExplanationProjection
+    type: Class
+  - uid: Meridian.Ui.Shared.ScoreReasonProjection
+    name: ScoreReasonProjection
+    type: Class
   - uid: Meridian.Ui.Shared.UserAccountConfig
     name: UserAccountConfig
     type: Class
@@ -10190,12 +10654,6 @@ items:
   - uid: Meridian.Ui.Shared.Endpoints.CheckpointEndpoints
     name: CheckpointEndpoints
     type: Class
-  - uid: Meridian.Ui.Shared.Endpoints.CircuitBreakerCommandRequest
-    name: CircuitBreakerCommandRequest
-    type: Class
-  - uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
-    name: ClearManualOverrideCommandRequest
-    type: Class
   - uid: Meridian.Ui.Shared.Endpoints.ConfigEndpoints
     name: ConfigEndpoints
     type: Class
@@ -10217,6 +10675,9 @@ items:
   - uid: Meridian.Ui.Shared.Endpoints.DirectLendingEndpoints
     name: DirectLendingEndpoints
     type: Class
+  - uid: Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints
+    name: EnvironmentDesignerEndpoints
+    type: Class
   - uid: Meridian.Ui.Shared.Endpoints.ExecutionAccountSnapshot
     name: ExecutionAccountSnapshot
     type: Class
@@ -10237,6 +10698,9 @@ items:
     type: Class
   - uid: Meridian.Ui.Shared.Endpoints.FundAccountEndpoints
     name: FundAccountEndpoints
+    type: Class
+  - uid: Meridian.Ui.Shared.Endpoints.FundStructureEndpoints
+    name: FundStructureEndpoints
     type: Class
   - uid: Meridian.Ui.Shared.Endpoints.HealthEndpoints
     name: HealthEndpoints
@@ -10265,9 +10729,6 @@ items:
   - uid: Meridian.Ui.Shared.Endpoints.MaintenanceScheduleEndpoints
     name: MaintenanceScheduleEndpoints
     type: Class
-  - uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
-    name: ManualOverrideCommandRequest
-    type: Class
   - uid: Meridian.Ui.Shared.Endpoints.MessagingEndpoints
     name: MessagingEndpoints
     type: Class
@@ -10285,9 +10746,6 @@ items:
     type: Class
   - uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
     name: PositionDiffEntry
-    type: Class
-  - uid: Meridian.Ui.Shared.Endpoints.PositionLimitCommandRequest
-    name: PositionLimitCommandRequest
     type: Class
   - uid: Meridian.Ui.Shared.Endpoints.PromotionEndpoints
     name: PromotionEndpoints
@@ -10352,6 +10810,9 @@ items:
   - uid: Meridian.Ui.Shared.Endpoints.UiEndpoints
     name: UiEndpoints
     type: Class
+  - uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
+    name: UpdateExecutionCircuitBreakerRequest
+    type: Class
   - uid: Meridian.Ui.Shared.Endpoints.WorkstationEndpoints
     name: WorkstationEndpoints
     type: Class
@@ -10373,6 +10834,9 @@ items:
     type: Class
   - uid: Meridian.Ui.Shared.Services.ExistingDataInfo
     name: ExistingDataInfo
+    type: Class
+  - uid: Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService
+    name: FundOperationsWorkspaceReadService
     type: Class
   - uid: Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
     name: SecurityMasterSecurityReferenceLookup

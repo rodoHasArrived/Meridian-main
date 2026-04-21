@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverrideRequest
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiresAt
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs

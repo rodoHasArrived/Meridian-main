@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestStudioRunRequest
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NativeRequest
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strategy
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatasetReference
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeedReference
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BenchmarkSymbol
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExternalEngineOptions
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs

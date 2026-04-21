@@ -1,0 +1,699 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  commentId: T:Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  id: ResearchSavedComparisonMode
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn
+  langs:
+  - csharp
+  - vb
+  name: ResearchSavedComparisonMode
+  nameWithType: ResearchSavedComparisonMode
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchSavedComparisonMode
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Single mode participating in a saved comparison package.
+  example: []
+  syntax:
+    content: 'public sealed record ResearchSavedComparisonMode : IEquatable<ResearchSavedComparisonMode>'
+    content.vb: Public NotInheritable Class ResearchSavedComparisonMode Implements IEquatable(Of ResearchSavedComparisonMode)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  commentId: M:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  id: '#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)'
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: ResearchSavedComparisonMode(string, StrategyRunMode, StrategyRunStatus, decimal?, decimal?, ResearchRunDrillInLinks)
+  nameWithType: ResearchSavedComparisonMode.ResearchSavedComparisonMode(string, StrategyRunMode, StrategyRunStatus, decimal?, decimal?, ResearchRunDrillInLinks)
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.ResearchSavedComparisonMode(string, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunStatus, decimal?, decimal?, Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Single mode participating in a saved comparison package.
+  example: []
+  syntax:
+    content: public ResearchSavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, ResearchRunDrillInLinks DrillIn)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: Mode
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    - id: Status
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    - id: NetPnl
+      type: System.Nullable{System.Decimal}
+    - id: TotalReturn
+      type: System.Nullable{System.Decimal}
+    - id: DrillIn
+      type: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    content.vb: Public Sub New(RunId As String, Mode As StrategyRunMode, Status As StrategyRunStatus, NetPnl As Decimal?, TotalReturn As Decimal?, DrillIn As ResearchRunDrillInLinks)
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.#ctor*
+  nameWithType.vb: ResearchSavedComparisonMode.New(String, StrategyRunMode, StrategyRunStatus, Decimal?, Decimal?, ResearchRunDrillInLinks)
+  fullName.vb: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.New(String, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunStatus, Decimal?, Decimal?, Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  name.vb: New(String, StrategyRunMode, StrategyRunStatus, Decimal?, Decimal?, ResearchRunDrillInLinks)
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ResearchSavedComparisonMode.RunId
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode
+  id: Mode
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: Mode
+  nameWithType: ResearchSavedComparisonMode.Mode
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mode
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunMode Mode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    content.vb: Public Property Mode As StrategyRunMode
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status
+  id: Status
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ResearchSavedComparisonMode.Status
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    content.vb: Public Property Status As StrategyRunStatus
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl
+  id: NetPnl
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: NetPnl
+  nameWithType: ResearchSavedComparisonMode.NetPnl
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetPnl
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? NetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property NetPnl As Decimal?
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn
+  id: TotalReturn
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: TotalReturn
+  nameWithType: ResearchSavedComparisonMode.TotalReturn
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReturn
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? TotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TotalReturn As Decimal?
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn
+  id: DrillIn
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  langs:
+  - csharp
+  - vb
+  name: DrillIn
+  nameWithType: ResearchSavedComparisonMode.DrillIn
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrillIn
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ResearchRunDrillInLinks DrillIn { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    content.vb: Public Property DrillIn As ResearchRunDrillInLinks
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResearchSavedComparisonMode>
+  nameWithType: IEquatable<ResearchSavedComparisonMode>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ResearchSavedComparisonMode>
+  nameWithType.vb: IEquatable(Of ResearchSavedComparisonMode)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ResearchSavedComparisonMode)
+  name.vb: IEquatable(Of ResearchSavedComparisonMode)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+    name: ResearchSavedComparisonMode
+    href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+    name: ResearchSavedComparisonMode
+    href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.#ctor
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode__ctor_System_String_Meridian_Contracts_Workstation_StrategyRunMode_Meridian_Contracts_Workstation_StrategyRunStatus_System_Nullable_System_Decimal__System_Nullable_System_Decimal__Meridian_Contracts_Workstation_ResearchRunDrillInLinks_
+  name: ResearchSavedComparisonMode
+  nameWithType: ResearchSavedComparisonMode.ResearchSavedComparisonMode
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.ResearchSavedComparisonMode
+  nameWithType.vb: ResearchSavedComparisonMode.New
+  fullName.vb: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunMode
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunMode
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  name: StrategyRunMode
+  nameWithType: StrategyRunMode
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus
+  nameWithType: StrategyRunStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  commentId: T:Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html
+  name: ResearchRunDrillInLinks
+  nameWithType: ResearchRunDrillInLinks
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode_RunId
+  name: RunId
+  nameWithType: ResearchSavedComparisonMode.RunId
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.RunId
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode_Mode
+  name: Mode
+  nameWithType: ResearchSavedComparisonMode.Mode
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Mode
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode_Status
+  name: Status
+  nameWithType: ResearchSavedComparisonMode.Status
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.Status
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode_NetPnl
+  name: NetPnl
+  nameWithType: ResearchSavedComparisonMode.NetPnl
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.NetPnl
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode_TotalReturn
+  name: TotalReturn
+  nameWithType: ResearchSavedComparisonMode.TotalReturn
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.TotalReturn
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html#Meridian_Contracts_Workstation_ResearchSavedComparisonMode_DrillIn
+  name: DrillIn
+  nameWithType: ResearchSavedComparisonMode.DrillIn
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.DrillIn

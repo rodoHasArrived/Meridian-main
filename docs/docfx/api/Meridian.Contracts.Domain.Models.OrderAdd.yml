@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderAdd
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayedSize
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriorityTimestamp
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HiddenSize
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -363,7 +363,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParticipantId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -392,7 +392,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketMaker
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs

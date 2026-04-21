@@ -25,9 +25,11 @@ items:
   - Meridian.Ui.Services.BackfillService.Instance
   - Meridian.Ui.Services.BackfillService.IsPaused
   - Meridian.Ui.Services.BackfillService.IsRunning
+  - Meridian.Ui.Services.BackfillService.Pause
   - Meridian.Ui.Services.BackfillService.PollBackendStatusAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillService.ProgressUpdated
   - Meridian.Ui.Services.BackfillService.ReorderQueue(System.Int32,System.Int32)
+  - Meridian.Ui.Services.BackfillService.Resume
   - Meridian.Ui.Services.BackfillService.ResumeBackfillAsync(System.String,System.Action{Meridian.Contracts.Backfill.BackfillProgress},System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillService.RunBackfillAsync(System.String,System.String[],System.String,System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillService.StartBackfillAsync(System.String[],System.String,System.DateTime,System.DateTime,System.String,System.Action{Meridian.Contracts.Backfill.BackfillProgress},System.Threading.CancellationToken)
@@ -42,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillService
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -81,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -110,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -144,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentProgress
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -175,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRunning
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -206,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPaused
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -237,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsPerSecond
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -268,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedTimeRemaining
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -299,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartBackfillAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -347,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartGapFillAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -389,7 +391,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -422,7 +424,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetsAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -455,7 +457,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -488,7 +490,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -526,7 +528,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatisticsAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
@@ -550,6 +552,62 @@ items:
   nameWithType.vb: BackfillService.GetStatisticsAsync(Integer?, CancellationToken)
   fullName.vb: Meridian.Ui.Services.BackfillService.GetStatisticsAsync(Integer?, System.Threading.CancellationToken)
   name.vb: GetStatisticsAsync(Integer?, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillService.Pause
+  commentId: M:Meridian.Ui.Services.BackfillService.Pause
+  id: Pause
+  parent: Meridian.Ui.Services.BackfillService
+  langs:
+  - csharp
+  - vb
+  name: Pause()
+  nameWithType: BackfillService.Pause()
+  fullName: Meridian.Ui.Services.BackfillService.Pause()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pause
+    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Pauses the current backfill operation.
+  example: []
+  syntax:
+    content: public void Pause()
+    content.vb: Public Sub Pause()
+  overload: Meridian.Ui.Services.BackfillService.Pause*
+- uid: Meridian.Ui.Services.BackfillService.Resume
+  commentId: M:Meridian.Ui.Services.BackfillService.Resume
+  id: Resume
+  parent: Meridian.Ui.Services.BackfillService
+  langs:
+  - csharp
+  - vb
+  name: Resume()
+  nameWithType: BackfillService.Resume()
+  fullName: Meridian.Ui.Services.BackfillService.Resume()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resume
+    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    startLine: 441
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Resumes a paused backfill operation.
+  example: []
+  syntax:
+    content: public void Resume()
+    content.vb: Public Sub [Resume]()
+  overload: Meridian.Ui.Services.BackfillService.Resume*
 - uid: Meridian.Ui.Services.BackfillService.Cancel
   commentId: M:Meridian.Ui.Services.BackfillService.Cancel
   id: Cancel
@@ -564,11 +622,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancel
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 429
+    startLine: 453
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -592,11 +650,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReorderQueue
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 437
+    startLine: 461
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -628,11 +686,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFormattedEta
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 461
+    startLine: 485
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -658,11 +716,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFormattedSpeed
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 477
+    startLine: 501
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -688,11 +746,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 488
+    startLine: 512
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -721,11 +779,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfillAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 495
+    startLine: 519
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -768,11 +826,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalBarsAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 507
+    startLine: 531
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -813,11 +871,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumeBackfillAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 704
+    startLine: 728
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -856,11 +914,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PollBackendStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 733
+    startLine: 757
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -892,11 +950,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetResumableJobsAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 775
+    startLine: 799
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -925,11 +983,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCheckpointHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 784
+    startLine: 808
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -963,11 +1021,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressUpdated
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 794
+    startLine: 818
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -992,11 +1050,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCompleted
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 799
+    startLine: 823
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -1905,6 +1963,18 @@ references:
     name: BackfillStatistics
     href: Meridian.Contracts.Api.BackfillStatistics.html
   - name: )
+- uid: Meridian.Ui.Services.BackfillService.Pause*
+  commentId: Overload:Meridian.Ui.Services.BackfillService.Pause
+  href: Meridian.Ui.Services.BackfillService.html#Meridian_Ui_Services_BackfillService_Pause
+  name: Pause
+  nameWithType: BackfillService.Pause
+  fullName: Meridian.Ui.Services.BackfillService.Pause
+- uid: Meridian.Ui.Services.BackfillService.Resume*
+  commentId: Overload:Meridian.Ui.Services.BackfillService.Resume
+  href: Meridian.Ui.Services.BackfillService.html#Meridian_Ui_Services_BackfillService_Resume
+  name: Resume
+  nameWithType: BackfillService.Resume
+  fullName: Meridian.Ui.Services.BackfillService.Resume
 - uid: Meridian.Ui.Services.BackfillService.Cancel*
   commentId: Overload:Meridian.Ui.Services.BackfillService.Cancel
   href: Meridian.Ui.Services.BackfillService.html#Meridian_Ui_Services_BackfillService_Cancel

@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOptions
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionString
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schema
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotIntervalVersions
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentEventSchemaVersion
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectionEngineVersion
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxBatchSize
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxPollIntervalSeconds
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayBatchSize
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs

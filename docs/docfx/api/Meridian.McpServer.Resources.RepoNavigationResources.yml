@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoNavigationResources
     path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRepoNavigationCatalog
     path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRepoNavigationQuickStart
     path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs

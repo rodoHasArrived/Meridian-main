@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatus
     path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disconnected
     path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connecting
     path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
     path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconnecting
     path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Faulted
     path: ../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs

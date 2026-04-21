@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderType
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Market
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Limit
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopMarket
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopLimit
     path: ../../src/Meridian.Execution.Sdk/Models.cs

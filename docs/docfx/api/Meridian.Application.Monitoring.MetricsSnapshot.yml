@@ -41,7 +41,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetricsSnapshot
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdates
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -333,7 +333,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBars
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -362,7 +362,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -391,7 +391,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradesPerSecond
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -420,7 +420,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdatesPerSecond
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -449,7 +449,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBarsPerSecond
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -478,7 +478,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DropRate
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -507,7 +507,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyUs
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -536,7 +536,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinLatencyUs
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -565,7 +565,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyUs
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -594,7 +594,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencySampleCount
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -623,7 +623,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gc0Collections
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -652,7 +652,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gc1Collections
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -681,7 +681,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gc2Collections
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -710,7 +710,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gc0Delta
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -739,7 +739,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gc1Delta
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -768,7 +768,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gc2Delta
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -797,7 +797,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryUsageMb
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -826,7 +826,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeapSizeMb
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -855,7 +855,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs

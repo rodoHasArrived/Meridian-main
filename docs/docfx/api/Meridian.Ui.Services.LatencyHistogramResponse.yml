@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyHistogramResponse
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Period
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs

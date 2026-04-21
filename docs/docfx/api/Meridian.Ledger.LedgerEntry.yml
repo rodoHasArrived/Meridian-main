@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerEntry
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryId
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Account
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Debit
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Credit
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ledger/LedgerEntry.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerEntry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/LedgerEntry.cs

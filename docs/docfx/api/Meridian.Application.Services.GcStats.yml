@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GcStats
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gen0
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gen1
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gen2
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs

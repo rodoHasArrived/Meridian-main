@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlignmentResult
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSourceRecords
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlignedRecords
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs

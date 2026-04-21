@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationMetricsSnapshot
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalValidated
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRejected
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PassRatePercent
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedByErrorType
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedByEventType
     path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs

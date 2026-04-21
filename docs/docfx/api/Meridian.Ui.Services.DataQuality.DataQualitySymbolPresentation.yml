@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualitySymbolPresentation
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreFormatted
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Grade
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdate
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdateFormatted
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs

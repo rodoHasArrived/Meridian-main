@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderMetricsStatus
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalProviders
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyProviders
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs

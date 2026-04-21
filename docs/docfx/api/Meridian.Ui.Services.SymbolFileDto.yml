@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolFileDto
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileName
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataType
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifiedAt
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionType
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs

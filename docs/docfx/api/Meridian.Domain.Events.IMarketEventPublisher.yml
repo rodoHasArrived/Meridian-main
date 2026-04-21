@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/IMarketEventPublisher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMarketEventPublisher
     path: ../../src/Meridian.Domain/Events/IMarketEventPublisher.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/IMarketEventPublisher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
     path: ../../src/Meridian.Domain/Events/IMarketEventPublisher.cs

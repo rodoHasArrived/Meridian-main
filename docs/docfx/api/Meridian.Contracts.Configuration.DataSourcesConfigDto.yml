@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourcesConfigDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 491
+    startLine: 386
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 493
+    startLine: 388
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -97,11 +97,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultRealTimeSourceId
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 496
+    startLine: 391
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -138,11 +138,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultHistoricalSourceId
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 499
+    startLine: 394
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -179,11 +179,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableFailover
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 502
+    startLine: 397
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -220,11 +220,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverTimeoutSeconds
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 505
+    startLine: 400
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

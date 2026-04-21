@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenTelemetryConfiguration
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceName
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceVersion
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Environment
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableConsoleExporter
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableOtlpExporter
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OtlpEndpoint
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OtlpHeaders
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SamplingRatio
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TraceWebSocket
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TraceStorage
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -369,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TraceMessaging
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -400,7 +400,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -429,7 +429,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Development
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
@@ -458,7 +458,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/OpenTelemetrySetup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Production
     path: ../../src/Meridian.Application/Tracing/OpenTelemetrySetup.cs

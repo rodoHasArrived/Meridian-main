@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataQueryService
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAsync
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableSymbols
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDateRange
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs

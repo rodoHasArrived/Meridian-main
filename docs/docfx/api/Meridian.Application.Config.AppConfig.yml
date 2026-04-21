@@ -5,7 +5,7 @@ items:
   id: AppConfig
   parent: Meridian.Application.Config
   children:
-  - Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)
+  - Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.IBClientPortalOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean,Meridian.Application.Config.ProviderConnectionsConfig)
   - Meridian.Application.Config.AppConfig.Alpaca
   - Meridian.Application.Config.AppConfig.Backfill
   - Meridian.Application.Config.AppConfig.Canonicalization
@@ -17,13 +17,13 @@ items:
   - Meridian.Application.Config.AppConfig.DataSources
   - Meridian.Application.Config.AppConfig.Derivatives
   - Meridian.Application.Config.AppConfig.IB
+  - Meridian.Application.Config.AppConfig.IBClientPortal
   - Meridian.Application.Config.AppConfig.OfflineFirstMode
   - Meridian.Application.Config.AppConfig.PluginsPath
   - Meridian.Application.Config.AppConfig.Polygon
   - Meridian.Application.Config.AppConfig.ProviderConnections
   - Meridian.Application.Config.AppConfig.ProviderRegistry
   - Meridian.Application.Config.AppConfig.Sources
-  - Meridian.Application.Config.AppConfig.StockSharp
   - Meridian.Application.Config.AppConfig.Storage
   - Meridian.Application.Config.AppConfig.Symbols
   - Meridian.Application.Config.AppConfig.Synthetic
@@ -38,11 +38,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppConfig
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 36
+    startLine: 35
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -62,32 +62,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)
-  commentId: M:Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)
-  id: '#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.StockSharpConfig,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.ProviderConnectionsConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean)'
+- uid: Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.IBClientPortalOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean,Meridian.Application.Config.ProviderConnectionsConfig)
+  commentId: M:Meridian.Application.Config.AppConfig.#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.IBClientPortalOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean,Meridian.Application.Config.ProviderConnectionsConfig)
+  id: '#ctor(System.String,System.Nullable{System.Boolean},Meridian.Application.Config.DataSourceKind,Meridian.Application.Config.AlpacaOptions,Meridian.Application.Config.IBOptions,Meridian.Application.Config.IBClientPortalOptions,Meridian.Application.Config.PolygonOptions,Meridian.Application.Config.SyntheticMarketDataConfig,Meridian.Application.Config.StorageConfig,Meridian.Contracts.Configuration.SymbolConfig[],Meridian.Application.Config.BackfillConfig,Meridian.Application.Config.SourceRegistryConfig,Meridian.Application.Config.DataSourcesConfig,Meridian.Application.Config.DerivativesConfig,Meridian.Application.Config.ProviderRegistryConfig,Meridian.Application.Config.CoordinationConfig,Meridian.Application.Config.CanonicalizationConfig,Meridian.Application.Config.ValidationPipelineConfig,System.Boolean,System.String,System.Boolean,Meridian.Application.Config.ProviderConnectionsConfig)'
   parent: Meridian.Application.Config.AppConfig
   langs:
   - csharp
   - vb
-  name: AppConfig(string, bool?, DataSourceKind, AlpacaOptions?, IBOptions?, PolygonOptions?, StockSharpConfig?, SyntheticMarketDataConfig?, StorageConfig?, SymbolConfig[]?, BackfillConfig?, SourceRegistryConfig?, DataSourcesConfig?, ProviderConnectionsConfig?, DerivativesConfig?, ProviderRegistryConfig?, CoordinationConfig?, CanonicalizationConfig?, ValidationPipelineConfig?, bool, string?, bool)
-  nameWithType: AppConfig.AppConfig(string, bool?, DataSourceKind, AlpacaOptions?, IBOptions?, PolygonOptions?, StockSharpConfig?, SyntheticMarketDataConfig?, StorageConfig?, SymbolConfig[]?, BackfillConfig?, SourceRegistryConfig?, DataSourcesConfig?, ProviderConnectionsConfig?, DerivativesConfig?, ProviderRegistryConfig?, CoordinationConfig?, CanonicalizationConfig?, ValidationPipelineConfig?, bool, string?, bool)
-  fullName: Meridian.Application.Config.AppConfig.AppConfig(string, bool?, Meridian.Application.Config.DataSourceKind, Meridian.Application.Config.AlpacaOptions?, Meridian.Application.Config.IBOptions?, Meridian.Application.Config.PolygonOptions?, Meridian.Application.Config.StockSharpConfig?, Meridian.Application.Config.SyntheticMarketDataConfig?, Meridian.Application.Config.StorageConfig?, Meridian.Contracts.Configuration.SymbolConfig[]?, Meridian.Application.Config.BackfillConfig?, Meridian.Application.Config.SourceRegistryConfig?, Meridian.Application.Config.DataSourcesConfig?, Meridian.Application.Config.ProviderConnectionsConfig?, Meridian.Application.Config.DerivativesConfig?, Meridian.Application.Config.ProviderRegistryConfig?, Meridian.Application.Config.CoordinationConfig?, Meridian.Application.Config.CanonicalizationConfig?, Meridian.Application.Config.ValidationPipelineConfig?, bool, string?, bool)
+  name: AppConfig(string, bool?, DataSourceKind, AlpacaOptions?, IBOptions?, IBClientPortalOptions?, PolygonOptions?, SyntheticMarketDataConfig?, StorageConfig?, SymbolConfig[]?, BackfillConfig?, SourceRegistryConfig?, DataSourcesConfig?, DerivativesConfig?, ProviderRegistryConfig?, CoordinationConfig?, CanonicalizationConfig?, ValidationPipelineConfig?, bool, string?, bool, ProviderConnectionsConfig?)
+  nameWithType: AppConfig.AppConfig(string, bool?, DataSourceKind, AlpacaOptions?, IBOptions?, IBClientPortalOptions?, PolygonOptions?, SyntheticMarketDataConfig?, StorageConfig?, SymbolConfig[]?, BackfillConfig?, SourceRegistryConfig?, DataSourcesConfig?, DerivativesConfig?, ProviderRegistryConfig?, CoordinationConfig?, CanonicalizationConfig?, ValidationPipelineConfig?, bool, string?, bool, ProviderConnectionsConfig?)
+  fullName: Meridian.Application.Config.AppConfig.AppConfig(string, bool?, Meridian.Application.Config.DataSourceKind, Meridian.Application.Config.AlpacaOptions?, Meridian.Application.Config.IBOptions?, Meridian.Application.Config.IBClientPortalOptions?, Meridian.Application.Config.PolygonOptions?, Meridian.Application.Config.SyntheticMarketDataConfig?, Meridian.Application.Config.StorageConfig?, Meridian.Contracts.Configuration.SymbolConfig[]?, Meridian.Application.Config.BackfillConfig?, Meridian.Application.Config.SourceRegistryConfig?, Meridian.Application.Config.DataSourcesConfig?, Meridian.Application.Config.DerivativesConfig?, Meridian.Application.Config.ProviderRegistryConfig?, Meridian.Application.Config.CoordinationConfig?, Meridian.Application.Config.CanonicalizationConfig?, Meridian.Application.Config.ValidationPipelineConfig?, bool, string?, bool, Meridian.Application.Config.ProviderConnectionsConfig?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 36
+    startLine: 35
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
   summary: Root configuration model loaded from appsettings.json.
   example: []
   syntax:
-    content: public AppConfig(string DataRoot = "data", bool? Compress = null, DataSourceKind DataSource = DataSourceKind.Synthetic, AlpacaOptions? Alpaca = null, IBOptions? IB = null, PolygonOptions? Polygon = null, StockSharpConfig? StockSharp = null, SyntheticMarketDataConfig? Synthetic = null, StorageConfig? Storage = null, SymbolConfig[]? Symbols = null, BackfillConfig? Backfill = null, SourceRegistryConfig? Sources = null, DataSourcesConfig? DataSources = null, ProviderConnectionsConfig? ProviderConnections = null, DerivativesConfig? Derivatives = null, ProviderRegistryConfig? ProviderRegistry = null, CoordinationConfig? Coordination = null, CanonicalizationConfig? Canonicalization = null, ValidationPipelineConfig? Validation = null, bool OfflineFirstMode = false, string? PluginsPath = null, bool CoLocationProfile = false)
+    content: public AppConfig(string DataRoot = "data", bool? Compress = null, DataSourceKind DataSource = DataSourceKind.Synthetic, AlpacaOptions? Alpaca = null, IBOptions? IB = null, IBClientPortalOptions? IBClientPortal = null, PolygonOptions? Polygon = null, SyntheticMarketDataConfig? Synthetic = null, StorageConfig? Storage = null, SymbolConfig[]? Symbols = null, BackfillConfig? Backfill = null, SourceRegistryConfig? Sources = null, DataSourcesConfig? DataSources = null, DerivativesConfig? Derivatives = null, ProviderRegistryConfig? ProviderRegistry = null, CoordinationConfig? Coordination = null, CanonicalizationConfig? Canonicalization = null, ValidationPipelineConfig? Validation = null, bool OfflineFirstMode = false, string? PluginsPath = null, bool CoLocationProfile = false, ProviderConnectionsConfig? ProviderConnections = null)
     parameters:
     - id: DataRoot
       type: System.String
@@ -104,8 +104,6 @@ items:
 
         - <xref href="Meridian.Application.Config.DataSourceKind.Alpaca" data-throw-if-not-resolved="false"></xref> uses Alpaca market data via WebSocket (trades; quotes optional in future).
 
-        - <xref href="Meridian.Application.Config.DataSourceKind.StockSharp" data-throw-if-not-resolved="false"></xref> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
-
         - <xref href="Meridian.Application.Config.DataSourceKind.NYSE" data-throw-if-not-resolved="false"></xref> uses the NYSE market data feed.
 
         - <xref href="Meridian.Application.Config.DataSourceKind.Synthetic" data-throw-if-not-resolved="false"></xref> uses the built-in synthetic historical/reference dataset for offline development.
@@ -115,12 +113,12 @@ items:
     - id: IB
       type: Meridian.Application.Config.IBOptions
       description: Interactive Brokers provider options (required if DataSource == DataSourceKind.IB).
+    - id: IBClientPortal
+      type: Meridian.Application.Config.IBClientPortalOptions
+      description: Interactive Brokers Client Portal HTTP settings for portfolio/account import.
     - id: Polygon
       type: Meridian.Application.Config.PolygonOptions
       description: Polygon provider options (required if DataSource == DataSourceKind.Polygon).
-    - id: StockSharp
-      type: Meridian.Application.Config.StockSharpConfig
-      description: StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).
     - id: Synthetic
       type: Meridian.Application.Config.SyntheticMarketDataConfig
       description: Synthetic market-data provider configuration for offline/backtest development.
@@ -139,9 +137,6 @@ items:
     - id: DataSources
       type: Meridian.Application.Config.DataSourcesConfig
       description: Multiple data source configurations for real-time and historical data.
-    - id: ProviderConnections
-      type: Meridian.Application.Config.ProviderConnectionsConfig
-      description: Relationship-aware provider connections, bindings, policies, presets, and certifications.
     - id: Derivatives
       type: Meridian.Application.Config.DerivativesConfig
       description: Derivatives (options) data collection configuration.
@@ -166,11 +161,14 @@ items:
     - id: CoLocationProfile
       type: System.Boolean
       description: 'When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.'
-    content.vb: Public Sub New(DataRoot As String = "data", Compress As Boolean? = Nothing, DataSource As DataSourceKind = DataSourceKind.Synthetic, Alpaca As AlpacaOptions = Nothing, IB As IBOptions = Nothing, Polygon As PolygonOptions = Nothing, StockSharp As StockSharpConfig = Nothing, Synthetic As SyntheticMarketDataConfig = Nothing, Storage As StorageConfig = Nothing, Symbols As SymbolConfig() = Nothing, Backfill As BackfillConfig = Nothing, Sources As SourceRegistryConfig = Nothing, DataSources As DataSourcesConfig = Nothing, ProviderConnections As ProviderConnectionsConfig = Nothing, Derivatives As DerivativesConfig = Nothing, ProviderRegistry As ProviderRegistryConfig = Nothing, Coordination As CoordinationConfig = Nothing, Canonicalization As CanonicalizationConfig = Nothing, Validation As ValidationPipelineConfig = Nothing, OfflineFirstMode As Boolean = False, PluginsPath As String = Nothing, CoLocationProfile As Boolean = False)
+    - id: ProviderConnections
+      type: Meridian.Application.Config.ProviderConnectionsConfig
+      description: Relationship-aware provider operations configuration (connections, bindings, policies).
+    content.vb: Public Sub New(DataRoot As String = "data", Compress As Boolean? = Nothing, DataSource As DataSourceKind = DataSourceKind.Synthetic, Alpaca As AlpacaOptions = Nothing, IB As IBOptions = Nothing, IBClientPortal As IBClientPortalOptions = Nothing, Polygon As PolygonOptions = Nothing, Synthetic As SyntheticMarketDataConfig = Nothing, Storage As StorageConfig = Nothing, Symbols As SymbolConfig() = Nothing, Backfill As BackfillConfig = Nothing, Sources As SourceRegistryConfig = Nothing, DataSources As DataSourcesConfig = Nothing, Derivatives As DerivativesConfig = Nothing, ProviderRegistry As ProviderRegistryConfig = Nothing, Coordination As CoordinationConfig = Nothing, Canonicalization As CanonicalizationConfig = Nothing, Validation As ValidationPipelineConfig = Nothing, OfflineFirstMode As Boolean = False, PluginsPath As String = Nothing, CoLocationProfile As Boolean = False, ProviderConnections As ProviderConnectionsConfig = Nothing)
   overload: Meridian.Application.Config.AppConfig.#ctor*
-  nameWithType.vb: AppConfig.New(String, Boolean?, DataSourceKind, AlpacaOptions, IBOptions, PolygonOptions, StockSharpConfig, SyntheticMarketDataConfig, StorageConfig, SymbolConfig(), BackfillConfig, SourceRegistryConfig, DataSourcesConfig, ProviderConnectionsConfig, DerivativesConfig, ProviderRegistryConfig, CoordinationConfig, CanonicalizationConfig, ValidationPipelineConfig, Boolean, String, Boolean)
-  fullName.vb: Meridian.Application.Config.AppConfig.New(String, Boolean?, Meridian.Application.Config.DataSourceKind, Meridian.Application.Config.AlpacaOptions, Meridian.Application.Config.IBOptions, Meridian.Application.Config.PolygonOptions, Meridian.Application.Config.StockSharpConfig, Meridian.Application.Config.SyntheticMarketDataConfig, Meridian.Application.Config.StorageConfig, Meridian.Contracts.Configuration.SymbolConfig(), Meridian.Application.Config.BackfillConfig, Meridian.Application.Config.SourceRegistryConfig, Meridian.Application.Config.DataSourcesConfig, Meridian.Application.Config.ProviderConnectionsConfig, Meridian.Application.Config.DerivativesConfig, Meridian.Application.Config.ProviderRegistryConfig, Meridian.Application.Config.CoordinationConfig, Meridian.Application.Config.CanonicalizationConfig, Meridian.Application.Config.ValidationPipelineConfig, Boolean, String, Boolean)
-  name.vb: New(String, Boolean?, DataSourceKind, AlpacaOptions, IBOptions, PolygonOptions, StockSharpConfig, SyntheticMarketDataConfig, StorageConfig, SymbolConfig(), BackfillConfig, SourceRegistryConfig, DataSourcesConfig, ProviderConnectionsConfig, DerivativesConfig, ProviderRegistryConfig, CoordinationConfig, CanonicalizationConfig, ValidationPipelineConfig, Boolean, String, Boolean)
+  nameWithType.vb: AppConfig.New(String, Boolean?, DataSourceKind, AlpacaOptions, IBOptions, IBClientPortalOptions, PolygonOptions, SyntheticMarketDataConfig, StorageConfig, SymbolConfig(), BackfillConfig, SourceRegistryConfig, DataSourcesConfig, DerivativesConfig, ProviderRegistryConfig, CoordinationConfig, CanonicalizationConfig, ValidationPipelineConfig, Boolean, String, Boolean, ProviderConnectionsConfig)
+  fullName.vb: Meridian.Application.Config.AppConfig.New(String, Boolean?, Meridian.Application.Config.DataSourceKind, Meridian.Application.Config.AlpacaOptions, Meridian.Application.Config.IBOptions, Meridian.Application.Config.IBClientPortalOptions, Meridian.Application.Config.PolygonOptions, Meridian.Application.Config.SyntheticMarketDataConfig, Meridian.Application.Config.StorageConfig, Meridian.Contracts.Configuration.SymbolConfig(), Meridian.Application.Config.BackfillConfig, Meridian.Application.Config.SourceRegistryConfig, Meridian.Application.Config.DataSourcesConfig, Meridian.Application.Config.DerivativesConfig, Meridian.Application.Config.ProviderRegistryConfig, Meridian.Application.Config.CoordinationConfig, Meridian.Application.Config.CanonicalizationConfig, Meridian.Application.Config.ValidationPipelineConfig, Boolean, String, Boolean, Meridian.Application.Config.ProviderConnectionsConfig)
+  name.vb: New(String, Boolean?, DataSourceKind, AlpacaOptions, IBOptions, IBClientPortalOptions, PolygonOptions, SyntheticMarketDataConfig, StorageConfig, SymbolConfig(), BackfillConfig, SourceRegistryConfig, DataSourcesConfig, DerivativesConfig, ProviderRegistryConfig, CoordinationConfig, CanonicalizationConfig, ValidationPipelineConfig, Boolean, String, Boolean, ProviderConnectionsConfig)
 - uid: Meridian.Application.Config.AppConfig.DataRoot
   commentId: P:Meridian.Application.Config.AppConfig.DataRoot
   id: DataRoot
@@ -185,11 +183,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataRoot
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 37
+    startLine: 36
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -216,11 +214,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compress
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 38
+    startLine: 37
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -247,11 +245,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSource
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 39
+    startLine: 38
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -261,8 +259,6 @@ items:
     - <xref href="Meridian.Application.Config.DataSourceKind.IB" data-throw-if-not-resolved="false"></xref> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
 
     - <xref href="Meridian.Application.Config.DataSourceKind.Alpaca" data-throw-if-not-resolved="false"></xref> uses Alpaca market data via WebSocket (trades; quotes optional in future).
-
-    - <xref href="Meridian.Application.Config.DataSourceKind.StockSharp" data-throw-if-not-resolved="false"></xref> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
 
     - <xref href="Meridian.Application.Config.DataSourceKind.NYSE" data-throw-if-not-resolved="false"></xref> uses the NYSE market data feed.
 
@@ -301,11 +297,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 40
+    startLine: 39
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -332,11 +328,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IB
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 41
+    startLine: 40
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -349,6 +345,37 @@ items:
       type: Meridian.Application.Config.IBOptions
     content.vb: Public Property IB As IBOptions
   overload: Meridian.Application.Config.AppConfig.IB*
+- uid: Meridian.Application.Config.AppConfig.IBClientPortal
+  commentId: P:Meridian.Application.Config.AppConfig.IBClientPortal
+  id: IBClientPortal
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: IBClientPortal
+  nameWithType: AppConfig.IBClientPortal
+  fullName: Meridian.Application.Config.AppConfig.IBClientPortal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBClientPortal
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Interactive Brokers Client Portal HTTP settings for portfolio/account import.
+  example: []
+  syntax:
+    content: public IBClientPortalOptions? IBClientPortal { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.IBClientPortalOptions
+    content.vb: Public Property IBClientPortal As IBClientPortalOptions
+  overload: Meridian.Application.Config.AppConfig.IBClientPortal*
 - uid: Meridian.Application.Config.AppConfig.Polygon
   commentId: P:Meridian.Application.Config.AppConfig.Polygon
   id: Polygon
@@ -363,7 +390,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Core/Config/AppConfig.cs
@@ -380,37 +407,6 @@ items:
       type: Meridian.Application.Config.PolygonOptions
     content.vb: Public Property Polygon As PolygonOptions
   overload: Meridian.Application.Config.AppConfig.Polygon*
-- uid: Meridian.Application.Config.AppConfig.StockSharp
-  commentId: P:Meridian.Application.Config.AppConfig.StockSharp
-  id: StockSharp
-  parent: Meridian.Application.Config.AppConfig
-  langs:
-  - csharp
-  - vb
-  name: StockSharp
-  nameWithType: AppConfig.StockSharp
-  fullName: Meridian.Application.Config.AppConfig.StockSharp
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StockSharp
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 43
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Config
-  summary: StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).
-  example: []
-  syntax:
-    content: public StockSharpConfig? StockSharp { get; init; }
-    parameters: []
-    return:
-      type: Meridian.Application.Config.StockSharpConfig
-    content.vb: Public Property StockSharp As StockSharpConfig
-  overload: Meridian.Application.Config.AppConfig.StockSharp*
 - uid: Meridian.Application.Config.AppConfig.Synthetic
   commentId: P:Meridian.Application.Config.AppConfig.Synthetic
   id: Synthetic
@@ -425,11 +421,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Synthetic
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 44
+    startLine: 43
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -456,11 +452,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Storage
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 45
+    startLine: 44
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -487,11 +483,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 46
+    startLine: 45
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -518,11 +514,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 47
+    startLine: 46
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -549,11 +545,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 48
+    startLine: 47
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -580,11 +576,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSources
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 49
+    startLine: 48
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -597,37 +593,6 @@ items:
       type: Meridian.Application.Config.DataSourcesConfig
     content.vb: Public Property DataSources As DataSourcesConfig
   overload: Meridian.Application.Config.AppConfig.DataSources*
-- uid: Meridian.Application.Config.AppConfig.ProviderConnections
-  commentId: P:Meridian.Application.Config.AppConfig.ProviderConnections
-  id: ProviderConnections
-  parent: Meridian.Application.Config.AppConfig
-  langs:
-  - csharp
-  - vb
-  name: ProviderConnections
-  nameWithType: AppConfig.ProviderConnections
-  fullName: Meridian.Application.Config.AppConfig.ProviderConnections
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ProviderConnections
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 50
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Config
-  summary: Relationship-aware provider connections, bindings, policies, presets, and certifications.
-  example: []
-  syntax:
-    content: public ProviderConnectionsConfig? ProviderConnections { get; init; }
-    parameters: []
-    return:
-      type: Meridian.Application.Config.ProviderConnectionsConfig
-    content.vb: Public Property ProviderConnections As ProviderConnectionsConfig
-  overload: Meridian.Application.Config.AppConfig.ProviderConnections*
 - uid: Meridian.Application.Config.AppConfig.Derivatives
   commentId: P:Meridian.Application.Config.AppConfig.Derivatives
   id: Derivatives
@@ -642,11 +607,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Derivatives
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 51
+    startLine: 49
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -673,11 +638,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistry
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 52
+    startLine: 50
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -704,11 +669,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Coordination
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 53
+    startLine: 51
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -735,11 +700,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Canonicalization
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 54
+    startLine: 52
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -766,11 +731,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validation
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 55
+    startLine: 53
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -797,11 +762,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OfflineFirstMode
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 56
+    startLine: 54
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -828,11 +793,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PluginsPath
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 57
+    startLine: 55
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -859,11 +824,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoLocationProfile
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 58
+    startLine: 56
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -876,6 +841,37 @@ items:
       type: System.Boolean
     content.vb: Public Property CoLocationProfile As Boolean
   overload: Meridian.Application.Config.AppConfig.CoLocationProfile*
+- uid: Meridian.Application.Config.AppConfig.ProviderConnections
+  commentId: P:Meridian.Application.Config.AppConfig.ProviderConnections
+  id: ProviderConnections
+  parent: Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnections
+  nameWithType: AppConfig.ProviderConnections
+  fullName: Meridian.Application.Config.AppConfig.ProviderConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnections
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Relationship-aware provider operations configuration (connections, bindings, policies).
+  example: []
+  syntax:
+    content: public ProviderConnectionsConfig? ProviderConnections { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.ProviderConnectionsConfig
+    content.vb: Public Property ProviderConnections As ProviderConnectionsConfig
+  overload: Meridian.Application.Config.AppConfig.ProviderConnections*
 references:
 - uid: Meridian.Application.Config.DataSourceKind.IB
   commentId: F:Meridian.Application.Config.DataSourceKind.IB
@@ -889,12 +885,6 @@ references:
   name: Alpaca
   nameWithType: DataSourceKind.Alpaca
   fullName: Meridian.Application.Config.DataSourceKind.Alpaca
-- uid: Meridian.Application.Config.DataSourceKind.StockSharp
-  commentId: F:Meridian.Application.Config.DataSourceKind.StockSharp
-  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_StockSharp
-  name: StockSharp
-  nameWithType: DataSourceKind.StockSharp
-  fullName: Meridian.Application.Config.DataSourceKind.StockSharp
 - uid: Meridian.Application.Config.DataSourceKind.NYSE
   commentId: F:Meridian.Application.Config.DataSourceKind.NYSE
   href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_NYSE
@@ -1213,7 +1203,7 @@ references:
   - name: )
 - uid: Meridian.Application.Config.AppConfig.#ctor*
   commentId: Overload:Meridian.Application.Config.AppConfig.#ctor
-  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig__ctor_System_String_System_Nullable_System_Boolean__Meridian_Application_Config_DataSourceKind_Meridian_Application_Config_AlpacaOptions_Meridian_Application_Config_IBOptions_Meridian_Application_Config_PolygonOptions_Meridian_Application_Config_StockSharpConfig_Meridian_Application_Config_SyntheticMarketDataConfig_Meridian_Application_Config_StorageConfig_Meridian_Contracts_Configuration_SymbolConfig___Meridian_Application_Config_BackfillConfig_Meridian_Application_Config_SourceRegistryConfig_Meridian_Application_Config_DataSourcesConfig_Meridian_Application_Config_ProviderConnectionsConfig_Meridian_Application_Config_DerivativesConfig_Meridian_Application_Config_ProviderRegistryConfig_Meridian_Application_Config_CoordinationConfig_Meridian_Application_Config_CanonicalizationConfig_Meridian_Application_Config_ValidationPipelineConfig_System_Boolean_System_String_System_Boolean_
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig__ctor_System_String_System_Nullable_System_Boolean__Meridian_Application_Config_DataSourceKind_Meridian_Application_Config_AlpacaOptions_Meridian_Application_Config_IBOptions_Meridian_Application_Config_IBClientPortalOptions_Meridian_Application_Config_PolygonOptions_Meridian_Application_Config_SyntheticMarketDataConfig_Meridian_Application_Config_StorageConfig_Meridian_Contracts_Configuration_SymbolConfig___Meridian_Application_Config_BackfillConfig_Meridian_Application_Config_SourceRegistryConfig_Meridian_Application_Config_DataSourcesConfig_Meridian_Application_Config_DerivativesConfig_Meridian_Application_Config_ProviderRegistryConfig_Meridian_Application_Config_CoordinationConfig_Meridian_Application_Config_CanonicalizationConfig_Meridian_Application_Config_ValidationPipelineConfig_System_Boolean_System_String_System_Boolean_Meridian_Application_Config_ProviderConnectionsConfig_
   name: AppConfig
   nameWithType: AppConfig.AppConfig
   fullName: Meridian.Application.Config.AppConfig.AppConfig
@@ -1275,6 +1265,13 @@ references:
   name: IBOptions
   nameWithType: IBOptions
   fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Application.Config.IBClientPortalOptions
+  commentId: T:Meridian.Application.Config.IBClientPortalOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBClientPortalOptions.html
+  name: IBClientPortalOptions
+  nameWithType: IBClientPortalOptions
+  fullName: Meridian.Application.Config.IBClientPortalOptions
 - uid: Meridian.Application.Config.PolygonOptions
   commentId: T:Meridian.Application.Config.PolygonOptions
   parent: Meridian.Application.Config
@@ -1282,13 +1279,6 @@ references:
   name: PolygonOptions
   nameWithType: PolygonOptions
   fullName: Meridian.Application.Config.PolygonOptions
-- uid: Meridian.Application.Config.StockSharpConfig
-  commentId: T:Meridian.Application.Config.StockSharpConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.StockSharpConfig.html
-  name: StockSharpConfig
-  nameWithType: StockSharpConfig
-  fullName: Meridian.Application.Config.StockSharpConfig
 - uid: Meridian.Application.Config.SyntheticMarketDataConfig
   commentId: T:Meridian.Application.Config.SyntheticMarketDataConfig
   parent: Meridian.Application.Config
@@ -1342,13 +1332,6 @@ references:
   name: DataSourcesConfig
   nameWithType: DataSourcesConfig
   fullName: Meridian.Application.Config.DataSourcesConfig
-- uid: Meridian.Application.Config.ProviderConnectionsConfig
-  commentId: T:Meridian.Application.Config.ProviderConnectionsConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.ProviderConnectionsConfig.html
-  name: ProviderConnectionsConfig
-  nameWithType: ProviderConnectionsConfig
-  fullName: Meridian.Application.Config.ProviderConnectionsConfig
 - uid: Meridian.Application.Config.DerivativesConfig
   commentId: T:Meridian.Application.Config.DerivativesConfig
   parent: Meridian.Application.Config
@@ -1395,6 +1378,13 @@ references:
   nameWithType.vb: Boolean
   fullName.vb: Boolean
   name.vb: Boolean
+- uid: Meridian.Application.Config.ProviderConnectionsConfig
+  commentId: T:Meridian.Application.Config.ProviderConnectionsConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ProviderConnectionsConfig.html
+  name: ProviderConnectionsConfig
+  nameWithType: ProviderConnectionsConfig
+  fullName: Meridian.Application.Config.ProviderConnectionsConfig
 - uid: System.Nullable`1
   commentId: T:System.Nullable`1
   isExternal: true
@@ -1453,18 +1443,18 @@ references:
   name: IB
   nameWithType: AppConfig.IB
   fullName: Meridian.Application.Config.AppConfig.IB
+- uid: Meridian.Application.Config.AppConfig.IBClientPortal*
+  commentId: Overload:Meridian.Application.Config.AppConfig.IBClientPortal
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_IBClientPortal
+  name: IBClientPortal
+  nameWithType: AppConfig.IBClientPortal
+  fullName: Meridian.Application.Config.AppConfig.IBClientPortal
 - uid: Meridian.Application.Config.AppConfig.Polygon*
   commentId: Overload:Meridian.Application.Config.AppConfig.Polygon
   href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Polygon
   name: Polygon
   nameWithType: AppConfig.Polygon
   fullName: Meridian.Application.Config.AppConfig.Polygon
-- uid: Meridian.Application.Config.AppConfig.StockSharp*
-  commentId: Overload:Meridian.Application.Config.AppConfig.StockSharp
-  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_StockSharp
-  name: StockSharp
-  nameWithType: AppConfig.StockSharp
-  fullName: Meridian.Application.Config.AppConfig.StockSharp
 - uid: Meridian.Application.Config.AppConfig.Synthetic*
   commentId: Overload:Meridian.Application.Config.AppConfig.Synthetic
   href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Synthetic
@@ -1501,12 +1491,6 @@ references:
   name: DataSources
   nameWithType: AppConfig.DataSources
   fullName: Meridian.Application.Config.AppConfig.DataSources
-- uid: Meridian.Application.Config.AppConfig.ProviderConnections*
-  commentId: Overload:Meridian.Application.Config.AppConfig.ProviderConnections
-  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_ProviderConnections
-  name: ProviderConnections
-  nameWithType: AppConfig.ProviderConnections
-  fullName: Meridian.Application.Config.AppConfig.ProviderConnections
 - uid: Meridian.Application.Config.AppConfig.Derivatives*
   commentId: Overload:Meridian.Application.Config.AppConfig.Derivatives
   href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_Derivatives
@@ -1555,3 +1539,9 @@ references:
   name: CoLocationProfile
   nameWithType: AppConfig.CoLocationProfile
   fullName: Meridian.Application.Config.AppConfig.CoLocationProfile
+- uid: Meridian.Application.Config.AppConfig.ProviderConnections*
+  commentId: Overload:Meridian.Application.Config.AppConfig.ProviderConnections
+  href: Meridian.Application.Config.AppConfig.html#Meridian_Application_Config_AppConfig_ProviderConnections
+  name: ProviderConnections
+  nameWithType: AppConfig.ProviderConnections
+  fullName: Meridian.Application.Config.AppConfig.ProviderConnections

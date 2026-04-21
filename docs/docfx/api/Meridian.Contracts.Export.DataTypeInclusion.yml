@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypeInclusion
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bars
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBook
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderFlow
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs

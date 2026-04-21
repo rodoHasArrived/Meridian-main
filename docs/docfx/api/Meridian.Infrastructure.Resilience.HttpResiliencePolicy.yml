@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpResiliencePolicy
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateRetryPipeline
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCircuitBreakerPipeline
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateTimeoutPipeline
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateComprehensivePipeline
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateRateLimitAwarePipeline
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExtractRetryAfter
     path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs

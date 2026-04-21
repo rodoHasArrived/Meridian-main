@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistOperationResult
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistId
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAffected
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs

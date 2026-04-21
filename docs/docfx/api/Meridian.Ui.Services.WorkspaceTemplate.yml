@@ -18,12 +18,10 @@ items:
   - Meridian.Ui.Services.WorkspaceTemplate.Pages
   - Meridian.Ui.Services.WorkspaceTemplate.PreferredPageTag
   - Meridian.Ui.Services.WorkspaceTemplate.RecentPageTags
-  - Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts
   - Meridian.Ui.Services.WorkspaceTemplate.SessionSnapshot
   - Meridian.Ui.Services.WorkspaceTemplate.UpdatedAt
   - Meridian.Ui.Services.WorkspaceTemplate.WidgetLayout
   - Meridian.Ui.Services.WorkspaceTemplate.WindowBounds
-  - Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout
   langs:
   - csharp
   - vb
@@ -34,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspaceTemplate
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -70,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -99,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -128,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -157,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreferredPageTag
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -186,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -215,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBuiltIn
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -244,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -273,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -302,7 +300,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastActivatedAt
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -331,7 +329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastActivePageTag
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -360,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pages
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -389,7 +387,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentPageTags
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -418,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WidgetLayout
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -447,7 +445,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filters
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -476,7 +474,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -505,7 +503,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowBounds
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -534,7 +532,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionSnapshot
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -549,64 +547,6 @@ items:
       type: Meridian.Ui.Services.SessionState
     content.vb: Public Property SessionSnapshot As SessionState
   overload: Meridian.Ui.Services.WorkspaceTemplate.SessionSnapshot*
-- uid: Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout
-  commentId: P:Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout
-  id: WorkstationLayout
-  parent: Meridian.Ui.Services.WorkspaceTemplate
-  langs:
-  - csharp
-  - vb
-  name: WorkstationLayout
-  nameWithType: WorkspaceTemplate.WorkstationLayout
-  fullName: Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: WorkstationLayout
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 27
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  syntax:
-    content: public WorkstationLayoutState? WorkstationLayout { get; set; }
-    parameters: []
-    return:
-      type: Meridian.Ui.Services.WorkstationLayoutState
-    content.vb: Public Property WorkstationLayout As WorkstationLayoutState
-  overload: Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout*
-- uid: Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts
-  commentId: P:Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts
-  id: SavedLayouts
-  parent: Meridian.Ui.Services.WorkspaceTemplate
-  langs:
-  - csharp
-  - vb
-  name: SavedLayouts
-  nameWithType: WorkspaceTemplate.SavedLayouts
-  fullName: Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: SavedLayouts
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 28
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  syntax:
-    content: public List<WorkspaceLayoutPreset> SavedLayouts { get; set; }
-    parameters: []
-    return:
-      type: System.Collections.Generic.List{Meridian.Ui.Services.WorkspaceLayoutPreset}
-    content.vb: Public Property SavedLayouts As List(Of WorkspaceLayoutPreset)
-  overload: Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts*
 references:
 - uid: Meridian.Ui.Services
   commentId: N:Meridian.Ui.Services
@@ -1317,55 +1257,3 @@ references:
   name: SessionState
   nameWithType: SessionState
   fullName: Meridian.Ui.Services.SessionState
-- uid: Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout*
-  commentId: Overload:Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout
-  href: Meridian.Ui.Services.WorkspaceTemplate.html#Meridian_Ui_Services_WorkspaceTemplate_WorkstationLayout
-  name: WorkstationLayout
-  nameWithType: WorkspaceTemplate.WorkstationLayout
-  fullName: Meridian.Ui.Services.WorkspaceTemplate.WorkstationLayout
-- uid: Meridian.Ui.Services.WorkstationLayoutState
-  commentId: T:Meridian.Ui.Services.WorkstationLayoutState
-  parent: Meridian.Ui.Services
-  href: Meridian.Ui.Services.WorkstationLayoutState.html
-  name: WorkstationLayoutState
-  nameWithType: WorkstationLayoutState
-  fullName: Meridian.Ui.Services.WorkstationLayoutState
-- uid: Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts*
-  commentId: Overload:Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts
-  href: Meridian.Ui.Services.WorkspaceTemplate.html#Meridian_Ui_Services_WorkspaceTemplate_SavedLayouts
-  name: SavedLayouts
-  nameWithType: WorkspaceTemplate.SavedLayouts
-  fullName: Meridian.Ui.Services.WorkspaceTemplate.SavedLayouts
-- uid: System.Collections.Generic.List{Meridian.Ui.Services.WorkspaceLayoutPreset}
-  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.WorkspaceLayoutPreset}
-  parent: System.Collections.Generic
-  definition: System.Collections.Generic.List`1
-  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  name: List<WorkspaceLayoutPreset>
-  nameWithType: List<WorkspaceLayoutPreset>
-  fullName: System.Collections.Generic.List<Meridian.Ui.Services.WorkspaceLayoutPreset>
-  nameWithType.vb: List(Of WorkspaceLayoutPreset)
-  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.WorkspaceLayoutPreset)
-  name.vb: List(Of WorkspaceLayoutPreset)
-  spec.csharp:
-  - uid: System.Collections.Generic.List`1
-    name: List
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  - name: <
-  - uid: Meridian.Ui.Services.WorkspaceLayoutPreset
-    name: WorkspaceLayoutPreset
-    href: Meridian.Ui.Services.WorkspaceLayoutPreset.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Collections.Generic.List`1
-    name: List
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.WorkspaceLayoutPreset
-    name: WorkspaceLayoutPreset
-    href: Meridian.Ui.Services.WorkspaceLayoutPreset.html
-  - name: )

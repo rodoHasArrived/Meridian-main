@@ -1,0 +1,684 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  id: ProviderDegradationKernelProfile
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderDegradationKernelProfile.#ctor(System.String,Meridian.Application.Monitoring.ProviderDegradationConfig,System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double})
+  - Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config
+  - Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default(System.String)
+  - Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion
+  - Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationKernelProfile
+  nameWithType: ProviderDegradationKernelProfile
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDegradationKernelProfile
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Candidate kernel profile used by calibration and governance promotion.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderDegradationKernelProfile : IEquatable<ProviderDegradationKernelProfile>'
+    content.vb: Public NotInheritable Class ProviderDegradationKernelProfile Implements IEquatable(Of ProviderDegradationKernelProfile)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationKernelProfile}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.#ctor(System.String,Meridian.Application.Monitoring.ProviderDegradationConfig,System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double})
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.#ctor(System.String,Meridian.Application.Monitoring.ProviderDegradationConfig,System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double})
+  id: '#ctor(System.String,Meridian.Application.Monitoring.ProviderDegradationConfig,System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double})'
+  parent: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationKernelProfile(string, ProviderDegradationConfig, IReadOnlyDictionary<IncidentSeverity, double>)
+  nameWithType: ProviderDegradationKernelProfile.ProviderDegradationKernelProfile(string, ProviderDegradationConfig, IReadOnlyDictionary<IncidentSeverity, double>)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.ProviderDegradationKernelProfile(string, Meridian.Application.Monitoring.ProviderDegradationConfig, System.Collections.Generic.IReadOnlyDictionary<Meridian.Application.Monitoring.IncidentSeverity, double>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Candidate kernel profile used by calibration and governance promotion.
+  example: []
+  syntax:
+    content: public ProviderDegradationKernelProfile(string KernelVersion, ProviderDegradationConfig Config, IReadOnlyDictionary<IncidentSeverity, double> SeverityThresholds)
+    parameters:
+    - id: KernelVersion
+      type: System.String
+    - id: Config
+      type: Meridian.Application.Monitoring.ProviderDegradationConfig
+    - id: SeverityThresholds
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double}
+    content.vb: Public Sub New(KernelVersion As String, Config As ProviderDegradationConfig, SeverityThresholds As IReadOnlyDictionary(Of IncidentSeverity, Double))
+  overload: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.#ctor*
+  nameWithType.vb: ProviderDegradationKernelProfile.New(String, ProviderDegradationConfig, IReadOnlyDictionary(Of IncidentSeverity, Double))
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.New(String, Meridian.Application.Monitoring.ProviderDegradationConfig, System.Collections.Generic.IReadOnlyDictionary(Of Meridian.Application.Monitoring.IncidentSeverity, Double))
+  name.vb: New(String, ProviderDegradationConfig, IReadOnlyDictionary(Of IncidentSeverity, Double))
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion
+  id: KernelVersion
+  parent: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  langs:
+  - csharp
+  - vb
+  name: KernelVersion
+  nameWithType: ProviderDegradationKernelProfile.KernelVersion
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KernelVersion
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string KernelVersion { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property KernelVersion As String
+  overload: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion*
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config
+  id: Config
+  parent: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  langs:
+  - csharp
+  - vb
+  name: Config
+  nameWithType: ProviderDegradationKernelProfile.Config
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Config
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ProviderDegradationConfig Config { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.ProviderDegradationConfig
+    content.vb: Public Property Config As ProviderDegradationConfig
+  overload: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config*
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds
+  id: SeverityThresholds
+  parent: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  langs:
+  - csharp
+  - vb
+  name: SeverityThresholds
+  nameWithType: ProviderDegradationKernelProfile.SeverityThresholds
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SeverityThresholds
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyDictionary<IncidentSeverity, double> SeverityThresholds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double}
+    content.vb: Public Property SeverityThresholds As IReadOnlyDictionary(Of IncidentSeverity, Double)
+  overload: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds*
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default(System.String)
+  id: Default(System.String)
+  parent: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  langs:
+  - csharp
+  - vb
+  name: Default(string)
+  nameWithType: ProviderDegradationKernelProfile.Default(string)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static ProviderDegradationKernelProfile Default(string kernelVersion = "default")
+    parameters:
+    - id: kernelVersion
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+    content.vb: Public Shared Function [Default](kernelVersion As String = "default") As ProviderDegradationKernelProfile
+  overload: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default*
+  nameWithType.vb: ProviderDegradationKernelProfile.Default(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default(String)
+  name.vb: Default(String)
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationKernelProfile}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationKernelProfile}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderDegradationKernelProfile>
+  nameWithType: IEquatable<ProviderDegradationKernelProfile>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ProviderDegradationKernelProfile>
+  nameWithType.vb: IEquatable(Of ProviderDegradationKernelProfile)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ProviderDegradationKernelProfile)
+  name.vb: IEquatable(Of ProviderDegradationKernelProfile)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+    name: ProviderDegradationKernelProfile
+    href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+    name: ProviderDegradationKernelProfile
+    href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.#ctor
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html#Meridian_Application_Monitoring_ProviderDegradationKernelProfile__ctor_System_String_Meridian_Application_Monitoring_ProviderDegradationConfig_System_Collections_Generic_IReadOnlyDictionary_Meridian_Application_Monitoring_IncidentSeverity_System_Double__
+  name: ProviderDegradationKernelProfile
+  nameWithType: ProviderDegradationKernelProfile.ProviderDegradationKernelProfile
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.ProviderDegradationKernelProfile
+  nameWithType.vb: ProviderDegradationKernelProfile.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html
+  name: ProviderDegradationConfig
+  nameWithType: ProviderDegradationConfig
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig
+- uid: System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{Meridian.Application.Monitoring.IncidentSeverity,System.Double}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<IncidentSeverity, double>
+  nameWithType: IReadOnlyDictionary<IncidentSeverity, double>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<Meridian.Application.Monitoring.IncidentSeverity, double>
+  nameWithType.vb: IReadOnlyDictionary(Of IncidentSeverity, Double)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of Meridian.Application.Monitoring.IncidentSeverity, Double)
+  name.vb: IReadOnlyDictionary(Of IncidentSeverity, Double)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: Meridian.Application.Monitoring.IncidentSeverity
+    name: IncidentSeverity
+    href: Meridian.Application.Monitoring.IncidentSeverity.html
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.IncidentSeverity
+    name: IncidentSeverity
+    href: Meridian.Application.Monitoring.IncidentSeverity.html
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html#Meridian_Application_Monitoring_ProviderDegradationKernelProfile_KernelVersion
+  name: KernelVersion
+  nameWithType: ProviderDegradationKernelProfile.KernelVersion
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.KernelVersion
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html#Meridian_Application_Monitoring_ProviderDegradationKernelProfile_Config
+  name: Config
+  nameWithType: ProviderDegradationKernelProfile.Config
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Config
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html#Meridian_Application_Monitoring_ProviderDegradationKernelProfile_SeverityThresholds
+  name: SeverityThresholds
+  nameWithType: ProviderDegradationKernelProfile.SeverityThresholds
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.SeverityThresholds
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html#Meridian_Application_Monitoring_ProviderDegradationKernelProfile_Default_System_String_
+  name: Default
+  nameWithType: ProviderDegradationKernelProfile.Default
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.Default
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html
+  name: ProviderDegradationKernelProfile
+  nameWithType: ProviderDegradationKernelProfile
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile

@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EdgarSymbolSearchProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -301,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -380,7 +380,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -422,7 +422,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -468,7 +468,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
@@ -505,7 +505,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs

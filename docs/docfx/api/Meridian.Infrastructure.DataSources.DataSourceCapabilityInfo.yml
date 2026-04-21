@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceCapabilityInfo
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinHistoricalDate
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxHistoricalLookback
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSymbolsPerSubscription
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinBarResolution
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedBarIntervals
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerMinute
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerHour
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerDay
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -407,7 +407,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs

@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCode
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InternalError
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeout
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotSupported
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidOperation
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiredFieldMissing
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfRange
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidFormat
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -411,7 +411,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicateValue
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -439,7 +439,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConstraintViolation
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -467,7 +467,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationInvalid
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -495,7 +495,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationMissing
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -523,7 +523,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationOutOfRange
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -551,7 +551,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialsMissing
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -579,7 +579,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialsInvalid
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -607,7 +607,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -635,7 +635,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionLost
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -663,7 +663,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionRefused
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -691,7 +691,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionTimeout
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -719,7 +719,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticationFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -747,7 +747,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SslError
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -775,7 +775,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DnsResolutionFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -803,7 +803,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderError
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -831,7 +831,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderUnavailable
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -859,7 +859,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitExceeded
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -887,7 +887,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionLimitExceeded
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -915,7 +915,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolNotFound
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -943,7 +943,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidProviderData
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -971,7 +971,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoDataAvailable
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -999,7 +999,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerOpen
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1027,7 +1027,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceGap
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1055,7 +1055,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrderData
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1083,7 +1083,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicateData
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1111,7 +1111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataCorruption
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1139,7 +1139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumMismatch
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1167,7 +1167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaMismatch
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1195,7 +1195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageError
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1223,7 +1223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileNotFound
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1251,7 +1251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileAccessDenied
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1279,7 +1279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsufficientDiskSpace
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1307,7 +1307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1335,7 +1335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1363,7 +1363,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1391,7 +1391,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializationFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1419,7 +1419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1447,7 +1447,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsumeFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1475,7 +1475,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageDeserializationFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1503,7 +1503,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageValidationFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1531,7 +1531,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeadLetterFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -1559,7 +1559,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerConnectionFailed
     path: ../../src/Meridian.Application/Results/ErrorCode.cs

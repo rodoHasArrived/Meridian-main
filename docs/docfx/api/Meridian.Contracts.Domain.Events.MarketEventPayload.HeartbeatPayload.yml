@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatPayload
     path: ../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs

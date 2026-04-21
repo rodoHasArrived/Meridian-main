@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisExportFormat
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CSV
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parquet
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JSON
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JSONL
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Excel
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HDF5
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feather
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs

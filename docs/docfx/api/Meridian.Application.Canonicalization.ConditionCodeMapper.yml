@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConditionCodeMapper
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromFile
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromJson
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapConditions
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSingle
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MappingCount
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContainsHaltCondition
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHaltCondition
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsResumedCondition
     path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs

@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolNormalization
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normalize
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForTiingo
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForYahoo
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForStooq
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForNasdaqDataLink
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForOpenFigi
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidSymbol
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeMany
     path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs

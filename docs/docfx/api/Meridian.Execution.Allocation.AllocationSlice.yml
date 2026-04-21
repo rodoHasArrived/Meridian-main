@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/AllocationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocationSlice
     path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/AllocationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/AllocationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DestinationId
     path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/AllocationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocatedQuantity
     path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/AllocationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocatedWeight
     path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/AllocationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProRataValue
     path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadedModuleInfo
     path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleId
     path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderModuleLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.ProviderSdk/ProviderModuleLoader.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillHealthResponse
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs

@@ -73,21 +73,16 @@ public sealed class PromotionService
         }
 
         var effectiveCriteria = criteria ?? PromotionCriteria.Default;
+        var metrics = run.Metrics!.Metrics;
         var targetMode = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
         var controlsSnapshot = _operatorControls?.GetSnapshot();
+        var brokerageValidation = targetMode == RunType.Live
+            ? BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration)
+            : null;
         var hasConflictingOverride = false;
         var hasLivePromotionOverride = false;
         if (targetMode == RunType.Live && controlsSnapshot is not null)
         {
-<<<<<<< ours
-            var brokerageValidation = BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration);
-            if (brokerageValidation.HasBlockingGap)
-            {
-                blockingReasons.AddRange(brokerageValidation.Findings);
-                requiresHumanApproval = true;
-                requiresManualOverride = true;
-                requiredManualOverrideKind = ExecutionManualOverrideKinds.AllowLivePromotion;
-=======
             foreach (var overrideEntry in controlsSnapshot.ManualOverrides)
             {
                 var matchesStrategy = string.IsNullOrWhiteSpace(overrideEntry.StrategyId) ||
@@ -108,39 +103,70 @@ public sealed class PromotionService
                 {
                     hasLivePromotionOverride = true;
                 }
->>>>>>> theirs
             }
         }
 
         var policyInput = new Meridian.FSharp.Promotion.PromotionPolicy.PromotionPolicyInput(
-            IsRunCompleted: run.EndedAt.HasValue,
-            HasMetrics: run.Metrics is not null,
-            SharpeRatio: run.Metrics.Metrics.SharpeRatio,
-            MaxDrawdownPercent: run.Metrics.Metrics.MaxDrawdownPercent,
-            TotalReturn: run.Metrics.Metrics.TotalReturn,
-            MinSharpeRatio: effectiveCriteria.MinSharpeRatio,
-            MaxAllowedDrawdownPercent: effectiveCriteria.MaxAllowedDrawdownPercent,
-            MinTotalReturn: effectiveCriteria.MinTotalReturn,
-            IsLiveTarget: targetMode == RunType.Live,
-            HasCompleteTrustEvidence: controlsSnapshot is not null || targetMode != RunType.Live,
-            HasFreshTrustEvidence: controlsSnapshot is not null || targetMode != RunType.Live,
-            IsLiveExecutionEnabled: _brokerageConfiguration?.LiveExecutionEnabled ?? false,
-            IsCircuitBreakerOpen: controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
-            HasConflictingOverride: hasConflictingOverride,
-            HasActiveLivePromotionOverride: targetMode != RunType.Live || hasLivePromotionOverride,
-            RequiredManualOverrideKind: ExecutionManualOverrideKinds.AllowLivePromotion);
+            run.EndedAt.HasValue,
+            run.Metrics is not null,
+            metrics.SharpeRatio,
+            metrics.MaxDrawdownPercent,
+            metrics.TotalReturn,
+            effectiveCriteria.MinSharpeRatio,
+            effectiveCriteria.MaxAllowedDrawdownPercent,
+            effectiveCriteria.MinTotalReturn,
+            targetMode == RunType.Live,
+            controlsSnapshot is not null || targetMode != RunType.Live,
+            controlsSnapshot is not null || targetMode != RunType.Live,
+            _brokerageConfiguration?.LiveExecutionEnabled ?? false,
+            controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
+            hasConflictingOverride,
+            targetMode != RunType.Live || hasLivePromotionOverride,
+            ExecutionManualOverrideKinds.AllowLivePromotion);
         var policyDecision = Interop.PromotionInterop.EvaluatePromotionPolicy(policyInput);
-        var eligible = policyDecision.Eligible;
-        var requiresManualOverride = string.Equals(policyDecision.Outcome, "requires_manual_override", StringComparison.OrdinalIgnoreCase);
-        var requiresHumanApproval = requiresManualOverride || string.Equals(policyDecision.Outcome, "requires_human_review", StringComparison.OrdinalIgnoreCase);
-        var blockingReasons = policyDecision.Reasons.Length > 0 ? policyDecision.Reasons : null;
+        var hasBrokerageGap = brokerageValidation?.HasBlockingGap == true;
+        var eligible = policyDecision.Eligible && !hasBrokerageGap;
+        var requiresManualOverride =
+            string.Equals(policyDecision.Outcome, "requires_manual_override", StringComparison.OrdinalIgnoreCase) ||
+            (targetMode == RunType.Live && hasBrokerageGap);
+        var requiresHumanApproval =
+            requiresManualOverride ||
+            string.Equals(policyDecision.Outcome, "requires_human_review", StringComparison.OrdinalIgnoreCase);
+        var blockingReasons = new List<string>();
+        if (policyDecision.Reasons.Length > 0)
+        {
+            blockingReasons.AddRange(policyDecision.Reasons);
+        }
+
+        if (targetMode == RunType.Live && brokerageValidation is not null && brokerageValidation.Findings.Count > 0)
+        {
+            blockingReasons.AddRange(brokerageValidation.Findings);
+        }
+
         var requiredManualOverrideKind = string.IsNullOrWhiteSpace(policyDecision.RequiredManualOverrideKind)
-            ? null
+            ? requiresManualOverride && targetMode == RunType.Live
+                ? ExecutionManualOverrideKinds.AllowLivePromotion
+                : null
             : policyDecision.RequiredManualOverrideKind;
+        var blockingReasonSet = blockingReasons.Count > 0
+            ? blockingReasons
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+            : null;
+        var reason = policyDecision.Outcome switch
+        {
+            "approved" when hasBrokerageGap && brokerageValidation is not null => brokerageValidation.Summary,
+            "approved" => "Meets all promotion policy gates.",
+            "requires_human_review" => "Promotion requires human governance review.",
+            "requires_manual_override" => "Promotion requires a manual override.",
+            "blocked" => "Promotion is blocked by policy.",
+            _ when hasBrokerageGap && brokerageValidation is not null => brokerageValidation.Summary,
+            _ => "Promotion policy decision unavailable."
+        };
 
         _logger.LogInformation(
             "Promotion evaluation for run {RunId}: eligible={Eligible}, target={Target}, sharpe={Sharpe:F3}",
-            runId, eligible, targetMode, run.Metrics.Metrics.SharpeRatio);
+            runId, eligible, targetMode, metrics.SharpeRatio);
 
         return new PromotionEvaluationResult(
             RunId: runId,
@@ -149,23 +175,16 @@ public sealed class PromotionService
             SourceMode: run.RunType,
             TargetMode: targetMode,
             IsEligible: eligible,
-            SharpeRatio: run.Metrics.Metrics.SharpeRatio,
-            MaxDrawdownPercent: run.Metrics.Metrics.MaxDrawdownPercent,
-            TotalReturn: run.Metrics.Metrics.TotalReturn,
-            Reason: policyDecision.Outcome switch
-            {
-                "approved" => "Meets all promotion policy gates.",
-                "requires_human_review" => "Promotion requires human governance review.",
-                "requires_manual_override" => "Promotion requires a manual override.",
-                "blocked" => "Promotion is blocked by policy.",
-                _ => "Promotion policy decision unavailable."
-            },
+            SharpeRatio: metrics.SharpeRatio,
+            MaxDrawdownPercent: metrics.MaxDrawdownPercent,
+            TotalReturn: metrics.TotalReturn,
+            Reason: reason,
             Found: true,
             Ready: true,
             RequiresHumanApproval: requiresHumanApproval,
             RequiresManualOverride: requiresManualOverride,
             RequiredManualOverrideKind: requiredManualOverrideKind,
-            BlockingReasons: blockingReasons);
+            BlockingReasons: blockingReasonSet);
     }
 
     /// <summary>

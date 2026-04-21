@@ -5,7 +5,7 @@ items:
   id: CreateAccountRequest
   parent: Meridian.Contracts.FundStructure
   children:
-  - Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
   - Meridian.Contracts.FundStructure.CreateAccountRequest.AccountCode
   - Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
   - Meridian.Contracts.FundStructure.CreateAccountRequest.AccountType
@@ -18,7 +18,11 @@ items:
   - Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
   - Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
   - Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.RunId
   - Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
+  - Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId
   - Meridian.Contracts.FundStructure.CreateAccountRequest.VehicleId
   langs:
   - csharp
@@ -29,15 +33,17 @@ items:
   type: Class
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAccountRequest
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 43
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 159
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: Request to create a new fund account.
+  example: []
   syntax:
     content: 'public sealed record CreateAccountRequest : IEquatable<CreateAccountRequest>'
     content.vb: Public NotInheritable Class CreateAccountRequest Implements IEquatable(Of CreateAccountRequest)
@@ -52,30 +58,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
-  commentId: M:Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
-  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)'
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  commentId: M:Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)'
   parent: Meridian.Contracts.FundStructure.CreateAccountRequest
   langs:
   - csharp
   - vb
-  name: CreateAccountRequest(Guid, AccountTypeDto, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
-  nameWithType: CreateAccountRequest.CreateAccountRequest(Guid, AccountTypeDto, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
-  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreateAccountRequest(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, string, string, string, System.DateTimeOffset, string, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string?, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto?, Meridian.Contracts.FundStructure.BankAccountDetailsDto?)
+  name: CreateAccountRequest(Guid, AccountTypeDto, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, string?, string?, string?, string?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
+  nameWithType: CreateAccountRequest.CreateAccountRequest(Guid, AccountTypeDto, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, string?, string?, string?, string?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreateAccountRequest(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, string, string, string, System.DateTimeOffset, string, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string?, string?, string?, string?, string?, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto?, Meridian.Contracts.FundStructure.BankAccountDetailsDto?)
   type: Constructor
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 43
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 159
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: Request to create a new fund account.
+  example: []
   syntax:
-    content: public CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? EntityId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null)
+    content: public CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? FundId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null)
     parameters:
     - id: AccountId
       type: System.Guid
@@ -91,9 +99,9 @@ items:
       type: System.DateTimeOffset
     - id: CreatedBy
       type: System.String
-    - id: EntityId
-      type: System.Nullable{System.Guid}
     - id: FundId
+      type: System.Nullable{System.Guid}
+    - id: EntityId
       type: System.Nullable{System.Guid}
     - id: SleeveId
       type: System.Nullable{System.Guid}
@@ -101,15 +109,23 @@ items:
       type: System.Nullable{System.Guid}
     - id: Institution
       type: System.String
+    - id: PortfolioId
+      type: System.String
+    - id: LedgerReference
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    - id: RunId
+      type: System.String
     - id: CustodianDetails
       type: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
     - id: BankDetails
       type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
-    content.vb: Public Sub New(AccountId As Guid, AccountType As AccountTypeDto, AccountCode As String, DisplayName As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, EntityId As Guid? = Nothing, FundId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, Institution As String = Nothing, CustodianDetails As CustodianAccountDetailsDto = Nothing, BankDetails As BankAccountDetailsDto = Nothing)
+    content.vb: Public Sub New(AccountId As Guid, AccountType As AccountTypeDto, AccountCode As String, DisplayName As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, FundId As Guid? = Nothing, EntityId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, Institution As String = Nothing, PortfolioId As String = Nothing, LedgerReference As String = Nothing, StrategyId As String = Nothing, RunId As String = Nothing, CustodianDetails As CustodianAccountDetailsDto = Nothing, BankDetails As BankAccountDetailsDto = Nothing)
   overload: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor*
-  nameWithType.vb: CreateAccountRequest.New(Guid, AccountTypeDto, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
-  fullName.vb: Meridian.Contracts.FundStructure.CreateAccountRequest.New(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, String, String, String, System.DateTimeOffset, String, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto, Meridian.Contracts.FundStructure.BankAccountDetailsDto)
-  name.vb: New(Guid, AccountTypeDto, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
+  nameWithType.vb: CreateAccountRequest.New(Guid, AccountTypeDto, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, String, String, String, String, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
+  fullName.vb: Meridian.Contracts.FundStructure.CreateAccountRequest.New(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, String, String, String, System.DateTimeOffset, String, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String, String, String, String, String, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto, Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  name.vb: New(Guid, AccountTypeDto, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, String, String, String, String, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
   commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.AccountId
   id: AccountId
@@ -123,12 +139,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 44
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 160
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -152,12 +168,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountType
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 45
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 161
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -181,12 +197,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountCode
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 46
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 162
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -210,12 +226,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 47
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 163
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -239,12 +255,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 48
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 164
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -268,12 +284,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 49
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 165
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -297,12 +313,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 50
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 166
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -313,35 +329,6 @@ items:
       type: System.String
     content.vb: Public Property CreatedBy As String
   overload: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy*
-- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
-  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
-  id: EntityId
-  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
-  langs:
-  - csharp
-  - vb
-  name: EntityId
-  nameWithType: CreateAccountRequest.EntityId
-  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: EntityId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 51
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.FundStructure
-  syntax:
-    content: public Guid? EntityId { get; init; }
-    parameters: []
-    return:
-      type: System.Nullable{System.Guid}
-    content.vb: Public Property EntityId As Guid?
-  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId*
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
   commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
   id: FundId
@@ -355,12 +342,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 52
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 167
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -371,6 +358,35 @@ items:
       type: System.Nullable{System.Guid}
     content.vb: Public Property FundId As Guid?
   overload: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: CreateAccountRequest.EntityId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property EntityId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId*
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
   commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
   id: SleeveId
@@ -384,12 +400,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 53
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 169
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -413,12 +429,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 54
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 170
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -442,12 +458,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Institution
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 55
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 171
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -458,6 +474,122 @@ items:
       type: System.String
     content.vb: Public Property Institution As String
   overload: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: CreateAccountRequest.PortfolioId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference
+  id: LedgerReference
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: LedgerReference
+  nameWithType: CreateAccountRequest.LedgerReference
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReference
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? LedgerReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerReference As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId
+  id: StrategyId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: CreateAccountRequest.StrategyId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId*
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.RunId
+  commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.RunId
+  id: RunId
+  parent: Meridian.Contracts.FundStructure.CreateAccountRequest
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: CreateAccountRequest.RunId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.FundStructure.CreateAccountRequest.RunId*
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
   commentId: P:Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
   id: CustodianDetails
@@ -471,12 +603,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodianDetails
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 56
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 176
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -500,12 +632,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankDetails
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 57
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 177
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -823,7 +955,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor*
   commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.#ctor
-  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest__ctor_System_Guid_Meridian_Contracts_FundStructure_AccountTypeDto_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_Meridian_Contracts_FundStructure_BankAccountDetailsDto_
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest__ctor_System_Guid_Meridian_Contracts_FundStructure_AccountTypeDto_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_System_String_System_String_System_String_System_String_Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_Meridian_Contracts_FundStructure_BankAccountDetailsDto_
   name: CreateAccountRequest
   nameWithType: CreateAccountRequest.CreateAccountRequest
   fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreateAccountRequest
@@ -968,18 +1100,18 @@ references:
   name: CreatedBy
   nameWithType: CreateAccountRequest.CreatedBy
   fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.CreatedBy
-- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId*
-  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
-  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_EntityId
-  name: EntityId
-  nameWithType: CreateAccountRequest.EntityId
-  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId*
   commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
   href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_FundId
   name: FundId
   nameWithType: CreateAccountRequest.FundId
   fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.FundId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_EntityId
+  name: EntityId
+  nameWithType: CreateAccountRequest.EntityId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.EntityId
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId*
   commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.SleeveId
   href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_SleeveId
@@ -998,6 +1130,30 @@ references:
   name: Institution
   nameWithType: CreateAccountRequest.Institution
   fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.Institution
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_PortfolioId
+  name: PortfolioId
+  nameWithType: CreateAccountRequest.PortfolioId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.PortfolioId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_LedgerReference
+  name: LedgerReference
+  nameWithType: CreateAccountRequest.LedgerReference
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.LedgerReference
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_StrategyId
+  name: StrategyId
+  nameWithType: CreateAccountRequest.StrategyId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.StrategyId
+- uid: Meridian.Contracts.FundStructure.CreateAccountRequest.RunId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.RunId
+  href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_RunId
+  name: RunId
+  nameWithType: CreateAccountRequest.RunId
+  fullName: Meridian.Contracts.FundStructure.CreateAccountRequest.RunId
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails*
   commentId: Overload:Meridian.Contracts.FundStructure.CreateAccountRequest.CustodianDetails
   href: Meridian.Contracts.FundStructure.CreateAccountRequest.html#Meridian_Contracts_FundStructure_CreateAccountRequest_CustodianDetails

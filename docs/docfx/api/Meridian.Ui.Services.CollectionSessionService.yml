@@ -40,11 +40,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSessionService
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 13
+    startLine: 15
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -79,11 +79,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 22
+    startLine: 27
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -108,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadSessionsAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 34
+    startLine: 44
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -141,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSessionsAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 60
+    startLine: 85
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -174,11 +174,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessionsAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 78
+    startLine: 110
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -207,11 +207,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 87
+    startLine: 119
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -240,11 +240,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 101
+    startLine: 133
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -282,11 +282,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDailySessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 134
+    startLine: 166
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -315,11 +315,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 151
+    startLine: 183
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -353,11 +353,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 190
+    startLine: 222
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -393,11 +393,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 244
+    startLine: 276
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -431,11 +431,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumeSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 264
+    startLine: 296
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -469,11 +469,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSessionStatisticsAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 284
+    startLine: 316
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -513,11 +513,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordGapDetectedAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 330
+    startLine: 362
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -551,11 +551,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSequenceErrorAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 346
+    startLine: 378
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -589,11 +589,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 362
+    startLine: 394
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -627,11 +627,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSessionNotesAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 391
+    startLine: 423
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -667,11 +667,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSessionTagsAsync
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 407
+    startLine: 439
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -707,11 +707,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSessionSummary
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 423
+    startLine: 455
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -740,11 +740,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionCreated
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 508
+    startLine: 579
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -767,11 +767,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionStarted
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 509
+    startLine: 580
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -794,11 +794,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionPaused
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 510
+    startLine: 581
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -821,11 +821,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionResumed
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 511
+    startLine: 582
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -848,11 +848,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionCompleted
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 512
+    startLine: 583
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -875,11 +875,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionDeleted
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 513
+    startLine: 584
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -902,11 +902,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatisticsUpdated
     path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
-    startLine: 514
+    startLine: 585
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

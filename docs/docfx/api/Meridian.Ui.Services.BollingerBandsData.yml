@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerBandsData
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpperBand
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MiddleBand
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowerBand
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentB
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs

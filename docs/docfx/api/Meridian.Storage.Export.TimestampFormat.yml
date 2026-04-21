@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampFormat
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Iso8601
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnixSeconds
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnixMilliseconds
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnixNanoseconds
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExcelSerial
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs

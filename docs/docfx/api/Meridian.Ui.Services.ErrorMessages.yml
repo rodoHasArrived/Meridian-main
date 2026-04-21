@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessages
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionFailed
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionTimeout
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticationFailed
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderUnavailable
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitExceeded
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKeyMissing
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidConfiguration
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataDirectoryNotFound
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolNotFound
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -410,7 +410,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidSymbolFormat
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -446,7 +446,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionFailed
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -484,7 +484,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveFailed
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -520,7 +520,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFailed
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -556,7 +556,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowDiskSpace
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -592,7 +592,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillFailed
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -630,7 +630,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillPartial
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -670,7 +670,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnexpectedError
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -708,7 +708,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromException
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
@@ -746,7 +746,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
     path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs

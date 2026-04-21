@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStorageStats
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQuality
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapCount
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeByType
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsByType
     path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs

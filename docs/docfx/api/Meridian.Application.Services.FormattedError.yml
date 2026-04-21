@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormattedError
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Suggestion
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocsLink
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
     path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs

@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionPortfolioSnapshot
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 766
+    startLine: 986
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 766
+    startLine: 986
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -104,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 767
+    startLine: 987
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -133,11 +133,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 768
+    startLine: 988
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -162,11 +162,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 769
+    startLine: 989
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -191,11 +191,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 770
+    startLine: 990
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -220,11 +220,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 771
+    startLine: 991
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -249,11 +249,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 772
+    startLine: 992
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

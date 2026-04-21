@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsOverwriteFilters
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PassesLiquidityFilter
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PassesRiskFilter
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasDividendAssignmentRisk
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasDividendAssignmentRiskWithUnderlyingPrice
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenPositionHasDividendRisk
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs

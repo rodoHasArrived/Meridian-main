@@ -1,0 +1,1332 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  commentId: T:Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  id: ExecutionPositionDetailResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol
+  - Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: ExecutionPositionDetailResponse
+  nameWithType: ExecutionPositionDetailResponse
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionPositionDetailResponse
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Rich position details for broker-backed and paper-backed execution views.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionPositionDetailResponse : IEquatable<ExecutionPositionDetailResponse>'
+    content.vb: Public NotInheritable Class ExecutionPositionDetailResponse Implements IEquatable(Of ExecutionPositionDetailResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.ExecutionPositionDetailResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Contracts.Api.ExecutionPositionDetailResponse.#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Decimal},System.String,System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: ExecutionPositionDetailResponse(string, string, string, string, string?, decimal, decimal, decimal, decimal, decimal, decimal, string, string, DateOnly?, decimal?, string?, bool, bool, IReadOnlyDictionary<string, string>?)
+  nameWithType: ExecutionPositionDetailResponse.ExecutionPositionDetailResponse(string, string, string, string, string?, decimal, decimal, decimal, decimal, decimal, decimal, string, string, DateOnly?, decimal?, string?, bool, bool, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ExecutionPositionDetailResponse(string, string, string, string, string?, decimal, decimal, decimal, decimal, decimal, decimal, string, string, System.DateOnly?, decimal?, string?, bool, bool, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Rich position details for broker-backed and paper-backed execution views.
+  example: []
+  syntax:
+    content: public ExecutionPositionDetailResponse(string PositionKey, string Symbol, string UnderlyingSymbol, string ProductDescription, string? TradeId, decimal Quantity, decimal AverageCostBasis, decimal MarketPrice, decimal MarketValue, decimal UnrealisedPnl, decimal RealisedPnl, string AssetClass, string Side, DateOnly? Expiration = null, decimal? Strike = null, string? Right = null, bool SupportsClose = true, bool SupportsUpsize = true, IReadOnlyDictionary<string, string>? Metadata = null)
+    parameters:
+    - id: PositionKey
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: UnderlyingSymbol
+      type: System.String
+    - id: ProductDescription
+      type: System.String
+    - id: TradeId
+      type: System.String
+    - id: Quantity
+      type: System.Decimal
+    - id: AverageCostBasis
+      type: System.Decimal
+    - id: MarketPrice
+      type: System.Decimal
+    - id: MarketValue
+      type: System.Decimal
+    - id: UnrealisedPnl
+      type: System.Decimal
+    - id: RealisedPnl
+      type: System.Decimal
+    - id: AssetClass
+      type: System.String
+    - id: Side
+      type: System.String
+    - id: Expiration
+      type: System.Nullable{System.DateOnly}
+    - id: Strike
+      type: System.Nullable{System.Decimal}
+    - id: Right
+      type: System.String
+    - id: SupportsClose
+      type: System.Boolean
+    - id: SupportsUpsize
+      type: System.Boolean
+    - id: Metadata
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(PositionKey As String, Symbol As String, UnderlyingSymbol As String, ProductDescription As String, TradeId As String, Quantity As Decimal, AverageCostBasis As Decimal, MarketPrice As Decimal, MarketValue As Decimal, UnrealisedPnl As Decimal, RealisedPnl As Decimal, AssetClass As String, Side As String, Expiration As DateOnly? = Nothing, Strike As Decimal? = Nothing, Right As String = Nothing, SupportsClose As Boolean = True, SupportsUpsize As Boolean = True, Metadata As IReadOnlyDictionary(Of String, String) = Nothing)
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.#ctor*
+  nameWithType.vb: ExecutionPositionDetailResponse.New(String, String, String, String, String, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, String, String, DateOnly?, Decimal?, String, Boolean, Boolean, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Contracts.Api.ExecutionPositionDetailResponse.New(String, String, String, String, String, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, String, String, System.DateOnly?, Decimal?, String, Boolean, Boolean, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(String, String, String, String, String, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, String, String, DateOnly?, Decimal?, String, Boolean, Boolean, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey
+  id: PositionKey
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: PositionKey
+  nameWithType: ExecutionPositionDetailResponse.PositionKey
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionKey
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string PositionKey { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PositionKey As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ExecutionPositionDetailResponse.Symbol
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: ExecutionPositionDetailResponse.UnderlyingSymbol
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription
+  id: ProductDescription
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: ProductDescription
+  nameWithType: ExecutionPositionDetailResponse.ProductDescription
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProductDescription
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string ProductDescription { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProductDescription As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId
+  id: TradeId
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: TradeId
+  nameWithType: ExecutionPositionDetailResponse.TradeId
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeId
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? TradeId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TradeId As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity
+  id: Quantity
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: ExecutionPositionDetailResponse.Quantity
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis
+  id: AverageCostBasis
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: AverageCostBasis
+  nameWithType: ExecutionPositionDetailResponse.AverageCostBasis
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageCostBasis
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal AverageCostBasis { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AverageCostBasis As Decimal
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice
+  id: MarketPrice
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: MarketPrice
+  nameWithType: ExecutionPositionDetailResponse.MarketPrice
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketPrice
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal MarketPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarketPrice As Decimal
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue
+  id: MarketValue
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: MarketValue
+  nameWithType: ExecutionPositionDetailResponse.MarketValue
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketValue
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal MarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarketValue As Decimal
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: ExecutionPositionDetailResponse.UnrealisedPnl
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal UnrealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealisedPnl As Decimal
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl
+  id: RealisedPnl
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: RealisedPnl
+  nameWithType: ExecutionPositionDetailResponse.RealisedPnl
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealisedPnl
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal RealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealisedPnl As Decimal
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: ExecutionPositionDetailResponse.AssetClass
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side
+  id: Side
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: ExecutionPositionDetailResponse.Side
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Side { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Side As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration
+  id: Expiration
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: ExecutionPositionDetailResponse.Expiration
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateOnly? Expiration { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property Expiration As DateOnly?
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike
+  id: Strike
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: ExecutionPositionDetailResponse.Strike
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal? Strike { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Strike As Decimal?
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right
+  id: Right
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Right
+  nameWithType: ExecutionPositionDetailResponse.Right
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Right
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Right { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Right As String
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose
+  id: SupportsClose
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: SupportsClose
+  nameWithType: ExecutionPositionDetailResponse.SupportsClose
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsClose
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool SupportsClose { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsClose As Boolean
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize
+  id: SupportsUpsize
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: SupportsUpsize
+  nameWithType: ExecutionPositionDetailResponse.SupportsUpsize
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsUpsize
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool SupportsUpsize { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsUpsize As Boolean
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize*
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata
+  commentId: P:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata
+  id: Metadata
+  parent: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: ExecutionPositionDetailResponse.Metadata
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ExecutionApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Contracts/Api/ExecutionApiModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Metadata As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.ExecutionPositionDetailResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.ExecutionPositionDetailResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionPositionDetailResponse>
+  nameWithType: IEquatable<ExecutionPositionDetailResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.ExecutionPositionDetailResponse>
+  nameWithType.vb: IEquatable(Of ExecutionPositionDetailResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.ExecutionPositionDetailResponse)
+  name.vb: IEquatable(Of ExecutionPositionDetailResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+    name: ExecutionPositionDetailResponse
+    href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse
+    name: ExecutionPositionDetailResponse
+    href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.#ctor
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse__ctor_System_String_System_String_System_String_System_String_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_String_System_String_System_Nullable_System_DateOnly__System_Nullable_System_Decimal__System_String_System_Boolean_System_Boolean_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: ExecutionPositionDetailResponse
+  nameWithType: ExecutionPositionDetailResponse.ExecutionPositionDetailResponse
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ExecutionPositionDetailResponse
+  nameWithType.vb: ExecutionPositionDetailResponse.New
+  fullName.vb: Meridian.Contracts.Api.ExecutionPositionDetailResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_PositionKey
+  name: PositionKey
+  nameWithType: ExecutionPositionDetailResponse.PositionKey
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.PositionKey
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Symbol
+  name: Symbol
+  nameWithType: ExecutionPositionDetailResponse.Symbol
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Symbol
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: ExecutionPositionDetailResponse.UnderlyingSymbol
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnderlyingSymbol
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_ProductDescription
+  name: ProductDescription
+  nameWithType: ExecutionPositionDetailResponse.ProductDescription
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.ProductDescription
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_TradeId
+  name: TradeId
+  nameWithType: ExecutionPositionDetailResponse.TradeId
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.TradeId
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Quantity
+  name: Quantity
+  nameWithType: ExecutionPositionDetailResponse.Quantity
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Quantity
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_AverageCostBasis
+  name: AverageCostBasis
+  nameWithType: ExecutionPositionDetailResponse.AverageCostBasis
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AverageCostBasis
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_MarketPrice
+  name: MarketPrice
+  nameWithType: ExecutionPositionDetailResponse.MarketPrice
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketPrice
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_MarketValue
+  name: MarketValue
+  nameWithType: ExecutionPositionDetailResponse.MarketValue
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.MarketValue
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: ExecutionPositionDetailResponse.UnrealisedPnl
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.UnrealisedPnl
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_RealisedPnl
+  name: RealisedPnl
+  nameWithType: ExecutionPositionDetailResponse.RealisedPnl
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.RealisedPnl
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_AssetClass
+  name: AssetClass
+  nameWithType: ExecutionPositionDetailResponse.AssetClass
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.AssetClass
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Side
+  name: Side
+  nameWithType: ExecutionPositionDetailResponse.Side
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Side
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Expiration
+  name: Expiration
+  nameWithType: ExecutionPositionDetailResponse.Expiration
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Expiration
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Strike
+  name: Strike
+  nameWithType: ExecutionPositionDetailResponse.Strike
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Strike
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Right
+  name: Right
+  nameWithType: ExecutionPositionDetailResponse.Right
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Right
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_SupportsClose
+  name: SupportsClose
+  nameWithType: ExecutionPositionDetailResponse.SupportsClose
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsClose
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_SupportsUpsize
+  name: SupportsUpsize
+  nameWithType: ExecutionPositionDetailResponse.SupportsUpsize
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.SupportsUpsize
+- uid: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata*
+  commentId: Overload:Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata
+  href: Meridian.Contracts.Api.ExecutionPositionDetailResponse.html#Meridian_Contracts_Api_ExecutionPositionDetailResponse_Metadata
+  name: Metadata
+  nameWithType: ExecutionPositionDetailResponse.Metadata
+  fullName: Meridian.Contracts.Api.ExecutionPositionDetailResponse.Metadata

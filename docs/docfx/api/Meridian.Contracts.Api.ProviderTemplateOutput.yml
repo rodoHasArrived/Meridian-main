@@ -32,11 +32,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTemplateOutput
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 184
+    startLine: 191
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -75,11 +75,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 187
+    startLine: 194
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -116,11 +116,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 190
+    startLine: 197
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -157,11 +157,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 193
+    startLine: 200
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -198,11 +198,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 196
+    startLine: 203
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -239,11 +239,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 200
+    startLine: 207
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -280,11 +280,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 203
+    startLine: 210
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -321,11 +321,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 206
+    startLine: 213
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -362,11 +362,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresCredentials
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 210
+    startLine: 217
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -403,11 +403,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasValidCredentials
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 213
+    startLine: 220
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -444,11 +444,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialFields
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 216
+    startLine: 223
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -485,11 +485,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 220
+    startLine: 227
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -526,11 +526,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 224
+    startLine: 231
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -567,11 +567,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 227
+    startLine: 234
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -608,11 +608,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimit
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 231
+    startLine: 238
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -649,11 +649,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 235
+    startLine: 242
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -690,11 +690,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 238
+    startLine: 245
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -731,11 +731,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromCatalogEntry
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 244
+    startLine: 251
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

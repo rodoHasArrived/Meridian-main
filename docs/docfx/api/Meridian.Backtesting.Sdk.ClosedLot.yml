@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosedLot
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotId
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryPrice
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenedAt
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFillId
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -300,7 +300,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosePrice
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -329,7 +329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosedAt
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloseFillId
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -387,7 +387,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -416,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -447,7 +447,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HoldingPeriod
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -478,7 +478,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLongTerm
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
@@ -512,7 +512,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnlPerShare
     path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs

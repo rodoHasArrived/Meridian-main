@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleStatusSummary
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSchedules
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledSchedules
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisabledSchedules
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchedulesDueNow
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextScheduledExecution
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExecutions
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSuccesses
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFailures
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
@@ -294,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallSuccessRate
     path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs

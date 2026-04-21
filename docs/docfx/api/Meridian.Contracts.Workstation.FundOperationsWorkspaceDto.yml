@@ -1,0 +1,1164 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  id: FundOperationsWorkspaceDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Int32,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Contracts.Workstation.FundWorkspaceSummary,Meridian.Contracts.Workstation.FundLedgerSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot},Meridian.Contracts.Workstation.CashFinancingSummary,Meridian.Contracts.Workstation.ReconciliationSummary,Meridian.Contracts.Workstation.FundNavAttributionSummaryDto,Meridian.Contracts.Workstation.FundReportingSummaryDto)
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace
+  langs:
+  - csharp
+  - vb
+  name: FundOperationsWorkspaceDto
+  nameWithType: FundOperationsWorkspaceDto
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundOperationsWorkspaceDto
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Shared governance workspace payload combining ledger, banking, cash, reconciliation,
+
+    NAV, and reporting posture for one fund profile.
+  example: []
+  syntax:
+    content: 'public sealed record FundOperationsWorkspaceDto : IEquatable<FundOperationsWorkspaceDto>'
+    content.vb: Public NotInheritable Class FundOperationsWorkspaceDto Implements IEquatable(Of FundOperationsWorkspaceDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundOperationsWorkspaceDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Int32,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Contracts.Workstation.FundWorkspaceSummary,Meridian.Contracts.Workstation.FundLedgerSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot},Meridian.Contracts.Workstation.CashFinancingSummary,Meridian.Contracts.Workstation.ReconciliationSummary,Meridian.Contracts.Workstation.FundNavAttributionSummaryDto,Meridian.Contracts.Workstation.FundReportingSummaryDto)
+  commentId: M:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Int32,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Contracts.Workstation.FundWorkspaceSummary,Meridian.Contracts.Workstation.FundLedgerSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot},Meridian.Contracts.Workstation.CashFinancingSummary,Meridian.Contracts.Workstation.ReconciliationSummary,Meridian.Contracts.Workstation.FundNavAttributionSummaryDto,Meridian.Contracts.Workstation.FundReportingSummaryDto)
+  id: '#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Int32,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Contracts.Workstation.FundWorkspaceSummary,Meridian.Contracts.Workstation.FundLedgerSummary,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot},Meridian.Contracts.Workstation.CashFinancingSummary,Meridian.Contracts.Workstation.ReconciliationSummary,Meridian.Contracts.Workstation.FundNavAttributionSummaryDto,Meridian.Contracts.Workstation.FundReportingSummaryDto)'
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: FundOperationsWorkspaceDto(string, string, string, DateTimeOffset, int, IReadOnlyList<string>, FundWorkspaceSummary, FundLedgerSummary, IReadOnlyList<FundAccountSummary>, IReadOnlyList<BankAccountSnapshot>, CashFinancingSummary, ReconciliationSummary, FundNavAttributionSummaryDto, FundReportingSummaryDto)
+  nameWithType: FundOperationsWorkspaceDto.FundOperationsWorkspaceDto(string, string, string, DateTimeOffset, int, IReadOnlyList<string>, FundWorkspaceSummary, FundLedgerSummary, IReadOnlyList<FundAccountSummary>, IReadOnlyList<BankAccountSnapshot>, CashFinancingSummary, ReconciliationSummary, FundNavAttributionSummaryDto, FundReportingSummaryDto)
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundOperationsWorkspaceDto(string, string, string, System.DateTimeOffset, int, System.Collections.Generic.IReadOnlyList<string>, Meridian.Contracts.Workstation.FundWorkspaceSummary, Meridian.Contracts.Workstation.FundLedgerSummary, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.FundAccountSummary>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.BankAccountSnapshot>, Meridian.Contracts.Workstation.CashFinancingSummary, Meridian.Contracts.Workstation.ReconciliationSummary, Meridian.Contracts.Workstation.FundNavAttributionSummaryDto, Meridian.Contracts.Workstation.FundReportingSummaryDto)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Shared governance workspace payload combining ledger, banking, cash, reconciliation,
+
+    NAV, and reporting posture for one fund profile.
+  example: []
+  syntax:
+    content: public FundOperationsWorkspaceDto(string FundProfileId, string DisplayName, string BaseCurrency, DateTimeOffset AsOf, int RecordedRunCount, IReadOnlyList<string> RelatedRunIds, FundWorkspaceSummary Workspace, FundLedgerSummary Ledger, IReadOnlyList<FundAccountSummary> Accounts, IReadOnlyList<BankAccountSnapshot> BankSnapshots, CashFinancingSummary CashFinancing, ReconciliationSummary Reconciliation, FundNavAttributionSummaryDto Nav, FundReportingSummaryDto Reporting)
+    parameters:
+    - id: FundProfileId
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: RecordedRunCount
+      type: System.Int32
+    - id: RelatedRunIds
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: Workspace
+      type: Meridian.Contracts.Workstation.FundWorkspaceSummary
+    - id: Ledger
+      type: Meridian.Contracts.Workstation.FundLedgerSummary
+    - id: Accounts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary}
+    - id: BankSnapshots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot}
+    - id: CashFinancing
+      type: Meridian.Contracts.Workstation.CashFinancingSummary
+    - id: Reconciliation
+      type: Meridian.Contracts.Workstation.ReconciliationSummary
+    - id: Nav
+      type: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+    - id: Reporting
+      type: Meridian.Contracts.Workstation.FundReportingSummaryDto
+    content.vb: Public Sub New(FundProfileId As String, DisplayName As String, BaseCurrency As String, AsOf As DateTimeOffset, RecordedRunCount As Integer, RelatedRunIds As IReadOnlyList(Of String), Workspace As FundWorkspaceSummary, Ledger As FundLedgerSummary, Accounts As IReadOnlyList(Of FundAccountSummary), BankSnapshots As IReadOnlyList(Of BankAccountSnapshot), CashFinancing As CashFinancingSummary, Reconciliation As ReconciliationSummary, Nav As FundNavAttributionSummaryDto, Reporting As FundReportingSummaryDto)
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.#ctor*
+  nameWithType.vb: FundOperationsWorkspaceDto.New(String, String, String, DateTimeOffset, Integer, IReadOnlyList(Of String), FundWorkspaceSummary, FundLedgerSummary, IReadOnlyList(Of FundAccountSummary), IReadOnlyList(Of BankAccountSnapshot), CashFinancingSummary, ReconciliationSummary, FundNavAttributionSummaryDto, FundReportingSummaryDto)
+  fullName.vb: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.New(String, String, String, System.DateTimeOffset, Integer, System.Collections.Generic.IReadOnlyList(Of String), Meridian.Contracts.Workstation.FundWorkspaceSummary, Meridian.Contracts.Workstation.FundLedgerSummary, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.FundAccountSummary), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.BankAccountSnapshot), Meridian.Contracts.Workstation.CashFinancingSummary, Meridian.Contracts.Workstation.ReconciliationSummary, Meridian.Contracts.Workstation.FundNavAttributionSummaryDto, Meridian.Contracts.Workstation.FundReportingSummaryDto)
+  name.vb: New(String, String, String, DateTimeOffset, Integer, IReadOnlyList(Of String), FundWorkspaceSummary, FundLedgerSummary, IReadOnlyList(Of FundAccountSummary), IReadOnlyList(Of BankAccountSnapshot), CashFinancingSummary, ReconciliationSummary, FundNavAttributionSummaryDto, FundReportingSummaryDto)
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId
+  id: FundProfileId
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: FundOperationsWorkspaceDto.FundProfileId
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string FundProfileId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundProfileId As String
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: FundOperationsWorkspaceDto.DisplayName
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: FundOperationsWorkspaceDto.BaseCurrency
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: FundOperationsWorkspaceDto.AsOf
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount
+  id: RecordedRunCount
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: RecordedRunCount
+  nameWithType: FundOperationsWorkspaceDto.RecordedRunCount
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordedRunCount
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int RecordedRunCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RecordedRunCount As Integer
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds
+  id: RelatedRunIds
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: RelatedRunIds
+  nameWithType: FundOperationsWorkspaceDto.RelatedRunIds
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelatedRunIds
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<string> RelatedRunIds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property RelatedRunIds As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace
+  id: Workspace
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: Workspace
+  nameWithType: FundOperationsWorkspaceDto.Workspace
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Workspace
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public FundWorkspaceSummary Workspace { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.FundWorkspaceSummary
+    content.vb: Public Property Workspace As FundWorkspaceSummary
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger
+  id: Ledger
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: FundOperationsWorkspaceDto.Ledger
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public FundLedgerSummary Ledger { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.FundLedgerSummary
+    content.vb: Public Property Ledger As FundLedgerSummary
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts
+  id: Accounts
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: FundOperationsWorkspaceDto.Accounts
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<FundAccountSummary> Accounts { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary}
+    content.vb: Public Property Accounts As IReadOnlyList(Of FundAccountSummary)
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots
+  id: BankSnapshots
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: BankSnapshots
+  nameWithType: FundOperationsWorkspaceDto.BankSnapshots
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankSnapshots
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<BankAccountSnapshot> BankSnapshots { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot}
+    content.vb: Public Property BankSnapshots As IReadOnlyList(Of BankAccountSnapshot)
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing
+  id: CashFinancing
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: CashFinancing
+  nameWithType: FundOperationsWorkspaceDto.CashFinancing
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFinancing
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public CashFinancingSummary CashFinancing { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.CashFinancingSummary
+    content.vb: Public Property CashFinancing As CashFinancingSummary
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation
+  id: Reconciliation
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: Reconciliation
+  nameWithType: FundOperationsWorkspaceDto.Reconciliation
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconciliation
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ReconciliationSummary Reconciliation { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationSummary
+    content.vb: Public Property Reconciliation As ReconciliationSummary
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav
+  id: Nav
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: Nav
+  nameWithType: FundOperationsWorkspaceDto.Nav
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Nav
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public FundNavAttributionSummaryDto Nav { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+    content.vb: Public Property Nav As FundNavAttributionSummaryDto
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav*
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting
+  id: Reporting
+  parent: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  langs:
+  - csharp
+  - vb
+  name: Reporting
+  nameWithType: FundOperationsWorkspaceDto.Reporting
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reporting
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public FundReportingSummaryDto Reporting { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.FundReportingSummaryDto
+    content.vb: Public Property Reporting As FundReportingSummaryDto
+  overload: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundOperationsWorkspaceDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundOperationsWorkspaceDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundOperationsWorkspaceDto>
+  nameWithType: IEquatable<FundOperationsWorkspaceDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundOperationsWorkspaceDto>
+  nameWithType.vb: IEquatable(Of FundOperationsWorkspaceDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundOperationsWorkspaceDto)
+  name.vb: IEquatable(Of FundOperationsWorkspaceDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+    name: FundOperationsWorkspaceDto
+    href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+    name: FundOperationsWorkspaceDto
+    href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.#ctor
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto__ctor_System_String_System_String_System_String_System_DateTimeOffset_System_Int32_System_Collections_Generic_IReadOnlyList_System_String__Meridian_Contracts_Workstation_FundWorkspaceSummary_Meridian_Contracts_Workstation_FundLedgerSummary_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_FundAccountSummary__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_BankAccountSnapshot__Meridian_Contracts_Workstation_CashFinancingSummary_Meridian_Contracts_Workstation_ReconciliationSummary_Meridian_Contracts_Workstation_FundNavAttributionSummaryDto_Meridian_Contracts_Workstation_FundReportingSummaryDto_
+  name: FundOperationsWorkspaceDto
+  nameWithType: FundOperationsWorkspaceDto.FundOperationsWorkspaceDto
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundOperationsWorkspaceDto
+  nameWithType.vb: FundOperationsWorkspaceDto.New
+  fullName.vb: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundWorkspaceSummary
+  commentId: T:Meridian.Contracts.Workstation.FundWorkspaceSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundWorkspaceSummary.html
+  name: FundWorkspaceSummary
+  nameWithType: FundWorkspaceSummary
+  fullName: Meridian.Contracts.Workstation.FundWorkspaceSummary
+- uid: Meridian.Contracts.Workstation.FundLedgerSummary
+  commentId: T:Meridian.Contracts.Workstation.FundLedgerSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundLedgerSummary.html
+  name: FundLedgerSummary
+  nameWithType: FundLedgerSummary
+  fullName: Meridian.Contracts.Workstation.FundLedgerSummary
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.FundAccountSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FundAccountSummary>
+  nameWithType: IReadOnlyList<FundAccountSummary>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.FundAccountSummary>
+  nameWithType.vb: IReadOnlyList(Of FundAccountSummary)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.FundAccountSummary)
+  name.vb: IReadOnlyList(Of FundAccountSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundAccountSummary
+    name: FundAccountSummary
+    href: Meridian.Contracts.Workstation.FundAccountSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundAccountSummary
+    name: FundAccountSummary
+    href: Meridian.Contracts.Workstation.FundAccountSummary.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.BankAccountSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<BankAccountSnapshot>
+  nameWithType: IReadOnlyList<BankAccountSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.BankAccountSnapshot>
+  nameWithType.vb: IReadOnlyList(Of BankAccountSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.BankAccountSnapshot)
+  name.vb: IReadOnlyList(Of BankAccountSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.BankAccountSnapshot
+    name: BankAccountSnapshot
+    href: Meridian.Contracts.Workstation.BankAccountSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.BankAccountSnapshot
+    name: BankAccountSnapshot
+    href: Meridian.Contracts.Workstation.BankAccountSnapshot.html
+  - name: )
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary
+  commentId: T:Meridian.Contracts.Workstation.CashFinancingSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html
+  name: CashFinancingSummary
+  nameWithType: CashFinancingSummary
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary
+- uid: Meridian.Contracts.Workstation.ReconciliationSummary
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationSummary.html
+  name: ReconciliationSummary
+  nameWithType: ReconciliationSummary
+  fullName: Meridian.Contracts.Workstation.ReconciliationSummary
+- uid: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+  commentId: T:Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto.html
+  name: FundNavAttributionSummaryDto
+  nameWithType: FundNavAttributionSummaryDto
+  fullName: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+- uid: Meridian.Contracts.Workstation.FundReportingSummaryDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportingSummaryDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundReportingSummaryDto.html
+  name: FundReportingSummaryDto
+  nameWithType: FundReportingSummaryDto
+  fullName: Meridian.Contracts.Workstation.FundReportingSummaryDto
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_FundProfileId
+  name: FundProfileId
+  nameWithType: FundOperationsWorkspaceDto.FundProfileId
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.FundProfileId
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_DisplayName
+  name: DisplayName
+  nameWithType: FundOperationsWorkspaceDto.DisplayName
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.DisplayName
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_BaseCurrency
+  name: BaseCurrency
+  nameWithType: FundOperationsWorkspaceDto.BaseCurrency
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BaseCurrency
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_AsOf
+  name: AsOf
+  nameWithType: FundOperationsWorkspaceDto.AsOf
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.AsOf
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_RecordedRunCount
+  name: RecordedRunCount
+  nameWithType: FundOperationsWorkspaceDto.RecordedRunCount
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RecordedRunCount
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_RelatedRunIds
+  name: RelatedRunIds
+  nameWithType: FundOperationsWorkspaceDto.RelatedRunIds
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.RelatedRunIds
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_Workspace
+  name: Workspace
+  nameWithType: FundOperationsWorkspaceDto.Workspace
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Workspace
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_Ledger
+  name: Ledger
+  nameWithType: FundOperationsWorkspaceDto.Ledger
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Ledger
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_Accounts
+  name: Accounts
+  nameWithType: FundOperationsWorkspaceDto.Accounts
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Accounts
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_BankSnapshots
+  name: BankSnapshots
+  nameWithType: FundOperationsWorkspaceDto.BankSnapshots
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.BankSnapshots
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_CashFinancing
+  name: CashFinancing
+  nameWithType: FundOperationsWorkspaceDto.CashFinancing
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.CashFinancing
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_Reconciliation
+  name: Reconciliation
+  nameWithType: FundOperationsWorkspaceDto.Reconciliation
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reconciliation
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_Nav
+  name: Nav
+  nameWithType: FundOperationsWorkspaceDto.Nav
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Nav
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html#Meridian_Contracts_Workstation_FundOperationsWorkspaceDto_Reporting
+  name: Reporting
+  nameWithType: FundOperationsWorkspaceDto.Reporting
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.Reporting

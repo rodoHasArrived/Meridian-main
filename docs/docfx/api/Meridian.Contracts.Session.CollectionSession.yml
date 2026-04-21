@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSession
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -153,7 +153,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndedAt
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -411,7 +411,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -454,7 +454,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -497,7 +497,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -540,7 +540,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -583,7 +583,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityScore
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -626,7 +626,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestPath
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -669,7 +669,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -712,7 +712,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs

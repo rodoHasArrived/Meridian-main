@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianQuoteData
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidExchange
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskExchange
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSource
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -413,7 +413,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reader
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs
@@ -456,7 +456,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianQuoteData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clone
     path: ../../src/Meridian/Integrations/Lean/MeridianQuoteData.cs

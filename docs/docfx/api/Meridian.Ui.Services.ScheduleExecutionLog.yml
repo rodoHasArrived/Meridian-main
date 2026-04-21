@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleExecutionLog
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleId
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleName
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsFailed
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -350,7 +350,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs

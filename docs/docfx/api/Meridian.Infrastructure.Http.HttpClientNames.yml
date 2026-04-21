@@ -8,6 +8,7 @@ items:
   - Meridian.Infrastructure.Http.HttpClientNames.Alpaca
   - Meridian.Infrastructure.Http.HttpClientNames.AlpacaData
   - Meridian.Infrastructure.Http.HttpClientNames.AlpacaHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.AlpacaOptions
   - Meridian.Infrastructure.Http.HttpClientNames.AlpacaSymbolSearch
   - Meridian.Infrastructure.Http.HttpClientNames.AlphaVantageHistorical
   - Meridian.Infrastructure.Http.HttpClientNames.ConnectivityTest
@@ -28,6 +29,7 @@ items:
   - Meridian.Infrastructure.Http.HttpClientNames.OpenFigi
   - Meridian.Infrastructure.Http.HttpClientNames.Polygon
   - Meridian.Infrastructure.Http.HttpClientNames.PolygonHistorical
+  - Meridian.Infrastructure.Http.HttpClientNames.PolygonOptions
   - Meridian.Infrastructure.Http.HttpClientNames.PolygonSymbolSearch
   - Meridian.Infrastructure.Http.HttpClientNames.PortfolioImport
   - Meridian.Infrastructure.Http.HttpClientNames.PreflightChecker
@@ -49,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientNames
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -90,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -117,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaData
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -144,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -171,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSE
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -198,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -225,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -252,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TiingoHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -279,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YahooFinanceHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -306,7 +308,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StooqHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -333,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinnhubHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -360,7 +362,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlphaVantageHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -387,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NasdaqDataLinkHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -414,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FredHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -441,7 +443,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TwelveDataHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -468,7 +470,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodHistorical
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -495,7 +497,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodMarketData
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -522,7 +524,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodBrokerage
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -549,7 +551,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodSymbolSearch
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -576,7 +578,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaSymbolSearch
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -603,7 +605,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSymbolSearch
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -630,7 +632,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinnhubSymbolSearch
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -657,7 +659,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFigi
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -684,7 +686,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EdgarSymbolSearch
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -711,7 +713,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EdgarSecurityMaster
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
@@ -724,6 +726,60 @@ items:
     return:
       type: System.String
     content.vb: Public Const EdgarSecurityMaster As String = "edgar-security-master"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.AlpacaOptions
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.AlpacaOptions
+  id: AlpacaOptions
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: AlpacaOptions
+  nameWithType: HttpClientNames.AlpacaOptions
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.AlpacaOptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaOptions
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string AlpacaOptions = "alpaca-options"
+    return:
+      type: System.String
+    content.vb: Public Const AlpacaOptions As String = "alpaca-options"
+- uid: Meridian.Infrastructure.Http.HttpClientNames.PolygonOptions
+  commentId: F:Meridian.Infrastructure.Http.HttpClientNames.PolygonOptions
+  id: PolygonOptions
+  parent: Meridian.Infrastructure.Http.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: PolygonOptions
+  nameWithType: HttpClientNames.PolygonOptions
+  fullName: Meridian.Infrastructure.Http.HttpClientNames.PolygonOptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonOptions
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  syntax:
+    content: public const string PolygonOptions = "polygon-options"
+    return:
+      type: System.String
+    content.vb: Public Const PolygonOptions As String = "polygon-options"
 - uid: Meridian.Infrastructure.Http.HttpClientNames.CredentialValidation
   commentId: F:Meridian.Infrastructure.Http.HttpClientNames.CredentialValidation
   id: CredentialValidation
@@ -738,11 +794,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialValidation
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 46
+    startLine: 50
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -765,11 +821,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityTest
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 47
+    startLine: 51
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -792,11 +848,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailySummaryWebhook
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 48
+    startLine: 52
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -819,11 +875,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OAuthTokenRefresh
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 49
+    startLine: 53
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -846,11 +902,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialTesting
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 50
+    startLine: 54
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -873,11 +929,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImport
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 51
+    startLine: 55
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -900,11 +956,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBClientPortal
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 52
+    startLine: 56
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -927,11 +983,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRun
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 53
+    startLine: 57
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -954,11 +1010,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightChecker
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 54
+    startLine: 58
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -981,11 +1037,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 57
+    startLine: 61
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http

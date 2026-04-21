@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IArchiveMaintenanceScheduleManager
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSchedules
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSchedule
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateScheduleAsync
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromPresetAsync
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateScheduleAsync
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteScheduleAsync
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetScheduleEnabledAsync
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDueSchedules
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusSummary
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleCreated
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -402,7 +402,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleUpdated
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
@@ -431,7 +431,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleDeleted
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs

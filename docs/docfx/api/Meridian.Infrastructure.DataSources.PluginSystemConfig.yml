@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PluginSystemConfig
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PluginDirectory
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdditionalDirectories
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableHotReload
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableDirectoryWatching
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoLoadNewPlugins
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotReloadDebounceMs
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPermissions
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireExplicitPermissions
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedAssemblies
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PluginConfigs
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs

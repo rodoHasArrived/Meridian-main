@@ -33,11 +33,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerSummary
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 47
+    startLine: 48
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -71,11 +71,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 47
+    startLine: 48
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -137,11 +137,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 48
+    startLine: 49
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -166,11 +166,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundDisplayName
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 49
+    startLine: 50
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -195,11 +195,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScopeKind
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 50
+    startLine: 51
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -224,11 +224,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScopeId
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 51
+    startLine: 52
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -253,11 +253,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 52
+    startLine: 53
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -282,11 +282,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryCount
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 53
+    startLine: 54
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -311,11 +311,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerEntryCount
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 54
+    startLine: 55
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -340,11 +340,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetBalance
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 55
+    startLine: 56
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -369,11 +369,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiabilityBalance
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 56
+    startLine: 57
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -398,11 +398,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquityBalance
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 57
+    startLine: 58
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -427,11 +427,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RevenueBalance
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 58
+    startLine: 59
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -456,11 +456,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpenseBalance
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 59
+    startLine: 60
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -485,11 +485,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 60
+    startLine: 61
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -514,11 +514,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Journal
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 61
+    startLine: 62
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -543,11 +543,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityCount
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 62
+    startLine: 63
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -572,11 +572,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveCount
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 63
+    startLine: 64
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -601,11 +601,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleCount
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-    startLine: 64
+    startLine: 65
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

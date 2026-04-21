@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyCompleteness
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWeekend
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHoliday
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsWithData
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsMissingData
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -420,7 +420,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapCount
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs

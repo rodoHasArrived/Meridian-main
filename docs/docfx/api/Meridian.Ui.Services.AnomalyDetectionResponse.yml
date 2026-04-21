@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyDetectionResponse
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisTime
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAnomalies
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Anomalies
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs

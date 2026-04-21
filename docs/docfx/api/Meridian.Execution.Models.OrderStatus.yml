@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderStatus
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accepted
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Working
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filled
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartiallyFilled
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
     path: ../../src/Meridian.Execution/Models/OrderStatus.cs

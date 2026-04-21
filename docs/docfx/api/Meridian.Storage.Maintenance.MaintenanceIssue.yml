@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceIssue
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssueType
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WasResolved
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolutionAction
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs

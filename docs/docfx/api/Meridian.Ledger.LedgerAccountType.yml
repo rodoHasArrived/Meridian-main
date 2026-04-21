@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerAccountType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerAccountType
     path: ../../src/Meridian.Ledger/LedgerAccountType.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerAccountType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Asset
     path: ../../src/Meridian.Ledger/LedgerAccountType.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerAccountType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Liability
     path: ../../src/Meridian.Ledger/LedgerAccountType.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerAccountType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equity
     path: ../../src/Meridian.Ledger/LedgerAccountType.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerAccountType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Revenue
     path: ../../src/Meridian.Ledger/LedgerAccountType.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerAccountType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expense
     path: ../../src/Meridian.Ledger/LedgerAccountType.cs

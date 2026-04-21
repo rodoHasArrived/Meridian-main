@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGroupService
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadGroupsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupByIdAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateGroupAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateGroupFromTemplateAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateGroupAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteGroupAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -360,7 +360,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolToGroupAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -400,7 +400,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolFromGroupAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -440,7 +440,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MoveSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -482,7 +482,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupsForSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -520,7 +520,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUngroupedSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -553,7 +553,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReorderGroupsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -593,7 +593,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTemplates
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -623,7 +623,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupCreated
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -652,7 +652,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupUpdated
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -681,7 +681,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupDeleted
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -710,7 +710,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GroupsReordered
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs

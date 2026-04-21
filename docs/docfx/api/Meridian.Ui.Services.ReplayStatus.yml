@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayStatus
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsReplayed
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressPercent
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpeedMultiplier
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Elapsed
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remaining
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentEventTime
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs

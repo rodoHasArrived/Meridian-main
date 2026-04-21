@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPreset
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: USMajorIndices
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TechGiants
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SP500Top20
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Crypto
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs

@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderBackfillProgress
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsDownloaded
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentSymbolIndex
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -286,7 +286,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -315,7 +315,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Elapsed
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs

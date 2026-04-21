@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityTrendData
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallTrend
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BySymbol
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeWindow
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageScore
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrendDirection
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs

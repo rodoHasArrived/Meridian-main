@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlSourceDefinition
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Location
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePattern
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Username
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecretRef
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteAfterSuccess
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs

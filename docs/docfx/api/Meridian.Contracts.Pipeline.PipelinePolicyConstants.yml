@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelinePolicyConstants
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullModeWait
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullModeDropNewest
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullModeDropOldest
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullModeDropWrite
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultCapacity
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultFullMode
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughputCapacity
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughputFullMode
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageBufferCapacity
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageBufferFullMode
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceQueueCapacity
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -406,7 +406,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceQueueFullMode
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -435,7 +435,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoggingCapacity
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -464,7 +464,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoggingFullMode
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletionQueueCapacity
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
@@ -522,7 +522,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletionQueueFullMode
     path: ../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs

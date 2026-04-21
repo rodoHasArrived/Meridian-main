@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageAnalysisOptions
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateHashes
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindDuplicates
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeCompression
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindSmallFiles
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeTiering
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ColdTierAgeDays
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs

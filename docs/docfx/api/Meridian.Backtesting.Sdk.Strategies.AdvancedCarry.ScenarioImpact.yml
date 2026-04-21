@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScenarioImpact
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 171
+    startLine: 196
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 171
+    startLine: 196
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -94,11 +94,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scenario
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 172
+    startLine: 197
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -123,11 +123,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImpactFraction
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 173
+    startLine: 198
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -152,11 +152,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerAssetImpactFractions
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 174
+    startLine: 199
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -181,11 +181,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Narrative
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 175
+    startLine: 200
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry

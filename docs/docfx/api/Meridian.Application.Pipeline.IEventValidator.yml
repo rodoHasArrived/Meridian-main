@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEventValidator
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs

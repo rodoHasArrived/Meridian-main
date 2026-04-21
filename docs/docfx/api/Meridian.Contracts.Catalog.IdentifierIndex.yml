@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifierIndex
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsinToSymbol
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FigiToSymbol
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CusipToSymbol
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SedolToSymbol
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs

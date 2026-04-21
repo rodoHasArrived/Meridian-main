@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionComplianceReport
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionPolicyDays
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompliant
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entries
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Violations
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
@@ -345,7 +345,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs

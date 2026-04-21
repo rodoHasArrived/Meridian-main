@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDedupStore
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalChecked
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuplicates
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDuplicateAsync
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IDedupStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompactAsync
     path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs

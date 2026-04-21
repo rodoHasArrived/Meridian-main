@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighResolutionTimestamp
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTimestamp
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetElapsedMicroseconds
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetElapsedNanoseconds
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDateTimeOffset
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentTime
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs

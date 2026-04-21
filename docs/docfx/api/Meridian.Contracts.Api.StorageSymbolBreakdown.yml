@@ -21,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageSymbolBreakdown
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 390
+    startLine: 396
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 392
+    startLine: 398
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 395
+    startLine: 401
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -139,11 +139,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 398
+    startLine: 404
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -180,11 +180,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentOfTotal
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 401
+    startLine: 407
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -221,11 +221,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldestData
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 404
+    startLine: 410
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -262,11 +262,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewestData
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 407
+    startLine: 413
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

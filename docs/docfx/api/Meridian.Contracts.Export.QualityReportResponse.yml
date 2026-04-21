@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityReportResponse
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportPath
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs

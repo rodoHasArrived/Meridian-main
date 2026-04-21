@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionSettings
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Level
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs

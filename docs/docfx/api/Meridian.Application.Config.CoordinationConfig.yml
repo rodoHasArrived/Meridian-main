@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoordinationConfig
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeaseTtlSeconds
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewIntervalSeconds
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeoverDelaySeconds
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -284,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSharedStorageEnabled
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetResolvedInstanceId
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -370,7 +370,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetResolvedRootPath
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs

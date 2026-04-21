@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationProgress
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Next
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetProgress
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs

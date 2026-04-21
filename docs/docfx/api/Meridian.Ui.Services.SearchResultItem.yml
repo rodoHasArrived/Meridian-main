@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchResultItem
     path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
     path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigationTarget
     path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Ui.Services/Services/SearchService.cs

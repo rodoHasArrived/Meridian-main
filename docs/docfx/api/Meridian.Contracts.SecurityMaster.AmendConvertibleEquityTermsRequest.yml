@@ -1,0 +1,922 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  id: AmendConvertibleEquityTermsRequest
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.#ctor(System.Int64,System.Guid,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy
+  langs:
+  - csharp
+  - vb
+  name: AmendConvertibleEquityTermsRequest
+  nameWithType: AmendConvertibleEquityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmendConvertibleEquityTermsRequest
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: 'public sealed record AmendConvertibleEquityTermsRequest : IEquatable<AmendConvertibleEquityTermsRequest>'
+    content.vb: Public NotInheritable Class AmendConvertibleEquityTermsRequest Implements IEquatable(Of AmendConvertibleEquityTermsRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.#ctor(System.Int64,System.Guid,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.#ctor(System.Int64,System.Guid,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.Int64,System.Guid,System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: AmendConvertibleEquityTermsRequest(long, Guid, decimal, decimal?, DateOnly?, DateOnly?, DateTimeOffset, string, string, string?, string?)
+  nameWithType: AmendConvertibleEquityTermsRequest.AmendConvertibleEquityTermsRequest(long, Guid, decimal, decimal?, DateOnly?, DateOnly?, DateTimeOffset, string, string, string?, string?)
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.AmendConvertibleEquityTermsRequest(long, System.Guid, decimal, decimal?, System.DateOnly?, System.DateOnly?, System.DateTimeOffset, string, string, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public AmendConvertibleEquityTermsRequest(long ExpectedVersion, Guid UnderlyingSecurityId, decimal ConversionRatio, decimal? ConversionPrice, DateOnly? ConversionStartDate, DateOnly? ConversionEndDate, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason)
+    parameters:
+    - id: ExpectedVersion
+      type: System.Int64
+    - id: UnderlyingSecurityId
+      type: System.Guid
+    - id: ConversionRatio
+      type: System.Decimal
+    - id: ConversionPrice
+      type: System.Nullable{System.Decimal}
+    - id: ConversionStartDate
+      type: System.Nullable{System.DateOnly}
+    - id: ConversionEndDate
+      type: System.Nullable{System.DateOnly}
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: SourceSystem
+      type: System.String
+    - id: UpdatedBy
+      type: System.String
+    - id: SourceRecordId
+      type: System.String
+    - id: Reason
+      type: System.String
+    content.vb: Public Sub New(ExpectedVersion As Long, UnderlyingSecurityId As Guid, ConversionRatio As Decimal, ConversionPrice As Decimal?, ConversionStartDate As DateOnly?, ConversionEndDate As DateOnly?, EffectiveFrom As DateTimeOffset, SourceSystem As String, UpdatedBy As String, SourceRecordId As String, Reason As String)
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.#ctor*
+  nameWithType.vb: AmendConvertibleEquityTermsRequest.New(Long, Guid, Decimal, Decimal?, DateOnly?, DateOnly?, DateTimeOffset, String, String, String, String)
+  fullName.vb: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.New(Long, System.Guid, Decimal, Decimal?, System.DateOnly?, System.DateOnly?, System.DateTimeOffset, String, String, String, String)
+  name.vb: New(Long, Guid, Decimal, Decimal?, DateOnly?, DateOnly?, DateTimeOffset, String, String, String, String)
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion
+  id: ExpectedVersion
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: ExpectedVersion
+  nameWithType: AmendConvertibleEquityTermsRequest.ExpectedVersion
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedVersion
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public long ExpectedVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ExpectedVersion As Long
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  id: UnderlyingSecurityId
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSecurityId
+  nameWithType: AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid UnderlyingSecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property UnderlyingSecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio
+  id: ConversionRatio
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: ConversionRatio
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionRatio
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConversionRatio
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal ConversionRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ConversionRatio As Decimal
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice
+  id: ConversionPrice
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: ConversionPrice
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionPrice
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConversionPrice
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public decimal? ConversionPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ConversionPrice As Decimal?
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate
+  id: ConversionStartDate
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: ConversionStartDate
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionStartDate
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConversionStartDate
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateOnly? ConversionStartDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property ConversionStartDate As DateOnly?
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate
+  id: ConversionEndDate
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: ConversionEndDate
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionEndDate
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConversionEndDate
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateOnly? ConversionEndDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property ConversionEndDate As DateOnly?
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: AmendConvertibleEquityTermsRequest.EffectiveFrom
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem
+  id: SourceSystem
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: SourceSystem
+  nameWithType: AmendConvertibleEquityTermsRequest.SourceSystem
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceSystem
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string SourceSystem { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceSystem As String
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy
+  id: UpdatedBy
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: UpdatedBy
+  nameWithType: AmendConvertibleEquityTermsRequest.UpdatedBy
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdatedBy
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string UpdatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UpdatedBy As String
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId
+  id: SourceRecordId
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: SourceRecordId
+  nameWithType: AmendConvertibleEquityTermsRequest.SourceRecordId
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceRecordId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? SourceRecordId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceRecordId As String
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId*
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason
+  commentId: P:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason
+  id: Reason
+  parent: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: AmendConvertibleEquityTermsRequest.Reason
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AmendConvertibleEquityTermsRequest>
+  nameWithType: IEquatable<AmendConvertibleEquityTermsRequest>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest>
+  nameWithType.vb: IEquatable(Of AmendConvertibleEquityTermsRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest)
+  name.vb: IEquatable(Of AmendConvertibleEquityTermsRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+    name: AmendConvertibleEquityTermsRequest
+    href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+    name: AmendConvertibleEquityTermsRequest
+    href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.#ctor
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest__ctor_System_Int64_System_Guid_System_Decimal_System_Nullable_System_Decimal__System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_DateTimeOffset_System_String_System_String_System_String_System_String_
+  name: AmendConvertibleEquityTermsRequest
+  nameWithType: AmendConvertibleEquityTermsRequest.AmendConvertibleEquityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.AmendConvertibleEquityTermsRequest
+  nameWithType.vb: AmendConvertibleEquityTermsRequest.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_ExpectedVersion
+  name: ExpectedVersion
+  nameWithType: AmendConvertibleEquityTermsRequest.ExpectedVersion
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ExpectedVersion
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_UnderlyingSecurityId
+  name: UnderlyingSecurityId
+  nameWithType: AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UnderlyingSecurityId
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_ConversionRatio
+  name: ConversionRatio
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionRatio
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionRatio
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_ConversionPrice
+  name: ConversionPrice
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionPrice
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionPrice
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_ConversionStartDate
+  name: ConversionStartDate
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionStartDate
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionStartDate
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_ConversionEndDate
+  name: ConversionEndDate
+  nameWithType: AmendConvertibleEquityTermsRequest.ConversionEndDate
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.ConversionEndDate
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: AmendConvertibleEquityTermsRequest.EffectiveFrom
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.EffectiveFrom
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_SourceSystem
+  name: SourceSystem
+  nameWithType: AmendConvertibleEquityTermsRequest.SourceSystem
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceSystem
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_UpdatedBy
+  name: UpdatedBy
+  nameWithType: AmendConvertibleEquityTermsRequest.UpdatedBy
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.UpdatedBy
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_SourceRecordId
+  name: SourceRecordId
+  nameWithType: AmendConvertibleEquityTermsRequest.SourceRecordId
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.SourceRecordId
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html#Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_Reason
+  name: Reason
+  nameWithType: AmendConvertibleEquityTermsRequest.Reason
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.Reason

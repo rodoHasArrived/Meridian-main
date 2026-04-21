@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchResult
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetType
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MatchScore
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -405,7 +405,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeFigi
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs

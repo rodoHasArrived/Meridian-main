@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FigiMapping
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeFigi
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketSector
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ticker
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExchangeCode
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShareClassFigi
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -345,7 +345,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityDescription
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs

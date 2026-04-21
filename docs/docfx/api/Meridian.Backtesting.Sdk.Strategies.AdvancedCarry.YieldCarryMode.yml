@@ -1,0 +1,187 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  id: YieldCarryMode
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+  langs:
+  - csharp
+  - vb
+  name: YieldCarryMode
+  nameWithType: YieldCarryMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: YieldCarryMode
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Controls how carry signal is derived in <xref href="Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public enum YieldCarryMode
+    content.vb: Public Enum YieldCarryMode
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+  id: ClassicCarry
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  langs:
+  - csharp
+  - vb
+  name: ClassicCarry
+  nameWithType: YieldCarryMode.ClassicCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClassicCarry
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: 'Classic carry: expected return = historical price-momentum + assumed carry yield.'
+  example: []
+  syntax:
+    content: ClassicCarry = 0
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+  id: YieldSpread
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  langs:
+  - csharp
+  - vb
+  name: YieldSpread
+  nameWithType: YieldCarryMode.YieldSpread
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: YieldSpread
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: >-
+    Yield-spread carry: expected return = asset yield − risk-free rate.
+
+    Long high-spread assets; underweight (or skip) low/negative-spread assets.
+
+    Best for dividend stocks, bond ETFs, REITs, and FX carry pairs.
+  example: []
+  syntax:
+    content: YieldSpread = 1
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+  id: YieldRotation
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  langs:
+  - csharp
+  - vb
+  name: YieldRotation
+  nameWithType: YieldCarryMode.YieldRotation
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: YieldRotation
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: >-
+    Yield rotation: ranks assets by yield each period; rotates into the top-quartile
+
+    yielders and out of the bottom-quartile.  Applies an additional momentum tilt
+
+    when an asset's yield has risen (price has compressed) relative to its 20-day average.
+  example: []
+  syntax:
+    content: YieldRotation = 2
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html
+  name: CarryTradeBacktestStrategy
+  nameWithType: CarryTradeBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.html
+  name: YieldCarryMode
+  nameWithType: YieldCarryMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode

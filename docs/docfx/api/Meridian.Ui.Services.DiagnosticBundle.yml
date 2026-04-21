@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticBundle
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BundleId
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileSizeBytes
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludedSections
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs

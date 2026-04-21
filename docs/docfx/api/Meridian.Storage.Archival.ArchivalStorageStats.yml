@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivalStorageStats
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingEvents
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastCommittedSequence
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFlushTime
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BufferDepth
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs

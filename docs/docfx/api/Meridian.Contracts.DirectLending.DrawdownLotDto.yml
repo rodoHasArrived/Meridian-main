@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrawdownLotDto
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotId
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrawdownDate
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SettleDate
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalPrincipal
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingPrincipal
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExternalRef
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs

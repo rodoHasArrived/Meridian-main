@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapRepairOptions
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapIds
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseAlternativeProviders
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRun
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs

@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GuardrailViolation
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rule
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs

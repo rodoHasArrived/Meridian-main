@@ -6,12 +6,16 @@ items:
   parent: Meridian.Application.Backfill
   children:
   - Meridian.Application.Backfill.BackfillStatusStore.#ctor(System.String)
+  - Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
   - Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
   - Meridian.Application.Backfill.BackfillStatusStore.FromConfig(Meridian.Application.Config.AppConfig)
   - Meridian.Application.Backfill.BackfillStatusStore.TryRead
   - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
+  - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
+  - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   - Meridian.Application.Backfill.BackfillStatusStore.WriteAsync(Meridian.Application.Backfill.BackfillResult,System.Threading.CancellationToken)
+  - Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
   - Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,System.DateOnly,System.Int64,System.Threading.CancellationToken)
   langs:
   - csharp
@@ -23,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillStatusStore
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
@@ -64,11 +68,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 25
+    startLine: 18
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -96,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromConfig
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 34
+    startLine: 27
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -127,11 +131,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteAsync
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 40
+    startLine: 33
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -160,11 +164,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRead
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 46
+    startLine: 39
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -188,11 +192,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteSymbolCheckpointAsync
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 74
+    startLine: 67
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -225,6 +229,55 @@ items:
   nameWithType.vb: BackfillStatusStore.WriteSymbolCheckpointAsync(String, DateOnly, Long, CancellationToken)
   fullName.vb: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(String, System.DateOnly, Long, System.Threading.CancellationToken)
   name.vb: WriteSymbolCheckpointAsync(String, DateOnly, Long, CancellationToken)
+- uid: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  id: WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: WriteSymbolCheckpointAsync(string, DataGranularity, DateOnly, long, CancellationToken)
+  nameWithType: BackfillStatusStore.WriteSymbolCheckpointAsync(string, DataGranularity, DateOnly, long, CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly, long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteSymbolCheckpointAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Records that <code class="paramref">symbol</code> was successfully backfilled up to and including
+
+    <code class="paramref">lastCompletedDate</code> for the specified <code class="paramref">granularity</code>.
+
+    Granularity-scoped checkpoints prevent one backfill lane from suppressing another.
+  example: []
+  syntax:
+    content: public Task WriteSymbolCheckpointAsync(string symbol, DataGranularity granularity, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: lastCompletedDate
+      type: System.DateOnly
+    - id: barsWritten
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WriteSymbolCheckpointAsync(symbol As String, granularity As DataGranularity, lastCompletedDate As DateOnly, barsWritten As Long = 0, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync*
+  nameWithType.vb: BackfillStatusStore.WriteSymbolCheckpointAsync(String, DataGranularity, DateOnly, Long, CancellationToken)
+  fullName.vb: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly, Long, System.Threading.CancellationToken)
+  name.vb: WriteSymbolCheckpointAsync(String, DataGranularity, DateOnly, Long, CancellationToken)
 - uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
   commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
   id: TryReadSymbolCheckpoints
@@ -239,11 +292,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolCheckpoints
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 119
+    startLine: 125
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -257,6 +310,42 @@ items:
     return:
       type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.DateOnly}
     content.vb: Public Function TryReadSymbolCheckpoints() As IReadOnlyDictionary(Of String, DateOnly)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryReadSymbolCheckpoints(DataGranularity)
+  nameWithType: BackfillStatusStore.TryReadSymbolCheckpoints(DataGranularity)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadSymbolCheckpoints
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Returns the checkpoint map for the requested <code class="paramref">granularity</code>.
+
+    Legacy unscoped entries are treated as daily checkpoints for backward compatibility.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints(DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.DateOnly}
+    content.vb: Public Function TryReadSymbolCheckpoints(granularity As DataGranularity) As IReadOnlyDictionary(Of String, DateOnly)
   overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints*
 - uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
   commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
@@ -272,11 +361,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolBarCounts
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 128
+    startLine: 141
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -295,6 +384,42 @@ items:
       type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
     content.vb: Public Function TryReadSymbolBarCounts() As IReadOnlyDictionary(Of String, Long)
   overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryReadSymbolBarCounts(DataGranularity)
+  nameWithType: BackfillStatusStore.TryReadSymbolBarCounts(DataGranularity)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadSymbolBarCounts
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Returns the per-symbol bar-count map for the requested <code class="paramref">granularity</code>.
+
+    Legacy unscoped entries are treated as daily bar counts for backward compatibility.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, long>? TryReadSymbolBarCounts(DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public Function TryReadSymbolBarCounts(granularity As DataGranularity) As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts*
 - uid: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
   id: ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
@@ -309,11 +434,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearSymbolCheckpointsAsync
     path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
-    startLine: 179
+    startLine: 229
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -330,6 +455,44 @@ items:
     return:
       type: System.Threading.Tasks.Task
     content.vb: Public Function ClearSymbolCheckpointsAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  id: ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: ClearSymbolCheckpointsAsync(DataGranularity, CancellationToken)
+  nameWithType: BackfillStatusStore.ClearSymbolCheckpointsAsync(DataGranularity, CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearSymbolCheckpointsAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Removes only the checkpoints and bar-count data associated with the requested
+
+    <code class="paramref">granularity</code>, preserving resume state for other backfill lanes.
+  example: []
+  syntax:
+    content: public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ClearSymbolCheckpointsAsync(granularity As DataGranularity, ct As CancellationToken = Nothing) As Task
   overload: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync*
 references:
 - uid: Meridian.Application.Backfill
@@ -769,6 +932,51 @@ references:
   nameWithType.vb: Long
   fullName.vb: Long
   name.vb: Long
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
 - uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints*
   commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
   href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_TryReadSymbolCheckpoints

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoConfigurationService
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectAvailableProviders
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoConfigure
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFirstTimeConfig
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPreset
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetDescriptions
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionContext
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageTier
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExport
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedBytes
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs

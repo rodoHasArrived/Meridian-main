@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiResponse
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Data
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnectionError
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ok
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs

@@ -5,14 +5,16 @@ items:
   id: ProviderCatalogEntry
   parent: Meridian.Ui.Services.Services
   children:
-  - Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[])
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
   - Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
@@ -26,11 +28,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCatalogEntry
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 290
+    startLine: 295
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -50,32 +52,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[])
-  commentId: M:Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[])
-  id: '#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[])'
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)
+  commentId: M:Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)
+  id: '#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)'
   parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
   langs:
   - csharp
   - vb
-  name: ProviderCatalogEntry(string, string, ProviderTier, bool, bool, bool, string, int, CredentialFieldInfo[])
-  nameWithType: ProviderCatalogEntry.ProviderCatalogEntry(string, string, ProviderTier, bool, bool, bool, string, int, CredentialFieldInfo[])
-  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.ProviderCatalogEntry(string, string, Meridian.Ui.Services.Services.ProviderTier, bool, bool, bool, string, int, Meridian.Contracts.Api.CredentialFieldInfo[])
+  name: ProviderCatalogEntry(string, string, ProviderTier, bool, bool, bool, string, int, CredentialFieldInfo[], bool, bool)
+  nameWithType: ProviderCatalogEntry.ProviderCatalogEntry(string, string, ProviderTier, bool, bool, bool, string, int, CredentialFieldInfo[], bool, bool)
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.ProviderCatalogEntry(string, string, Meridian.Ui.Services.Services.ProviderTier, bool, bool, bool, string, int, Meridian.Contracts.Api.CredentialFieldInfo[], bool, bool)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 290
+    startLine: 295
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
   summary: Provider catalog entry for the provider marketplace display.
   example: []
   syntax:
-    content: public ProviderCatalogEntry(string Id, string DisplayName, ProviderTier Tier, bool SupportsStreaming, bool SupportsHistorical, bool SupportsSymbolSearch, string Description, int RateLimitPerMinute, CredentialFieldInfo[] CredentialFields)
+    content: public ProviderCatalogEntry(string Id, string DisplayName, ProviderTier Tier, bool SupportsStreaming, bool SupportsHistorical, bool SupportsSymbolSearch, string Description, int RateLimitPerMinute, CredentialFieldInfo[] CredentialFields, bool SupportsOptions = false, bool SupportsBrokerage = false)
     parameters:
     - id: Id
       type: System.String
@@ -95,11 +97,15 @@ items:
       type: System.Int32
     - id: CredentialFields
       type: Meridian.Contracts.Api.CredentialFieldInfo[]
-    content.vb: Public Sub New(Id As String, DisplayName As String, Tier As ProviderTier, SupportsStreaming As Boolean, SupportsHistorical As Boolean, SupportsSymbolSearch As Boolean, Description As String, RateLimitPerMinute As Integer, CredentialFields As CredentialFieldInfo())
+    - id: SupportsOptions
+      type: System.Boolean
+    - id: SupportsBrokerage
+      type: System.Boolean
+    content.vb: Public Sub New(Id As String, DisplayName As String, Tier As ProviderTier, SupportsStreaming As Boolean, SupportsHistorical As Boolean, SupportsSymbolSearch As Boolean, Description As String, RateLimitPerMinute As Integer, CredentialFields As CredentialFieldInfo(), SupportsOptions As Boolean = False, SupportsBrokerage As Boolean = False)
   overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor*
-  nameWithType.vb: ProviderCatalogEntry.New(String, String, ProviderTier, Boolean, Boolean, Boolean, String, Integer, CredentialFieldInfo())
-  fullName.vb: Meridian.Ui.Services.Services.ProviderCatalogEntry.New(String, String, Meridian.Ui.Services.Services.ProviderTier, Boolean, Boolean, Boolean, String, Integer, Meridian.Contracts.Api.CredentialFieldInfo())
-  name.vb: New(String, String, ProviderTier, Boolean, Boolean, Boolean, String, Integer, CredentialFieldInfo())
+  nameWithType.vb: ProviderCatalogEntry.New(String, String, ProviderTier, Boolean, Boolean, Boolean, String, Integer, CredentialFieldInfo(), Boolean, Boolean)
+  fullName.vb: Meridian.Ui.Services.Services.ProviderCatalogEntry.New(String, String, Meridian.Ui.Services.Services.ProviderTier, Boolean, Boolean, Boolean, String, Integer, Meridian.Contracts.Api.CredentialFieldInfo(), Boolean, Boolean)
+  name.vb: New(String, String, ProviderTier, Boolean, Boolean, Boolean, String, Integer, CredentialFieldInfo(), Boolean, Boolean)
 - uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
   commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
   id: Id
@@ -114,11 +120,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 291
+    startLine: 296
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -143,11 +149,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 292
+    startLine: 297
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -172,11 +178,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tier
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 293
+    startLine: 298
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -201,11 +207,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 294
+    startLine: 299
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -230,11 +236,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistorical
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 295
+    startLine: 300
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -259,11 +265,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSymbolSearch
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 296
+    startLine: 301
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -288,11 +294,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 297
+    startLine: 302
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -317,11 +323,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitPerMinute
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 298
+    startLine: 303
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -346,11 +352,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialFields
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 299
+    startLine: 304
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -361,6 +367,64 @@ items:
       type: Meridian.Contracts.Api.CredentialFieldInfo[]
     content.vb: Public Property CredentialFields As CredentialFieldInfo()
   overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  id: SupportsOptions
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsOptions
+  nameWithType: ProviderCatalogEntry.SupportsOptions
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsOptions
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsOptions { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsOptions As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  id: SupportsBrokerage
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsBrokerage
+  nameWithType: ProviderCatalogEntry.SupportsBrokerage
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBrokerage
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsBrokerage { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsBrokerage As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage*
 - uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
   commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
   id: RequiredEnvVars
@@ -375,11 +439,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiredEnvVars
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 301
+    startLine: 308
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -705,7 +769,7 @@ references:
   - name: )
 - uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor*
   commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor
-  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry__ctor_System_String_System_String_Meridian_Ui_Services_Services_ProviderTier_System_Boolean_System_Boolean_System_Boolean_System_String_System_Int32_Meridian_Contracts_Api_CredentialFieldInfo___
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry__ctor_System_String_System_String_Meridian_Ui_Services_Services_ProviderTier_System_Boolean_System_Boolean_System_Boolean_System_String_System_Int32_Meridian_Contracts_Api_CredentialFieldInfo___System_Boolean_System_Boolean_
   name: ProviderCatalogEntry
   nameWithType: ProviderCatalogEntry.ProviderCatalogEntry
   fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.ProviderCatalogEntry
@@ -827,6 +891,18 @@ references:
   name: CredentialFields
   nameWithType: ProviderCatalogEntry.CredentialFields
   fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsOptions
+  name: SupportsOptions
+  nameWithType: ProviderCatalogEntry.SupportsOptions
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsBrokerage
+  name: SupportsBrokerage
+  nameWithType: ProviderCatalogEntry.SupportsBrokerage
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
 - uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars*
   commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
   href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_RequiredEnvVars

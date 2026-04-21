@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationPlanApiResult
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetTier
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesToMigrate
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesToMigrate
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedDuration
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Items
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs

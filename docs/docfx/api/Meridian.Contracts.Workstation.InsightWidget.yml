@@ -1,0 +1,703 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.InsightWidget
+  commentId: T:Meridian.Contracts.Workstation.InsightWidget
+  id: InsightWidget
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.InsightWidget.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.InsightWidget.DrillInRoute
+  - Meridian.Contracts.Workstation.InsightWidget.Headline
+  - Meridian.Contracts.Workstation.InsightWidget.RunId
+  - Meridian.Contracts.Workstation.InsightWidget.Subtitle
+  - Meridian.Contracts.Workstation.InsightWidget.Summary
+  - Meridian.Contracts.Workstation.InsightWidget.Title
+  - Meridian.Contracts.Workstation.InsightWidget.Tone
+  - Meridian.Contracts.Workstation.InsightWidget.WidgetId
+  langs:
+  - csharp
+  - vb
+  name: InsightWidget
+  nameWithType: InsightWidget
+  fullName: Meridian.Contracts.Workstation.InsightWidget
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsightWidget
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared insight tile used by Market Briefing style surfaces.
+  example: []
+  syntax:
+    content: 'public sealed record InsightWidget : IEquatable<InsightWidget>'
+    content.vb: Public NotInheritable Class InsightWidget Implements IEquatable(Of InsightWidget)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.InsightWidget}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.InsightWidget.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.InsightWidget.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: InsightWidget(string, string, string, string, string, string, string?, string?)
+  nameWithType: InsightWidget.InsightWidget(string, string, string, string, string, string, string?, string?)
+  fullName: Meridian.Contracts.Workstation.InsightWidget.InsightWidget(string, string, string, string, string, string, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared insight tile used by Market Briefing style surfaces.
+  example: []
+  syntax:
+    content: public InsightWidget(string WidgetId, string Title, string Subtitle, string Headline, string Tone, string Summary, string? RunId = null, string? DrillInRoute = null)
+    parameters:
+    - id: WidgetId
+      type: System.String
+    - id: Title
+      type: System.String
+    - id: Subtitle
+      type: System.String
+    - id: Headline
+      type: System.String
+    - id: Tone
+      type: System.String
+    - id: Summary
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: DrillInRoute
+      type: System.String
+    content.vb: Public Sub New(WidgetId As String, Title As String, Subtitle As String, Headline As String, Tone As String, Summary As String, RunId As String = Nothing, DrillInRoute As String = Nothing)
+  overload: Meridian.Contracts.Workstation.InsightWidget.#ctor*
+  nameWithType.vb: InsightWidget.New(String, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.InsightWidget.New(String, String, String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String, String, String)
+- uid: Meridian.Contracts.Workstation.InsightWidget.WidgetId
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.WidgetId
+  id: WidgetId
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: WidgetId
+  nameWithType: InsightWidget.WidgetId
+  fullName: Meridian.Contracts.Workstation.InsightWidget.WidgetId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WidgetId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string WidgetId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WidgetId As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.WidgetId*
+- uid: Meridian.Contracts.Workstation.InsightWidget.Title
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.Title
+  id: Title
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: InsightWidget.Title
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Title { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.Title*
+- uid: Meridian.Contracts.Workstation.InsightWidget.Subtitle
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.Subtitle
+  id: Subtitle
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: Subtitle
+  nameWithType: InsightWidget.Subtitle
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Subtitle
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subtitle
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Subtitle { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Subtitle As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.Subtitle*
+- uid: Meridian.Contracts.Workstation.InsightWidget.Headline
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.Headline
+  id: Headline
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: Headline
+  nameWithType: InsightWidget.Headline
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Headline
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Headline
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Headline { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Headline As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.Headline*
+- uid: Meridian.Contracts.Workstation.InsightWidget.Tone
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.Tone
+  id: Tone
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: Tone
+  nameWithType: InsightWidget.Tone
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Tone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tone
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Tone { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Tone As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.Tone*
+- uid: Meridian.Contracts.Workstation.InsightWidget.Summary
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.Summary
+  id: Summary
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: InsightWidget.Summary
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Summary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.Summary*
+- uid: Meridian.Contracts.Workstation.InsightWidget.RunId
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: InsightWidget.RunId
+  fullName: Meridian.Contracts.Workstation.InsightWidget.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.RunId*
+- uid: Meridian.Contracts.Workstation.InsightWidget.DrillInRoute
+  commentId: P:Meridian.Contracts.Workstation.InsightWidget.DrillInRoute
+  id: DrillInRoute
+  parent: Meridian.Contracts.Workstation.InsightWidget
+  langs:
+  - csharp
+  - vb
+  name: DrillInRoute
+  nameWithType: InsightWidget.DrillInRoute
+  fullName: Meridian.Contracts.Workstation.InsightWidget.DrillInRoute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrillInRoute
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? DrillInRoute { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DrillInRoute As String
+  overload: Meridian.Contracts.Workstation.InsightWidget.DrillInRoute*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.InsightWidget}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.InsightWidget}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<InsightWidget>
+  nameWithType: IEquatable<InsightWidget>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.InsightWidget>
+  nameWithType.vb: IEquatable(Of InsightWidget)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.InsightWidget)
+  name.vb: IEquatable(Of InsightWidget)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.InsightWidget
+    name: InsightWidget
+    href: Meridian.Contracts.Workstation.InsightWidget.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.InsightWidget
+    name: InsightWidget
+    href: Meridian.Contracts.Workstation.InsightWidget.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.InsightWidget.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.#ctor
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: InsightWidget
+  nameWithType: InsightWidget.InsightWidget
+  fullName: Meridian.Contracts.Workstation.InsightWidget.InsightWidget
+  nameWithType.vb: InsightWidget.New
+  fullName.vb: Meridian.Contracts.Workstation.InsightWidget.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.InsightWidget.WidgetId*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.WidgetId
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_WidgetId
+  name: WidgetId
+  nameWithType: InsightWidget.WidgetId
+  fullName: Meridian.Contracts.Workstation.InsightWidget.WidgetId
+- uid: Meridian.Contracts.Workstation.InsightWidget.Title*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.Title
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_Title
+  name: Title
+  nameWithType: InsightWidget.Title
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Title
+- uid: Meridian.Contracts.Workstation.InsightWidget.Subtitle*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.Subtitle
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_Subtitle
+  name: Subtitle
+  nameWithType: InsightWidget.Subtitle
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Subtitle
+- uid: Meridian.Contracts.Workstation.InsightWidget.Headline*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.Headline
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_Headline
+  name: Headline
+  nameWithType: InsightWidget.Headline
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Headline
+- uid: Meridian.Contracts.Workstation.InsightWidget.Tone*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.Tone
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_Tone
+  name: Tone
+  nameWithType: InsightWidget.Tone
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Tone
+- uid: Meridian.Contracts.Workstation.InsightWidget.Summary*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.Summary
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_Summary
+  name: Summary
+  nameWithType: InsightWidget.Summary
+  fullName: Meridian.Contracts.Workstation.InsightWidget.Summary
+- uid: Meridian.Contracts.Workstation.InsightWidget.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.RunId
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_RunId
+  name: RunId
+  nameWithType: InsightWidget.RunId
+  fullName: Meridian.Contracts.Workstation.InsightWidget.RunId
+- uid: Meridian.Contracts.Workstation.InsightWidget.DrillInRoute*
+  commentId: Overload:Meridian.Contracts.Workstation.InsightWidget.DrillInRoute
+  href: Meridian.Contracts.Workstation.InsightWidget.html#Meridian_Contracts_Workstation_InsightWidget_DrillInRoute
+  name: DrillInRoute
+  nameWithType: InsightWidget.DrillInRoute
+  fullName: Meridian.Contracts.Workstation.InsightWidget.DrillInRoute

@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolOperationResult
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddedCount
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedCount
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemovedCount
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedCount
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs

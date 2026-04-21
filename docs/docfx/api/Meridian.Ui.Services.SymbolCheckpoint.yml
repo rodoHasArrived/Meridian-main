@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCheckpoint
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsDownloaded
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastProcessedDate
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryCount
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
@@ -346,7 +346,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs

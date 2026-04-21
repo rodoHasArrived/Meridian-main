@@ -5,8 +5,9 @@ items:
   id: ProviderTrustSnapshotDto
   parent: Meridian.Contracts.Api
   children:
-  - Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[])
+  - Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[],Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})
   - Meridian.Contracts.Api.ProviderTrustSnapshotDto.ConnectionId
+  - Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision
   - Meridian.Contracts.Api.ProviderTrustSnapshotDto.HealthStatus
   - Meridian.Contracts.Api.ProviderTrustSnapshotDto.IsCertificationFresh
   - Meridian.Contracts.Api.ProviderTrustSnapshotDto.IsHealthy
@@ -24,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTrustSnapshotDto
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 134
+    startLine: 135
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -48,32 +49,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[])
-  commentId: M:Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[])
-  id: '#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[])'
+- uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[],Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})
+  commentId: M:Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[],Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})
+  id: '#ctor(System.String,System.String,System.Double,System.Boolean,System.String,System.Boolean,System.Boolean,System.String[],Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})'
   parent: Meridian.Contracts.Api.ProviderTrustSnapshotDto
   langs:
   - csharp
   - vb
-  name: ProviderTrustSnapshotDto(string, string, double, bool, string, bool, bool, string[])
-  nameWithType: ProviderTrustSnapshotDto.ProviderTrustSnapshotDto(string, string, double, bool, string, bool, bool, string[])
-  fullName: Meridian.Contracts.Api.ProviderTrustSnapshotDto.ProviderTrustSnapshotDto(string, string, double, bool, string, bool, bool, string[])
+  name: ProviderTrustSnapshotDto(string, string, double, bool, string, bool, bool, string[], DecisionResult<double>)
+  nameWithType: ProviderTrustSnapshotDto.ProviderTrustSnapshotDto(string, string, double, bool, string, bool, bool, string[], DecisionResult<double>)
+  fullName: Meridian.Contracts.Api.ProviderTrustSnapshotDto.ProviderTrustSnapshotDto(string, string, double, bool, string, bool, bool, string[], Meridian.Contracts.RuleEvaluation.DecisionResult<double>)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 134
+    startLine: 135
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
   summary: Trust score DTO exposed to clients.
   example: []
   syntax:
-    content: public ProviderTrustSnapshotDto(string ConnectionId, string ProviderFamilyId, double Score, bool IsHealthy, string HealthStatus, bool IsProductionReady, bool IsCertificationFresh, string[] Signals)
+    content: public ProviderTrustSnapshotDto(string ConnectionId, string ProviderFamilyId, double Score, bool IsHealthy, string HealthStatus, bool IsProductionReady, bool IsCertificationFresh, string[] Signals, DecisionResult<double> Decision)
     parameters:
     - id: ConnectionId
       type: System.String
@@ -91,11 +92,13 @@ items:
       type: System.Boolean
     - id: Signals
       type: System.String[]
-    content.vb: Public Sub New(ConnectionId As String, ProviderFamilyId As String, Score As Double, IsHealthy As Boolean, HealthStatus As String, IsProductionReady As Boolean, IsCertificationFresh As Boolean, Signals As String())
+    - id: Decision
+      type: Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+    content.vb: Public Sub New(ConnectionId As String, ProviderFamilyId As String, Score As Double, IsHealthy As Boolean, HealthStatus As String, IsProductionReady As Boolean, IsCertificationFresh As Boolean, Signals As String(), Decision As DecisionResult(Of Double))
   overload: Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor*
-  nameWithType.vb: ProviderTrustSnapshotDto.New(String, String, Double, Boolean, String, Boolean, Boolean, String())
-  fullName.vb: Meridian.Contracts.Api.ProviderTrustSnapshotDto.New(String, String, Double, Boolean, String, Boolean, Boolean, String())
-  name.vb: New(String, String, Double, Boolean, String, Boolean, Boolean, String())
+  nameWithType.vb: ProviderTrustSnapshotDto.New(String, String, Double, Boolean, String, Boolean, Boolean, String(), DecisionResult(Of Double))
+  fullName.vb: Meridian.Contracts.Api.ProviderTrustSnapshotDto.New(String, String, Double, Boolean, String, Boolean, Boolean, String(), Meridian.Contracts.RuleEvaluation.DecisionResult(Of Double))
+  name.vb: New(String, String, Double, Boolean, String, Boolean, Boolean, String(), DecisionResult(Of Double))
 - uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.ConnectionId
   commentId: P:Meridian.Contracts.Api.ProviderTrustSnapshotDto.ConnectionId
   id: ConnectionId
@@ -110,11 +113,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 135
+    startLine: 136
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -139,11 +142,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFamilyId
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 136
+    startLine: 137
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -168,11 +171,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 137
+    startLine: 138
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -197,11 +200,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 138
+    startLine: 139
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -226,11 +229,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthStatus
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 139
+    startLine: 140
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -255,11 +258,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsProductionReady
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 140
+    startLine: 141
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -284,11 +287,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCertificationFresh
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 141
+    startLine: 142
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -313,11 +316,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Signals
     path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
-    startLine: 142
+    startLine: 143
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -328,6 +331,35 @@ items:
       type: System.String[]
     content.vb: Public Property Signals As String()
   overload: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Signals*
+- uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision
+  commentId: P:Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision
+  id: Decision
+  parent: Meridian.Contracts.Api.ProviderTrustSnapshotDto
+  langs:
+  - csharp
+  - vb
+  name: Decision
+  nameWithType: ProviderTrustSnapshotDto.Decision
+  fullName: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Decision
+    path: ../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DecisionResult<double> Decision { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+    content.vb: Public Property Decision As DecisionResult(Of Double)
+  overload: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision*
 references:
 - uid: Meridian.Contracts.Api
   commentId: N:Meridian.Contracts.Api
@@ -635,7 +667,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor*
   commentId: Overload:Meridian.Contracts.Api.ProviderTrustSnapshotDto.#ctor
-  href: Meridian.Contracts.Api.ProviderTrustSnapshotDto.html#Meridian_Contracts_Api_ProviderTrustSnapshotDto__ctor_System_String_System_String_System_Double_System_Boolean_System_String_System_Boolean_System_Boolean_System_String___
+  href: Meridian.Contracts.Api.ProviderTrustSnapshotDto.html#Meridian_Contracts_Api_ProviderTrustSnapshotDto__ctor_System_String_System_String_System_Double_System_Boolean_System_String_System_Boolean_System_Boolean_System_String___Meridian_Contracts_RuleEvaluation_DecisionResult_System_Double__
   name: ProviderTrustSnapshotDto
   nameWithType: ProviderTrustSnapshotDto.ProviderTrustSnapshotDto
   fullName: Meridian.Contracts.Api.ProviderTrustSnapshotDto.ProviderTrustSnapshotDto
@@ -698,6 +730,94 @@ references:
     href: https://learn.microsoft.com/dotnet/api/system.string
   - name: (
   - name: )
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+  parent: Meridian.Contracts.RuleEvaluation
+  definition: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<double>
+  nameWithType: DecisionResult<double>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<double>
+  nameWithType.vb: DecisionResult(Of Double)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of Double)
+  name.vb: DecisionResult(Of Double)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<TScore>
+  nameWithType: DecisionResult<TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<TScore>
+  nameWithType.vb: DecisionResult(Of TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of TScore)
+  name.vb: DecisionResult(Of TScore)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - name: TScore
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TScore
+  - name: )
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  href: Meridian.html
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
 - uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.ConnectionId*
   commentId: Overload:Meridian.Contracts.Api.ProviderTrustSnapshotDto.ConnectionId
   href: Meridian.Contracts.Api.ProviderTrustSnapshotDto.html#Meridian_Contracts_Api_ProviderTrustSnapshotDto_ConnectionId
@@ -746,3 +866,9 @@ references:
   name: Signals
   nameWithType: ProviderTrustSnapshotDto.Signals
   fullName: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Signals
+- uid: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision
+  href: Meridian.Contracts.Api.ProviderTrustSnapshotDto.html#Meridian_Contracts_Api_ProviderTrustSnapshotDto_Decision
+  name: Decision
+  nameWithType: ProviderTrustSnapshotDto.Decision
+  fullName: Meridian.Contracts.Api.ProviderTrustSnapshotDto.Decision

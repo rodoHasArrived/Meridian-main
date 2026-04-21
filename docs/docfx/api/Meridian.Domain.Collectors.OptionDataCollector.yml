@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionDataCollector
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOptionQuote
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOptionTrade
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnGreeksUpdate
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnChainSnapshot
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOpenInterestUpdate
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestQuote
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestGreeks
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -347,7 +347,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestChain
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -385,7 +385,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainsForUnderlying
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestOpenInterest
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -454,7 +454,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentTrades
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -492,7 +492,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQuotesForUnderlying
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -528,7 +528,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedUnderlyings
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
@@ -558,7 +558,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs

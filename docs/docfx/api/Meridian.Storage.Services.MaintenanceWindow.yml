@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceWindow
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: End
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Days
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedOperations
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentJobs
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Limits
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs

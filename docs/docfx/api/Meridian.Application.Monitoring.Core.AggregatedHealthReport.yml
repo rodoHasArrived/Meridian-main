@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregatedHealthReport
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallSeverity
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckedAt
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuration
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyComponents
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DegradedComponents
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyComponents
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOperational
     path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs

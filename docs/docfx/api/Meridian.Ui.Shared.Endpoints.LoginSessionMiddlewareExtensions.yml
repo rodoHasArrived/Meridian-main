@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoginSessionMiddlewareExtensions
     path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseLoginSessionAuthentication
     path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs

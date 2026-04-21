@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BlackScholesCalculator
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ncdf
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Npdf
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallPrice
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallDelta
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallVega
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImpliedVolatility
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkToClose
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
@@ -391,7 +391,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkToCloseWithIv
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs

@@ -7,6 +7,8 @@ items:
   children:
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.#ctor(System.String)
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.GetAppDataDirectory
+  - Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments(System.String)
+  - Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables(System.String)
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.GetStatusAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.InstallAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.IsHealthyAsync(System.Threading.CancellationToken)
@@ -18,7 +20,7 @@ items:
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.RestartAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.SerializerOptions
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.StartAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(System.String,System.String)
+  - Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
   - Meridian.Ui.Services.Services.BackendServiceManagerBase.StopAsync(System.Threading.CancellationToken)
   langs:
   - csharp
@@ -30,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackendServiceManagerBase
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
@@ -74,11 +76,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializerOptions
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 56
+    startLine: 58
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -101,11 +103,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 62
+    startLine: 64
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -133,11 +135,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAppDataDirectory
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 73
+    startLine: 75
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -163,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveExecutablePath
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 77
+    startLine: 79
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -185,44 +187,120 @@ items:
   nameWithType.vb: BackendServiceManagerBase.ResolveExecutablePath(String)
   fullName.vb: Meridian.Ui.Services.Services.BackendServiceManagerBase.ResolveExecutablePath(String)
   name.vb: ResolveExecutablePath(String)
-- uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(System.String,System.String)
-  commentId: M:Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(System.String,System.String)
-  id: StartProcess(System.String,System.String)
+- uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments(System.String)
+  commentId: M:Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments(System.String)
+  id: GetProcessArguments(System.String)
   parent: Meridian.Ui.Services.Services.BackendServiceManagerBase
   langs:
   - csharp
   - vb
-  name: StartProcess(string, string)
-  nameWithType: BackendServiceManagerBase.StartProcess(string, string)
-  fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(string, string)
+  name: GetProcessArguments(string)
+  nameWithType: BackendServiceManagerBase.GetProcessArguments(string)
+  fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments(string)
   type: Method
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProcessArguments
+    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets process arguments for the backend executable.
+  example: []
+  syntax:
+    content: protected virtual IReadOnlyList<string> GetProcessArguments(string executablePath)
+    parameters:
+    - id: executablePath
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Protected Overridable Function GetProcessArguments(executablePath As String) As IReadOnlyList(Of String)
+  overload: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments*
+  nameWithType.vb: BackendServiceManagerBase.GetProcessArguments(String)
+  fullName.vb: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments(String)
+  name.vb: GetProcessArguments(String)
+- uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables(System.String)
+  commentId: M:Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables(System.String)
+  id: GetProcessEnvironmentVariables(System.String)
+  parent: Meridian.Ui.Services.Services.BackendServiceManagerBase
+  langs:
+  - csharp
+  - vb
+  name: GetProcessEnvironmentVariables(string)
+  nameWithType: BackendServiceManagerBase.GetProcessEnvironmentVariables(string)
+  fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProcessEnvironmentVariables
+    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets environment variables for the backend executable.
+  example: []
+  syntax:
+    content: protected virtual IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
+    parameters:
+    - id: executablePath
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Protected Overridable Function GetProcessEnvironmentVariables(executablePath As String) As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables*
+  nameWithType.vb: BackendServiceManagerBase.GetProcessEnvironmentVariables(String)
+  fullName.vb: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables(String)
+  name.vb: GetProcessEnvironmentVariables(String)
+- uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: StartProcess(System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  parent: Meridian.Ui.Services.Services.BackendServiceManagerBase
+  langs:
+  - csharp
+  - vb
+  name: StartProcess(string, string, IReadOnlyList<string>, IReadOnlyDictionary<string, string?>)
+  nameWithType: BackendServiceManagerBase.StartProcess(string, string, IReadOnlyList<string>, IReadOnlyDictionary<string, string?>)
+  fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(string, string, System.Collections.Generic.IReadOnlyList<string>, System.Collections.Generic.IReadOnlyDictionary<string, string?>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartProcess
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 80
+    startLine: 90
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
   summary: Starts a process and returns its process ID, or null if failed.
   example: []
   syntax:
-    content: protected abstract int? StartProcess(string executablePath, string workingDirectory)
+    content: protected abstract int? StartProcess(string executablePath, string workingDirectory, IReadOnlyList<string> arguments, IReadOnlyDictionary<string, string?> environmentVariables)
     parameters:
     - id: executablePath
       type: System.String
     - id: workingDirectory
       type: System.String
+    - id: arguments
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: environmentVariables
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
     return:
       type: System.Nullable{System.Int32}
-    content.vb: Protected MustOverride Function StartProcess(executablePath As String, workingDirectory As String) As Integer?
+    content.vb: Protected MustOverride Function StartProcess(executablePath As String, workingDirectory As String, arguments As IReadOnlyList(Of String), environmentVariables As IReadOnlyDictionary(Of String, String)) As Integer?
   overload: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess*
-  nameWithType.vb: BackendServiceManagerBase.StartProcess(String, String)
-  fullName.vb: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(String, String)
-  name.vb: StartProcess(String, String)
+  nameWithType.vb: BackendServiceManagerBase.StartProcess(String, String, IReadOnlyList(Of String), IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess(String, String, System.Collections.Generic.IReadOnlyList(Of String), System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: StartProcess(String, String, IReadOnlyList(Of String), IReadOnlyDictionary(Of String, String))
 - uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.KillProcessAsync(System.Int32,System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.Services.BackendServiceManagerBase.KillProcessAsync(System.Int32,System.Threading.CancellationToken)
   id: KillProcessAsync(System.Int32,System.Threading.CancellationToken)
@@ -237,11 +315,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KillProcessAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 83
+    startLine: 97
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -275,11 +353,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsProcessRunning
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 86
+    startLine: 100
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -311,11 +389,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthyAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 89
+    startLine: 103
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -344,11 +422,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogInfo
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 92
+    startLine: 106
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -380,11 +458,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogError
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 95
+    startLine: 109
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -416,11 +494,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstallAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 97
+    startLine: 111
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -452,11 +530,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 131
+    startLine: 145
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -483,11 +561,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 206
+    startLine: 226
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -514,11 +592,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RestartAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 246
+    startLine: 266
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -545,11 +623,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
-    startLine: 254
+    startLine: 274
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -915,9 +993,202 @@ references:
   name: ResolveExecutablePath
   nameWithType: BackendServiceManagerBase.ResolveExecutablePath
   fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.ResolveExecutablePath
+- uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments*
+  commentId: Overload:Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments
+  href: Meridian.Ui.Services.Services.BackendServiceManagerBase.html#Meridian_Ui_Services_Services_BackendServiceManagerBase_GetProcessArguments_System_String_
+  name: GetProcessArguments
+  nameWithType: BackendServiceManagerBase.GetProcessArguments
+  fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessArguments
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables*
+  commentId: Overload:Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables
+  href: Meridian.Ui.Services.Services.BackendServiceManagerBase.html#Meridian_Ui_Services_Services_BackendServiceManagerBase_GetProcessEnvironmentVariables_System_String_
+  name: GetProcessEnvironmentVariables
+  nameWithType: BackendServiceManagerBase.GetProcessEnvironmentVariables
+  fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.GetProcessEnvironmentVariables
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
 - uid: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess*
   commentId: Overload:Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess
-  href: Meridian.Ui.Services.Services.BackendServiceManagerBase.html#Meridian_Ui_Services_Services_BackendServiceManagerBase_StartProcess_System_String_System_String_
+  href: Meridian.Ui.Services.Services.BackendServiceManagerBase.html#Meridian_Ui_Services_Services_BackendServiceManagerBase_StartProcess_System_String_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
   name: StartProcess
   nameWithType: BackendServiceManagerBase.StartProcess
   fullName: Meridian.Ui.Services.Services.BackendServiceManagerBase.StartProcess

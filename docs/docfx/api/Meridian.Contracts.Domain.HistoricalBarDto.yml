@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBarDto
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -278,7 +278,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -364,7 +364,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vwap
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -407,7 +407,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -536,7 +536,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAdjusted
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs

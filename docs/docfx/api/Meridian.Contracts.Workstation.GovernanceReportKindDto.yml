@@ -1,0 +1,186 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  commentId: T:Meridian.Contracts.Workstation.GovernanceReportKindDto
+  id: GovernanceReportKindDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.GovernanceReportKindDto.AssetAllocation
+  - Meridian.Contracts.Workstation.GovernanceReportKindDto.NavSummary
+  - Meridian.Contracts.Workstation.GovernanceReportKindDto.ReconciliationPack
+  - Meridian.Contracts.Workstation.GovernanceReportKindDto.TrialBalance
+  langs:
+  - csharp
+  - vb
+  name: GovernanceReportKindDto
+  nameWithType: GovernanceReportKindDto
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceReportKindDto
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportKindDto>))]
+
+      public enum GovernanceReportKindDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of GovernanceReportKindDto)))>
+
+      Public Enum GovernanceReportKindDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.GovernanceReportKindDto}
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto.TrialBalance
+  commentId: F:Meridian.Contracts.Workstation.GovernanceReportKindDto.TrialBalance
+  id: TrialBalance
+  parent: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  langs:
+  - csharp
+  - vb
+  name: TrialBalance
+  nameWithType: GovernanceReportKindDto.TrialBalance
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto.TrialBalance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrialBalance
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: TrialBalance = 0
+    return:
+      type: Meridian.Contracts.Workstation.GovernanceReportKindDto
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto.NavSummary
+  commentId: F:Meridian.Contracts.Workstation.GovernanceReportKindDto.NavSummary
+  id: NavSummary
+  parent: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  langs:
+  - csharp
+  - vb
+  name: NavSummary
+  nameWithType: GovernanceReportKindDto.NavSummary
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto.NavSummary
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavSummary
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: NavSummary = 1
+    return:
+      type: Meridian.Contracts.Workstation.GovernanceReportKindDto
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto.AssetAllocation
+  commentId: F:Meridian.Contracts.Workstation.GovernanceReportKindDto.AssetAllocation
+  id: AssetAllocation
+  parent: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  langs:
+  - csharp
+  - vb
+  name: AssetAllocation
+  nameWithType: GovernanceReportKindDto.AssetAllocation
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto.AssetAllocation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetAllocation
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: AssetAllocation = 2
+    return:
+      type: Meridian.Contracts.Workstation.GovernanceReportKindDto
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto.ReconciliationPack
+  commentId: F:Meridian.Contracts.Workstation.GovernanceReportKindDto.ReconciliationPack
+  id: ReconciliationPack
+  parent: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationPack
+  nameWithType: GovernanceReportKindDto.ReconciliationPack
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto.ReconciliationPack
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationPack
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: ReconciliationPack = 3
+    return:
+      type: Meridian.Contracts.Workstation.GovernanceReportKindDto
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  commentId: T:Meridian.Contracts.Workstation.GovernanceReportKindDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.GovernanceReportKindDto.html
+  name: GovernanceReportKindDto
+  nameWithType: GovernanceReportKindDto
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto

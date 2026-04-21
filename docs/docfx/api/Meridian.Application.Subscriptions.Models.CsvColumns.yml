@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CsvColumns
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryExchange
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LocalSymbol
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingClass
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConId
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -395,7 +395,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sector
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -422,7 +422,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Industry
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -449,7 +449,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCap
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -476,7 +476,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Required
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -503,7 +503,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Standard
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -530,7 +530,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Full
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -557,7 +557,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMetadata
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs

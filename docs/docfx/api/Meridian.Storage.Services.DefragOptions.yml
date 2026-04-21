@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefragOptions
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinFileSizeBytes
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFilesPerMerge
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreserveOriginals
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetCompression
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFileAge
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs

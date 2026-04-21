@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapInfo
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartDate
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndDate
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapType
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualEvents
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanRepair
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs

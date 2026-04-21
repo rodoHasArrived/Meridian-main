@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationProviderExtensions
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConnectionString
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderOptions
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFeatureEnabled
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageConfig
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillConfig
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterProviderConfig
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs

@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionPolicy
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickDataDays
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarDataDays
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteDataDays
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthDataDays
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeletedFilesPerRun
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressBeforeDelete
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveToCloud
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloudArchiveDestination
     path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs

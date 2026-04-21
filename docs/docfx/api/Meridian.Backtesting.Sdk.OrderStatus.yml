@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderStatus
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartiallyFilled
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filled
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expired
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs

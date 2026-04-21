@@ -1,0 +1,281 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  id: IEnvironmentValidationService
+  parent: Meridian.Application.EnvironmentDesign
+  children:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IEnvironmentValidationService
+  nameWithType: IEnvironmentValidationService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IEnvironmentValidationService
+    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  syntax:
+    content: public interface IEnvironmentValidationService
+    content.vb: Public Interface IEnvironmentValidationService
+  derivedClasses:
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  id: ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  langs:
+  - csharp
+  - vb
+  name: ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto?, CancellationToken)
+  nameWithType: IEnvironmentValidationService.ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  syntax:
+    content: Task<EnvironmentValidationResultDto> ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default)
+    parameters:
+    - id: draft
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    - id: publishPlan
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+    content.vb: Function ValidateAsync(draft As EnvironmentDraftDto, publishPlan As EnvironmentPublishPlanDto = Nothing, ct As CancellationToken = Nothing) As Task(Of EnvironmentValidationResultDto)
+  overload: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync*
+  nameWithType.vb: IEnvironmentValidationService.ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto, CancellationToken)
+  fullName.vb: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  name.vb: ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto, CancellationToken)
+references:
+- uid: Meridian.Application.EnvironmentDesign
+  commentId: N:Meridian.Application.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Application.EnvironmentDesign
+  nameWithType: Meridian.Application.EnvironmentDesign
+  fullName: Meridian.Application.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Application.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Application.EnvironmentDesign.html
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.html#Meridian_Application_EnvironmentDesign_IEnvironmentValidationService_ValidateAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: ValidateAsync
+  nameWithType: IEnvironmentValidationService.ValidateAsync
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto.html
+  name: EnvironmentDraftDto
+  nameWithType: EnvironmentDraftDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto.html
+  name: EnvironmentPublishPlanDto
+  nameWithType: EnvironmentPublishPlanDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EnvironmentValidationResultDto>
+  nameWithType: Task<EnvironmentValidationResultDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto>
+  nameWithType.vb: Task(Of EnvironmentValidationResultDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto)
+  name.vb: Task(Of EnvironmentValidationResultDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractVerificationService
     path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Violations
     path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyContracts
     path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs

@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGranularity
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -38,9 +38,13 @@ items:
     content: 'public enum DataGranularity : byte'
     content.vb: Public Enum DataGranularity As Byte
   extensionMethods:
+  - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday
   - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe
+  - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue
   - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName
+  - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix
   - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan
+  - Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Minute1
   commentId: F:Meridian.Infrastructure.Adapters.Core.DataGranularity.Minute1
   id: Minute1
@@ -55,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minute1
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -83,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minute5
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -111,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minute15
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -139,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minute30
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -167,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hour1
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -195,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hour4
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -223,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Daily
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -251,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weekly
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -279,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Monthly
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -332,6 +336,32 @@ references:
   - uid: Meridian.Infrastructure.Adapters.Core
     name: Core
     href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: IsIntraday(DataGranularity)
+  nameWithType: DataGranularityExtensions.IsIntraday(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: IsIntraday
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: IsIntraday
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
@@ -353,6 +383,32 @@ references:
   - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
     name: ToAlpacaTimeframe
     href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToAlpacaTimeframe_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToConfigValue(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToConfigValue(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToConfigValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToConfigValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
   - name: (
   - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
     name: DataGranularity
@@ -384,6 +440,32 @@ references:
     name: DataGranularity
     href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
   - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToStorageFilePrefix(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToStorageFilePrefix(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToStorageFilePrefix
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToStorageFilePrefix
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
@@ -410,6 +492,63 @@ references:
     name: DataGranularity
     href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
   - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity.Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToUiValue(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToUiValue(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToUiValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToUiValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: IsIntraday(DataGranularity)
+  nameWithType: DataGranularityExtensions.IsIntraday(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: IsIntraday
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: IsIntraday
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html
+  name: DataGranularityExtensions
+  nameWithType: DataGranularityExtensions
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToAlpacaTimeframe_Meridian_Infrastructure_Adapters_Core_DataGranularity_
@@ -434,13 +573,30 @@ references:
     name: DataGranularity
     href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
   - name: )
-- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
-  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
-  parent: Meridian.Infrastructure.Adapters.Core
-  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html
-  name: DataGranularityExtensions
-  nameWithType: DataGranularityExtensions
-  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToConfigValue(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToConfigValue(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToConfigValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToConfigValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToDisplayName_Meridian_Infrastructure_Adapters_Core_DataGranularity_
@@ -465,6 +621,30 @@ references:
     name: DataGranularity
     href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
   - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToStorageFilePrefix(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToStorageFilePrefix(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToStorageFilePrefix
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToStorageFilePrefix
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToTimeSpan_Meridian_Infrastructure_Adapters_Core_DataGranularity_
@@ -484,6 +664,30 @@ references:
   - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan(Meridian.Infrastructure.Adapters.Core.DataGranularity)
     name: ToTimeSpan
     href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToTimeSpan_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToUiValue(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToUiValue(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToUiValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+    name: ToUiValue
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
   - name: (
   - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
     name: DataGranularity

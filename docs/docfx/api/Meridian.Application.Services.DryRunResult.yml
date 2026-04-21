@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRunResult
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallSuccess
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationMs
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Options
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileSystemValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResourceValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs
@@ -382,7 +382,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DryRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialAuthValidation
     path: ../../src/Meridian.Application/Services/DryRunService.cs

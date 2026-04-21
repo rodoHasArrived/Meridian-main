@@ -67,23 +67,24 @@ items:
   - Meridian.Ui.Services.BackfillProviderConfigService
   - Meridian.Ui.Services.BackfillRecommendations
   - Meridian.Ui.Services.BackfillSchedule
-  - Meridian.Ui.Services.BackfillScheduleCreateRequest
-  - Meridian.Ui.Services.BackfillScheduleSummary
   - Meridian.Ui.Services.BackfillService
   - Meridian.Ui.Services.BackfillableGap
   - Meridian.Ui.Services.BacktestHistoryResponse
   - Meridian.Ui.Services.BacktestHistoryResult
   - Meridian.Ui.Services.BacktestOptions
+  - Meridian.Ui.Services.BacktestResults
   - Meridian.Ui.Services.BacktestStartResponse
   - Meridian.Ui.Services.BacktestStartResult
   - Meridian.Ui.Services.BacktestState
   - Meridian.Ui.Services.BacktestStatus
   - Meridian.Ui.Services.BacktestStatusChangedEventArgs
   - Meridian.Ui.Services.BacktestSummary
+  - Meridian.Ui.Services.BacktestTradeRecord
   - Meridian.Ui.Services.BatchExportSchedulerService
   - Meridian.Ui.Services.BatchOperationResponse
   - Meridian.Ui.Services.BboQuote
   - Meridian.Ui.Services.BollingerBandsData
+  - Meridian.Ui.Services.BoundedWindowMode
   - Meridian.Ui.Services.BrowserArchiveFileInfo
   - Meridian.Ui.Services.BulkSymbolOperationResponse
   - Meridian.Ui.Services.BulkSymbolOperationResult
@@ -183,6 +184,7 @@ items:
   - Meridian.Ui.Services.DryRunResponse
   - Meridian.Ui.Services.DryRunResult
   - Meridian.Ui.Services.EnableResponse
+  - Meridian.Ui.Services.EquityPoint
   - Meridian.Ui.Services.ErrorCodeInfo
   - Meridian.Ui.Services.ErrorCodesResponse
   - Meridian.Ui.Services.ErrorCodesResult
@@ -280,6 +282,7 @@ items:
   - Meridian.Ui.Services.LeanConfiguration
   - Meridian.Ui.Services.LeanConfigurationUpdate
   - Meridian.Ui.Services.LeanIntegrationService
+  - Meridian.Ui.Services.LeanResultsIngestResult
   - Meridian.Ui.Services.LeanStatus
   - Meridian.Ui.Services.LeanSymbolMapping
   - Meridian.Ui.Services.LeanSymbolMappingResult
@@ -1412,19 +1415,6 @@ references:
   name: SymbolGapAnalysisDto
   nameWithType: SymbolGapAnalysisDto
   fullName: Meridian.Ui.Services.SymbolGapAnalysisDto
-- uid: Meridian.Ui.Services.BackfillScheduleCreateRequest
-  commentId: T:Meridian.Ui.Services.BackfillScheduleCreateRequest
-  parent: Meridian.Ui.Services
-  href: Meridian.Ui.Services.BackfillScheduleCreateRequest.html
-  name: BackfillScheduleCreateRequest
-  nameWithType: BackfillScheduleCreateRequest
-  fullName: Meridian.Ui.Services.BackfillScheduleCreateRequest
-- uid: Meridian.Ui.Services.BackfillScheduleSummary
-  commentId: T:Meridian.Ui.Services.BackfillScheduleSummary
-  href: Meridian.Ui.Services.BackfillScheduleSummary.html
-  name: BackfillScheduleSummary
-  nameWithType: BackfillScheduleSummary
-  fullName: Meridian.Ui.Services.BackfillScheduleSummary
 - uid: Meridian.Ui.Services.BackfillCheckpointService
   commentId: T:Meridian.Ui.Services.BackfillCheckpointService
   parent: Meridian.Ui.Services
@@ -2537,6 +2527,24 @@ references:
   name: BacktestState
   nameWithType: BacktestState
   fullName: Meridian.Ui.Services.BacktestState
+- uid: Meridian.Ui.Services.BacktestResults
+  commentId: T:Meridian.Ui.Services.BacktestResults
+  href: Meridian.Ui.Services.BacktestResults.html
+  name: BacktestResults
+  nameWithType: BacktestResults
+  fullName: Meridian.Ui.Services.BacktestResults
+- uid: Meridian.Ui.Services.BacktestTradeRecord
+  commentId: T:Meridian.Ui.Services.BacktestTradeRecord
+  href: Meridian.Ui.Services.BacktestTradeRecord.html
+  name: BacktestTradeRecord
+  nameWithType: BacktestTradeRecord
+  fullName: Meridian.Ui.Services.BacktestTradeRecord
+- uid: Meridian.Ui.Services.EquityPoint
+  commentId: T:Meridian.Ui.Services.EquityPoint
+  href: Meridian.Ui.Services.EquityPoint.html
+  name: EquityPoint
+  nameWithType: EquityPoint
+  fullName: Meridian.Ui.Services.EquityPoint
 - uid: Meridian.Ui.Services.BacktestSummary
   commentId: T:Meridian.Ui.Services.BacktestSummary
   href: Meridian.Ui.Services.BacktestSummary.html
@@ -2592,6 +2600,12 @@ references:
   name: LeanAutoExportConfigureOptions
   nameWithType: LeanAutoExportConfigureOptions
   fullName: Meridian.Ui.Services.LeanAutoExportConfigureOptions
+- uid: Meridian.Ui.Services.LeanResultsIngestResult
+  commentId: T:Meridian.Ui.Services.LeanResultsIngestResult
+  href: Meridian.Ui.Services.LeanResultsIngestResult.html
+  name: LeanResultsIngestResult
+  nameWithType: LeanResultsIngestResult
+  fullName: Meridian.Ui.Services.LeanResultsIngestResult
 - uid: Meridian.Ui.Services.LeanSymbolMapping
   commentId: T:Meridian.Ui.Services.LeanSymbolMapping
   href: Meridian.Ui.Services.LeanSymbolMapping.html
@@ -4439,6 +4453,13 @@ references:
   name: WorkstationLayoutState
   nameWithType: WorkstationLayoutState
   fullName: Meridian.Ui.Services.WorkstationLayoutState
+- uid: Meridian.Ui.Services.BoundedWindowMode
+  commentId: T:Meridian.Ui.Services.BoundedWindowMode
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BoundedWindowMode.html
+  name: BoundedWindowMode
+  nameWithType: BoundedWindowMode
+  fullName: Meridian.Ui.Services.BoundedWindowMode
 - uid: Meridian.Ui.Services.WorkstationPaneState
   commentId: T:Meridian.Ui.Services.WorkstationPaneState
   href: Meridian.Ui.Services.WorkstationPaneState.html

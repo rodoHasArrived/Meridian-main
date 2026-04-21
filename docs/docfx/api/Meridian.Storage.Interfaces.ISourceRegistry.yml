@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISourceRegistry
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourceInfo
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolInfo
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSources
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbols
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSource
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbol
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAlias
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourcePriorityOrder
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs

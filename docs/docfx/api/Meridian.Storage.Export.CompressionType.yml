@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionType
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gzip
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snappy
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Zstd
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lz4
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Zip
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs

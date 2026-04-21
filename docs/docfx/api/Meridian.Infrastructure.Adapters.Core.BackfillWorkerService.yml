@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillWorkerService
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBarWritten
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnRunningStateChanged
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRunning
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressTracker
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs

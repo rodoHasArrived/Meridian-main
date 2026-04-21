@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProgress
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobId
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedSymbols
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedSymbols
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBars
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DownloadedBars
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -381,7 +381,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsPerSecond
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -424,7 +424,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSecondsRemaining
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -470,7 +470,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -513,7 +513,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -559,7 +559,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolProgress
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -605,7 +605,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentProvider
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -648,7 +648,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -691,7 +691,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressPercent
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -732,7 +732,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsProgressPercent
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -773,7 +773,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Elapsed
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -814,7 +814,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsComplete
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs
@@ -855,7 +855,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Backfill/BackfillProgress.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingSymbols
     path: ../../src/Meridian.Contracts/Backfill/BackfillProgress.cs

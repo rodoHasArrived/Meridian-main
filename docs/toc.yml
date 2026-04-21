@@ -33,6 +33,8 @@
       href: architecture/desktop-layers.md
     - name: UI Redesign
       href: architecture/ui-redesign.md
+    - name: WPF Workstation Shell UX
+      href: architecture/wpf-workstation-shell-ux.md
     - name: Why This Architecture
       href: architecture/why-this-architecture.md
 
@@ -53,6 +55,8 @@
       href: providers/interactive-brokers-setup.md
     - name: IB Free Equity Reference
       href: providers/interactive-brokers-free-equity-reference.md
+    - name: StockSharp Connector Status
+      href: providers/stocksharp-connectors.md
 
 - name: Operations
   items:
@@ -117,6 +121,10 @@
       href: reference/environment-variables.md
     - name: Design Review Memo
       href: reference/design-review-memo.md
+    - name: Reconciliation Break Taxonomy
+      href: reference/reconciliation-break-taxonomy.md
+    - name: Research Briefing Workflow
+      href: reference/research-briefing-workflow.md
 
 - name: Security
   items:

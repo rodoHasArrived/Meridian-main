@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionGreeks
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delta
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gamma
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Theta
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vega
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rho
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImpliedVolatility
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DollarDelta
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
@@ -402,7 +402,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DollarTheta
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs

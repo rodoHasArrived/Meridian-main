@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityIdentifierDto
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 25
+    startLine: 39
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 25
+    startLine: 39
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -100,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 26
+    startLine: 40
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -129,11 +129,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 27
+    startLine: 41
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -158,11 +158,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPrimary
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 28
+    startLine: 42
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -187,11 +187,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidFrom
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 29
+    startLine: 43
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -216,11 +216,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidTo
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 30
+    startLine: 44
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -245,11 +245,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 31
+    startLine: 45
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster

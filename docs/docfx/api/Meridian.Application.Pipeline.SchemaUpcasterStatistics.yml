@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaUpcasterStatistics
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAttempts
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Successful
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisteredUpcasters
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentSchemaVersion
     path: ../../src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs

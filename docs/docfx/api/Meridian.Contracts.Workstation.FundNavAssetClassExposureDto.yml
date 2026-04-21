@@ -1,0 +1,486 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  commentId: T:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  id: FundNavAssetClassExposureDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.#ctor(System.String,System.Decimal)
+  - Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass
+  - Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance
+  langs:
+  - csharp
+  - vb
+  name: FundNavAssetClassExposureDto
+  nameWithType: FundNavAssetClassExposureDto
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundNavAssetClassExposureDto
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Asset-class contribution within a NAV attribution summary.
+  example: []
+  syntax:
+    content: 'public sealed record FundNavAssetClassExposureDto : IEquatable<FundNavAssetClassExposureDto>'
+    content.vb: Public NotInheritable Class FundNavAssetClassExposureDto Implements IEquatable(Of FundNavAssetClassExposureDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundNavAssetClassExposureDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.#ctor(System.String,System.Decimal)
+  commentId: M:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.#ctor(System.String,System.Decimal)
+  id: '#ctor(System.String,System.Decimal)'
+  parent: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  langs:
+  - csharp
+  - vb
+  name: FundNavAssetClassExposureDto(string, decimal)
+  nameWithType: FundNavAssetClassExposureDto.FundNavAssetClassExposureDto(string, decimal)
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.FundNavAssetClassExposureDto(string, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Asset-class contribution within a NAV attribution summary.
+  example: []
+  syntax:
+    content: public FundNavAssetClassExposureDto(string AssetClass, decimal NetBalance)
+    parameters:
+    - id: AssetClass
+      type: System.String
+    - id: NetBalance
+      type: System.Decimal
+    content.vb: Public Sub New(AssetClass As String, NetBalance As Decimal)
+  overload: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.#ctor*
+  nameWithType.vb: FundNavAssetClassExposureDto.New(String, Decimal)
+  fullName.vb: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.New(String, Decimal)
+  name.vb: New(String, Decimal)
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass
+  commentId: P:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: FundNavAssetClassExposureDto.AssetClass
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass*
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance
+  commentId: P:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance
+  id: NetBalance
+  parent: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  langs:
+  - csharp
+  - vb
+  name: NetBalance
+  nameWithType: FundNavAssetClassExposureDto.NetBalance
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetBalance
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetBalance As Decimal
+  overload: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundNavAssetClassExposureDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundNavAssetClassExposureDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundNavAssetClassExposureDto>
+  nameWithType: IEquatable<FundNavAssetClassExposureDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundNavAssetClassExposureDto>
+  nameWithType.vb: IEquatable(Of FundNavAssetClassExposureDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundNavAssetClassExposureDto)
+  name.vb: IEquatable(Of FundNavAssetClassExposureDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+    name: FundNavAssetClassExposureDto
+    href: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+    name: FundNavAssetClassExposureDto
+    href: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.#ctor
+  href: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.html#Meridian_Contracts_Workstation_FundNavAssetClassExposureDto__ctor_System_String_System_Decimal_
+  name: FundNavAssetClassExposureDto
+  nameWithType: FundNavAssetClassExposureDto.FundNavAssetClassExposureDto
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.FundNavAssetClassExposureDto
+  nameWithType.vb: FundNavAssetClassExposureDto.New
+  fullName.vb: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass*
+  commentId: Overload:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass
+  href: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.html#Meridian_Contracts_Workstation_FundNavAssetClassExposureDto_AssetClass
+  name: AssetClass
+  nameWithType: FundNavAssetClassExposureDto.AssetClass
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.AssetClass
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance*
+  commentId: Overload:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance
+  href: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.html#Meridian_Contracts_Workstation_FundNavAssetClassExposureDto_NetBalance
+  name: NetBalance
+  nameWithType: FundNavAssetClassExposureDto.NetBalance
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.NetBalance

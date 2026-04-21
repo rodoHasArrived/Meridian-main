@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TcaFillOutlier
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillId
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notional
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commission
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionRateBps
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledAt
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs

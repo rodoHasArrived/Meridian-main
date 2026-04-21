@@ -29,11 +29,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCatalogEntry
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 599
+    startLine: 618
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -65,11 +65,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 604
+    startLine: 623
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -108,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 611
+    startLine: 630
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -154,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 617
+    startLine: 636
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -197,11 +197,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 624
+    startLine: 643
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -243,11 +243,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 630
+    startLine: 649
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -286,11 +286,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 636
+    startLine: 655
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -329,11 +329,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresCredentials
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 642
+    startLine: 661
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -372,11 +372,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialFields
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 648
+    startLine: 667
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -415,11 +415,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimit
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 654
+    startLine: 673
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -458,11 +458,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 660
+    startLine: 679
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -501,11 +501,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 666
+    startLine: 685
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -544,11 +544,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 672
+    startLine: 691
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -587,11 +587,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 678
+    startLine: 697
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -630,11 +630,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 684
+    startLine: 703
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

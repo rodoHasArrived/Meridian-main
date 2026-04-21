@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorHandlingService
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentErrors
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorHandled
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleExceptionAsync
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleErrorAsync
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteWithErrorHandlingAsync
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteWithErrorHandlingAsync
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -339,7 +339,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearErrors
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -367,7 +367,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleExceptionWithRemediationAsync
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRemediationSteps
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs

@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitState
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Closed
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HalfOpen
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs

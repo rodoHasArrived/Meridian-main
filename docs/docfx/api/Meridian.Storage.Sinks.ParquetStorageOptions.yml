@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParquetStorageOptions
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 630
+    startLine: 654
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BufferSize
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 635
+    startLine: 659
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -89,11 +89,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushInterval
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 640
+    startLine: 664
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -120,11 +120,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionMethod
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 645
+    startLine: 669
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -151,11 +151,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RowGroupSize
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 650
+    startLine: 674
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -182,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 652
+    startLine: 676
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -211,11 +211,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighCompression
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 654
+    startLine: 678
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -240,11 +240,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowLatency
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 660
+    startLine: 684
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks

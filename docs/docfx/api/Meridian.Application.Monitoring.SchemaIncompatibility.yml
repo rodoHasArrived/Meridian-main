@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaIncompatibility
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedVersion
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedVersion
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompatible
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanMigrate
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compatible
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs

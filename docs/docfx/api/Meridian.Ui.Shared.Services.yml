@@ -9,6 +9,7 @@ items:
   - Meridian.Ui.Shared.Services.ConfigStore
   - Meridian.Ui.Shared.Services.ConfigStoreExtensions
   - Meridian.Ui.Shared.Services.ExistingDataInfo
+  - Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService
   - Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
   - Meridian.Ui.Shared.Services.SymbolPreview
   langs:
@@ -59,6 +60,12 @@ references:
   name: ConfigStoreExtensions
   nameWithType: ConfigStoreExtensions
   fullName: Meridian.Ui.Shared.Services.ConfigStoreExtensions
+- uid: Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService
+  commentId: T:Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService
+  href: Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService.html
+  name: FundOperationsWorkspaceReadService
+  nameWithType: FundOperationsWorkspaceReadService
+  fullName: Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService
 - uid: Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
   commentId: T:Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
   href: Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup.html

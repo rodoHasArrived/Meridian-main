@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePermissionsOptions
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryMode
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileMode
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyToExistingFiles
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RestrictToCurrentUser
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOnStartup
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs

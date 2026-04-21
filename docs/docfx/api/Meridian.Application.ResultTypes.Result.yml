@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Result
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Try
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAsync
     path: ../../src/Meridian.Application/Results/Result.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/Result.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Combine
     path: ../../src/Meridian.Application/Results/Result.cs

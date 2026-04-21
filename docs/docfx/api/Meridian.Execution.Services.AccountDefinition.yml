@@ -5,11 +5,13 @@ items:
   id: AccountDefinition
   parent: Meridian.Execution.Services
   children:
-  - Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal)
+  - Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)
   - Meridian.Execution.Services.AccountDefinition.AccountId
   - Meridian.Execution.Services.AccountDefinition.DisplayName
   - Meridian.Execution.Services.AccountDefinition.InitialCash
   - Meridian.Execution.Services.AccountDefinition.Kind
+  - Meridian.Execution.Services.AccountDefinition.MarginModel
+  - Meridian.Execution.Services.AccountDefinition.MarginType
   langs:
   - csharp
   - vb
@@ -20,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountDefinition
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 559
+    startLine: 750
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -44,32 +46,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal)
-  commentId: M:Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal)
-  id: '#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal)'
+- uid: Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)
+  commentId: M:Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)
+  id: '#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)'
   parent: Meridian.Execution.Services.AccountDefinition
   langs:
   - csharp
   - vb
-  name: AccountDefinition(string, string, AccountKind, decimal)
-  nameWithType: AccountDefinition.AccountDefinition(string, string, AccountKind, decimal)
-  fullName: Meridian.Execution.Services.AccountDefinition.AccountDefinition(string, string, Meridian.Execution.Models.AccountKind, decimal)
+  name: AccountDefinition(string, string, AccountKind, decimal, MarginAccountType, IMarginModel?)
+  nameWithType: AccountDefinition.AccountDefinition(string, string, AccountKind, decimal, MarginAccountType, IMarginModel?)
+  fullName: Meridian.Execution.Services.AccountDefinition.AccountDefinition(string, string, Meridian.Execution.Models.AccountKind, decimal, Meridian.Execution.Margin.MarginAccountType, Meridian.Execution.Margin.IMarginModel?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 559
+    startLine: 750
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
   summary: Defines one account within a multi-account paper trading session.
   example: []
   syntax:
-    content: public AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash)
+    content: public AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash, MarginAccountType MarginType = MarginAccountType.Cash, IMarginModel? MarginModel = null)
     parameters:
     - id: AccountId
       type: System.String
@@ -83,11 +85,25 @@ items:
     - id: InitialCash
       type: System.Decimal
       description: Opening cash balance.
-    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As AccountKind, InitialCash As Decimal)
+    - id: MarginType
+      type: Meridian.Execution.Margin.MarginAccountType
+      description: >-
+        Margin regime for this account.
+
+        Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref> (no borrowing).
+    - id: MarginModel
+      type: Meridian.Execution.Margin.IMarginModel
+      description: >-
+        Optional explicit margin model. When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> a default model is
+
+        created automatically for <xref href="Meridian.Execution.Margin.MarginAccountType.RegT" data-throw-if-not-resolved="false"></xref> and
+
+        <xref href="Meridian.Execution.Margin.MarginAccountType.PortfolioMargin" data-throw-if-not-resolved="false"></xref> accounts.
+    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As AccountKind, InitialCash As Decimal, MarginType As MarginAccountType = MarginAccountType.Cash, MarginModel As IMarginModel = Nothing)
   overload: Meridian.Execution.Services.AccountDefinition.#ctor*
-  nameWithType.vb: AccountDefinition.New(String, String, AccountKind, Decimal)
-  fullName.vb: Meridian.Execution.Services.AccountDefinition.New(String, String, Meridian.Execution.Models.AccountKind, Decimal)
-  name.vb: New(String, String, AccountKind, Decimal)
+  nameWithType.vb: AccountDefinition.New(String, String, AccountKind, Decimal, MarginAccountType, IMarginModel)
+  fullName.vb: Meridian.Execution.Services.AccountDefinition.New(String, String, Meridian.Execution.Models.AccountKind, Decimal, Meridian.Execution.Margin.MarginAccountType, Meridian.Execution.Margin.IMarginModel)
+  name.vb: New(String, String, AccountKind, Decimal, MarginAccountType, IMarginModel)
 - uid: Meridian.Execution.Services.AccountDefinition.AccountId
   commentId: P:Meridian.Execution.Services.AccountDefinition.AccountId
   id: AccountId
@@ -102,11 +118,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 560
+    startLine: 751
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -133,11 +149,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 561
+    startLine: 752
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -164,11 +180,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 562
+    startLine: 753
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -195,11 +211,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 563
+    startLine: 754
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -212,7 +228,95 @@ items:
       type: System.Decimal
     content.vb: Public Property InitialCash As Decimal
   overload: Meridian.Execution.Services.AccountDefinition.InitialCash*
+- uid: Meridian.Execution.Services.AccountDefinition.MarginType
+  commentId: P:Meridian.Execution.Services.AccountDefinition.MarginType
+  id: MarginType
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: MarginType
+  nameWithType: AccountDefinition.MarginType
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginType
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 755
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Margin regime for this account.
+
+    Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref> (no borrowing).
+  example: []
+  syntax:
+    content: public MarginAccountType MarginType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+    content.vb: Public Property MarginType As MarginAccountType
+  overload: Meridian.Execution.Services.AccountDefinition.MarginType*
+- uid: Meridian.Execution.Services.AccountDefinition.MarginModel
+  commentId: P:Meridian.Execution.Services.AccountDefinition.MarginModel
+  id: MarginModel
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: MarginModel
+  nameWithType: AccountDefinition.MarginModel
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginModel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginModel
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 756
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Optional explicit margin model. When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> a default model is
+
+    created automatically for <xref href="Meridian.Execution.Margin.MarginAccountType.RegT" data-throw-if-not-resolved="false"></xref> and
+
+    <xref href="Meridian.Execution.Margin.MarginAccountType.PortfolioMargin" data-throw-if-not-resolved="false"></xref> accounts.
+  example: []
+  syntax:
+    content: public IMarginModel? MarginModel { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Margin.IMarginModel
+    content.vb: Public Property MarginModel As IMarginModel
+  overload: Meridian.Execution.Services.AccountDefinition.MarginModel*
 references:
+- uid: Meridian.Execution.Margin.MarginAccountType.Cash
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.Cash
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_Cash
+  name: Cash
+  nameWithType: MarginAccountType.Cash
+  fullName: Meridian.Execution.Margin.MarginAccountType.Cash
+- uid: Meridian.Execution.Margin.MarginAccountType.RegT
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.RegT
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_RegT
+  name: RegT
+  nameWithType: MarginAccountType.RegT
+  fullName: Meridian.Execution.Margin.MarginAccountType.RegT
+- uid: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_PortfolioMargin
+  name: PortfolioMargin
+  nameWithType: MarginAccountType.PortfolioMargin
+  fullName: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
 - uid: Meridian.Execution.Services
   commentId: N:Meridian.Execution.Services
   href: Meridian.html
@@ -519,7 +623,7 @@ references:
   - name: )
 - uid: Meridian.Execution.Services.AccountDefinition.#ctor*
   commentId: Overload:Meridian.Execution.Services.AccountDefinition.#ctor
-  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition__ctor_System_String_System_String_Meridian_Execution_Models_AccountKind_System_Decimal_
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition__ctor_System_String_System_String_Meridian_Execution_Models_AccountKind_System_Decimal_Meridian_Execution_Margin_MarginAccountType_Meridian_Execution_Margin_IMarginModel_
   name: AccountDefinition
   nameWithType: AccountDefinition.AccountDefinition
   fullName: Meridian.Execution.Services.AccountDefinition.AccountDefinition
@@ -555,6 +659,20 @@ references:
   nameWithType.vb: Decimal
   fullName.vb: Decimal
   name.vb: Decimal
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginAccountType.html
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType
+- uid: Meridian.Execution.Margin.IMarginModel
+  commentId: T:Meridian.Execution.Margin.IMarginModel
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.IMarginModel.html
+  name: IMarginModel
+  nameWithType: IMarginModel
+  fullName: Meridian.Execution.Margin.IMarginModel
 - uid: Meridian.Execution.Models
   commentId: N:Meridian.Execution.Models
   href: Meridian.html
@@ -585,6 +703,36 @@ references:
   - uid: Meridian.Execution.Models
     name: Models
     href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
 - uid: Meridian.Execution.Services.AccountDefinition.AccountId*
   commentId: Overload:Meridian.Execution.Services.AccountDefinition.AccountId
   href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_AccountId
@@ -609,3 +757,15 @@ references:
   name: InitialCash
   nameWithType: AccountDefinition.InitialCash
   fullName: Meridian.Execution.Services.AccountDefinition.InitialCash
+- uid: Meridian.Execution.Services.AccountDefinition.MarginType*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.MarginType
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_MarginType
+  name: MarginType
+  nameWithType: AccountDefinition.MarginType
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginType
+- uid: Meridian.Execution.Services.AccountDefinition.MarginModel*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.MarginModel
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_MarginModel
+  name: MarginModel
+  nameWithType: AccountDefinition.MarginModel
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginModel

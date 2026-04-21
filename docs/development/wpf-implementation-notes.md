@@ -9,14 +9,16 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 ## Architecture
 
 ### Stack
+
 - **.NET 9.0 + WPF** — Windows-only, `.csproj` targets `net9.0-windows`
 - **MVVM** — `BindableBase` (from `Meridian.Ui.Services.Services`) + `INotifyPropertyChanged`
 - **DI** — `Microsoft.Extensions.Hosting`; singleton services resolved via `IServiceProvider`
 - **Shared services** — `Meridian.Ui.Services` and `Meridian.Ui.Shared` for cross-surface logic
 
 ### Project references
+
 | Project | Role |
-|---------|------|
+| --- | --- |
 | `Meridian.Wpf` | Views, code-behind, WPF-specific services |
 | `Meridian.Wpf.Tests` | 104 unit tests for WPF-specific services and shell projections |
 | `Meridian.Ui.Services` | Shared service layer (CommandPaletteService, WorkspaceService, NavigationServiceBase, etc.) |
@@ -30,7 +32,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 
 ### MainPage — four-section sidebar + command palette
 
-```
+```text
 Left Sidebar (288 px)
 ├── Header: logo, app title, version badge
 ├── RESEARCH section  (7 items)
@@ -59,13 +61,14 @@ Content Frame
 Four built-in workspace templates:
 
 | Workspace ID | Pages |
-|---|---|
+| --- | --- |
 | `research` | Dashboard, LiveData, Charts, RunMat, StrategyRuns, OrderBook, Watchlist |
 | `trading` | Backtest, StrategyRuns, LeanIntegration, PortfolioImport, TradingHours |
 | `data-operations` | Provider, Symbols, Backfill, Storage, DataExport, PackageManager, Schedules |
 | `governance` | DataQuality, ProviderHealth, SystemHealth, Diagnostics, Settings, AdminMaintenance |
 
 Each workspace persists:
+
 - `ActivePageTag` — last active page within the workspace
 - `OpenPages` — MRU list (max 8)
 - `WidgetLayout`, `ActiveFilters`, `WorkspaceContext` — per-workspace state
@@ -94,8 +97,9 @@ over that catalog, so adding a new shell page typically requires:
 Only non-catalog utility pages still need direct manual registration in `App.xaml.cs`.
 
 ### Research workspace pages
+
 | Tag | Class | Notes |
-|-----|-------|-------|
+| --- | --- | --- |
 | `Dashboard` | `DashboardPage` | Default landing page |
 | `Watchlist` | `WatchlistPage` | |
 | `RunMat` | `RunMatPage` | Quant / script lab |
@@ -106,8 +110,9 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | `AdvancedAnalytics` | `AdvancedAnalyticsPage` | |
 
 ### Trading workspace pages
+
 | Tag | Class | Notes |
-|-----|-------|-------|
+| --- | --- | --- |
 | `Backtest` | `BacktestPage` | |
 | `LiveData` | `LiveDataViewerPage` | Real-time feed viewer |
 | `RunPortfolio` | `RunPortfolioPage` | Positions, exposure, P&L drill-in |
@@ -116,8 +121,9 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | `TradingHours` | `TradingHoursPage` | Market calendar |
 
 ### Data Operations workspace pages
+
 | Tag | Class |
-|-----|-------|
+| --- | --- |
 | `Provider` | `ProviderPage` |
 | `DataSources` | `DataSourcesPage` |
 | `Symbols` | `SymbolsPage` |
@@ -140,8 +146,9 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | `Schedules` | `ScheduleManagerPage` |
 
 ### Governance workspace pages
+
 | Tag | Class |
-|-----|-------|
+| --- | --- |
 | `DataQuality` | `DataQualityPage` |
 | `ProviderHealth` | `ProviderHealthPage` |
 | `CollectionSessions` | `CollectionSessionPage` |
@@ -158,8 +165,9 @@ Only non-catalog utility pages still need direct manual registration in `App.xam
 | `NotificationCenter` | `NotificationCenterPage` |
 
 ### Support / cross-workspace pages
+
 | Tag | Class |
-|-----|-------|
+| --- | --- |
 | `Help` | `HelpPage` |
 | `Welcome` | `WelcomePage` |
 | `Settings` | `SettingsPage` |
@@ -176,7 +184,7 @@ All workstation-facing read models live in `src/Meridian.Contracts/Workstation/`
 
 ### `StrategyRunReadModels.cs`
 
-```
+```text
 StrategyRunMode           — Backtest | Paper | Live
 StrategyRunEngine         — MeridianNative | Lean | BrokerPaper | BrokerLive
 StrategyRunStatus         — Pending | Running | Paused | Completed | Failed | Cancelled | Stopped
@@ -199,7 +207,7 @@ WorkstationSecurityReference — lightweight Security Master ref used by portfol
 
 ### `ReconciliationDtos.cs`
 
-```
+```text
 ReconciliationRunRequest  — RunId, tolerance thresholds
 ReconciliationBreakDto    — check ID, category, status, variance, source metadata
 ReconciliationBreakCategory — AmountMismatch | MissingLedgerCoverage | MissingPortfolioCoverage | ...
@@ -210,7 +218,7 @@ ReconciliationBreakCategory — AmountMismatch | MissingLedgerCoverage | Missing
 ## Strategy Run Workstation — ViewModel Layer
 
 | ViewModel | Key properties | Commands |
-|-----------|----------------|----------|
+| --- | --- | --- |
 | `StrategyRunBrowserViewModel` | `Runs`, `SearchText`, `SelectedModeFilter` | `RefreshCommand`, `OpenDetailCommand`, `OpenPortfolioCommand`, `OpenLedgerCommand` |
 | `StrategyRunDetailViewModel` | Execution summary, mode, timing, P&L, parameters | Cross-nav to Browser / Portfolio / Ledger |
 | `StrategyRunPortfolioViewModel` | `TotalEquity`, `Cash`, exposure, `Positions` | Security Master resolve count |
@@ -223,8 +231,9 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 ## Services Layer
 
 ### WPF-specific services (`Meridian.Wpf.Services`)
+
 | Service | Responsibility |
-|---------|----------------|
+| --- | --- |
 | `NavigationService` | Frame-based navigation; 50+ pages; history, breadcrumb, onboarding tour hooks |
 | `ConnectionService` | Provider connection state; latency tracking |
 | `ConfigService` | App configuration with `ConfigPath` |
@@ -240,6 +249,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 | `PendingOperationsQueueService` | Offline operation queue |
 
 ### Shared services (from `Meridian.Ui.Services`)
+
 `CommandPaletteService`, `NavigationServiceBase`, `WorkspaceService` base, `SearchService`, `FixtureModeDetector`, `OnboardingTourService`, `ActivityFeedService`, `AlertService`, `DataQualityPresentationService`, and 40+ additional services used by both the WPF app and the web dashboard.
 
 ---
@@ -247,7 +257,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
-|----------|--------|
+| --- | --- |
 | `Ctrl+K` | Open command palette |
 | `Ctrl+D` | Dashboard |
 | `Ctrl+B` | Backfill |
@@ -273,7 +283,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 Style resources in `Meridian.Wpf/Styles/`:
 
 | File | Contains |
-|------|----------|
+| --- | --- |
 | `ThemeTokens.xaml` | Semantic color tokens (`ConsoleTextPrimaryBrush`, `InfoColorBrush`, etc.) |
 | `ThemeSurfaces.xaml` | Surface-level brushes (`ShellWindowBackgroundBrush`, `ShellRailBackgroundBrush`) |
 | `ThemeControls.xaml` | Control styles (`NavItemStyle`, `CardStyle`, `PrimaryButtonStyle`, etc.) |
@@ -300,6 +310,7 @@ Shell implementation now shares descriptor-driven infrastructure:
 **Purpose**: Single-page landing for the Research workspace. Shows recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
 
 **Design zones**:
+
 1. **Header** — Active strategy count, cumulative P&L across completed runs, last-run timestamp
 2. **Recent Runs strip** — Horizontal scroll, `StrategyRunSummary` cards (mode badge, status, net P&L, return %)
 3. **Quick Actions** — New Backtest, Open RunMat, Open Charts, Open Run Browser
@@ -310,6 +321,7 @@ Shell implementation now shares descriptor-driven infrastructure:
 **Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and a compact promotion/audit/validation status card for the active run or aggregate workspace posture.
 
 **Design zones**:
+
 1. **Header** — Active fund context, active run, and a promotion/status card that projects promotion readiness, audit linkage, and validation posture from `StrategyRunWorkspaceService`
 2. **KPI strip** — Active paper/live run counts and total equity under management
 3. **Desk panels** — Strategy/watchlist posture, market-core/accounting access, and risk/alerts/audit quick actions
@@ -320,11 +332,13 @@ Shell implementation now shares descriptor-driven infrastructure:
 **Purpose**: Operational cockpit for provider readiness, backfill pressure, storage posture, collection sessions, and export delivery.
 
 **Data composition**:
+
 1. `DataOperationsWorkspaceShellPage.xaml.cs` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
 2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, queue cards, summary values, recent operations, and quick-action wiring.
 3. Primary actions route directly to `ProviderHealth`, `Backfill`, and `DataExport`; secondary actions keep `Providers`, `Storage`, `CollectionSessions`, `Schedules`, and `PackageManager` in the same shell flow.
 
 **Design zones**:
+
 1. **Context strip** — Scope, freshness, backfill review state, and critical blockers derived from live operational state instead of static labels.
 2. **Queue boards** — Provider health, backfill queue/session state, storage posture, and export job visibility.
 3. **Recent operations rail** — Latest session, resumable backfill, export run, or alert-linked notification with a deep link back into the owning page.
@@ -346,7 +360,7 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 ### Common errors
 
 | Error | Fix |
-|-------|-----|
+| --- | --- |
 | NETSDK1100 | Add `/p:EnableWindowsTargeting=true` on non-Windows hosts |
 | `NU1008` | Remove `Version="..."` from any `<PackageReference>` — versions live in `Directory.Packages.props` |
 | Page not found at runtime | Ensure the page has a `ShellNavigationCatalog` entry with the correct `PageType`, and that `AddMeridianWpfShell()` is active in `App.ConfigureServices()` |
@@ -356,11 +370,12 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 ## Testing
 
 | Test project | Count | Covers |
-|---|---|---|
+| --- | --- | --- |
 | `Meridian.Wpf.Tests` | 104 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data Operations shell projection, etc. |
 | `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
 
 Run with:
+
 ```bash
 make test-desktop-services
 ```

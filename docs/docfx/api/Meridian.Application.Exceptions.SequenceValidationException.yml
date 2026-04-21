@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceValidationException
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedSequence
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualSequence
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationType
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs

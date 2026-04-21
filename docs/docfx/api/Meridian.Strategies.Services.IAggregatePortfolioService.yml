@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAggregatePortfolioService
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregatedPositions
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCrossStrategyExposure
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNetPositionForSymbol
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs

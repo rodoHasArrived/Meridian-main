@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Etl/EtlStores.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlAuditStore
     path: ../../src/Meridian.Storage/Etl/EtlStores.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Etl/EtlStores.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Etl/EtlStores.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Etl/EtlStores.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteEventAsync
     path: ../../src/Meridian.Storage/Etl/EtlStores.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Etl/EtlStores.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCheckpointAsync
     path: ../../src/Meridian.Storage/Etl/EtlStores.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Etl/EtlStores.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadCheckpointAsync
     path: ../../src/Meridian.Storage/Etl/EtlStores.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Etl/EtlStores.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAuditPath
     path: ../../src/Meridian.Storage/Etl/EtlStores.cs

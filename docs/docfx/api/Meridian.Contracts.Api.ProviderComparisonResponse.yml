@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderComparisonResponse
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalProviders
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyProviders
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs

@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorTracker
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordError
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordError
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastErrors
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseErrorsFromLogsAsync
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs

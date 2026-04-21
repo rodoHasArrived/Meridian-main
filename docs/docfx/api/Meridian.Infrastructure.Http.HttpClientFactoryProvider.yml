@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientFactoryProvider
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 742
+    startLine: 724
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -74,11 +74,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 751
+    startLine: 733
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -108,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateClient
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 761
+    startLine: 743
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -147,11 +147,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateClient
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 786
+    startLine: 768
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -185,11 +185,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInitialized
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 796
+    startLine: 778
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -216,11 +216,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 802
+    startLine: 784
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http

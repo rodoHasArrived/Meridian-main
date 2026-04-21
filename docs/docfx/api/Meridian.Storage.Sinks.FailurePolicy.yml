@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailurePolicy
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContinueOnPartialFailure
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailOnAnyFailure
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs

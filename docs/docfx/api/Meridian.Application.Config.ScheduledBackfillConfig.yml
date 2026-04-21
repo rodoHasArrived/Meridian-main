@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledBackfillConfig
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleCheckIntervalSeconds
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxExecutionDurationHours
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatchUpMissedSchedules
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatchUpWindowHours
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentExecutions
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseDuringMarketHours
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultSchedules
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscontinuityType
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapUp
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapDown
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LargeGapUp
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LargeGapDown
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidBar
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs

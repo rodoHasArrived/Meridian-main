@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedResiliencePolicies
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultTimeout
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortTimeout
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongTimeout
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSharedResiliencePolicy
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddCustomResiliencePolicy
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRetryPolicy
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCircuitBreakerPolicy
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSharedResiliencePolicyTracked
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitPolicy
     path: ../../src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs

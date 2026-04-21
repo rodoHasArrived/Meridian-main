@@ -9,6 +9,7 @@ items:
   - Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher
   - Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
   - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
   - Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
@@ -54,6 +55,12 @@ references:
   name: PolygonMarketDataClient
   nameWithType: PolygonMarketDataClient
   fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider.html
+  name: PolygonOptionsChainProvider
+  nameWithType: PolygonOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
 - uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
   commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
   href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html

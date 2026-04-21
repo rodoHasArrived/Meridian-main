@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceHealthResult
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsReachable
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ClientModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unhealthy
     path: ../../src/Meridian.Contracts/Api/ClientModels.cs

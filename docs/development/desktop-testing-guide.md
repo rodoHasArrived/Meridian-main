@@ -35,6 +35,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 ```
 
 This script validates:
+
 - ✅ .NET 9 SDK installation
 - ✅ Windows SDK presence (Windows only)
 - ✅ Visual Studio Build Tools
@@ -241,13 +242,14 @@ Do **not** move mapping, filtering, or refresh-state logic into this project unl
 ### Combined Test Coverage Summary
 
 | Project | Tests | Platform | Coverage Areas |
-|---------|-------|----------|----------------|
+| --- | --- | --- | --- |
 | **Meridian.Tests** | Cross-platform | Any OS with .NET 9 | Startup, composition, contracts, endpoint shape, and core/backend logic |
 | **Meridian.Ui.Tests** | Varies by slice | Windows target | Shared UI services, collections, form validation, scheduler-backed shared refresh logic |
 | **Meridian.Wpf.Tests** | Varies by slice | Windows | WPF-specific binding, navigation, and host wiring |
 | **Desktop-specific test projects** | Varies by slice | Windows | Shared desktop services plus WPF-only integration points |
 
 **Coverage breakdown:**
+
 - Navigation: 14 tests (page routing, history, breadcrumbs)
 - Configuration: 13 tests (validation, data source management)
 - Status Tracking: 13 tests (real-time updates, HTTP interaction)
@@ -292,6 +294,7 @@ dotnet run --project src/Meridian.Wpf
 **Test Coverage for Fixtures:**
 
 The `FixtureDataService` has 13 dedicated tests validating:
+
 - Mock data generation for all major API endpoints
 - Consistent data structure matching real API contracts
 - Randomized but realistic values (prices, volumes, timestamps)
@@ -347,6 +350,7 @@ Older notes may still mention `output/manual-captures/robinhood-options-smoke.ps
 **Symptom**: WPF build fails with XAML syntax errors.
 
 **Fix**:
+
 1. Check XAML syntax in the Views/ directory
 2. Ensure all referenced resources exist
 3. See [Desktop App XAML Compiler Errors](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/migrations/desktop-app-xaml-compiler-errors.md) for historical diagnostics
@@ -356,6 +360,7 @@ Older notes may still mention `output/manual-captures/robinhood-options-smoke.ps
 **Expected Behavior**: WPF tests require Windows and will be skipped on Linux/macOS. This is by design.
 
 **What Runs on Non-Windows**:
+
 - Core tests in `Meridian.Tests`
 - F# tests in `Meridian.FSharp.Tests`
 - Configuration and CLI tests
@@ -370,6 +375,7 @@ Current test coverage for desktop services:
 - **ConnectionService**: Connection management, auto-reconnect, monitoring
 
 **Areas Not Yet Covered** (future work):
+
 - Integration tests with actual backend service
 - Visual regression tests
 - Performance tests for singleton access patterns
@@ -424,7 +430,7 @@ See `.github/workflows/desktop-builds.yml` for CI configuration.
 - [UI Fixture Mode Guide](./ui-fixture-mode-guide.md) - Complete offline development setup
 - [Desktop Support Policy](./policies/desktop-support-policy.md) - Contribution requirements
 - [Desktop Architecture](../architecture/desktop-layers.md) - Layer boundaries and design
-- [Desktop Improvements Roadmap](../status/ROADMAP.md#desktop-improvements) - Future plans
+- [Workstation Delivery Kernel Roadmap](../status/ROADMAP.md#wave-dk-program-focused-migration-wrapper-for-waves-2-4) - Future shell-routing and operator workflow plans
 - [GitHub Actions Summary](./github-actions-summary.md) - CI/CD workflows
 
 ## Related Documentation

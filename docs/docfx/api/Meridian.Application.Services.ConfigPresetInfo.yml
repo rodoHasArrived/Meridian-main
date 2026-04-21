@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPresetInfo
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Preset
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KeySettings
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs

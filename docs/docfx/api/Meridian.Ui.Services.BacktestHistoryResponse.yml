@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestHistoryResponse
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 592
+    startLine: 589
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -50,11 +50,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backtests
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 594
+    startLine: 591
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

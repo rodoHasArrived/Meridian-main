@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileNamingConvention
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Flat
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BySymbol
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByDate
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByType
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BySource
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByAssetClass
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hierarchical
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Canonical
     path: ../../src/Meridian.Storage/StorageOptions.cs

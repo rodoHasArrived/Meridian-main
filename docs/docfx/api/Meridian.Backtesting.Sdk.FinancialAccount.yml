@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccount
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Institution
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rules
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normalize
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -308,7 +308,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDefaultBrokerage
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs

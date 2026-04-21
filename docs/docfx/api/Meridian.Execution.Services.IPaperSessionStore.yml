@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPaperSessionStore
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSessionMetadataAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendFillAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendOrderUpdateAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveLedgerJournalAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAllSessionsAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFillsAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -286,7 +286,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadOrderHistoryAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadLedgerJournalAsync
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs

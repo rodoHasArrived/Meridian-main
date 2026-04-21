@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionStatus
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Active
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paused
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs

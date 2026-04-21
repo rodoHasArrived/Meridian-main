@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaxLot
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotId
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostBasis
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenedAt
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountId
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCost
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsShort
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AbsoluteQuantity
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs
@@ -403,7 +403,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/TaxLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithReducedQuantity
     path: ../../src/Meridian.Execution.Sdk/TaxLot.cs

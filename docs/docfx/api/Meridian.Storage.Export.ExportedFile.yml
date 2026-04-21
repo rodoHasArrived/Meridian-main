@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportedFile
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumSha256
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimestamp
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestamp
     path: ../../src/Meridian.Storage/Export/ExportResult.cs

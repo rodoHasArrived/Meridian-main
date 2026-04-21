@@ -15,7 +15,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Events/IMarketEventPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMarketEventPayload
     path: ../../src/Meridian.Contracts/Domain/Events/IMarketEventPayload.cs

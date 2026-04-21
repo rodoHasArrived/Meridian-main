@@ -26,6 +26,7 @@ Use this document with:
 - [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md) - governance target state
 - [`../plans/brokerage-portfolio-sync-blueprint.md`](../plans/brokerage-portfolio-sync-blueprint.md) - external brokerage and custodian account-sync design
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) - current short-horizon execution plan
+- [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - concrete owner-based workstreams, dependencies, and exit criteria for the active Waves 2-4 path
 
 ---
 
@@ -240,6 +241,8 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 **Exit signal:** Meridian can support a controlled live-readiness story without overclaiming broad live-trading completion.
 
+<a id="phase-16-assembly-level-performance-optimizations"></a>
+
 ### Optional advanced research / scale tracks
 
 **Focus:**
@@ -253,6 +256,9 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 **Exit signal:** These deepen Meridian's ceiling after the core workstation product is operator-ready.
 
 ---
+
+<a id="desktop-improvements"></a>
+<a id="phase-8-repository-organization--optimization"></a>
 
 ## Wave DK Program (Focused Migration Wrapper for Waves 2-4)
 
@@ -315,7 +321,7 @@ To avoid piecemeal adoption, Meridian now treats the active workstation migratio
 ### Subsystem ownership and interop governance
 
 | Subsystem | Primary owner | Responsibilities |
-|---|---|---|
+| --- | --- | --- |
 | Data quality + provider trust | Data Operations & Provider Reliability owner | Provider evidence gate maintenance, trust metrics, provider incident review |
 | Promotion + paper-trading cockpit | Trading Workstation owner | Promotion controls, paper workflow reliability, operator controls |
 | Export + packaging | Data Operations Export owner | Export contract parity, package lineage, operator-facing export diagnostics |
@@ -327,7 +333,7 @@ To avoid piecemeal adoption, Meridian now treats the active workstation migratio
 ### Risk register and rollback plans by subsystem
 
 | Subsystem | Key risk | Leading indicator | Rollback plan |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Data quality + provider trust | trust drift between validation scripts and cockpit surfaces | rising unresolved trust alert delta between scripts and UI | freeze promotion expansion, pin to last verified provider matrix + replay baseline, rerun DK1 calibration |
 | Promotion + paper cockpit | promotion path divergence across UI/API | mismatched promotion state or approval chain in audits | revert promotion workflow to last signed contract version, disable new promotion lanes behind feature flags |
 | Export + packaging | exported artifact schema drift or lineage gaps | increase in export validation failures or missing lineage links | roll back exporter contract version, regenerate artifacts from last good run snapshots |

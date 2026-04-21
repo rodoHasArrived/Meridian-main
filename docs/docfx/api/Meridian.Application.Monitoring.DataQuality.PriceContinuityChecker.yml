@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceContinuityChecker
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDiscontinuity
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckPrice
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckBar
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckQuote
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTopDiscontinuitySymbols
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -402,7 +402,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAll
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs

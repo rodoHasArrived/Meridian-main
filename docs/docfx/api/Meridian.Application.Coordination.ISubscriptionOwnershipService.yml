@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ISubscriptionOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISubscriptionOwnershipService
     path: ../../src/Meridian.Application/Coordination/ISubscriptionOwnershipService.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ISubscriptionOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireAsync
     path: ../../src/Meridian.Application/Coordination/ISubscriptionOwnershipService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ISubscriptionOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseAsync
     path: ../../src/Meridian.Application/Coordination/ISubscriptionOwnershipService.cs

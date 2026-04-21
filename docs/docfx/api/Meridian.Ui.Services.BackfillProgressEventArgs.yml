@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProgressEventArgs
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 805
+    startLine: 829
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
     path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
-    startLine: 807
+    startLine: 831
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

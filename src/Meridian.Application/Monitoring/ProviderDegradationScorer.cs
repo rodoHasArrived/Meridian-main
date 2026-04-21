@@ -139,7 +139,7 @@ public sealed class ProviderDegradationScorer : IDisposable
         ProviderLatencyHistogram? latencyHistogram,
         ProviderErrorTracker? errorTracker)
     {
-        var reasons = new List<DecisionReason>(capacity: 4);
+        var decisionReasons = new List<DecisionReason>(capacity: 4);
         // Component 1: Connection health (0.0 = healthy, 1.0 = disconnected)
         double connectionScore = 0.0;
         if (connectionStatus.HasValue)
@@ -148,7 +148,7 @@ public sealed class ProviderDegradationScorer : IDisposable
             if (!conn.IsConnected)
             {
                 connectionScore = 1.0;
-                reasons.Add(new DecisionReason(
+                decisionReasons.Add(new DecisionReason(
                     RuleId: "provider-degradation.connection-connectivity",
                     Weight: _config.ConnectionWeight,
                     ReasonCode: "CONNECTION_DISCONNECTED",
@@ -162,7 +162,7 @@ public sealed class ProviderDegradationScorer : IDisposable
                 connectionScore = Math.Min(1.0, conn.MissedHeartbeats / (double)_config.MaxMissedHeartbeatsForFullDegradation);
                 if (connectionScore > 0)
                 {
-                    reasons.Add(new DecisionReason(
+                    decisionReasons.Add(new DecisionReason(
                         RuleId: "provider-degradation.connection-heartbeats",
                         Weight: _config.ConnectionWeight,
                         ReasonCode: "MISSED_HEARTBEATS",
@@ -182,7 +182,7 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 latencyScore = Math.Min(1.0,
                     (p95 - _config.LatencyThresholdMs) / (_config.LatencyMaxMs - _config.LatencyThresholdMs));
-                reasons.Add(new DecisionReason(
+                decisionReasons.Add(new DecisionReason(
                     RuleId: "provider-degradation.latency-p95",
                     Weight: _config.LatencyWeight,
                     ReasonCode: "LATENCY_P95_HIGH",
@@ -202,7 +202,7 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 errorScore = Math.Min(1.0,
                     (errorRate - _config.ErrorRateThreshold) / (1.0 - _config.ErrorRateThreshold));
-                reasons.Add(new DecisionReason(
+                decisionReasons.Add(new DecisionReason(
                     RuleId: "provider-degradation.error-rate",
                     Weight: _config.ErrorRateWeight,
                     ReasonCode: "ERROR_RATE_HIGH",
@@ -223,7 +223,7 @@ public sealed class ProviderDegradationScorer : IDisposable
                 reconnectScore = Math.Min(1.0, reconnectsPerHour / _config.MaxReconnectsPerHour);
                 if (reconnectScore > 0)
                 {
-                    reasons.Add(new DecisionReason(
+                    decisionReasons.Add(new DecisionReason(
                         RuleId: "provider-degradation.reconnect-frequency",
                         Weight: _config.ReconnectWeight,
                         ReasonCode: "RECONNECT_RATE_HIGH",
@@ -244,7 +244,7 @@ public sealed class ProviderDegradationScorer : IDisposable
         composite = Math.Clamp(composite, 0.0, 1.0);
         var decision = new DecisionResult<double>(
             Score: composite,
-            Reasons: reasons,
+            Reasons: decisionReasons,
             Trace: new DecisionTrace(
                 SchemaVersion: DecisionSchemaVersion,
                 KernelVersion: KernelVersion,
@@ -256,7 +256,7 @@ public sealed class ProviderDegradationScorer : IDisposable
                     ["provider"] = providerName
                 }));
 
-        var reasons = BuildReasons(
+        var scoreReasons = BuildReasons(
             connectionScore * _config.ConnectionWeight,
             latencyScore * _config.LatencyWeight,
             errorScore * _config.ErrorRateWeight,
@@ -273,13 +273,9 @@ public sealed class ProviderDegradationScorer : IDisposable
             IsDegraded: decision.Score >= _config.DegradationThreshold,
             P95LatencyMs: latencyHistogram?.P95Ms ?? 0,
             IsConnected: connectionStatus?.IsConnected ?? false,
-<<<<<<< ours
-            Reasons: reasons,
-            EvaluatedAt: DateTimeOffset.UtcNow);
-=======
+            Reasons: scoreReasons,
             EvaluatedAt: decision.Trace.EvaluatedAt,
             Decision: decision);
->>>>>>> theirs
     }
 
     /// <summary>
@@ -534,13 +530,9 @@ public readonly record struct ProviderDegradationScore(
     bool IsDegraded,
     double P95LatencyMs,
     bool IsConnected,
-<<<<<<< ours
     IReadOnlyList<ProviderScoreReason> Reasons,
-    DateTimeOffset EvaluatedAt);
-=======
     DateTimeOffset EvaluatedAt,
     DecisionResult<double> Decision);
->>>>>>> theirs
 
 public static class ProviderReasonCodes
 {

@@ -9,12 +9,14 @@ items:
   - Meridian.Contracts.FundStructure.BankStatementLineDto.AccountId
   - Meridian.Contracts.FundStructure.BankStatementLineDto.Amount
   - Meridian.Contracts.FundStructure.BankStatementLineDto.BatchId
+  - Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance
   - Meridian.Contracts.FundStructure.BankStatementLineDto.Currency
   - Meridian.Contracts.FundStructure.BankStatementLineDto.Description
-  - Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference
+  - Meridian.Contracts.FundStructure.BankStatementLineDto.LineId
+  - Meridian.Contracts.FundStructure.BankStatementLineDto.Reference
   - Meridian.Contracts.FundStructure.BankStatementLineDto.RunningBalance
   - Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
-  - Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId
+  - Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate
   - Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionType
   - Meridian.Contracts.FundStructure.BankStatementLineDto.ValueDate
   langs:
@@ -26,15 +28,16 @@ items:
   type: Class
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankStatementLineDto
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 116
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 33
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: A single transaction line from a bank statement.
   example: []
   syntax:
     content: 'public sealed record BankStatementLineDto : IEquatable<BankStatementLineDto>'
@@ -63,26 +66,27 @@ items:
   type: Constructor
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 116
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 33
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: A single transaction line from a bank statement.
   example: []
   syntax:
-    content: public BankStatementLineDto(Guid StatementLineId, Guid BatchId, Guid AccountId, DateOnly StatementDate, DateOnly ValueDate, decimal Amount, string Currency, string TransactionType, string Description, string? ExternalReference, decimal? RunningBalance)
+    content: public BankStatementLineDto(Guid LineId, Guid BatchId, Guid AccountId, DateOnly TransactionDate, DateOnly ValueDate, decimal Amount, string Currency, string TransactionType, string Description, string? Reference, decimal? ClosingBalance)
     parameters:
-    - id: StatementLineId
+    - id: LineId
       type: System.Guid
     - id: BatchId
       type: System.Guid
     - id: AccountId
       type: System.Guid
-    - id: StatementDate
+    - id: TransactionDate
       type: System.DateOnly
     - id: ValueDate
       type: System.DateOnly
@@ -94,44 +98,44 @@ items:
       type: System.String
     - id: Description
       type: System.String
-    - id: ExternalReference
+    - id: Reference
       type: System.String
-    - id: RunningBalance
+    - id: ClosingBalance
       type: System.Nullable{System.Decimal}
-    content.vb: Public Sub New(StatementLineId As Guid, BatchId As Guid, AccountId As Guid, StatementDate As DateOnly, ValueDate As DateOnly, Amount As Decimal, Currency As String, TransactionType As String, Description As String, ExternalReference As String, RunningBalance As Decimal?)
+    content.vb: Public Sub New(LineId As Guid, BatchId As Guid, AccountId As Guid, TransactionDate As DateOnly, ValueDate As DateOnly, Amount As Decimal, Currency As String, TransactionType As String, Description As String, Reference As String, ClosingBalance As Decimal?)
   overload: Meridian.Contracts.FundStructure.BankStatementLineDto.#ctor*
   nameWithType.vb: BankStatementLineDto.New(Guid, Guid, Guid, DateOnly, DateOnly, Decimal, String, String, String, String, Decimal?)
   fullName.vb: Meridian.Contracts.FundStructure.BankStatementLineDto.New(System.Guid, System.Guid, System.Guid, System.DateOnly, System.DateOnly, Decimal, String, String, String, String, Decimal?)
   name.vb: New(Guid, Guid, Guid, DateOnly, DateOnly, Decimal, String, String, String, String, Decimal?)
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId
-  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId
-  id: StatementLineId
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.LineId
+  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.LineId
+  id: LineId
   parent: Meridian.Contracts.FundStructure.BankStatementLineDto
   langs:
   - csharp
   - vb
-  name: StatementLineId
-  nameWithType: BankStatementLineDto.StatementLineId
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId
+  name: LineId
+  nameWithType: BankStatementLineDto.LineId
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.LineId
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StatementLineId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 117
+    id: LineId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 34
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public Guid StatementLineId { get; init; }
+    content: public Guid LineId { get; init; }
     parameters: []
     return:
       type: System.Guid
-    content.vb: Public Property StatementLineId As Guid
-  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId*
+    content.vb: Public Property LineId As Guid
+  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.LineId*
 - uid: Meridian.Contracts.FundStructure.BankStatementLineDto.BatchId
   commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.BatchId
   id: BatchId
@@ -145,12 +149,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 118
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 35
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -174,12 +178,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 119
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 36
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -190,35 +194,35 @@ items:
       type: System.Guid
     content.vb: Public Property AccountId As Guid
   overload: Meridian.Contracts.FundStructure.BankStatementLineDto.AccountId*
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
-  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
-  id: StatementDate
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate
+  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate
+  id: TransactionDate
   parent: Meridian.Contracts.FundStructure.BankStatementLineDto
   langs:
   - csharp
   - vb
-  name: StatementDate
-  nameWithType: BankStatementLineDto.StatementDate
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
+  name: TransactionDate
+  nameWithType: BankStatementLineDto.TransactionDate
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StatementDate
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 120
+    id: TransactionDate
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 37
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public DateOnly StatementDate { get; init; }
+    content: public DateOnly TransactionDate { get; init; }
     parameters: []
     return:
       type: System.DateOnly
-    content.vb: Public Property StatementDate As DateOnly
-  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate*
+    content.vb: Public Property TransactionDate As DateOnly
+  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate*
 - uid: Meridian.Contracts.FundStructure.BankStatementLineDto.ValueDate
   commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.ValueDate
   id: ValueDate
@@ -232,12 +236,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueDate
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 121
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 38
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -261,12 +265,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Amount
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 122
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 39
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -290,12 +294,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 123
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 40
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -319,12 +323,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransactionType
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 124
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 41
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -348,12 +352,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 125
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 42
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -364,35 +368,93 @@ items:
       type: System.String
     content.vb: Public Property Description As String
   overload: Meridian.Contracts.FundStructure.BankStatementLineDto.Description*
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference
-  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference
-  id: ExternalReference
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.Reference
+  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.Reference
+  id: Reference
   parent: Meridian.Contracts.FundStructure.BankStatementLineDto
   langs:
   - csharp
   - vb
-  name: ExternalReference
-  nameWithType: BankStatementLineDto.ExternalReference
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference
+  name: Reference
+  nameWithType: BankStatementLineDto.Reference
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.Reference
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ExternalReference
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 126
+    id: Reference
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 43
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public string? ExternalReference { get; init; }
+    content: public string? Reference { get; init; }
     parameters: []
     return:
       type: System.String
-    content.vb: Public Property ExternalReference As String
-  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference*
+    content.vb: Public Property Reference As String
+  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.Reference*
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance
+  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance
+  id: ClosingBalance
+  parent: Meridian.Contracts.FundStructure.BankStatementLineDto
+  langs:
+  - csharp
+  - vb
+  name: ClosingBalance
+  nameWithType: BankStatementLineDto.ClosingBalance
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosingBalance
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal? ClosingBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ClosingBalance As Decimal?
+  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance*
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
+  commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
+  id: StatementDate
+  parent: Meridian.Contracts.FundStructure.BankStatementLineDto
+  langs:
+  - csharp
+  - vb
+  name: StatementDate
+  nameWithType: BankStatementLineDto.StatementDate
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatementDate
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateOnly StatementDate { get; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public ReadOnly Property StatementDate As DateOnly
+  overload: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate*
 - uid: Meridian.Contracts.FundStructure.BankStatementLineDto.RunningBalance
   commentId: P:Meridian.Contracts.FundStructure.BankStatementLineDto.RunningBalance
   id: RunningBalance
@@ -406,21 +468,21 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunningBalance
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 127
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 48
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public decimal? RunningBalance { get; init; }
+    content: public decimal? RunningBalance { get; }
     parameters: []
     return:
       type: System.Nullable{System.Decimal}
-    content.vb: Public Property RunningBalance As Decimal?
+    content.vb: Public ReadOnly Property RunningBalance As Decimal?
   overload: Meridian.Contracts.FundStructure.BankStatementLineDto.RunningBalance*
 references:
 - uid: Meridian.Contracts.FundStructure
@@ -825,12 +887,12 @@ references:
   - name: " "
   - name: T
   - name: )
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId*
-  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId
-  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_StatementLineId
-  name: StatementLineId
-  nameWithType: BankStatementLineDto.StatementLineId
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementLineId
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.LineId*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.LineId
+  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_LineId
+  name: LineId
+  nameWithType: BankStatementLineDto.LineId
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.LineId
 - uid: Meridian.Contracts.FundStructure.BankStatementLineDto.BatchId*
   commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.BatchId
   href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_BatchId
@@ -843,12 +905,12 @@ references:
   name: AccountId
   nameWithType: BankStatementLineDto.AccountId
   fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.AccountId
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate*
-  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
-  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_StatementDate
-  name: StatementDate
-  nameWithType: BankStatementLineDto.StatementDate
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate
+  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_TransactionDate
+  name: TransactionDate
+  nameWithType: BankStatementLineDto.TransactionDate
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.TransactionDate
 - uid: Meridian.Contracts.FundStructure.BankStatementLineDto.ValueDate*
   commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.ValueDate
   href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_ValueDate
@@ -879,12 +941,24 @@ references:
   name: Description
   nameWithType: BankStatementLineDto.Description
   fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.Description
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference*
-  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference
-  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_ExternalReference
-  name: ExternalReference
-  nameWithType: BankStatementLineDto.ExternalReference
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.ExternalReference
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.Reference*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.Reference
+  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_Reference
+  name: Reference
+  nameWithType: BankStatementLineDto.Reference
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.Reference
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance
+  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_ClosingBalance
+  name: ClosingBalance
+  nameWithType: BankStatementLineDto.ClosingBalance
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.ClosingBalance
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate*
+  commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
+  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_StatementDate
+  name: StatementDate
+  nameWithType: BankStatementLineDto.StatementDate
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto.StatementDate
 - uid: Meridian.Contracts.FundStructure.BankStatementLineDto.RunningBalance*
   commentId: Overload:Meridian.Contracts.FundStructure.BankStatementLineDto.RunningBalance
   href: Meridian.Contracts.FundStructure.BankStatementLineDto.html#Meridian_Contracts_FundStructure_BankStatementLineDto_RunningBalance
