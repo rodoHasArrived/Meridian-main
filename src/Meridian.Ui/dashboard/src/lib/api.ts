@@ -4,6 +4,7 @@ import type {
   BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  ExecutionControlSnapshot,
   ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
   LedgerSummary,
@@ -33,7 +34,9 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
-  TradingWorkspaceResponse
+  TradingWorkspaceResponse,
+  CreateExecutionManualOverrideRequest,
+  ExecutionManualOverride
 } from "@/types";
 
 async function getJson<T>(path: string): Promise<T> {
@@ -160,6 +163,18 @@ export function getPaperSessionReplayVerification(sessionId: string) {
 
 export function getExecutionAudit(take = 20) {
   return getJson<ExecutionAuditEntry[]>(`/api/execution/audit?take=${encodeURIComponent(String(take))}`);
+}
+
+export function getExecutionControls() {
+  return getJson<ExecutionControlSnapshot>("/api/execution/controls");
+}
+
+export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
+  return postJson<ExecutionManualOverride>("/api/execution/controls/manual-override", request);
+}
+
+export function clearExecutionManualOverride(overrideId: string) {
+  return postJson<ExecutionControlSnapshot>(`/api/execution/controls/manual-override/${encodeURIComponent(overrideId)}/clear`);
 }
 
 // --- Strategy lifecycle ---
