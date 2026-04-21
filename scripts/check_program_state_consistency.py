@@ -3,17 +3,20 @@
 
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
 
-FILES = [
-    Path("docs/status/PROGRAM_STATE.md"),
-    Path("docs/status/ROADMAP.md"),
-    Path("docs/status/IMPROVEMENTS.md"),
-    Path("docs/status/production-status.md"),
-    Path("docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md"),
-    Path("docs/status/ROADMAP_COMBINED.md"),
+SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_REPO_ROOT = SCRIPT_DIR.parent
+STATUS_DOC_PATHS = [
+    "docs/status/PROGRAM_STATE.md",
+    "docs/status/ROADMAP.md",
+    "docs/status/IMPROVEMENTS.md",
+    "docs/status/production-status.md",
+    "docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md",
+    "docs/status/ROADMAP_COMBINED.md",
 ]
 
 BLOCK_RE = re.compile(
@@ -59,10 +62,29 @@ def parse_file(path: Path):
     return results
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Fail when milestone IDs have conflicting status labels across status docs."
+        )
+    )
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=DEFAULT_REPO_ROOT,
+        help="Repository root directory. Defaults to the parent of scripts/.",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
+    args = parse_args()
+    repo_root = args.repo_root.resolve()
+    files = [repo_root / rel_path for rel_path in STATUS_DOC_PATHS]
+
     all_statuses: dict[str, list[tuple[Path, str]]] = {}
     errors = []
-    for file in FILES:
+    for file in files:
         try:
             parsed = parse_file(file)
             for milestone, status in parsed.items():

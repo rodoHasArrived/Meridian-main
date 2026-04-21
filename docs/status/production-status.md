@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-21
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.

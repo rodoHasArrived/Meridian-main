@@ -1,6 +1,6 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-21
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).

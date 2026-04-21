@@ -1,6 +1,6 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-21
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Waves 2-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
 **Repository Snapshot (2026-04-13 working tree):** solution projects: 39 | `src/` project files: 27 | test projects: 9 | workflow files: 42
 
