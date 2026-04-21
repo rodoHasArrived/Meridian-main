@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-20
+**Last Reviewed:** 2026-04-21
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
@@ -71,6 +71,16 @@ These dated snapshots remain useful for history, but they no longer act as activ
 9. [provider-validation-matrix.md](provider-validation-matrix.md)
 10. [contract-compatibility-matrix.md](contract-compatibility-matrix.md)
 11. [IMPROVEMENTS.md](IMPROVEMENTS.md)
+
+## Contributor Checklist (Required Headings)
+
+When authoring or editing these doc categories, include the required section headers so docs lint passes:
+
+- **Runbooks** (for example `docs/operations/operator-runbook.md`):
+  - `## Troubleshooting`
+- **Provider setup guides** (`docs/providers/*-setup.md`):
+  - `## Prerequisites`
+  - `## Configuration`
 
 ## Current Status Summary
 
