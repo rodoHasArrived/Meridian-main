@@ -7546,6 +7546,7 @@ Meridian-main
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
 │   │   │   ├── PageLifecycleCleanupTests.cs
+│   │   │   ├── PlotRenderBehaviorTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── ResearchWorkspaceShellSmokeTests.cs
 │   │   │   ├── ResearchWorkspaceShellWorkflowTests.cs
