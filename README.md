@@ -4925,6 +4925,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── OPPORTUNITY_SCAN.md
+│   │   ├── PROGRAM_STATE.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
@@ -5006,6 +5007,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── setup-ai-agent.sh
 │   │   └── setup.sh
 │   ├── check_contract_compatibility_gate.py
+│   ├── check_program_state_consistency.py
 │   ├── compare_benchmarks.py
 │   ├── dev
 │   │   ├── SharedBuild.ps1
@@ -7703,6 +7705,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-604 directories, 6959 files
+604 directories, 6961 files
 ```
 <!-- readme-tree end -->
