@@ -573,7 +573,7 @@ Current delivered slice: report-pack preview contracts and a shared preview endp
 ### Slice 2: Corporate action propagation + reconciliation variance reasons
 
 - **Prerequisite services/contracts:** Security Master corporate-action contracts, reconciliation DTOs/rules (`ReconciliationRules`, `ReconciliationTypes`), governance cash-flow view DTOs, variance classification DTOs.
-- **API endpoints affected:** `/api/security-master/*` corporate-action reads, `/api/fund-structure/cash-flow-view`, `/api/fund-structure/workspace-view`, reconciliation endpoints (`/api/reconciliation/*` or equivalent workstation queue routes).
+- **API endpoints affected:** `/api/security-master/*` corporate-action reads, `/api/fund-structure/cash-flow-view`, `/api/fund-structure/workspace-view`, reconciliation endpoints `/api/workstation/reconciliation/runs` and `/api/workstation/reconciliation/runs/{id}`.
 - **Workstation pages (web + WPF):** corporate action timeline/impact panel, reconciliation break queue with variance-reason column, cash-flow ladder detail view.
 - **Deterministic scenario evidence required to mark complete:** seeded dividend + split + maturity event set applied to a static ledger/account fixture; propagation updates projected and realized ladders identically on repeated runs; reconciliation breaks include explicit variance reason codes (timing, amount, classification, missing action) with stable totals and row ordering.
 
