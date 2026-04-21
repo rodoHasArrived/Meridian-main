@@ -280,6 +280,52 @@ public static class ExecutionEndpoints
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(503);
 
+        group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
+        {
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var actor = ResolveActor(context);
+            await controls.CreateManualOverrideAsync(
+                new ManualOverrideRequest(
+                    Kind: request.Kind,
+                    Reason: request.Reason,
+                    CreatedBy: actor,
+                    Symbol: request.Symbol,
+                    StrategyId: request.StrategyId,
+                    RunId: request.RunId,
+                    ExpiresAt: request.ExpiresAt),
+                context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(controls.GetSnapshot(), jsonOptions);
+        })
+        .WithName("CreateExecutionManualOverride")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(503);
+
+        group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
+        {
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var actor = ResolveActor(context);
+            var cleared = await controls
+                .ClearManualOverrideAsync(overrideId, actor, request.Reason, context.RequestAborted)
+                .ConfigureAwait(false);
+            return cleared
+                ? Results.Json(controls.GetSnapshot(), jsonOptions)
+                : Results.NotFound();
+        })
+        .WithName("ClearExecutionManualOverride")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(404)
+        .Produces(503);
+
         // --- Session management ---
 
         group.MapGet("/sessions", (HttpContext context) =>
@@ -1022,3 +1068,15 @@ public sealed record TradingActionResult(
 public sealed record UpdateExecutionCircuitBreakerRequest(
     bool IsOpen,
     string? Reason = null);
+
+/// <summary>Request to create an execution manual override.</summary>
+public sealed record CreateExecutionManualOverrideRequest(
+    string Kind,
+    string Reason,
+    string? Symbol = null,
+    string? StrategyId = null,
+    string? RunId = null,
+    DateTimeOffset? ExpiresAt = null);
+
+/// <summary>Request to clear an existing execution manual override.</summary>
+public sealed record ClearExecutionManualOverrideRequest(string? Reason = null);
