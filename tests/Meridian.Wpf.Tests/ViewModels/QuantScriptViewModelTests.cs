@@ -154,6 +154,41 @@ public sealed class QuantScriptViewModelTests
         };
         act.Should().NotThrow();
     }
+
+    [Fact]
+    public async Task RunScriptCommand_WhenDateRangeInvalid_BlocksRunAndReportsStatus()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        vm.FromDate = new DateTime(2025, 1, 2);
+        vm.ToDate = new DateTime(2025, 1, 1);
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        runner.CallCount.Should().Be(0);
+        vm.StatusText.Should().Contain("Invalid date range");
+        vm.Diagnostics.Should().Contain(entry => entry.Key == "Validation");
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_IncludesNormalizedToolbarContextInParameters()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        vm.AssetSymbol = " spy ";
+        vm.FromDate = new DateTime(2024, 1, 2);
+        vm.ToDate = new DateTime(2024, 2, 3);
+        vm.SelectedInterval = "Daily (Custom)";
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        runner.CallCount.Should().Be(1);
+        runner.LastParameters.Should().NotBeNull();
+        runner.LastParameters!["symbol"].Should().Be("SPY");
+        runner.LastParameters["from"].Should().Be(new DateOnly(2024, 1, 2));
+        runner.LastParameters["to"].Should().Be(new DateOnly(2024, 2, 3));
+        runner.LastParameters["interval"].Should().Be("daily");
+    }
 }
 
 /// <summary>
