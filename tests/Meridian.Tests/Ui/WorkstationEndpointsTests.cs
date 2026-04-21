@@ -1360,6 +1360,7 @@ public sealed class WorkstationEndpointsTests
                 ExpectedAmount: 100m + index,
                 ActualAmount: 95m + index,
                 Variance: 5m,
+                Severity: ReconciliationBreakSeverity.Medium,
                 Reason: "Seeded mismatch for history coverage",
                 ExpectedAsOf: createdAt,
                 ActualAsOf: createdAt))

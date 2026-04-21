@@ -24,7 +24,18 @@ public enum ReconciliationBreakStatus : byte
     Open = 0,
     Matched = 1,
     Investigating = 2,
-    Resolved = 3
+    Resolved = 3,
+    PartialMatch = 4
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakSeverity>))]
+public enum ReconciliationBreakSeverity : byte
+{
+    Info = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4
 }
 
 /// <summary>
@@ -38,7 +49,8 @@ public enum ReconciliationBreakCategory : byte
     MissingPortfolioCoverage = 2,
     ClassificationGap = 3,
     TimingMismatch = 4,
-    MissingBankCoverage = 5
+    MissingBankCoverage = 5,
+    PartialMatch = 6
 }
 
 /// <summary>
@@ -101,6 +113,7 @@ public sealed record ReconciliationBreakDto(
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
+    ReconciliationBreakSeverity Severity,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf);

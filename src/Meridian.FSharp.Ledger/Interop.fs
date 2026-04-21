@@ -57,6 +57,7 @@ type PortfolioLedgerCheckResultDto = {
     HasActualAmount: bool
     Variance: decimal
     Reason: string
+    Severity: string
     ExpectedAsOf: DateTimeOffset
     ActualAsOf: DateTimeOffset
     HasExpectedAsOf: bool
@@ -216,6 +217,7 @@ type LedgerInterop private () =
                 HasActualAmount = result.HasActualAmount
                 Variance = result.Variance
                 Reason = result.Reason
+                Severity = result.Severity
                 ExpectedAsOf = result.ExpectedAsOf
                 ActualAsOf = result.ActualAsOf
                 HasExpectedAsOf = result.HasExpectedAsOf

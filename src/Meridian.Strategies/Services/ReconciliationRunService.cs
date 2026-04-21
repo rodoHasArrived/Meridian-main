@@ -89,6 +89,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
                 result.HasActualAmount ? result.ActualAmount : null,
                 result.Variance,
+                MapSeverity(result.Severity),
                 result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
                 result.HasActualAsOf ? result.ActualAsOf : null));
@@ -144,15 +145,26 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         "missing_portfolio_coverage" => ReconciliationBreakCategory.MissingPortfolioCoverage,
         "classification_gap" => ReconciliationBreakCategory.ClassificationGap,
         "timing_mismatch" => ReconciliationBreakCategory.TimingMismatch,
+        "partial_match" => ReconciliationBreakCategory.PartialMatch,
         _ => ReconciliationBreakCategory.ClassificationGap
     };
 
     private static ReconciliationBreakStatus MapStatus(string status) => status switch
     {
         "matched" => ReconciliationBreakStatus.Matched,
+        "partial_match" => ReconciliationBreakStatus.PartialMatch,
         "investigating" => ReconciliationBreakStatus.Investigating,
         "resolved" => ReconciliationBreakStatus.Resolved,
         _ => ReconciliationBreakStatus.Open
+    };
+
+    private static ReconciliationBreakSeverity MapSeverity(string severity) => severity switch
+    {
+        "Critical" => ReconciliationBreakSeverity.Critical,
+        "High" => ReconciliationBreakSeverity.High,
+        "Medium" => ReconciliationBreakSeverity.Medium,
+        "Low" => ReconciliationBreakSeverity.Low,
+        _ => ReconciliationBreakSeverity.Info
     };
 
     private static IReadOnlyList<ReconciliationSecurityCoverageIssueDto> BuildSecurityCoverageIssues(StrategyRunDetail detail)

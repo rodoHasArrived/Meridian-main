@@ -96,6 +96,7 @@ type PortfolioLedgerCheckResult = {
     HasActualAmount: bool
     Variance: decimal
     Reason: string
+    Severity: string
     ExpectedAsOf: System.DateTimeOffset
     ActualAsOf: System.DateTimeOffset
     HasExpectedAsOf: bool
@@ -223,25 +224,65 @@ module Reconciliation =
                 else
                     0m
 
-            let hasTimingDrift =
-                check.HasExpectedAsOf
-                && check.HasActualAsOf
-                && abs ((check.ActualAsOf - check.ExpectedAsOf).TotalMinutes) > float maxAsOfDriftMinutes
-
-            let category, status, missingSource, reason, isMatch =
-                if hasTimingDrift then
-                    "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false
-                elif check.ExpectedPresent && not check.ActualPresent then
-                    "missing_ledger_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "ledger" else check.MissingSourceHint), "Expected portfolio coverage is missing a ledger counterpart.", false
+            let category, status, missingSource, reason, isMatch, severity =
+                if check.ExpectedPresent && not check.ActualPresent then
+                    "missing_ledger_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "ledger" else check.MissingSourceHint), "Expected portfolio coverage is missing a ledger counterpart.", false, BreakSeverity.asString BreakSeverity.Medium
                 elif not check.ExpectedPresent && check.ActualPresent then
-                    "missing_portfolio_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "portfolio" else check.MissingSourceHint), "Ledger coverage exists without a matching portfolio reference.", false
+                    "missing_portfolio_coverage", "open", (if System.String.IsNullOrWhiteSpace check.MissingSourceHint then "portfolio" else check.MissingSourceHint), "Ledger coverage exists without a matching portfolio reference.", false, BreakSeverity.asString BreakSeverity.Medium
                 elif not (System.String.IsNullOrWhiteSpace check.ActualKind)
                      && not (System.String.Equals(check.ActualKind, check.CategoryHint, System.StringComparison.OrdinalIgnoreCase)) then
-                    "classification_gap", "open", "unknown", "Coverage was found, but it is classified in the wrong ledger bucket.", false
-                elif check.HasExpectedAmount && check.HasActualAmount && abs variance > amountTolerance then
-                    "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false
+                    "classification_gap", "open", "unknown", "Coverage was found, but it is classified in the wrong ledger bucket.", false, BreakSeverity.asString BreakSeverity.High
+                elif check.HasExpectedAmount && check.HasActualAmount && check.HasExpectedAsOf && check.HasActualAsOf then
+                    let expectedAmountForSeverity =
+                        if check.ExpectedAmount = 0m then 1m else check.ExpectedAmount
+
+                    let timingToleranceDays =
+                        max 1 (int (System.Math.Ceiling(float maxAsOfDriftMinutes / 1440.0)))
+
+                    let candidate: MatchCandidate = {
+                        CandidateId = System.Guid.NewGuid()
+                        SecurityId = System.Guid.Empty
+                        ExpectedAmount = check.ExpectedAmount
+                        ActualAmount = check.ActualAmount
+                        ExpectedCurrency = "USD"
+                        ActualCurrency = "USD"
+                        ExpectedDate = check.ExpectedAsOf
+                        ActualDate = check.ActualAsOf
+                        Notes = check.Label
+                    }
+
+                    let matchingRule =
+                        { MatchingRule.``default`` with
+                            AmountTolerancePct = amountTolerance
+                            TimingToleranceDays = timingToleranceDays
+                            AllowPartialMatch = true
+                            MinMatchConfidence = 0.60m
+                        }
+
+                    match ReconciliationRules.applyBest [ matchingRule ] candidate with
+                    | FullMatch _ ->
+                        "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
+                    | PartialMatch (_, partialReason) ->
+                        "partial_match", "partial_match", "unknown", partialReason, false, BreakSeverity.asString BreakSeverity.Low
+                    | NoMatch classification ->
+                        let inferredSeverity = LedgerBreakClassification.severity expectedAmountForSeverity classification |> BreakSeverity.asString
+                        match classification with
+                        | AmountBreak _ ->
+                            "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, inferredSeverity
+                        | TimingBreak _ ->
+                            "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false, inferredSeverity
+                        | CurrencyBreak _ ->
+                            "classification_gap", "open", "unknown", "Coverage was found, but currency classification diverged.", false, inferredSeverity
+                        | MissingEntry ->
+                            "missing_ledger_coverage", "open", "ledger", "Expected portfolio coverage is missing a ledger counterpart.", false, inferredSeverity
+                        | DuplicateEntry ->
+                            "classification_gap", "open", "unknown", "Coverage contains duplicate entries requiring investigation.", false, inferredSeverity
+                        | ClassificationBreak reason ->
+                            "classification_gap", "open", "unknown", reason, false, inferredSeverity
+                        | OtherBreak reason ->
+                            "classification_gap", "open", "unknown", reason, false, inferredSeverity
                 else
-                    "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true
+                    "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
 
             {
                 CheckId = check.CheckId
@@ -258,6 +299,7 @@ module Reconciliation =
                 HasActualAmount = check.HasActualAmount
                 Variance = variance
                 Reason = reason
+                Severity = severity
                 ExpectedAsOf = check.ExpectedAsOf
                 ActualAsOf = check.ActualAsOf
                 HasExpectedAsOf = check.HasExpectedAsOf

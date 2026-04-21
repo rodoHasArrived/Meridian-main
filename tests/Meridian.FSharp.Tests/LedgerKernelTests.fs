@@ -295,6 +295,8 @@ let ``Portfolio ledger reconciliation marks exact match as matched`` () =
 
     result.IsMatch |> should equal true
     result.Category |> should equal "matched"
+    result.Status |> should equal "matched"
+    result.Severity |> should equal "Info"
 
 [<Fact>]
 let ``Portfolio ledger reconciliation flags amount mismatch`` () =
@@ -325,6 +327,40 @@ let ``Portfolio ledger reconciliation flags amount mismatch`` () =
 
     result.IsMatch |> should equal false
     result.Category |> should equal "amount_mismatch"
+    result.Status |> should equal "open"
+    result.Severity |> should equal "High"
+
+[<Fact>]
+let ``Portfolio ledger reconciliation surfaces partial match status explicitly`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "timing-partial"
+                Label = "Portfolio cash vs ledger cash timing drift"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 750m
+                ActualAmount = 750m
+                HasExpectedAmount = true
+                HasActualAmount = true
+                ExpectedPresent = true
+                ActualPresent = true
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-01T00:00:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-05T00:00:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "amount"
+                MissingSourceHint = ""
+                ActualKind = "amount"
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 4320, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal false
+    result.Category |> should equal "partial_match"
+    result.Status |> should equal "partial_match"
+    result.Severity |> should equal "Low"
 
 [<Fact>]
 let ``Portfolio ledger reconciliation flags missing ledger coverage`` () =

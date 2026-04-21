@@ -687,6 +687,7 @@ public sealed class FundLedgerViewModelTests
                     ExpectedAmount: 150m,
                     ActualAmount: 137.5m,
                     Variance: 12.5m,
+                    Severity: ReconciliationBreakSeverity.High,
                     Reason: "Broker statement has not been normalized yet.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 29, 0, TimeSpan.Zero))
