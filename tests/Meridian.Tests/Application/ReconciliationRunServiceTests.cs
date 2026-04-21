@@ -68,6 +68,10 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityCoverageIssues.Should().NotBeNull();
         detail.SecurityCoverageIssues!.Should().Contain(issue => issue.Source == "portfolio" && issue.Symbol == "TSLA");
         detail.SecurityCoverageIssues.Should().Contain(issue => issue.Source == "ledger" && issue.Symbol == "TSLA");
+        detail.SecurityCoverageIssues.Should().OnlyContain(issue =>
+            issue.Reason.Contains("missing a Security Master match", StringComparison.OrdinalIgnoreCase));
+        detail.SecurityClassifications.Should().ContainKey("AAPL");
+        detail.SecurityClassifications.Should().NotContainKey("TSLA");
     }
 
     [Fact]
@@ -109,6 +113,41 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
         detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithClassificationEdgeCases_ShouldPreservePrimaryIdentifierAndSubtypeValues()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-classification-edges"));
+
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL",
+            SubType: null));
+        lookup.Register("TSLA", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            DisplayName: "Tesla Inc.",
+            AssetClass: "LegacyEquity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "88160R101",
+            SubType: "LegacyEquitySubtype"));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(), lookup);
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-classification-edges"));
+
+        detail.Should().NotBeNull();
+        detail!.SecurityClassifications.Should().NotBeNull();
+        detail.SecurityClassifications!["AAPL"].SubType.Should().BeNull("ambiguous equity subtype should stay explicitly null");
+        detail.SecurityClassifications["TSLA"].SubType.Should().Be("LegacyEquitySubtype");
+        detail.SecurityClassifications["TSLA"].PrimaryIdentifierValue.Should().Be("88160R101");
     }
 
     [Fact]

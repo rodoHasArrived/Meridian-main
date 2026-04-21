@@ -88,7 +88,6 @@ public sealed class KernelObservabilityService
         PrometheusMetrics.SetKernelCriticalSeverityRate(
             domain,
             snapshot.CriticalRateShortWindow,
-            snapshot.CriticalJumpActive,
             snapshot.CriticalJumpAlertTriggered);
     }
 

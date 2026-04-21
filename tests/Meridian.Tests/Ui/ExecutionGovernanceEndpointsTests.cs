@@ -61,6 +61,79 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
+    public async Task ControlsEndpoints_CreateAndClearManualOverride_UpdatesControlsAndAuditTrail()
+    {
+        var tempRoot = CreateTempRoot();
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")));
+            services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")));
+            services.AddSingleton<ExecutionAuditTrailService>();
+            services.AddSingleton<ExecutionOperatorControlService>();
+        });
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops-supervisor");
+
+        var createResponse = await client.PostAsync(
+            "/api/execution/controls/manual-overrides",
+            JsonContent(new
+            {
+                kind = ExecutionManualOverrideKinds.AllowLivePromotion,
+                reason = "promotion approval window",
+                strategyId = "strat-42"
+            }));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync());
+        var createdOverride = createJson.RootElement
+            .GetProperty("manualOverrides")
+            .EnumerateArray()
+            .Single();
+
+        var overrideId = createdOverride.GetProperty("overrideId").GetString();
+        overrideId.Should().NotBeNullOrWhiteSpace();
+        createdOverride.GetProperty("kind").GetString().Should().Be(ExecutionManualOverrideKinds.AllowLivePromotion);
+        createdOverride.GetProperty("strategyId").GetString().Should().Be("strat-42");
+
+        var controlsAfterCreate = await client.GetAsync("/api/execution/controls");
+        controlsAfterCreate.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var controlsAfterCreateJson = JsonDocument.Parse(await controlsAfterCreate.Content.ReadAsStringAsync());
+        controlsAfterCreateJson.RootElement
+            .GetProperty("manualOverrides")
+            .EnumerateArray()
+            .Should()
+            .Contain(entry => entry.GetProperty("overrideId").GetString() == overrideId);
+
+        var clearResponse = await client.PostAsync(
+            $"/api/execution/controls/manual-overrides/{overrideId}/clear",
+            JsonContent(new { reason = "window closed" }));
+        clearResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var clearJson = JsonDocument.Parse(await clearResponse.Content.ReadAsStringAsync());
+        clearJson.RootElement.GetProperty("manualOverrides").GetArrayLength().Should().Be(0);
+
+        var controlsAfterClear = await client.GetAsync("/api/execution/controls");
+        controlsAfterClear.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var controlsAfterClearJson = JsonDocument.Parse(await controlsAfterClear.Content.ReadAsStringAsync());
+        controlsAfterClearJson.RootElement.GetProperty("manualOverrides").GetArrayLength().Should().Be(0);
+
+        var auditResponse = await client.GetAsync("/api/execution/audit?take=20");
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(
+            await auditResponse.Content.ReadAsStringAsync(),
+            JsonOptions());
+
+        auditEntries.Should().NotBeNull();
+        auditEntries!.Should().Contain(entry =>
+            entry.Action == "ManualOverrideCreated" &&
+            entry.Actor == "ops-supervisor");
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "ManualOverrideCleared" &&
+            entry.Actor == "ops-supervisor");
+    }
+
+    [Fact]
     public async Task AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam()
     {
         var tempRoot = CreateTempRoot();

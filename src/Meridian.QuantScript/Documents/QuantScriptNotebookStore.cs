@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Threading;
+using Meridian.Storage.Archival;
 
 namespace Meridian.QuantScript.Documents;
 
@@ -7,6 +9,8 @@ namespace Meridian.QuantScript.Documents;
 /// </summary>
 public sealed class QuantScriptNotebookStore : IQuantScriptNotebookStore
 {
+    private static long _pathSuffixCounter;
+
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -85,8 +89,8 @@ public sealed class QuantScriptNotebookStore : IQuantScriptNotebookStore
         var normalized = EnsureCells(document);
         Directory.CreateDirectory(Path.GetDirectoryName(path) ?? ScriptsDirectory);
 
-        await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, normalized, SerializerOptions, ct).ConfigureAwait(false);
+        var serialized = JsonSerializer.Serialize(normalized, SerializerOptions);
+        await AtomicFileWriter.WriteAsync(path, serialized, ct).ConfigureAwait(false);
     }
 
     public string GetSuggestedNotebookPath(string title)
@@ -101,13 +105,8 @@ public sealed class QuantScriptNotebookStore : IQuantScriptNotebookStore
         if (string.IsNullOrWhiteSpace(sanitized))
             sanitized = "quantscript-notebook";
 
-        var candidate = Path.Combine(ScriptsDirectory, $"{sanitized}{NotebookExtension}");
-        if (!File.Exists(candidate))
-            return candidate;
-
-        return Path.Combine(
-            ScriptsDirectory,
-            $"{sanitized}-{DateTime.Now:yyyyMMddHHmmss}{NotebookExtension}");
+        var suffix = $"{DateTime.UtcNow.Ticks:x}-{Interlocked.Increment(ref _pathSuffixCounter):x}";
+        return Path.Combine(ScriptsDirectory, $"{sanitized}-{suffix}{NotebookExtension}");
     }
 
     private static QuantScriptNotebookDocument EnsureCells(QuantScriptNotebookDocument document)
