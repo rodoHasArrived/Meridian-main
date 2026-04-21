@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-21 06:44:13 UTC. Do not edit manually.
+> Auto-generated on 2026-04-21 16:45:41 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4716,6 +4716,9 @@ Meridian-main
 │   │   ├── badge-sync-report.md
 │   │   ├── CHANGELOG.md
 │   │   ├── coverage-report.md
+│   │   ├── dk1-baseline-trust-thresholds.md
+│   │   ├── dk1-pilot-parity-runbook.md
+│   │   ├── dk1-trust-rationale-mapping.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
 │   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
