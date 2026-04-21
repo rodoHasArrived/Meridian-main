@@ -76,6 +76,7 @@ public sealed class FundOperationsWorkspaceReadService
             query.ScopeId,
             asOf,
             ledgerBook);
+        var ledgerReconciliationSnapshot = ProjectReconciliationSnapshot(ledgerBook.ReconciliationSnapshot(asOf));
 
         var cashTask = BuildCashFinancingSummaryAsync(
             baseCurrency,
@@ -118,6 +119,7 @@ public sealed class FundOperationsWorkspaceReadService
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             Workspace: workspace,
             Ledger: ledger,
+            LedgerReconciliationSnapshot: ledgerReconciliationSnapshot,
             Accounts: accountSummaries,
             BankSnapshots: bankSnapshots,
             CashFinancing: cashFinancing,
@@ -540,6 +542,42 @@ public sealed class FundOperationsWorkspaceReadService
             SleeveCount: sleeveCount,
             VehicleCount: vehicleCount);
     }
+
+    public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot)
+    {
+        return new FundLedgerReconciliationSnapshot(
+            FundProfileId: snapshot.FundId,
+            AsOf: snapshot.AsOf,
+            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Entities: snapshot.Entities.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Sleeves: snapshot.Sleeves.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Vehicles: snapshot.Vehicles.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+        new(
+            Timestamp: snapshot.Timestamp,
+            JournalEntryCount: snapshot.JournalEntryCount,
+            LedgerEntryCount: snapshot.LedgerEntryCount,
+            Balances: snapshot.Balances
+                .OrderBy(static pair => pair.Key.AccountType)
+                .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                    AccountName: pair.Key.Name,
+                    AccountType: pair.Key.AccountType.ToString(),
+                    Symbol: pair.Key.Symbol,
+                    FinancialAccountId: pair.Key.FinancialAccountId,
+                    Balance: pair.Value))
+                .ToArray());
 
     private static FundLedgerBook BuildLedgerBook(
         string fundProfileId,
