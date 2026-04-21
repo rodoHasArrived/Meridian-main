@@ -184,7 +184,7 @@ public sealed class InMemoryFundStructureServiceTests
             AssignmentType: "LedgerGroup",
             AssignmentReference: "  FUND.OPS:PRIMARY  ",
             EffectiveFrom: new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero),
-            AssignedBy: "test"));
+            CreatedBy: "test"));
 
         var view = await fixture.StructureService.GetAccountingViewAsync(
             new AccountingStructureQuery(BusinessId: fixture.FundBusinessId));
