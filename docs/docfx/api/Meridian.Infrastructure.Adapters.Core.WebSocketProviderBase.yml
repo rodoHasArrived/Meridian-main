@@ -40,7 +40,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketProviderBase
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -53,7 +53,7 @@ items:
 
     Consolidates connection lifecycle, heartbeat monitoring, and automatic reconnection
 
-    logic that was previously duplicated across Alpaca, Polygon, NYSE, and StockSharp.
+    logic that was previously duplicated across Alpaca, Polygon, and NYSE.
 
 
     Derived classes implement protocol-specific hooks:
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Log
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscriptions
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -259,7 +259,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -359,7 +359,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -394,7 +394,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -465,7 +465,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -501,7 +501,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -534,7 +534,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -567,7 +567,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -600,7 +600,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -633,7 +633,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -666,7 +666,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildWebSocketUri
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -696,7 +696,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticateAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -730,7 +730,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleMessageAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -770,7 +770,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -807,7 +807,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureWebSocket
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -844,7 +844,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -882,7 +882,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadOneMessageAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -920,7 +920,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordActivity
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
@@ -951,7 +951,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs

@@ -156,7 +156,7 @@ public sealed class BackfillCoordinator : IDisposable
         foreach (var symbol in request.Symbols)
         {
             // Check if data already exists for this symbol
-            var existingDataInfo = GetExistingDataInfo(dataRoot, symbol, from, to);
+            var existingDataInfo = GetExistingDataInfo(dataRoot, symbol, from, to, request.Granularity);
 
             symbolPreviews.Add(new SymbolPreview(
                 Symbol: symbol.ToUpperInvariant(),
@@ -196,7 +196,12 @@ public sealed class BackfillCoordinator : IDisposable
         return days;
     }
 
-    private ExistingDataInfo GetExistingDataInfo(string dataRoot, string symbol, DateOnly from, DateOnly to)
+    private ExistingDataInfo GetExistingDataInfo(
+        string dataRoot,
+        string symbol,
+        DateOnly from,
+        DateOnly to,
+        DataGranularity granularity)
     {
         // Check for existing data files
         var symbolDir = Path.Combine(dataRoot, "historical", symbol.ToUpperInvariant());
@@ -212,7 +217,9 @@ public sealed class BackfillCoordinator : IDisposable
             );
         }
 
-        var files = Directory.GetFiles(symbolDir, "*.jsonl*", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(symbolDir, "*.jsonl*", SearchOption.AllDirectories)
+            .Where(file => FileMatchesGranularity(file, granularity))
+            .ToArray();
         if (files.Length == 0)
         {
             return new ExistingDataInfo(
@@ -254,6 +261,32 @@ public sealed class BackfillCoordinator : IDisposable
             TotalSizeBytes: totalSize
         );
     }
+
+    private static bool FileMatchesGranularity(string filePath, DataGranularity granularity)
+    {
+        var fileName = Path.GetFileName(filePath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return false;
+
+        if (granularity.IsIntraday())
+            return fileName.Contains(granularity.ToStorageFilePrefix(), StringComparison.OrdinalIgnoreCase);
+
+        if (fileName.Contains(DataGranularity.Daily.ToStorageFilePrefix(), StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return !GetIntradayStoragePrefixes()
+            .Any(prefix => fileName.Contains(prefix, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string[] GetIntradayStoragePrefixes() =>
+    [
+        DataGranularity.Minute1.ToStorageFilePrefix(),
+        DataGranularity.Minute5.ToStorageFilePrefix(),
+        DataGranularity.Minute15.ToStorageFilePrefix(),
+        DataGranularity.Minute30.ToStorageFilePrefix(),
+        DataGranularity.Hour1.ToStorageFilePrefix(),
+        DataGranularity.Hour4.ToStorageFilePrefix()
+    ];
 
     private static bool TryExtractDateFromFileName(string name, out DateOnly date)
     {

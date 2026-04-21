@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageCompressionLevel
     path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fast
     path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balanced
     path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Maximum
     path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs

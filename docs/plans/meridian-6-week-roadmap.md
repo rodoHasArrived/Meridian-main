@@ -1,10 +1,12 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-17
 **Horizon:** Next 6 weeks
-**Status:** Short-horizon execution slice derived from the 2026-04-13 canonical roadmap refresh
+**Status:** Short-horizon execution slice derived from the 2026-04-17 canonical roadmap refresh
 
-This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md). It is intentionally narrower than the canonical roadmap and advances only the Wave 1-4 core operator-readiness path: provider confidence, paper-trading cockpit hardening, shared-model continuity, and the first deeper governance slices on top of the delivered Security Master baseline.
+This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
+
+Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria inside the active Waves 2-4 path.
 
 ---
 
@@ -12,7 +14,7 @@ This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMA
 
 The next six weeks should focus on four outcomes:
 
-1. strengthen Wave 1 provider-confidence and checkpoint-evidence closure
+1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and synchronized
 2. harden the Wave 2 paper-trading cockpit that is already visible in the workstation
 3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while consolidating the active WPF shell direction
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
@@ -37,7 +39,7 @@ This plan starts from the current repo state:
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
 - governance already has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
-- provider trust and checkpoint proof remain the first release gate for every downstream claim
+- the closed Wave 1 trust gate remains the first release gate for every downstream claim
 
 ---
 
@@ -45,7 +47,7 @@ This plan starts from the current repo state:
 
 ### Active in this window
 
-- **Wave 1:** provider confidence and checkpoint evidence
+- **Wave 1:** closed trust-gate maintenance
 - **Wave 2:** paper-trading cockpit hardening
 - **Wave 3:** shared run / portfolio / ledger continuity
 - **Wave 4:** governance and fund-operations productization on top of the delivered Security Master baseline
@@ -67,11 +69,11 @@ This plan starts from the current repo state:
 
 ## Six-Week Outcomes
 
-### Outcome 1: Wave 1 trust gates are materially stronger
+### Outcome 1: The closed Wave 1 trust gate stays reproducible and synchronized
 
-- Polygon replay coverage, IB runtime/bootstrap validation, NYSE lifecycle-depth coverage, and StockSharp validated-adapter guidance are tied to clearer executable evidence
-- backfill checkpoints, gap detection, and Parquet L2 flush behavior move from assumed reliability to explicit pass/fail validation across representative windows
-- the active Wave 1 scope stays synchronized with the provider-validation matrix and provider-confidence language
+- Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly runtime-bounded, and deferred providers stay clearly outside the active gate
+- backfill checkpoints, gap detection, and Parquet L2 flush behavior remain on the passing command matrix instead of drifting back into assumed reliability
+- the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, and generated validation summaries
 
 ### Outcome 2: Wave 2 paper trading is dependable, not just visible
 
@@ -97,8 +99,8 @@ This plan starts from the current repo state:
 
 | Week | Focus | Goals | Deliverables |
 |---|---|---|---|
-| 1 | Wave 1 evidence refresh | close ambiguity around validated provider/runtime paths, checkpoint reliability, and L2 persistence evidence | refreshed provider/runtime evidence list; narrowed checkpoint and Parquet test targets; exact open validation gaps |
-| 2 | Wave 1 closeout + Wave 2 entry | turn trust work into explicit pass/fail gates while starting cockpit hardening | provider-confidence decision list; checkpoint validation targets; cockpit hardening checklist |
+| 1 | Wave 1 closeout confirmation | rerun the closed trust gate and remove planning contradictions around the active provider set | refreshed validation summary; synchronized provider/runtime evidence list; explicit deferred-provider wording |
+| 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
 | 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion workflow gap list; cockpit operator-path checklist |
 | 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating the active WPF shell direction | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; shell-navigation validation targets tied to active flows |
 | 5 | Wave 4 governance slice | connect the delivered Security Master baseline to concrete governance product slices | account/entity and strategy-structure targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
@@ -108,17 +110,14 @@ This plan starts from the current repo state:
 
 ## Workstreams
 
-### Workstream A: Wave 1 provider confidence and checkpoint evidence
+### Workstream A: Wave 1 trust-gate maintenance
 
 Priorities:
 
-- expand Polygon replay coverage across feeds and edge cases
-- validate Interactive Brokers runtime and bootstrap behavior against real vendor surfaces
-- strengthen NYSE shared lifecycle, depth coverage, and explicit auth, rate-limit, cancellation, and transport proof
-- keep StockSharp examples and runtime guidance aligned with the validated adapter set Meridian is prepared to recommend
-- validate backfill checkpoints and gap handling across representative providers and longer windows
-- harden Parquet L2 flush-path behavior and close remaining ADR-014 cleanup tied to snapshot persistence
-- keep provider-confidence docs and validation artifacts synchronized
+- keep Alpaca and Yahoo explicit as repo-closed rows and Robinhood explicit as the only runtime-bounded active row
+- keep deferred-provider guidance synchronized so Polygon, Interactive Brokers, NYSE, and StockSharp do not drift back into the active gate by prose alone
+- rerun `run-wave1-provider-validation.ps1` whenever provider, checkpoint, or Parquet proof surfaces change
+- keep provider-confidence docs, runtime artifacts, and validation summaries synchronized
 
 ### Workstream B: Wave 2 paper-trading cockpit hardening
 
@@ -164,7 +163,7 @@ Priorities:
 
 Mitigation:
 
-- keep Wave 1 trust closure ahead of broad cockpit claims and tie Wave 2 acceptance criteria to real evidence
+- keep the closed Wave 1 trust gate ahead of broad cockpit claims and tie Wave 2 acceptance criteria to real evidence
 
 ### Risk 2: Provider trust remains documentation-only
 
@@ -194,8 +193,8 @@ Mitigation:
 
 ## Exit Criteria After 6 Weeks
 
-- provider/runtime guidance is materially more trustworthy for the currently supported paths
-- backfill checkpoint and gap-handling confidence is backed by clearer evidence
+- provider/runtime guidance for the active Wave 1 gate remains reproducible and contradiction-free
+- backfill checkpoint and gap-handling confidence remains backed by passing evidence instead of only document claims
 - the paper-trading cockpit has a tighter, more dependable operator story
 - shared run, portfolio, ledger, cash-flow, and reconciliation flows are easier to follow across workspaces
 - the active WPF shell direction is better validated against real workflows and remains clearly subordinate to Waves 1-4 rather than becoming a parallel program

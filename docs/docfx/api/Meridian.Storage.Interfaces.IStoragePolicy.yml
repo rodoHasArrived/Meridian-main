@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStoragePolicy
     path: ../../src/Meridian.Storage/Interfaces/IStoragePolicy.cs
@@ -43,7 +43,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPath
     path: ../../src/Meridian.Storage/Interfaces/IStoragePolicy.cs

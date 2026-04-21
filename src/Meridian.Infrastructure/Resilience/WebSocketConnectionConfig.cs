@@ -23,7 +23,7 @@ namespace Meridian.Infrastructure.Resilience;
 ///   <item>
 ///     <term><see cref="Resilient"/></term>
 ///     <description>
-///       Use for providers with slower reconnection or on unreliable networks (StockSharp, IB Gateway).
+///       Use for providers with slower reconnection or on unreliable networks (IB Gateway).
 ///       10 retries with 3s base delay and longer circuit breaker duration.
 ///       Suitable when provider infrastructure is slower or network is unstable.
 ///     </description>
@@ -43,7 +43,6 @@ namespace Meridian.Infrastructure.Resilience;
 /// <list type="bullet">
 ///   <item>Alpaca: Default (fast cloud infrastructure)</item>
 ///   <item>Polygon: Default (fast cloud infrastructure)</item>
-///   <item>StockSharp: Resilient (broker-dependent latency)</item>
 ///   <item>Interactive Brokers: Resilient (TWS/Gateway may have delays)</item>
 /// </list>
 /// </remarks>

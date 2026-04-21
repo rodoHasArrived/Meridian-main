@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleStatistics
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsBySymbol
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsByEventType
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceStatistics
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeStatistics
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimestamp
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestamp
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSpanCovered
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs

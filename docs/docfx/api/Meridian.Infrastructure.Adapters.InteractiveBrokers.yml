@@ -6,6 +6,7 @@ items:
   children:
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.ContractFactory
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiException
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits
@@ -19,16 +20,21 @@ items:
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorCodeMap
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorInfo
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBGenericTickTypes
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataNotSubscribedException
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPacingViolationException
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSecurityNotFoundException
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSimulationClient
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickByTickTypes
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
   langs:
   - csharp
   - vb
@@ -47,6 +53,7 @@ references:
   fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.ContractFactory
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
   commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
   href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html
   name: EnhancedIBConnectionManager
   nameWithType: EnhancedIBConnectionManager
@@ -162,6 +169,43 @@ references:
   name: IBBrokerageGateway
   nameWithType: IBBrokerageGateway
   fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html
+  name: IIBBrokerageClient
+  nameWithType: IIBBrokerageClient
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate.html
+  name: IBOrderStatusUpdate
+  nameWithType: IBOrderStatusUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate.html
+  name: IBOpenOrderUpdate
+  nameWithType: IBOpenOrderUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html
+  name: IBExecutionUpdate
+  nameWithType: IBExecutionUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate.html
+  name: IBPositionUpdate
+  nameWithType: IBPositionUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate.html
+  name: IBAccountSummaryUpdate
+  nameWithType: IBAccountSummaryUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter
   commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBCallbackRouter
   parent: Meridian.Infrastructure.Adapters.InteractiveBrokers

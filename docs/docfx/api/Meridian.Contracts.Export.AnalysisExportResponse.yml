@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisExportResponse
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesCreated
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RowsExported
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesWritten
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationSeconds
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs

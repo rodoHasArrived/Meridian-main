@@ -166,10 +166,9 @@ public sealed class RobinhoodHistoricalDataProviderTests
         // Arrange
         var handler = new StubHttpHandler(HttpStatusCode.InternalServerError, new StringContent("{}"));
         var sut = CreateSut(handler);
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
         // Act
-        var act = () => sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
+        var act = () => sut.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<DataProviderException>();

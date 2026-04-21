@@ -11,7 +11,6 @@ items:
   - Meridian.Ui.Services.SessionState.OpenPages
   - Meridian.Ui.Services.SessionState.RecentPages
   - Meridian.Ui.Services.SessionState.SavedAt
-  - Meridian.Ui.Services.SessionState.SavedLayoutPresets
   - Meridian.Ui.Services.SessionState.WidgetLayout
   - Meridian.Ui.Services.SessionState.WindowBounds
   - Meridian.Ui.Services.SessionState.WorkspaceContext
@@ -26,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionState
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 99
+    startLine: 97
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -62,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivePageTag
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 101
+    startLine: 99
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -91,11 +90,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenPages
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 102
+    startLine: 100
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -120,11 +119,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentPages
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 103
+    startLine: 101
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -149,11 +148,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WidgetLayout
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 104
+    startLine: 102
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -178,11 +177,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveFilters
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 105
+    startLine: 103
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -207,11 +206,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspaceContext
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 106
+    startLine: 104
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -236,11 +235,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowBounds
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 107
+    startLine: 105
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -251,64 +250,6 @@ items:
       type: Meridian.Ui.Services.WindowBounds
     content.vb: Public Property WindowBounds As WindowBounds
   overload: Meridian.Ui.Services.SessionState.WindowBounds*
-- uid: Meridian.Ui.Services.SessionState.WorkstationLayout
-  commentId: P:Meridian.Ui.Services.SessionState.WorkstationLayout
-  id: WorkstationLayout
-  parent: Meridian.Ui.Services.SessionState
-  langs:
-  - csharp
-  - vb
-  name: WorkstationLayout
-  nameWithType: SessionState.WorkstationLayout
-  fullName: Meridian.Ui.Services.SessionState.WorkstationLayout
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: WorkstationLayout
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 108
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  syntax:
-    content: public WorkstationLayoutState? WorkstationLayout { get; set; }
-    parameters: []
-    return:
-      type: Meridian.Ui.Services.WorkstationLayoutState
-    content.vb: Public Property WorkstationLayout As WorkstationLayoutState
-  overload: Meridian.Ui.Services.SessionState.WorkstationLayout*
-- uid: Meridian.Ui.Services.SessionState.SavedLayoutPresets
-  commentId: P:Meridian.Ui.Services.SessionState.SavedLayoutPresets
-  id: SavedLayoutPresets
-  parent: Meridian.Ui.Services.SessionState
-  langs:
-  - csharp
-  - vb
-  name: SavedLayoutPresets
-  nameWithType: SessionState.SavedLayoutPresets
-  fullName: Meridian.Ui.Services.SessionState.SavedLayoutPresets
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: SavedLayoutPresets
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 109
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  syntax:
-    content: public List<WorkspaceLayoutPreset> SavedLayoutPresets { get; set; }
-    parameters: []
-    return:
-      type: System.Collections.Generic.List{Meridian.Ui.Services.WorkspaceLayoutPreset}
-    content.vb: Public Property SavedLayoutPresets As List(Of WorkspaceLayoutPreset)
-  overload: Meridian.Ui.Services.SessionState.SavedLayoutPresets*
 - uid: Meridian.Ui.Services.SessionState.SavedAt
   commentId: P:Meridian.Ui.Services.SessionState.SavedAt
   id: SavedAt
@@ -323,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedAt
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 110
+    startLine: 106
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -352,11 +293,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveWorkspaceId
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 111
+    startLine: 107
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -367,6 +308,35 @@ items:
       type: System.String
     content.vb: Public Property ActiveWorkspaceId As String
   overload: Meridian.Ui.Services.SessionState.ActiveWorkspaceId*
+- uid: Meridian.Ui.Services.SessionState.WorkstationLayout
+  commentId: P:Meridian.Ui.Services.SessionState.WorkstationLayout
+  id: WorkstationLayout
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: WorkstationLayout
+  nameWithType: SessionState.WorkstationLayout
+  fullName: Meridian.Ui.Services.SessionState.WorkstationLayout
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkstationLayout
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public WorkstationLayoutState? WorkstationLayout { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.WorkstationLayoutState
+    content.vb: Public Property WorkstationLayout As WorkstationLayoutState
+  overload: Meridian.Ui.Services.SessionState.WorkstationLayout*
 references:
 - uid: Meridian.Ui.Services
   commentId: N:Meridian.Ui.Services
@@ -930,58 +900,6 @@ references:
   name: WindowBounds
   nameWithType: WindowBounds
   fullName: Meridian.Ui.Services.WindowBounds
-- uid: Meridian.Ui.Services.SessionState.WorkstationLayout*
-  commentId: Overload:Meridian.Ui.Services.SessionState.WorkstationLayout
-  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_WorkstationLayout
-  name: WorkstationLayout
-  nameWithType: SessionState.WorkstationLayout
-  fullName: Meridian.Ui.Services.SessionState.WorkstationLayout
-- uid: Meridian.Ui.Services.WorkstationLayoutState
-  commentId: T:Meridian.Ui.Services.WorkstationLayoutState
-  parent: Meridian.Ui.Services
-  href: Meridian.Ui.Services.WorkstationLayoutState.html
-  name: WorkstationLayoutState
-  nameWithType: WorkstationLayoutState
-  fullName: Meridian.Ui.Services.WorkstationLayoutState
-- uid: Meridian.Ui.Services.SessionState.SavedLayoutPresets*
-  commentId: Overload:Meridian.Ui.Services.SessionState.SavedLayoutPresets
-  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_SavedLayoutPresets
-  name: SavedLayoutPresets
-  nameWithType: SessionState.SavedLayoutPresets
-  fullName: Meridian.Ui.Services.SessionState.SavedLayoutPresets
-- uid: System.Collections.Generic.List{Meridian.Ui.Services.WorkspaceLayoutPreset}
-  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.WorkspaceLayoutPreset}
-  parent: System.Collections.Generic
-  definition: System.Collections.Generic.List`1
-  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  name: List<WorkspaceLayoutPreset>
-  nameWithType: List<WorkspaceLayoutPreset>
-  fullName: System.Collections.Generic.List<Meridian.Ui.Services.WorkspaceLayoutPreset>
-  nameWithType.vb: List(Of WorkspaceLayoutPreset)
-  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.WorkspaceLayoutPreset)
-  name.vb: List(Of WorkspaceLayoutPreset)
-  spec.csharp:
-  - uid: System.Collections.Generic.List`1
-    name: List
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  - name: <
-  - uid: Meridian.Ui.Services.WorkspaceLayoutPreset
-    name: WorkspaceLayoutPreset
-    href: Meridian.Ui.Services.WorkspaceLayoutPreset.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Collections.Generic.List`1
-    name: List
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.WorkspaceLayoutPreset
-    name: WorkspaceLayoutPreset
-    href: Meridian.Ui.Services.WorkspaceLayoutPreset.html
-  - name: )
 - uid: Meridian.Ui.Services.SessionState.SavedAt*
   commentId: Overload:Meridian.Ui.Services.SessionState.SavedAt
   href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_SavedAt
@@ -1005,3 +923,16 @@ references:
   name: ActiveWorkspaceId
   nameWithType: SessionState.ActiveWorkspaceId
   fullName: Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+- uid: Meridian.Ui.Services.SessionState.WorkstationLayout*
+  commentId: Overload:Meridian.Ui.Services.SessionState.WorkstationLayout
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_WorkstationLayout
+  name: WorkstationLayout
+  nameWithType: SessionState.WorkstationLayout
+  fullName: Meridian.Ui.Services.SessionState.WorkstationLayout
+- uid: Meridian.Ui.Services.WorkstationLayoutState
+  commentId: T:Meridian.Ui.Services.WorkstationLayoutState
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.WorkstationLayoutState.html
+  name: WorkstationLayoutState
+  nameWithType: WorkstationLayoutState
+  fullName: Meridian.Ui.Services.WorkstationLayoutState

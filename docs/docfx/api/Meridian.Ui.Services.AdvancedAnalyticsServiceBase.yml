@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdvancedAnalyticsServiceBase
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeGapsAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairGapsAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareProvidersAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyHistogramAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyStatisticsAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectAnomaliesAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityReportAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeCompletenessAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetThroughputAnalysisAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
@@ -405,7 +405,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsServiceBase.cs

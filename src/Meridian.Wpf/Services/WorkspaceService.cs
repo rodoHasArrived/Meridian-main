@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Threading;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using UiServices = Meridian.Ui.Services;
@@ -33,22 +34,82 @@ public sealed class WorkspaceService
     private readonly List<WorkspaceTemplate> _workspaces = new();
     private readonly Dictionary<string, SessionState> _sessionsByFundProfileId = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, WorkstationLayoutState> _workspaceLayouts = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Task _initialLoadTask;
+    private readonly SemaphoreSlim _stateGate = new(1, 1);
+    private bool _isInitialized;
 
     public static WorkspaceService Instance => _instance.Value;
 
     private WorkspaceService()
     {
-        _initialLoadTask = LoadWorkspacesAsync();
     }
 
-    public WorkspaceTemplate? ActiveWorkspace => _activeWorkspace;
-    public SessionState? LastSession => _lastSession;
-    public IReadOnlyList<WorkspaceTemplate> Workspaces => _workspaces.AsReadOnly();
+    public WorkspaceTemplate? ActiveWorkspace => WithStateLock(() => _activeWorkspace);
+    public SessionState? LastSession => WithStateLock(() => _lastSession);
+    public IReadOnlyList<WorkspaceTemplate> Workspaces => WithStateLock(() => _workspaces.ToList().AsReadOnly());
     public string? LastSelectedFundProfileId { get; private set; }
     public string? LastSelectedOperatingContextKey => LastSelectedFundProfileId;
 
-    private Task EnsureInitializedAsync() => _initialLoadTask;
+    private async Task EnsureInitializedAsync(CancellationToken ct = default)
+    {
+        if (_isInitialized)
+        {
+            return;
+        }
+
+        await LoadWorkspacesCoreAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task WithStateLockAsync(Func<Task> action, CancellationToken ct = default)
+    {
+        await _stateGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        finally
+        {
+            _stateGate.Release();
+        }
+    }
+
+    private async Task<T> WithStateLockAsync<T>(Func<Task<T>> action, CancellationToken ct = default)
+    {
+        await _stateGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await action().ConfigureAwait(false);
+        }
+        finally
+        {
+            _stateGate.Release();
+        }
+    }
+
+    private void WithStateLock(Action action)
+    {
+        _stateGate.Wait();
+        try
+        {
+            action();
+        }
+        finally
+        {
+            _stateGate.Release();
+        }
+    }
+
+    private T WithStateLock<T>(Func<T> action)
+    {
+        _stateGate.Wait();
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            _stateGate.Release();
+        }
+    }
 
     private static readonly IReadOnlyDictionary<string, string> LegacyWorkspaceIdMap =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -108,7 +169,10 @@ public sealed class WorkspaceService
         public Dictionary<string, string> DockLayouts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
-    public async Task LoadWorkspacesAsync(CancellationToken ct = default)
+    public Task LoadWorkspacesAsync(CancellationToken ct = default)
+        => WithStateLockAsync(() => LoadWorkspacesCoreAsync(ct), ct);
+
+    private async Task LoadWorkspacesCoreAsync(CancellationToken ct = default)
     {
         try
         {
@@ -181,15 +245,22 @@ public sealed class WorkspaceService
             var changed = EnsureBuiltInWorkspaces();
             if (changed || createdDefaults || migratedLegacyState)
             {
-                await SaveWorkspacesAsync();
+                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
             }
         }
         catch (Exception)
         {
         }
+        finally
+        {
+            _isInitialized = true;
+        }
     }
 
-    public async Task SaveWorkspacesAsync(CancellationToken ct = default)
+    public Task SaveWorkspacesAsync(CancellationToken ct = default)
+        => WithStateLockAsync(() => SaveWorkspacesCoreAsync(ct), ct);
+
+    private async Task SaveWorkspacesCoreAsync(CancellationToken ct = default)
     {
         try
         {
@@ -217,189 +288,194 @@ public sealed class WorkspaceService
         }
     }
 
-    public async Task<WorkspaceTemplate> CreateWorkspaceAsync(string name, string description, WorkspaceCategory category, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-
-        var workspace = new WorkspaceTemplate
+    public Task<WorkspaceTemplate> CreateWorkspaceAsync(string name, string description, WorkspaceCategory category, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
         {
-            Id = Guid.NewGuid().ToString(),
-            Name = name,
-            Description = description,
-            Category = category,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            Pages = new List<WorkspacePage>(),
-            WidgetLayout = new Dictionary<string, WidgetPosition>(),
-            Filters = new Dictionary<string, string>()
-        };
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-        _workspaces.Add(workspace);
-        await SaveWorkspacesAsync();
-
-        WorkspaceCreated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
-        return workspace;
-    }
-
-    public async Task UpdateWorkspaceAsync(WorkspaceTemplate workspace, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-
-        var existing = _workspaces.FirstOrDefault(w => w.Id == workspace.Id);
-        if (existing != null)
-        {
-            var index = _workspaces.IndexOf(existing);
-            workspace.UpdatedAt = DateTime.UtcNow;
-            _workspaces[index] = workspace;
-            await SaveWorkspacesAsync();
-
-            WorkspaceUpdated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
-        }
-    }
-
-    public async Task DeleteWorkspaceAsync(string workspaceId, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-
-        var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
-        if (workspace != null && !workspace.IsBuiltIn)
-        {
-            _workspaces.Remove(workspace);
-            await SaveWorkspacesAsync();
-
-            WorkspaceDeleted?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
-        }
-    }
-
-    public async Task ActivateWorkspaceAsync(string workspaceId, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-
-        var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
-        if (workspace != null)
-        {
-            var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
-            PersistActiveWorkspaceSnapshot();
-            _activeWorkspace = workspace;
-            workspace.LastActivatedAt = DateTime.UtcNow;
-            _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
-                ?? RestoreSessionForWorkspace(workspace, pendingSession);
-            await SaveWorkspacesAsync();
-
-            WorkspaceActivated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
-        }
-    }
-
-    public async Task<WorkspaceTemplate> CaptureCurrentStateAsync(string name, string description, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-
-        var workspace = new WorkspaceTemplate
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = name,
-            Description = description,
-            Category = WorkspaceCategory.Custom,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            PreferredPageTag = _lastSession?.ActivePageTag
-                ?? _activeWorkspace?.LastActivePageTag
-                ?? _activeWorkspace?.PreferredPageTag
-                ?? "Dashboard",
-            Pages = _lastSession?.OpenPages ?? new List<WorkspacePage>(),
-            WidgetLayout = _lastSession?.WidgetLayout ?? new Dictionary<string, WidgetPosition>(),
-            Filters = _lastSession?.ActiveFilters ?? new Dictionary<string, string>(),
-            WindowBounds = _lastSession?.WindowBounds
-        };
-
-        _workspaces.Add(workspace);
-        await SaveWorkspacesAsync();
-
-        return workspace;
-    }
-
-    public async Task SaveSessionStateAsync(SessionState state, string? fundProfileId = null, CancellationToken ct = default)
-    {
-        try
-        {
-            await EnsureInitializedAsync();
-            var resolvedWorkspace = ResolveWorkspaceForSession(state, state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
-            if (resolvedWorkspace is not null)
+            var workspace = new WorkspaceTemplate
             {
-                _activeWorkspace = resolvedWorkspace;
-                state.ActiveWorkspaceId = resolvedWorkspace.Id;
+                Id = Guid.NewGuid().ToString(),
+                Name = name,
+                Description = description,
+                Category = category,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Pages = new List<WorkspacePage>(),
+                WidgetLayout = new Dictionary<string, WidgetPosition>(),
+                Filters = new Dictionary<string, string>()
+            };
+
+            _workspaces.Add(workspace);
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+
+            WorkspaceCreated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+            return workspace;
+        }, ct);
+
+    public Task UpdateWorkspaceAsync(WorkspaceTemplate workspace, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+
+            var existing = _workspaces.FirstOrDefault(w => w.Id == workspace.Id);
+            if (existing != null)
+            {
+                var index = _workspaces.IndexOf(existing);
+                workspace.UpdatedAt = DateTime.UtcNow;
+                _workspaces[index] = workspace;
+                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+
+                WorkspaceUpdated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
             }
-            else
-            {
-                state.ActiveWorkspaceId = NormalizeWorkspaceId(state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
-            }
+        }, ct);
 
-            state.SavedAt = DateTime.UtcNow;
-            _lastSession = state;
-            var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-            if (!string.IsNullOrWhiteSpace(normalizedFundProfileId))
+    public Task DeleteWorkspaceAsync(string workspaceId, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+
+            var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
+            if (workspace != null && !workspace.IsBuiltIn)
             {
-                LastSelectedFundProfileId = normalizedFundProfileId;
-                foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+                _workspaces.Remove(workspace);
+                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+
+                WorkspaceDeleted?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+            }
+        }, ct);
+
+    public Task ActivateWorkspaceAsync(string workspaceId, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+
+            var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
+            if (workspace != null)
+            {
+                var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
+                PersistActiveWorkspaceSnapshot();
+                _activeWorkspace = workspace;
+                workspace.LastActivatedAt = DateTime.UtcNow;
+                _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
+                    ?? RestoreSessionForWorkspace(workspace, pendingSession);
+                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+
+                WorkspaceActivated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
+            }
+        }, ct);
+
+    public Task<WorkspaceTemplate> CaptureCurrentStateAsync(string name, string description, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+
+            var workspace = new WorkspaceTemplate
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = name,
+                Description = description,
+                Category = WorkspaceCategory.Custom,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                PreferredPageTag = _lastSession?.ActivePageTag
+                    ?? _activeWorkspace?.LastActivePageTag
+                    ?? _activeWorkspace?.PreferredPageTag
+                    ?? "Dashboard",
+                Pages = _lastSession?.OpenPages ?? new List<WorkspacePage>(),
+                WidgetLayout = _lastSession?.WidgetLayout ?? new Dictionary<string, WidgetPosition>(),
+                Filters = _lastSession?.ActiveFilters ?? new Dictionary<string, string>(),
+                WindowBounds = _lastSession?.WindowBounds
+            };
+
+            _workspaces.Add(workspace);
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+
+            return workspace;
+        }, ct);
+
+    public Task SaveSessionStateAsync(SessionState state, string? fundProfileId = null, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            try
+            {
+                await EnsureInitializedAsync(ct).ConfigureAwait(false);
+                var resolvedWorkspace = ResolveWorkspaceForSession(state, state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+                if (resolvedWorkspace is not null)
                 {
-                    _sessionsByFundProfileId[sessionScopeKey] = state;
+                    _activeWorkspace = resolvedWorkspace;
+                    state.ActiveWorkspaceId = resolvedWorkspace.Id;
                 }
+                else
+                {
+                    state.ActiveWorkspaceId = NormalizeWorkspaceId(state.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+                }
+
+                state.SavedAt = DateTime.UtcNow;
+                _lastSession = state;
+                var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+                if (!string.IsNullOrWhiteSpace(normalizedFundProfileId))
+                {
+                    LastSelectedFundProfileId = normalizedFundProfileId;
+                    foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+                    {
+                        _sessionsByFundProfileId[sessionScopeKey] = state;
+                    }
+                }
+
+                PersistActiveWorkspaceSnapshot();
+                await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
             }
+            catch (Exception)
+            {
+            }
+        }, ct);
 
-            PersistActiveWorkspaceSnapshot();
-            await SaveWorkspacesAsync();
-        }
-        catch (Exception)
-        {
-        }
-    }
-
-    public SessionState? GetLastSessionState()
-    {
-        return _lastSession;
-    }
+    public SessionState? GetLastSessionState() => WithStateLock(() => _lastSession);
 
     public SessionState? GetLastSessionState(string? fundProfileId)
-    {
-        var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        if (string.IsNullOrWhiteSpace(normalizedFundProfileId))
+        => WithStateLock(() =>
         {
-            if (_lastSession is not null)
+            var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+            if (string.IsNullOrWhiteSpace(normalizedFundProfileId))
             {
-                NormalizeSessionState(_lastSession, _lastSession.ActiveWorkspaceId ?? _activeWorkspace?.Id);
-            }
-
-            return _lastSession;
-        }
-
-        foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
-        {
-            if (_sessionsByFundProfileId.TryGetValue(sessionScopeKey, out var session))
-            {
-                NormalizeSessionState(session, session.ActiveWorkspaceId ?? _activeWorkspace?.Id);
-                _lastSession = session;
-                LastSelectedFundProfileId = normalizedFundProfileId;
-
-                foreach (var equivalentKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+                if (_lastSession is not null)
                 {
-                    _sessionsByFundProfileId[equivalentKey] = session;
+                    NormalizeSessionState(_lastSession, _lastSession.ActiveWorkspaceId ?? _activeWorkspace?.Id);
                 }
 
-                return session;
+                return _lastSession;
             }
-        }
 
-        _lastSession = new SessionState();
-        LastSelectedFundProfileId = normalizedFundProfileId;
-        return null;
-    }
+            foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+            {
+                if (_sessionsByFundProfileId.TryGetValue(sessionScopeKey, out var session))
+                {
+                    NormalizeSessionState(session, session.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+                    _lastSession = session;
+                    LastSelectedFundProfileId = normalizedFundProfileId;
 
-    public async Task SetLastSelectedFundProfileIdAsync(string? fundProfileId, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-        LastSelectedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        await SaveWorkspacesAsync(ct).ConfigureAwait(false);
-    }
+                    foreach (var equivalentKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+                    {
+                        _sessionsByFundProfileId[equivalentKey] = session;
+                    }
+
+                    return session;
+                }
+            }
+
+            _lastSession = new SessionState();
+            LastSelectedFundProfileId = normalizedFundProfileId;
+            return null;
+        });
+
+    public Task SetLastSelectedFundProfileIdAsync(string? fundProfileId, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+            LastSelectedFundProfileId = NormalizeFundProfileId(fundProfileId);
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+        }, ct);
 
     public Task SetLastSelectedOperatingContextKeyAsync(string? operatingContextKey, CancellationToken ct = default)
         => SetLastSelectedFundProfileIdAsync(operatingContextKey, ct);
@@ -414,64 +490,75 @@ public sealed class WorkspaceService
     /// Passing <see langword="null"/> as <paramref name="value"/> removes the entry.
     /// </summary>
     public void UpdatePageFilterState(string pageTag, string filterKey, string? value)
-    {
-        _lastSession ??= new SessionState();
-        var key = $"{pageTag}.{filterKey}";
-        if (value is null)
-            _lastSession.ActiveFilters.Remove(key);
-        else
-            _lastSession.ActiveFilters[key] = value;
-    }
+        => WithStateLock(() =>
+        {
+            _lastSession ??= new SessionState();
+            var key = $"{pageTag}.{filterKey}";
+            if (value is null)
+            {
+                _lastSession.ActiveFilters.Remove(key);
+            }
+            else
+            {
+                _lastSession.ActiveFilters[key] = value;
+            }
+        });
 
     /// <summary>
     /// Retrieves a previously saved filter value for a page from the active session.
     /// Returns <see langword="null"/> when no value has been stored.
     /// </summary>
     public string? GetPageFilterState(string pageTag, string filterKey)
-    {
-        if (_lastSession is null) return null;
-        var key = $"{pageTag}.{filterKey}";
-        return _lastSession.ActiveFilters.TryGetValue(key, out var value) ? value : null;
-    }
-
-    public async Task<string> ExportWorkspaceAsync(string workspaceId)
-    {
-        await EnsureInitializedAsync();
-
-        var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
-        if (workspace != null)
+        => WithStateLock(() =>
         {
-            return JsonSerializer.Serialize(workspace, UiServices.DesktopJsonOptions.PrettyPrint);
-        }
-        return string.Empty;
-    }
-
-    public async Task<WorkspaceTemplate?> ImportWorkspaceAsync(string json, CancellationToken ct = default)
-    {
-        try
-        {
-            await EnsureInitializedAsync();
-
-            var workspace = JsonSerializer.Deserialize<WorkspaceTemplate>(json);
-            if (workspace != null)
+            if (_lastSession is null)
             {
-                workspace.Id = Guid.NewGuid().ToString();
-                workspace.IsBuiltIn = false;
-                workspace.CreatedAt = DateTime.UtcNow;
-                workspace.UpdatedAt = DateTime.UtcNow;
-                workspace.PreferredPageTag = ResolvePreferredPageTag(workspace);
-
-                _workspaces.Add(workspace);
-                await SaveWorkspacesAsync();
-
-                return workspace;
+                return null;
             }
-        }
-        catch (Exception)
+
+            var key = $"{pageTag}.{filterKey}";
+            return _lastSession.ActiveFilters.TryGetValue(key, out var value) ? value : null;
+        });
+
+    public Task<string> ExportWorkspaceAsync(string workspaceId)
+        => WithStateLockAsync(async () =>
         {
-        }
-        return null;
-    }
+            await EnsureInitializedAsync().ConfigureAwait(false);
+
+            var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
+            return workspace != null
+                ? JsonSerializer.Serialize(workspace, UiServices.DesktopJsonOptions.PrettyPrint)
+                : string.Empty;
+        });
+
+    public Task<WorkspaceTemplate?> ImportWorkspaceAsync(string json, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            try
+            {
+                await EnsureInitializedAsync(ct).ConfigureAwait(false);
+
+                var workspace = JsonSerializer.Deserialize<WorkspaceTemplate>(json);
+                if (workspace != null)
+                {
+                    workspace.Id = Guid.NewGuid().ToString();
+                    workspace.IsBuiltIn = false;
+                    workspace.CreatedAt = DateTime.UtcNow;
+                    workspace.UpdatedAt = DateTime.UtcNow;
+                    workspace.PreferredPageTag = ResolvePreferredPageTag(workspace);
+
+                    _workspaces.Add(workspace);
+                    await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+
+                    return workspace;
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return null;
+        }, ct);
 
     private static List<WorkspaceTemplate> GetDefaultWorkspaces()
     {
@@ -844,15 +931,21 @@ public sealed class WorkspaceService
     }
 
     internal void ResetForTests()
-    {
-        _activeWorkspace = null;
-        _lastSession = null;
-        LastSelectedFundProfileId = null;
-        _sessionsByFundProfileId.Clear();
-        _workspaces.Clear();
-        _dockLayouts.Clear();
-        _workspaceLayouts.Clear();
-    }
+        => WithStateLock(() =>
+        {
+            _isInitialized = false;
+            _activeWorkspace = null;
+            _lastSession = null;
+            LastSelectedFundProfileId = null;
+            _sessionsByFundProfileId.Clear();
+            _workspaces.Clear();
+            _dockLayouts.Clear();
+            _workspaceLayouts.Clear();
+            WorkspaceCreated = null;
+            WorkspaceUpdated = null;
+            WorkspaceDeleted = null;
+            WorkspaceActivated = null;
+        });
 
     private static void MergeMissingPages(WorkspaceTemplate workspace, IEnumerable<WorkspacePage> builtInPages)
     {
@@ -1134,48 +1227,50 @@ public sealed class WorkspaceService
     /// Persists the AvalonDock layout XML string for a named workspace shell
     /// (e.g., "trading" or "research") to the local application settings file.
     /// </summary>
-    public async Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
+    public Task SaveDockLayoutAsync(string workspaceId, string layoutXml, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-        _dockLayouts[workspaceId] = layoutXml;
+            _dockLayouts[workspaceId] = layoutXml;
 
-        await SaveWorkspacesAsync(ct);
-    }
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+        }, ct);
 
     /// <summary>
     /// Retrieves the previously persisted AvalonDock layout XML for a workspace shell.
     /// Returns <c>null</c> if no layout has been saved yet.
     /// </summary>
-    public async Task<string?> GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default)
-    {
-        await EnsureInitializedAsync();
-        var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
-        if (_dockLayouts.TryGetValue(layoutKey, out var xml))
+    public Task<string?> GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default)
+        => WithStateLockAsync(async () =>
         {
-            return xml;
-        }
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
+            var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
+            if (_dockLayouts.TryGetValue(layoutKey, out var xml))
+            {
+                return xml;
+            }
 
-        if (!string.Equals(layoutKey, workspaceId, StringComparison.OrdinalIgnoreCase) &&
-            _dockLayouts.TryGetValue(workspaceId, out xml))
-        {
-            return xml;
-        }
+            if (!string.Equals(layoutKey, workspaceId, StringComparison.OrdinalIgnoreCase) &&
+                _dockLayouts.TryGetValue(workspaceId, out xml))
+            {
+                return xml;
+            }
 
-        if (_workspaceLayouts.TryGetValue(layoutKey, out var layoutState))
-        {
-            return layoutState.DockLayoutXml;
-        }
+            if (_workspaceLayouts.TryGetValue(layoutKey, out var layoutState))
+            {
+                return layoutState.DockLayoutXml;
+            }
 
-        if (_activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null)
-        {
-            return _lastSession.WorkstationLayout.DockLayoutXml;
-        }
+            if (_activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null)
+            {
+                return _lastSession.WorkstationLayout.DockLayoutXml;
+            }
 
-        return null;
-    }
+            return null;
+        }, ct);
 
-    public async Task SaveWorkspaceLayoutStateAsync(
+    public Task SaveWorkspaceLayoutStateAsync(
         string workspaceId,
         WorkstationLayoutState layoutState,
         string? fundProfileId = null,
@@ -1184,26 +1279,29 @@ public sealed class WorkspaceService
         ArgumentException.ThrowIfNullOrWhiteSpace(workspaceId);
         ArgumentNullException.ThrowIfNull(layoutState);
 
-        await EnsureInitializedAsync();
-
-        var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
-        var clonedLayout = CloneWorkstationLayoutState(layoutState);
-        clonedLayout.SavedAt = DateTime.UtcNow;
-        _workspaceLayouts[layoutKey] = clonedLayout;
-
-        if (!string.IsNullOrWhiteSpace(clonedLayout.DockLayoutXml))
+        return WithStateLockAsync(async () =>
         {
-            _dockLayouts[layoutKey] = clonedLayout.DockLayoutXml!;
-        }
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-        if (_activeWorkspace?.Id == workspaceId)
-        {
-            _lastSession ??= new SessionState();
-            _lastSession.WorkstationLayout = CloneWorkstationLayoutState(clonedLayout);
-        }
+            var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
+            var clonedLayout = CloneWorkstationLayoutState(layoutState);
+            clonedLayout.SavedAt = DateTime.UtcNow;
+            _workspaceLayouts[layoutKey] = clonedLayout;
 
-        PersistActiveWorkspaceSnapshot();
-        await SaveWorkspacesAsync(ct);
+            if (!string.IsNullOrWhiteSpace(clonedLayout.DockLayoutXml))
+            {
+                _dockLayouts[layoutKey] = clonedLayout.DockLayoutXml!;
+            }
+
+            if (_activeWorkspace?.Id == workspaceId)
+            {
+                _lastSession ??= new SessionState();
+                _lastSession.WorkstationLayout = CloneWorkstationLayoutState(clonedLayout);
+            }
+
+            PersistActiveWorkspaceSnapshot();
+            await SaveWorkspacesCoreAsync(ct).ConfigureAwait(false);
+        }, ct);
     }
 
     public Task SaveWorkspaceLayoutStateForContextAsync(
@@ -1213,21 +1311,24 @@ public sealed class WorkspaceService
         CancellationToken ct = default)
         => SaveWorkspaceLayoutStateAsync(workspaceId, layoutState, operatingContextKey, ct);
 
-    public async Task<WorkstationLayoutState?> GetWorkspaceLayoutStateAsync(
+    public Task<WorkstationLayoutState?> GetWorkspaceLayoutStateAsync(
         string workspaceId,
         string? fundProfileId = null,
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(workspaceId);
 
-        await EnsureInitializedAsync();
+        return WithStateLockAsync(async () =>
+        {
+            await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-        var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
-        return _workspaceLayouts.TryGetValue(layoutKey, out var layoutState)
-            ? CloneWorkstationLayoutState(layoutState)
-            : _activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null
-                ? CloneWorkstationLayoutState(_lastSession.WorkstationLayout)
-            : null;
+            var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
+            return _workspaceLayouts.TryGetValue(layoutKey, out var layoutState)
+                ? CloneWorkstationLayoutState(layoutState)
+                : _activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null
+                    ? CloneWorkstationLayoutState(_lastSession.WorkstationLayout)
+                    : null;
+        }, ct);
     }
 
     public Task<WorkstationLayoutState?> GetWorkspaceLayoutStateForContextAsync(

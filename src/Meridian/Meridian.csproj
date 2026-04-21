@@ -36,14 +36,6 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
-    <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
     <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
   </PropertyGroup>

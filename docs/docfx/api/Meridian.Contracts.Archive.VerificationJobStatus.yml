@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationJobStatus
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs

@@ -1,90 +1,113 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-04-08
-**Status:** Repo-grounded opportunity scan aligned to the canonical April 8 roadmap refresh
+**Last Updated:** 2026-04-17
+**Status:** Repo-grounded opportunity scan aligned to the 2026-04-17 canonical roadmap refresh and the 2026-04-16 feature inventory snapshot
 
-This document turns the current repository state into the next opportunity order. The order here matches [`ROADMAP.md`](ROADMAP.md) exactly and uses the same core operator-readiness model.
+This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
+
+Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVENTORY.md), [`IMPROVEMENTS.md`](IMPROVEMENTS.md), and [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md).
 
 ---
 
 ## Snapshot
 
-Meridian has crossed an important threshold: the repo already contains meaningful workstation flows in web and WPF, shared run / portfolio / ledger read models, promotion seams, a delivered Security Master baseline, reconciliation seams, and a strong data and storage foundation. The best opportunities now are the ones that remove ambiguity, close trust gaps, and turn already-implemented seams into dependable operator workflows.
+Meridian's best opportunities are no longer broad platform-build items. The repo already shows a strong ingestion, storage, replay, export, execution, workstation, and Security Master baseline, plus concrete shared run, portfolio, ledger, and promotion seams. The highest-value opportunities now are the ones that remove trust ambiguity, harden operator workflows already in code, and keep the desktop shell consolidation tied to the same shared workflow model instead of drifting into a parallel UX program.
+
+The current planning set is also more mature than the prior April 8 scan. As of 2026-04-17 and 2026-04-16:
+
+- the canonical roadmap treats Waves 1-4 as the core operator-readiness path
+- the six-week plan narrows execution to provider confidence, paper-trading hardening, shared-model continuity, and the first deeper governance slices
+- the feature inventory and improvement tracker show that shell-first WPF consolidation, shared workstation endpoints, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
+
+That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
 
 ---
 
-## Opportunity Order
+## Top Opportunities
 
-### 1. Wave 1: Provider confidence and checkpoint evidence
-
-- **Category:** provider readiness
-- **Gap:** Provider breadth is strong, but replay, runtime, auth, and checkpoint proof are still uneven across Polygon, Interactive Brokers, StockSharp, NYSE, and other under-validated paths.
-- **User or operator value:** Operators can trust research, replay, and promotion decisions only when provider claims are backed by concrete evidence.
-- **Dependency it unlocks:** Clean Wave 1 gates for cockpit hardening and later live-readiness work.
-- **Placement:** Wave 1, critical path.
-
-### 2. Wave 2: Paper-trading cockpit hardening
+### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
 - **Category:** workflow completion
-- **Gap:** The web trading cockpit has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs tighter acceptance criteria and stronger hardening.
-- **User or operator value:** This turns a featureful cockpit into a dependable operating surface rather than an impressive demo path.
-- **Dependency it unlocks:** Credible `Backtest -> Paper` workflow continuity and safer future live-readiness work.
-- **Placement:** Wave 2, critical path.
+- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, and promotion seams, but the paper workflow still needs clearer daily-use acceptance criteria, stronger audit visibility, and tighter behavior around persistence and replay recovery.
+- **User or operator value:** This converts Meridian from "paper trading is present" to "paper trading can be operated confidently."
+- **Dependency it unlocks:** A credible `Backtest -> Paper` story and a safer foundation for any later `Paper -> Live` gate design.
+- **Placement:** Critical path, Wave 2.
 
-### 3. Wave 3: Shared run / portfolio / ledger continuity
+### 2. Make the shared run / portfolio / ledger model feel like one cross-workspace product
 
 - **Category:** workflow completion
-- **Gap:** Shared `StrategyRun`, portfolio, and ledger services exist, but not every workspace uses them with equal depth yet.
-- **User or operator value:** One run-centered model makes research, trading, portfolio, ledger, cash-flow, and governance behavior easier to follow and trust.
-- **Dependency it unlocks:** Cleaner cross-workspace UX and less duplicated orchestration logic.
-- **Placement:** Wave 3, critical path.
+- **Gap:** `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, shared workstation endpoints, and promotion services are all in the repo, but the product experience built on top of them is still uneven across `Research`, `Trading`, `Data Operations`, and `Governance`.
+- **User or operator value:** A single run-centered model makes attribution, fills, positions, ledger, cash-flow, and reconciliation easier to follow and trust.
+- **Dependency it unlocks:** Cleaner workstation continuity, less duplicated orchestration, and a more stable base for both WPF shell consolidation and governance productization.
+- **Placement:** Critical path, Wave 3.
 
-### 4. Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
+### 3. Productize governance and fund operations on top of the delivered Security Master baseline
 
 - **Category:** flagship product capabilities
-- **Gap:** Security Master is already the authoritative delivered baseline, but the workflows built on top of it still need account/entity, multi-ledger, cash-flow, reconciliation, and reporting depth.
-- **User or operator value:** Instrument identity, classification, and economic-definition trust can now be turned into broader governance and fund-operations reliability.
-- **Dependency it unlocks:** Better reconciliation quality, cleaner governed outputs, and a credible front-, middle-, and back-office story.
-- **Placement:** Wave 4, near-term strategic wave.
+- **Gap:** Security Master is already the authoritative instrument-definition seam, and governance-facing APIs and workstation surfaces exist, but the next real product layer still needs deeper account/entity structure, multi-ledger, cash-flow, reconciliation, and governed-output workflows.
+- **User or operator value:** This extends Meridian from trading-workstation credibility into front-, middle-, and back-office continuity built on one shared instrument and record model.
+- **Dependency it unlocks:** Better reconciliations, stronger governed outputs, and a clearer fund-operations product story.
+- **Placement:** Near-term strategic wave, Wave 4.
 
-### 5. Wave 5: Backtest Studio unification
+### 4. Keep the closed Wave 1 trust gate synchronized
 
-- **Category:** research workflow depth
-- **Gap:** Native and Lean results are both present, but they still behave like adjacent tools instead of one Backtest Studio experience.
-- **User or operator value:** One coherent backtest workflow makes engine choice, comparison, and promotion review easier to understand.
-- **Dependency it unlocks:** Cleaner research ergonomics after the shared model is stable enough to support it.
-- **Placement:** Wave 5, after the core operator-readiness path.
+- **Category:** provider readiness
+- **Gap:** The active Wave 1 gate is now repo-closed, but it still depends on keeping the matrix, roadmap, runtime artifacts, and validation script aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
+- **User or operator value:** Later cockpit, governance, and live-readiness claims stay credible when the trust gate remains explicit and reproducible.
+- **Dependency it unlocks:** It preserves the evidence boundary that all later waves depend on.
+- **Placement:** Supporting maintenance track that underpins Waves 2-4.
 
-### 6. Wave 6: Live integration readiness
+### 5. Validate the current WPF shell direction as workflow support, not a separate program
 
-- **Category:** live-readiness expansion
-- **Gap:** Live-facing seams exist, but they should not be described as broadly ready until provider trust, paper workflow, and shared-model gates are materially closed.
-- **User or operator value:** A measured live-readiness story is safer and more credible than a feature-count claim.
-- **Dependency it unlocks:** A controlled, evidence-backed live integration narrative.
-- **Placement:** Wave 6, after Waves 1-5.
+- **Category:** operator UX
+- **Gap:** The repo now clearly contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, and `MainPageViewModel`-anchored orchestration, but that progress still needs to be judged by whether it improves active Wave 2-4 workflows rather than by shell surface area alone.
+- **User or operator value:** Operators benefit when the desktop shell clarifies high-traffic tasks and preserves trust-state cues instead of becoming a second workstation model.
+- **Dependency it unlocks:** Confident desktop consolidation that reinforces the same run-centered and governance-centered seams already used elsewhere.
+- **Placement:** Supporting track inside Waves 2-4, not an independent roadmap wave.
 
-### 7. Optional advanced research / scale tracks
+### 6. Unify native and Lean backtesting only after the shared model is stable enough
 
-- **Category:** advanced differentiation
-- **Gap:** Deeper QuantScript workflow integration, queue-aware simulation, multi-instance coordination, and Phase 16 performance work all remain valuable but are not required for the core workstation product to feel finished.
-- **User or operator value:** These tracks improve Meridian's ceiling once the core product story is already trustworthy and coherent.
-- **Dependency it unlocks:** Longer-horizon differentiation rather than near-term operator-readiness.
-- **Placement:** Optional follow-on work.
+- **Category:** flagship product capabilities
+- **Gap:** Native and Lean workflows both exist, but unifying them into one Backtest Studio still depends on stronger run continuity, comparison depth, and operator trust in the active workstation model.
+- **User or operator value:** One backtesting experience reduces engine-specific mental overhead and makes review, comparison, and promotion easier.
+- **Dependency it unlocks:** A stronger research workflow after the core operator path is already coherent.
+- **Placement:** Later wave, Wave 5.
+
+### 7. Keep live integration readiness explicit and tightly bounded
+
+- **Category:** reliability and observability
+- **Gap:** Live-facing seams are present, but broader live-readiness language would still outrun provider evidence, paper-trading hardening, and controlled approval/audit flows.
+- **User or operator value:** A measured live story protects operator trust better than broad readiness claims.
+- **Dependency it unlocks:** A controlled, evidence-backed brokerage-readiness narrative.
+- **Placement:** Later wave, Wave 6.
+
+### 8. Defer advanced research and scale tracks until the core workstation is trustworthy
+
+- **Category:** architecture simplification
+- **Gap:** QuantScript expansion, queue-aware simulation, multi-instance coordination, and later performance work may all matter, but they do not close the current product-readiness gap.
+- **User or operator value:** Focus stays on the workflows operators actually need to trust first.
+- **Dependency it unlocks:** Cleaner prioritization and less roadmap sprawl.
+- **Placement:** Optional track after Waves 1-6 core sequencing.
 
 ---
 
-## Delivery Discipline Across Waves 1-4
+## Why These Matter Now
 
-- keep WPF and workstation cleanup work reinforcing shared read models and workflow services rather than recreating page-local logic
-- pull testing and validation forward whenever workstation or governance surfaces expand
-- keep Security Master framed as the delivered baseline and move open work to governance/product-depth follow-ons
-- keep roadmap, status, and six-week planning docs synchronized so provider and readiness language does not drift
+The current repo state shows a product that is beyond foundations but not yet beyond proof. The opportunity order therefore should optimize for four things:
+
+1. remove ambiguity in what Meridian can responsibly claim today
+2. harden workflows operators can already see and exercise
+3. keep shared read models and Security Master as the center of gravity
+4. avoid splitting web, WPF, governance, and research work into parallel subsystems
+
+That is why Wave 2 cockpit hardening now outranks additional surface expansion, while the closed Wave 1 trust gate should still be treated as the evidence boundary for the core product path.
 
 ---
 
-## Next Steps
+## Recommended Next Steps
 
-1. Treat Wave 1 provider confidence, Wave 2 cockpit hardening, and Wave 3 shared-model continuity as the active critical path.
-2. Use the delivered Security Master baseline as the base for Wave 4 governance productization instead of describing it as a future foundation seam.
-3. Keep Wave 5, Wave 6, and optional advanced research / scale tracks explicitly deferred until the Wave 1-4 core operator-readiness path is materially closed.
-4. Keep contradictions out of the planning set by checking retained completion claims against repo evidence before widening roadmap language.
+1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, evidence artifacts, and repo tests treated as the source of truth.
+2. Define the paper-trading cockpit in operator terms: session persistence, replay confidence, audit trail visibility, and promotion review should be the acceptance center, not additional page count.
+3. Use shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work.
+4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths.
+5. Keep Wave 5, Wave 6, and optional advanced tracks explicitly deferred until the Wave 2-4 operator-readiness path is materially closed on top of the preserved Wave 1 gate.

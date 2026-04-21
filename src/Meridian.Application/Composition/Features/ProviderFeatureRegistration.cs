@@ -176,16 +176,6 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
                 reconnectionMetrics: reconnMetrics);
         });
 
-        registry.RegisterStreamingFactory("stocksharp", () =>
-        {
-            var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
-            var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
-            var quoteCollector = sp.GetRequiredService<QuoteCollector>();
-            return new Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient(
-                tradeCollector, depthCollector, quoteCollector,
-                config.StockSharp ?? new StockSharpConfig());
-        });
-
         registry.RegisterStreamingFactory("nyse", () =>
         {
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();

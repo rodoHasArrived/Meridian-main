@@ -16,15 +16,23 @@ public sealed class BacktestToLivePromoter
     /// </summary>
     public bool MeetsPromotionThresholds(BacktestResult result, PromotionCriteria criteria)
     {
+        var decision = EvaluatePromotionThresholds(result, criteria);
+        return decision.Eligible;
+    }
+
+    /// <summary>
+    /// Returns the typed promotion threshold decision from the F# policy kernel.
+    /// </summary>
+    public Interop.PromotionDecisionDto EvaluatePromotionThresholds(BacktestResult result, PromotionCriteria criteria)
+    {
         ArgumentNullException.ThrowIfNull(result);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var decision = Interop.PromotionInterop.EvaluateBacktestPromotion(
+        return Interop.PromotionInterop.EvaluateBacktestPromotion(
             result,
             criteria.MinSharpeRatio,
             criteria.MaxAllowedDrawdownPercent,
             criteria.MinTotalReturn);
-        return decision.Eligible;
     }
 
     /// <summary>

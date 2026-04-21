@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertDispatcher
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Publish
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishAsync
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentAlerts
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs

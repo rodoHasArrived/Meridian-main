@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeaseAcquireResult
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Acquired
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakenOver
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lease
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentOwner
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentExpiryUtc
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/LeaseAcquireResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Application/Coordination/LeaseAcquireResult.cs

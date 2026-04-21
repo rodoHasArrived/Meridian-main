@@ -40,8 +40,6 @@ public readonly struct ProviderId : IEquatable<ProviderId>, IComparable<Provider
     public static readonly ProviderId InteractiveBrokers = new("ib");
     /// <summary>NYSE direct-feed provider.</summary>
     public static readonly ProviderId Nyse = new("nyse");
-    /// <summary>StockSharp multi-connector provider.</summary>
-    public static readonly ProviderId StockSharp = new("stocksharp");
     /// <summary>Stooq free end-of-day historical provider.</summary>
     public static readonly ProviderId Stooq = new("stooq");
     /// <summary>Tiingo free daily historical provider.</summary>

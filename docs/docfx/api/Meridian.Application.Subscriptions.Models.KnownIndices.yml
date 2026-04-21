@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KnownIndices
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SP500
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nasdaq100
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DowJones
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Russell2000
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SP400
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/IndexComponents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
     path: ../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs

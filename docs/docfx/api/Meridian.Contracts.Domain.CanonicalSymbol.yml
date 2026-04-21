@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbol
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Explicit
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHashCode
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareTo
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -363,7 +363,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -395,7 +395,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Equality
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs
@@ -434,7 +434,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/CanonicalSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Inequality
     path: ../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs

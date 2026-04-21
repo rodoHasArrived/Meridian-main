@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IExecutionGateway
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
@@ -301,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
     path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs

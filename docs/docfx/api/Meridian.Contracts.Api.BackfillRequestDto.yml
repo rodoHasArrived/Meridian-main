@@ -5,8 +5,9 @@ items:
   id: BackfillRequestDto
   parent: Meridian.Contracts.Api
   children:
-  - Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  - Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.String)
   - Meridian.Contracts.Api.BackfillRequestDto.From
+  - Meridian.Contracts.Api.BackfillRequestDto.Granularity
   - Meridian.Contracts.Api.BackfillRequestDto.Provider
   - Meridian.Contracts.Api.BackfillRequestDto.Symbols
   - Meridian.Contracts.Api.BackfillRequestDto.To
@@ -20,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillRequestDto
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -45,21 +46,21 @@ items:
   - System.Object.MemberwiseClone
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
-  commentId: M:Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
-  id: '#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})'
+- uid: Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.String)
+  commentId: M:Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.String)
+  id: '#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.String)'
   parent: Meridian.Contracts.Api.BackfillRequestDto
   langs:
   - csharp
   - vb
-  name: BackfillRequestDto(string?, string[], DateOnly?, DateOnly?)
-  nameWithType: BackfillRequestDto.BackfillRequestDto(string?, string[], DateOnly?, DateOnly?)
-  fullName: Meridian.Contracts.Api.BackfillRequestDto.BackfillRequestDto(string?, string[], System.DateOnly?, System.DateOnly?)
+  name: BackfillRequestDto(string?, string[], DateOnly?, DateOnly?, string?)
+  nameWithType: BackfillRequestDto.BackfillRequestDto(string?, string[], DateOnly?, DateOnly?, string?)
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.BackfillRequestDto(string?, string[], System.DateOnly?, System.DateOnly?, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -70,7 +71,7 @@ items:
   summary: Request to run a backfill operation.
   example: []
   syntax:
-    content: public BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To)
+    content: public BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null)
     parameters:
     - id: Provider
       type: System.String
@@ -80,11 +81,13 @@ items:
       type: System.Nullable{System.DateOnly}
     - id: To
       type: System.Nullable{System.DateOnly}
-    content.vb: Public Sub New(Provider As String, Symbols As String(), From As DateOnly?, [To] As DateOnly?)
+    - id: Granularity
+      type: System.String
+    content.vb: Public Sub New(Provider As String, Symbols As String(), From As DateOnly?, [To] As DateOnly?, Granularity As String = Nothing)
   overload: Meridian.Contracts.Api.BackfillRequestDto.#ctor*
-  nameWithType.vb: BackfillRequestDto.New(String, String(), DateOnly?, DateOnly?)
-  fullName.vb: Meridian.Contracts.Api.BackfillRequestDto.New(String, String(), System.DateOnly?, System.DateOnly?)
-  name.vb: New(String, String(), DateOnly?, DateOnly?)
+  nameWithType.vb: BackfillRequestDto.New(String, String(), DateOnly?, DateOnly?, String)
+  fullName.vb: Meridian.Contracts.Api.BackfillRequestDto.New(String, String(), System.DateOnly?, System.DateOnly?, String)
+  name.vb: New(String, String(), DateOnly?, DateOnly?, String)
 - uid: Meridian.Contracts.Api.BackfillRequestDto.Provider
   commentId: P:Meridian.Contracts.Api.BackfillRequestDto.Provider
   id: Provider
@@ -99,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -128,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -157,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -186,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -201,6 +204,35 @@ items:
       type: System.Nullable{System.DateOnly}
     content.vb: Public Property [To] As DateOnly?
   overload: Meridian.Contracts.Api.BackfillRequestDto.To*
+- uid: Meridian.Contracts.Api.BackfillRequestDto.Granularity
+  commentId: P:Meridian.Contracts.Api.BackfillRequestDto.Granularity
+  id: Granularity
+  parent: Meridian.Contracts.Api.BackfillRequestDto
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: BackfillRequestDto.Granularity
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Granularity { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Granularity As String
+  overload: Meridian.Contracts.Api.BackfillRequestDto.Granularity*
 references:
 - uid: Meridian.Contracts.Api
   commentId: N:Meridian.Contracts.Api
@@ -532,7 +564,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Api.BackfillRequestDto.#ctor*
   commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.#ctor
-  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto__ctor_System_String_System_String___System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto__ctor_System_String_System_String___System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_String_
   name: BackfillRequestDto
   nameWithType: BackfillRequestDto.BackfillRequestDto
   fullName: Meridian.Contracts.Api.BackfillRequestDto.BackfillRequestDto
@@ -645,3 +677,9 @@ references:
   name: To
   nameWithType: BackfillRequestDto.To
   fullName: Meridian.Contracts.Api.BackfillRequestDto.To
+- uid: Meridian.Contracts.Api.BackfillRequestDto.Granularity*
+  commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.Granularity
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto_Granularity
+  name: Granularity
+  nameWithType: BackfillRequestDto.Granularity
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.Granularity

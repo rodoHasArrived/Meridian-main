@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionAuditTrailOptions
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootDirectory
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InMemoryRetention
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncMode
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalDirectory
     path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs

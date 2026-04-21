@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DualPathEventPipeline
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublishTrade
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublishQuote
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsUnderPressure
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -363,7 +363,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -399,7 +399,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotTradePublished
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotTradeDropped
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -461,7 +461,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotTradeConsumed
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -492,7 +492,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotQuotePublished
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -523,7 +523,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotQuoteDropped
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -554,7 +554,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotQuoteConsumed
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -585,7 +585,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeBufferCount
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -616,7 +616,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteBufferCount
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
@@ -647,7 +647,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs

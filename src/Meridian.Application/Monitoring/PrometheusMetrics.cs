@@ -362,6 +362,46 @@ public static class PrometheusMetrics
             Buckets = new double[] { 1, 10, 50, 100, 500, 1000, 5000, 10000, 50000 }
         });
 
+    // Kernel quality and trustworthiness metrics
+    private static readonly Histogram KernelExecutionLatencyMs = Prometheus.Metrics.CreateHistogram(
+        "mdc_kernel_execution_latency_milliseconds",
+        "Kernel execution latency in milliseconds by domain",
+        new HistogramConfiguration
+        {
+            LabelNames = new[] { "domain" },
+            Buckets = new double[] { 0.1, 0.5, 1, 2, 5, 10, 25, 50, 100, 250, 500, 1000 }
+        });
+
+    private static readonly Counter KernelExecutionsTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_kernel_executions_total",
+        "Total kernel executions by domain",
+        new CounterConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Counter KernelDeterminismChecksTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_kernel_determinism_checks_total",
+        "Total kernel determinism checks by domain and outcome",
+        new CounterConfiguration { LabelNames = new[] { "domain", "outcome" } });
+
+    private static readonly Gauge KernelReasonCoveragePercent = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_reason_code_coverage_percent",
+        "Percentage of kernel outputs with structured reason codes by domain",
+        new GaugeConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Gauge KernelDriftScore = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_drift_score",
+        "Distribution-shift drift score by domain and metric",
+        new GaugeConfiguration { LabelNames = new[] { "domain", "metric" } });
+
+    private static readonly Gauge KernelCriticalSeverityRate = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_critical_severity_rate",
+        "Current critical-severity rate (0-1) by domain",
+        new GaugeConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Counter KernelCriticalSeverityJumpAlertsTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_kernel_critical_severity_jump_alerts_total",
+        "Total alerts raised for sudden jumps in kernel critical-severity rate by domain",
+        new CounterConfiguration { LabelNames = new[] { "domain" } });
+
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
     /// Should be called periodically (e.g., every 1-5 seconds) to keep metrics current.
@@ -465,6 +505,57 @@ public static class PrometheusMetrics
     public static void RecordProcessingLatency(double latencyMicroseconds)
     {
         ProcessingLatency.Observe(latencyMicroseconds);
+    }
+
+    /// <summary>
+    /// Records kernel execution latency and throughput for a specific domain.
+    /// </summary>
+    public static void RecordKernelExecution(string domain, double latencyMilliseconds)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelExecutionsTotal.WithLabels(safeDomain).Inc();
+        KernelExecutionLatencyMs.WithLabels(safeDomain).Observe(Math.Max(0, latencyMilliseconds));
+    }
+
+    /// <summary>
+    /// Records one determinism check outcome for a kernel domain.
+    /// </summary>
+    public static void RecordKernelDeterminismCheck(string domain, bool isMatch)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelDeterminismChecksTotal.WithLabels(safeDomain, isMatch ? "match" : "mismatch").Inc();
+    }
+
+    /// <summary>
+    /// Sets kernel reason-code coverage percentage for a domain.
+    /// </summary>
+    public static void SetKernelReasonCoverage(string domain, double coveragePercent)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelReasonCoveragePercent.WithLabels(safeDomain).Set(Math.Clamp(coveragePercent, 0, 100));
+    }
+
+    /// <summary>
+    /// Sets kernel drift score for a given domain/metric pair.
+    /// </summary>
+    public static void SetKernelDriftScore(string domain, string metric, double driftScore)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        var safeMetric = string.IsNullOrWhiteSpace(metric) ? "unknown" : metric.Trim().ToLowerInvariant();
+        KernelDriftScore.WithLabels(safeDomain, safeMetric).Set(Math.Max(0, driftScore));
+    }
+
+    /// <summary>
+    /// Sets current critical severity rate for a domain and optionally records alert count.
+    /// </summary>
+    public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool raiseJumpAlert)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
+        if (raiseJumpAlert)
+        {
+            KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
+        }
     }
 
     /// <summary>

@@ -86,6 +86,10 @@ Research keeps its dense run-comparison workspace but now uses the shared contex
 ### Trading
 
 Trading keeps the live-position, blotter, and capital-control surfaces while moving desk actions into the shared command bar, surfacing run or desk posture in the context strip, and exposing accounting and audit drill-ins from the cockpit.
+The cockpit shell now also carries a dedicated promotion/status card that keeps promotion readiness,
+audit linkage, and validation coverage visible above the KPI row, with direct `Run Review`,
+`Event Replay`, and `Collection Sessions` actions when operators need deeper session context from
+the same surface.
 
 ### Data Operations
 

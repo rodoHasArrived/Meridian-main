@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimiter
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WaitForSlotAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRequest
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs

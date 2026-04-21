@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionChainSnapshot
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiration
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strikes
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Calls
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Puts
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -385,7 +385,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -437,7 +437,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DaysToExpiration
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -468,7 +468,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalContracts
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -499,7 +499,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AtTheMoneyStrike
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -530,7 +530,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PutCallVolumeRatio
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
@@ -564,7 +564,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PutCallOpenInterestRatio
     path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs

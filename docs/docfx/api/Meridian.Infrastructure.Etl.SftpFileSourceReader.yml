@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SftpFileSourceReader
     path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListFilesAsync
     path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StageFileAsync
     path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs

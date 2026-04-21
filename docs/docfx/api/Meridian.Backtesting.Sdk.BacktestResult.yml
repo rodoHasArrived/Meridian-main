@@ -5,9 +5,8 @@ items:
   id: BacktestResult
   parent: Meridian.Backtesting.Sdk
   children:
-  - Meridian.Backtesting.Sdk.BacktestResult.#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport)
+  - Meridian.Backtesting.Sdk.BacktestResult.#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport,Meridian.Backtesting.Sdk.BacktestEngineMetadata)
   - Meridian.Backtesting.Sdk.BacktestResult.CashFlows
-  - Meridian.Backtesting.Sdk.BacktestResult.Coverage
   - Meridian.Backtesting.Sdk.BacktestResult.ElapsedTime
   - Meridian.Backtesting.Sdk.BacktestResult.EngineMetadata
   - Meridian.Backtesting.Sdk.BacktestResult.Fills
@@ -29,11 +28,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestResult
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 85
+    startLine: 42
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -53,32 +52,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Backtesting.Sdk.BacktestResult.#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport)
-  commentId: M:Meridian.Backtesting.Sdk.BacktestResult.#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport)
-  id: '#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport)'
+- uid: Meridian.Backtesting.Sdk.BacktestResult.#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport,Meridian.Backtesting.Sdk.BacktestEngineMetadata)
+  commentId: M:Meridian.Backtesting.Sdk.BacktestResult.#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport,Meridian.Backtesting.Sdk.BacktestEngineMetadata)
+  id: '#ctor(Meridian.Backtesting.Sdk.BacktestRequest,System.Collections.Generic.IReadOnlySet{System.String},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.PortfolioSnapshot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.CashFlowEntry},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.FillEvent},Meridian.Backtesting.Sdk.BacktestMetrics,Meridian.Ledger.IReadOnlyLedger,System.TimeSpan,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket},Meridian.Backtesting.Sdk.TcaReport,Meridian.Backtesting.Sdk.BacktestEngineMetadata)'
   parent: Meridian.Backtesting.Sdk.BacktestResult
   langs:
   - csharp
   - vb
-  name: BacktestResult(BacktestRequest, IReadOnlySet<string>, IReadOnlyList<PortfolioSnapshot>, IReadOnlyList<CashFlowEntry>, IReadOnlyList<FillEvent>, BacktestMetrics, IReadOnlyLedger, TimeSpan, long, IReadOnlyList<TradeTicket>?, TcaReport?)
-  nameWithType: BacktestResult.BacktestResult(BacktestRequest, IReadOnlySet<string>, IReadOnlyList<PortfolioSnapshot>, IReadOnlyList<CashFlowEntry>, IReadOnlyList<FillEvent>, BacktestMetrics, IReadOnlyLedger, TimeSpan, long, IReadOnlyList<TradeTicket>?, TcaReport?)
-  fullName: Meridian.Backtesting.Sdk.BacktestResult.BacktestResult(Meridian.Backtesting.Sdk.BacktestRequest, System.Collections.Generic.IReadOnlySet<string>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.PortfolioSnapshot>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.CashFlowEntry>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.FillEvent>, Meridian.Backtesting.Sdk.BacktestMetrics, Meridian.Ledger.IReadOnlyLedger, System.TimeSpan, long, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.TradeTicket>?, Meridian.Backtesting.Sdk.TcaReport?)
+  name: BacktestResult(BacktestRequest, IReadOnlySet<string>, IReadOnlyList<PortfolioSnapshot>, IReadOnlyList<CashFlowEntry>, IReadOnlyList<FillEvent>, BacktestMetrics, IReadOnlyLedger, TimeSpan, long, IReadOnlyList<TradeTicket>?, TcaReport?, BacktestEngineMetadata?)
+  nameWithType: BacktestResult.BacktestResult(BacktestRequest, IReadOnlySet<string>, IReadOnlyList<PortfolioSnapshot>, IReadOnlyList<CashFlowEntry>, IReadOnlyList<FillEvent>, BacktestMetrics, IReadOnlyLedger, TimeSpan, long, IReadOnlyList<TradeTicket>?, TcaReport?, BacktestEngineMetadata?)
+  fullName: Meridian.Backtesting.Sdk.BacktestResult.BacktestResult(Meridian.Backtesting.Sdk.BacktestRequest, System.Collections.Generic.IReadOnlySet<string>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.PortfolioSnapshot>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.CashFlowEntry>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.FillEvent>, Meridian.Backtesting.Sdk.BacktestMetrics, Meridian.Ledger.IReadOnlyLedger, System.TimeSpan, long, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.TradeTicket>?, Meridian.Backtesting.Sdk.TcaReport?, Meridian.Backtesting.Sdk.BacktestEngineMetadata?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 85
+    startLine: 42
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
   summary: Complete result of a finished backtest run.
   example: []
   syntax:
-    content: public BacktestResult(BacktestRequest Request, IReadOnlySet<string> Universe, IReadOnlyList<PortfolioSnapshot> Snapshots, IReadOnlyList<CashFlowEntry> CashFlows, IReadOnlyList<FillEvent> Fills, BacktestMetrics Metrics, IReadOnlyLedger Ledger, TimeSpan ElapsedTime, long TotalEventsProcessed, IReadOnlyList<TradeTicket>? TradeTickets = null, TcaReport? TcaReport = null)
+    content: public BacktestResult(BacktestRequest Request, IReadOnlySet<string> Universe, IReadOnlyList<PortfolioSnapshot> Snapshots, IReadOnlyList<CashFlowEntry> CashFlows, IReadOnlyList<FillEvent> Fills, BacktestMetrics Metrics, IReadOnlyLedger Ledger, TimeSpan ElapsedTime, long TotalEventsProcessed, IReadOnlyList<TradeTicket>? TradeTickets = null, TcaReport? TcaReport = null, BacktestEngineMetadata? EngineMetadata = null)
     parameters:
     - id: Request
       type: Meridian.Backtesting.Sdk.BacktestRequest
@@ -102,11 +101,13 @@ items:
       type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.TradeTicket}
     - id: TcaReport
       type: Meridian.Backtesting.Sdk.TcaReport
-    content.vb: Public Sub New(Request As BacktestRequest, Universe As IReadOnlySet(Of String), Snapshots As IReadOnlyList(Of PortfolioSnapshot), CashFlows As IReadOnlyList(Of CashFlowEntry), Fills As IReadOnlyList(Of FillEvent), Metrics As BacktestMetrics, Ledger As IReadOnlyLedger, ElapsedTime As TimeSpan, TotalEventsProcessed As Long, TradeTickets As IReadOnlyList(Of TradeTicket) = Nothing, TcaReport As TcaReport = Nothing)
+    - id: EngineMetadata
+      type: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+    content.vb: Public Sub New(Request As BacktestRequest, Universe As IReadOnlySet(Of String), Snapshots As IReadOnlyList(Of PortfolioSnapshot), CashFlows As IReadOnlyList(Of CashFlowEntry), Fills As IReadOnlyList(Of FillEvent), Metrics As BacktestMetrics, Ledger As IReadOnlyLedger, ElapsedTime As TimeSpan, TotalEventsProcessed As Long, TradeTickets As IReadOnlyList(Of TradeTicket) = Nothing, TcaReport As TcaReport = Nothing, EngineMetadata As BacktestEngineMetadata = Nothing)
   overload: Meridian.Backtesting.Sdk.BacktestResult.#ctor*
-  nameWithType.vb: BacktestResult.New(BacktestRequest, IReadOnlySet(Of String), IReadOnlyList(Of PortfolioSnapshot), IReadOnlyList(Of CashFlowEntry), IReadOnlyList(Of FillEvent), BacktestMetrics, IReadOnlyLedger, TimeSpan, Long, IReadOnlyList(Of TradeTicket), TcaReport)
-  fullName.vb: Meridian.Backtesting.Sdk.BacktestResult.New(Meridian.Backtesting.Sdk.BacktestRequest, System.Collections.Generic.IReadOnlySet(Of String), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.PortfolioSnapshot), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.CashFlowEntry), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.FillEvent), Meridian.Backtesting.Sdk.BacktestMetrics, Meridian.Ledger.IReadOnlyLedger, System.TimeSpan, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.TradeTicket), Meridian.Backtesting.Sdk.TcaReport)
-  name.vb: New(BacktestRequest, IReadOnlySet(Of String), IReadOnlyList(Of PortfolioSnapshot), IReadOnlyList(Of CashFlowEntry), IReadOnlyList(Of FillEvent), BacktestMetrics, IReadOnlyLedger, TimeSpan, Long, IReadOnlyList(Of TradeTicket), TcaReport)
+  nameWithType.vb: BacktestResult.New(BacktestRequest, IReadOnlySet(Of String), IReadOnlyList(Of PortfolioSnapshot), IReadOnlyList(Of CashFlowEntry), IReadOnlyList(Of FillEvent), BacktestMetrics, IReadOnlyLedger, TimeSpan, Long, IReadOnlyList(Of TradeTicket), TcaReport, BacktestEngineMetadata)
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestResult.New(Meridian.Backtesting.Sdk.BacktestRequest, System.Collections.Generic.IReadOnlySet(Of String), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.PortfolioSnapshot), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.CashFlowEntry), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.FillEvent), Meridian.Backtesting.Sdk.BacktestMetrics, Meridian.Ledger.IReadOnlyLedger, System.TimeSpan, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.TradeTicket), Meridian.Backtesting.Sdk.TcaReport, Meridian.Backtesting.Sdk.BacktestEngineMetadata)
+  name.vb: New(BacktestRequest, IReadOnlySet(Of String), IReadOnlyList(Of PortfolioSnapshot), IReadOnlyList(Of CashFlowEntry), IReadOnlyList(Of FillEvent), BacktestMetrics, IReadOnlyLedger, TimeSpan, Long, IReadOnlyList(Of TradeTicket), TcaReport, BacktestEngineMetadata)
 - uid: Meridian.Backtesting.Sdk.BacktestResult.Request
   commentId: P:Meridian.Backtesting.Sdk.BacktestResult.Request
   id: Request
@@ -121,11 +122,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Request
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 86
+    startLine: 43
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -150,11 +151,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 87
+    startLine: 44
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -179,11 +180,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshots
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 88
+    startLine: 45
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -208,11 +209,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashFlows
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 89
+    startLine: 46
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -237,11 +238,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fills
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 90
+    startLine: 47
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -266,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 91
+    startLine: 48
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -295,11 +296,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 92
+    startLine: 49
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -324,11 +325,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ElapsedTime
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 93
+    startLine: 50
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -353,11 +354,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsProcessed
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 94
+    startLine: 51
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -382,11 +383,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeTickets
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 95
+    startLine: 52
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -411,11 +412,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TcaReport
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 96
+    startLine: 53
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -426,40 +427,6 @@ items:
       type: Meridian.Backtesting.Sdk.TcaReport
     content.vb: Public Property TcaReport As TcaReport
   overload: Meridian.Backtesting.Sdk.BacktestResult.TcaReport*
-- uid: Meridian.Backtesting.Sdk.BacktestResult.Coverage
-  commentId: P:Meridian.Backtesting.Sdk.BacktestResult.Coverage
-  id: Coverage
-  parent: Meridian.Backtesting.Sdk.BacktestResult
-  langs:
-  - csharp
-  - vb
-  name: Coverage
-  nameWithType: BacktestResult.Coverage
-  fullName: Meridian.Backtesting.Sdk.BacktestResult.Coverage
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: Coverage
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 102
-  assemblies:
-  - Meridian.Backtesting.Sdk
-  namespace: Meridian.Backtesting.Sdk
-  summary: >-
-    Coverage status for the main research artifacts contained in this result.
-
-    Defaults to <xref href="Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown" data-throw-if-not-resolved="false"></xref> for older construction paths.
-  example: []
-  syntax:
-    content: public BacktestArtifactCoverage Coverage { get; init; }
-    parameters: []
-    return:
-      type: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-    content.vb: Public Property Coverage As BacktestArtifactCoverage
-  overload: Meridian.Backtesting.Sdk.BacktestResult.Coverage*
 - uid: Meridian.Backtesting.Sdk.BacktestResult.EngineMetadata
   commentId: P:Meridian.Backtesting.Sdk.BacktestResult.EngineMetadata
   id: EngineMetadata
@@ -474,21 +441,16 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineMetadata
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 108
+    startLine: 54
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
-  summary: >-
-    Source engine identity and diagnostics for this result.
-
-    Defaults to <xref href="Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown" data-throw-if-not-resolved="false"></xref> for older construction paths.
-  example: []
   syntax:
-    content: public BacktestEngineMetadata EngineMetadata { get; init; }
+    content: public BacktestEngineMetadata? EngineMetadata { get; init; }
     parameters: []
     return:
       type: Meridian.Backtesting.Sdk.BacktestEngineMetadata
@@ -801,7 +763,7 @@ references:
   - name: )
 - uid: Meridian.Backtesting.Sdk.BacktestResult.#ctor*
   commentId: Overload:Meridian.Backtesting.Sdk.BacktestResult.#ctor
-  href: Meridian.Backtesting.Sdk.BacktestResult.html#Meridian_Backtesting_Sdk_BacktestResult__ctor_Meridian_Backtesting_Sdk_BacktestRequest_System_Collections_Generic_IReadOnlySet_System_String__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_PortfolioSnapshot__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_CashFlowEntry__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_FillEvent__Meridian_Backtesting_Sdk_BacktestMetrics_Meridian_Ledger_IReadOnlyLedger_System_TimeSpan_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_TradeTicket__Meridian_Backtesting_Sdk_TcaReport_
+  href: Meridian.Backtesting.Sdk.BacktestResult.html#Meridian_Backtesting_Sdk_BacktestResult__ctor_Meridian_Backtesting_Sdk_BacktestRequest_System_Collections_Generic_IReadOnlySet_System_String__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_PortfolioSnapshot__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_CashFlowEntry__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_FillEvent__Meridian_Backtesting_Sdk_BacktestMetrics_Meridian_Ledger_IReadOnlyLedger_System_TimeSpan_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_TradeTicket__Meridian_Backtesting_Sdk_TcaReport_Meridian_Backtesting_Sdk_BacktestEngineMetadata_
   name: BacktestResult
   nameWithType: BacktestResult.BacktestResult
   fullName: Meridian.Backtesting.Sdk.BacktestResult.BacktestResult
@@ -1022,6 +984,13 @@ references:
   name: TcaReport
   nameWithType: TcaReport
   fullName: Meridian.Backtesting.Sdk.TcaReport
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
+  name: BacktestEngineMetadata
+  nameWithType: BacktestEngineMetadata
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata
 - uid: System.Collections.Generic.IReadOnlySet`1
   commentId: T:System.Collections.Generic.IReadOnlySet`1
   isExternal: true
@@ -1203,41 +1172,9 @@ references:
   name: TcaReport
   nameWithType: BacktestResult.TcaReport
   fullName: Meridian.Backtesting.Sdk.BacktestResult.TcaReport
-- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
-  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
-  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_Unknown
-  name: Unknown
-  nameWithType: BacktestArtifactCoverage.Unknown
-  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
-- uid: Meridian.Backtesting.Sdk.BacktestResult.Coverage*
-  commentId: Overload:Meridian.Backtesting.Sdk.BacktestResult.Coverage
-  href: Meridian.Backtesting.Sdk.BacktestResult.html#Meridian_Backtesting_Sdk_BacktestResult_Coverage
-  name: Coverage
-  nameWithType: BacktestResult.Coverage
-  fullName: Meridian.Backtesting.Sdk.BacktestResult.Coverage
-- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-  parent: Meridian.Backtesting.Sdk
-  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html
-  name: BacktestArtifactCoverage
-  nameWithType: BacktestArtifactCoverage
-  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
-  commentId: P:Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
-  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata_Unknown
-  name: Unknown
-  nameWithType: BacktestEngineMetadata.Unknown
-  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
 - uid: Meridian.Backtesting.Sdk.BacktestResult.EngineMetadata*
   commentId: Overload:Meridian.Backtesting.Sdk.BacktestResult.EngineMetadata
   href: Meridian.Backtesting.Sdk.BacktestResult.html#Meridian_Backtesting_Sdk_BacktestResult_EngineMetadata
   name: EngineMetadata
   nameWithType: BacktestResult.EngineMetadata
   fullName: Meridian.Backtesting.Sdk.BacktestResult.EngineMetadata
-- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
-  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMetadata
-  parent: Meridian.Backtesting.Sdk
-  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
-  name: BacktestEngineMetadata
-  nameWithType: BacktestEngineMetadata
-  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata

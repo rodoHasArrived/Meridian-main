@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregateBarPayload
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -370,7 +370,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vwap
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -399,7 +399,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -428,7 +428,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeframe
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -457,7 +457,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
@@ -486,7 +486,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs

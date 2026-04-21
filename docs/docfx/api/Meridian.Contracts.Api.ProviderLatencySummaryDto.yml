@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderLatencySummaryDto
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalAverageMs
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP99Ms
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs

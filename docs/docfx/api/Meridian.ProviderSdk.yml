@@ -161,6 +161,7 @@ references:
   fullName: Meridian.ProviderSdk.ProviderRouteDecision
 - uid: Meridian.ProviderSdk.ProviderRouteResult
   commentId: T:Meridian.ProviderSdk.ProviderRouteResult
+  parent: Meridian.ProviderSdk
   href: Meridian.ProviderSdk.ProviderRouteResult.html
   name: ProviderRouteResult
   nameWithType: ProviderRouteResult

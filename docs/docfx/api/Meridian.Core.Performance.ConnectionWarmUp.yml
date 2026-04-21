@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionWarmUp
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastWarmUpStats
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShouldWarmUp
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteWarmUpAsync
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteWarmUpAsync
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs

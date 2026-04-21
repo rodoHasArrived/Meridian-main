@@ -84,6 +84,39 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_WorkspacePrimaryNavigationSelection_ShouldNavigateToSecurityMaster()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.Click(facade.GovernanceWorkspaceButton);
+            facade.SelectWorkspaceNavigationPage(facade.WorkspacePrimaryNavList, "SecurityMaster");
+
+            facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
+            facade.ShellAutomationStateText.Text.Should().Be("SecurityMaster");
+            facade.PageTitleText.Text.Should().Be("Security Master");
+            facade.WorkspacePrimaryNavList.SelectedValue.Should().Be("SecurityMaster");
+        });
+    }
+
+    [Fact]
+    public void MainPage_WorkspaceNavigationSelection_WhenCleared_ShouldKeepCurrentPage()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.Click(facade.GovernanceWorkspaceButton);
+            facade.SelectWorkspaceNavigationPage(facade.WorkspacePrimaryNavList, "SecurityMaster");
+            facade.ClearWorkspaceNavigationSelection(facade.WorkspacePrimaryNavList);
+
+            facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
+            facade.PageTitleText.Text.Should().Be("Security Master");
+        });
+    }
+
+    [Fact]
     public void MainPage_FixtureBannerAndTickerToggle_ShouldRespondToUserActions()
     {
         WpfTestThread.Run(() =>

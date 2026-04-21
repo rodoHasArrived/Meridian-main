@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPresetFilters
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRangeType
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomStartDate
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomEndDate
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionFilter
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinQualityScore
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs

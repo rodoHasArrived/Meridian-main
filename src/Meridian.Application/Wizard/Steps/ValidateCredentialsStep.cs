@@ -50,8 +50,8 @@ public sealed class ValidateCredentialsStep : IWizardStep
             return WizardStepResult.Succeeded();
         }
 
-        // Skip live validation for IB / StockSharp (need local connection)
-        if (dataSource.DataSource is DataSourceKind.IB or DataSourceKind.StockSharp)
+        // Skip live validation for IB (needs a local connection)
+        if (dataSource.DataSource is DataSourceKind.IB)
         {
             _output.WriteLine($"  {dataSource.DataSource} uses a local connection - skipping API validation.");
             return WizardStepResult.Succeeded();

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetSymbolPosition
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetQuantity
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GrossQuantity
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs

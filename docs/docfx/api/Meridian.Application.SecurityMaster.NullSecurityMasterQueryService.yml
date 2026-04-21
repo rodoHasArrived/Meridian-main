@@ -1,0 +1,2101 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  commentId: T:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  id: NullSecurityMasterQueryService
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: NullSecurityMasterQueryService
+  nameWithType: NullSecurityMasterQueryService
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NullSecurityMasterQueryService
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    No-op implementations of all Security Master service interfaces, registered when
+
+    <code>MERIDIAN_SECURITY_MASTER_CONNECTION_STRING</code> is not configured.
+
+    Query operations return <code>null</code> / empty collections so that the Minimal API
+
+    endpoint handlers can return 404 / empty JSON as appropriate.
+
+    Command and write operations throw <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref> so that
+
+    the caller receives an HTTP 500 that surfaces the configuration requirement.
+
+    These stubs ensure that ASP.NET Core Minimal API routing initializes correctly even
+
+    without a Security Master database, preventing startup failures in unconfigured or
+
+    test environments.
+  example: []
+  syntax:
+    content: 'public sealed class NullSecurityMasterQueryService : ISecurityMasterQueryService, ISecurityMasterQueryService, ISecurityMasterRuntimeStatus'
+    content.vb: Public NotInheritable Class NullSecurityMasterQueryService Implements ISecurityMasterQueryService, ISecurityMasterQueryService, ISecurityMasterRuntimeStatus
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable
+  commentId: P:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable
+  id: IsAvailable
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: IsAvailable
+  nameWithType: NullSecurityMasterQueryService.IsAvailable
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailable
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  example: []
+  syntax:
+    content: public bool IsAvailable { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsAvailable As Boolean
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable*
+  implements:
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription
+  commentId: P:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription
+  id: AvailabilityDescription
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: AvailabilityDescription
+  nameWithType: NullSecurityMasterQueryService.AvailabilityDescription
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailabilityDescription
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  example: []
+  syntax:
+    content: public string AvailabilityDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property AvailabilityDescription As String
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription*
+  implements:
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetByIdAsync(Guid, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByIdAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Public Function GetByIdAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  id: GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetByIdentifierAsync(SecurityIdentifierKind, string, string?, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetByIdentifierAsync(SecurityIdentifierKind, string, string?, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByIdentifierAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+    parameters:
+    - id: identifierKind
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+    - id: identifierValue
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Public Function GetByIdentifierAsync(identifierKind As SecurityIdentifierKind, identifierValue As String, provider As String, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: NullSecurityMasterQueryService.GetByIdentifierAsync(SecurityIdentifierKind, String, String, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, String, String, System.Threading.CancellationToken)
+  name.vb: GetByIdentifierAsync(SecurityIdentifierKind, String, String, CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  id: SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(SecuritySearchRequest, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.SearchAsync(SecuritySearchRequest, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecuritySummaryDto}}
+    content.vb: Public Function SearchAsync(request As SecuritySearchRequest, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecuritySummaryDto))
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  id: GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetHistoryAsync(SecurityHistoryRequest, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetHistoryAsync(SecurityHistoryRequest, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistoryAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+    content.vb: Public Function GetHistoryAsync(request As SecurityHistoryRequest, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetEconomicDefinitionByIdAsync(Guid, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEconomicDefinitionByIdAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the full economic definition record for a security, rebuilt from its event stream.
+
+    This is a heavier operation than <xref href="Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> and should only be called
+
+    by governance or drill-in surfaces that need classification and sub-type detail.
+  example: []
+  syntax:
+    content: public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord}
+    content.vb: Public Function GetEconomicDefinitionByIdAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of SecurityEconomicDefinitionRecord)
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetTradingParametersAsync(Guid, DateTimeOffset, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetTradingParametersAsync(Guid, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync(System.Guid, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTradingParametersAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the trading parameters (lot size, tick size, etc.) for a security as of the
+
+    specified point in time. Returns <code>null</code> when the security is not found.
+  example: []
+  syntax:
+    content: public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: asOf
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.TradingParametersDto}
+    content.vb: Public Function GetTradingParametersAsync(securityId As Guid, asOf As DateTimeOffset, ct As CancellationToken = Nothing) As Task(Of TradingParametersDto)
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCorporateActionsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the time-ordered list of corporate action events for a security.
+
+    Returns an empty list when no corporate actions are recorded.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+    content.vb: Public Function GetCorporateActionsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CorporateActionDto))
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetPreferredEquityTermsAsync(Guid, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetPreferredEquityTermsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPreferredEquityTermsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the preferred-equity-specific terms for a security.
+
+    Returns <code>null</code> when the security has no preferred-equity terms recorded.
+  example: []
+  syntax:
+    content: public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto}
+    content.vb: Public Function GetPreferredEquityTermsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of PreferredEquityTermsDto)
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetConvertibleEquityTermsAsync(Guid, CancellationToken)
+  nameWithType: NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConvertibleEquityTermsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the convertible-equity-specific terms for a security.
+
+    Returns <code>null</code> when the security has no convertible-equity terms recorded.
+  example: []
+  syntax:
+    content: public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto}
+    content.vb: Public Function GetConvertibleEquityTermsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of ConvertibleEquityTermsDto)
+  overload: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+references:
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.html
+  name: ISecurityMasterRuntimeStatus
+  nameWithType: ISecurityMasterRuntimeStatus
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_IsAvailable
+  name: IsAvailable
+  nameWithType: NullSecurityMasterQueryService.IsAvailable
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.IsAvailable
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  commentId: P:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  name: IsAvailable
+  nameWithType: ISecurityMasterRuntimeStatus.IsAvailable
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_AvailabilityDescription
+  name: AvailabilityDescription
+  nameWithType: NullSecurityMasterQueryService.AvailabilityDescription
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.AvailabilityDescription
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  commentId: P:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  name: AvailabilityDescription
+  nameWithType: ISecurityMasterRuntimeStatus.AvailabilityDescription
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetByIdAsync
+  nameWithType: NullSecurityMasterQueryService.GetByIdAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetByIdAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetByIdAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetByIdAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetByIdAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetByIdAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetByIdAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetByIdAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityDetailDto>
+  nameWithType: Task<SecurityDetailDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityDetailDto>
+  nameWithType.vb: Task(Of SecurityDetailDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityDetailDto)
+  name.vb: Task(Of SecurityDetailDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+    href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+    href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetByIdentifierAsync_Meridian_Contracts_SecurityMaster_SecurityIdentifierKind_System_String_System_String_System_Threading_CancellationToken_
+  name: GetByIdentifierAsync
+  nameWithType: NullSecurityMasterQueryService.GetByIdentifierAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetByIdentifierAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetByIdentifierAsync_Meridian_Contracts_SecurityMaster_SecurityIdentifierKind_System_String_System_String_System_Threading_CancellationToken_
+  name: GetByIdentifierAsync(SecurityIdentifierKind, string, string, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetByIdentifierAsync(SecurityIdentifierKind, string, string, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterQueryService.GetByIdentifierAsync(SecurityIdentifierKind, String, String, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, String, String, System.Threading.CancellationToken)
+  name.vb: GetByIdentifierAsync(SecurityIdentifierKind, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+    name: GetByIdentifierAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetByIdentifierAsync_Meridian_Contracts_SecurityMaster_SecurityIdentifierKind_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+    name: SecurityIdentifierKind
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+    name: GetByIdentifierAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetByIdentifierAsync_Meridian_Contracts_SecurityMaster_SecurityIdentifierKind_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+    name: SecurityIdentifierKind
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetByIdentifierAsync(SecurityIdentifierKind, string, string, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetByIdentifierAsync(SecurityIdentifierKind, string, string, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterQueryService.GetByIdentifierAsync(SecurityIdentifierKind, String, String, CancellationToken)
+  fullName.vb: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, String, String, System.Threading.CancellationToken)
+  name.vb: GetByIdentifierAsync(SecurityIdentifierKind, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+    name: GetByIdentifierAsync
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+    name: SecurityIdentifierKind
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.Threading.CancellationToken)
+    name: GetByIdentifierAsync
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+    name: SecurityIdentifierKind
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.html
+  name: SecurityIdentifierKind
+  nameWithType: SecurityIdentifierKind
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_SearchAsync_Meridian_Contracts_SecurityMaster_SecuritySearchRequest_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: NullSecurityMasterQueryService.SearchAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.SearchAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_SearchAsync_Meridian_Contracts_SecurityMaster_SecuritySearchRequest_System_Threading_CancellationToken_
+  name: SearchAsync(SecuritySearchRequest, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.SearchAsync(SecuritySearchRequest, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_SearchAsync_Meridian_Contracts_SecurityMaster_SecuritySearchRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+    name: SecuritySearchRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_SearchAsync_Meridian_Contracts_SecurityMaster_SecuritySearchRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+    name: SecuritySearchRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: SearchAsync(SecuritySearchRequest, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.SearchAsync(SecuritySearchRequest, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+    name: SearchAsync
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+    name: SecuritySearchRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+    name: SearchAsync
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+    name: SecuritySearchRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecuritySearchRequest.html
+  name: SecuritySearchRequest
+  nameWithType: SecuritySearchRequest
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecuritySummaryDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecuritySummaryDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecuritySummaryDto>>
+  nameWithType: Task<IReadOnlyList<SecuritySummaryDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecuritySummaryDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecuritySummaryDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecuritySummaryDto))
+  name.vb: Task(Of IReadOnlyList(Of SecuritySummaryDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+    name: SecuritySummaryDto
+    href: Meridian.Contracts.SecurityMaster.SecuritySummaryDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+    name: SecuritySummaryDto
+    href: Meridian.Contracts.SecurityMaster.SecuritySummaryDto.html
+  - name: )
+  - name: )
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetHistoryAsync_Meridian_Contracts_SecurityMaster_SecurityHistoryRequest_System_Threading_CancellationToken_
+  name: GetHistoryAsync
+  nameWithType: NullSecurityMasterQueryService.GetHistoryAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetHistoryAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetHistoryAsync_Meridian_Contracts_SecurityMaster_SecurityHistoryRequest_System_Threading_CancellationToken_
+  name: GetHistoryAsync(SecurityHistoryRequest, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetHistoryAsync(SecurityHistoryRequest, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+    name: GetHistoryAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetHistoryAsync_Meridian_Contracts_SecurityMaster_SecurityHistoryRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    name: SecurityHistoryRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+    name: GetHistoryAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetHistoryAsync_Meridian_Contracts_SecurityMaster_SecurityHistoryRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    name: SecurityHistoryRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: GetHistoryAsync(SecurityHistoryRequest, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetHistoryAsync(SecurityHistoryRequest, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+    name: GetHistoryAsync
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    name: SecurityHistoryRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetHistoryAsync(Meridian.Contracts.SecurityMaster.SecurityHistoryRequest,System.Threading.CancellationToken)
+    name: GetHistoryAsync
+  - name: (
+  - uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    name: SecurityHistoryRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.html
+  name: SecurityHistoryRequest
+  nameWithType: SecurityHistoryRequest
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecurityMasterEventEnvelope>>
+  nameWithType: Task<IReadOnlyList<SecurityMasterEventEnvelope>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope))
+  name.vb: Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+    href: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+    href: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope.html
+  - name: )
+  - name: )
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetEconomicDefinitionByIdAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetEconomicDefinitionByIdAsync
+  nameWithType: NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetEconomicDefinitionByIdAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetEconomicDefinitionByIdAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetEconomicDefinitionByIdAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetEconomicDefinitionByIdAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetEconomicDefinitionByIdAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetEconomicDefinitionByIdAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetEconomicDefinitionByIdAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetEconomicDefinitionByIdAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(Guid, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetEconomicDefinitionByIdAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetEconomicDefinitionByIdAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityEconomicDefinitionRecord>
+  nameWithType: Task<SecurityEconomicDefinitionRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord>
+  nameWithType.vb: Task(Of SecurityEconomicDefinitionRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord)
+  name.vb: Task(Of SecurityEconomicDefinitionRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord
+    name: SecurityEconomicDefinitionRecord
+    href: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord
+    name: SecurityEconomicDefinitionRecord
+    href: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord.html
+  - name: )
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetTradingParametersAsync_System_Guid_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: GetTradingParametersAsync
+  nameWithType: NullSecurityMasterQueryService.GetTradingParametersAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetTradingParametersAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetTradingParametersAsync_System_Guid_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: GetTradingParametersAsync(Guid, DateTimeOffset, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetTradingParametersAsync(Guid, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid, System.DateTimeOffset, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: GetTradingParametersAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetTradingParametersAsync_System_Guid_System_DateTimeOffset_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: GetTradingParametersAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetTradingParametersAsync_System_Guid_System_DateTimeOffset_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetTradingParametersAsync(Guid, DateTimeOffset, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetTradingParametersAsync(Guid, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid, System.DateTimeOffset, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: GetTradingParametersAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetTradingParametersAsync(System.Guid,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: GetTradingParametersAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.TradingParametersDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.TradingParametersDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TradingParametersDto>
+  nameWithType: Task<TradingParametersDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.TradingParametersDto>
+  nameWithType.vb: Task(Of TradingParametersDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.TradingParametersDto)
+  name.vb: Task(Of TradingParametersDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.TradingParametersDto
+    name: TradingParametersDto
+    href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.TradingParametersDto
+    name: TradingParametersDto
+    href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html
+  - name: )
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetCorporateActionsAsync
+  nameWithType: NullSecurityMasterQueryService.GetCorporateActionsAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetCorporateActionsAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetCorporateActionsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetCorporateActionsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetCorporateActionsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetCorporateActionsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CorporateActionDto>>
+  nameWithType: Task<IReadOnlyList<CorporateActionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.CorporateActionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.CorporateActionDto))
+  name.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: )
+  - name: )
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetPreferredEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetPreferredEquityTermsAsync
+  nameWithType: NullSecurityMasterQueryService.GetPreferredEquityTermsAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetPreferredEquityTermsAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetPreferredEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetPreferredEquityTermsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetPreferredEquityTermsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetPreferredEquityTermsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetPreferredEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetPreferredEquityTermsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetPreferredEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetPreferredEquityTermsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetPreferredEquityTermsAsync(Guid, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetPreferredEquityTermsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetPreferredEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetPreferredEquityTermsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PreferredEquityTermsDto>
+  nameWithType: Task<PreferredEquityTermsDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto>
+  nameWithType.vb: Task(Of PreferredEquityTermsDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto)
+  name.vb: Task(Of PreferredEquityTermsDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
+    name: PreferredEquityTermsDto
+    href: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
+    name: PreferredEquityTermsDto
+    href: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto.html
+  - name: )
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html#Meridian_Application_SecurityMaster_NullSecurityMasterQueryService_GetConvertibleEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetConvertibleEquityTermsAsync
+  nameWithType: NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.GetConvertibleEquityTermsAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetConvertibleEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetConvertibleEquityTermsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetConvertibleEquityTermsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetConvertibleEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetConvertibleEquityTermsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html#Meridian_Application_SecurityMaster_ISecurityMasterQueryService_GetConvertibleEquityTermsAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetConvertibleEquityTermsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(Guid, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetConvertibleEquityTermsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.GetConvertibleEquityTermsAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetConvertibleEquityTermsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ConvertibleEquityTermsDto>
+  nameWithType: Task<ConvertibleEquityTermsDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto>
+  nameWithType.vb: Task(Of ConvertibleEquityTermsDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto)
+  name.vb: Task(Of ConvertibleEquityTermsDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
+    name: ConvertibleEquityTermsDto
+    href: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
+    name: ConvertibleEquityTermsDto
+    href: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto.html
+  - name: )

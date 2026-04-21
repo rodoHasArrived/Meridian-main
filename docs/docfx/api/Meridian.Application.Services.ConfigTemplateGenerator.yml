@@ -12,7 +12,6 @@ items:
   - Meridian.Application.Services.ConfigTemplateGenerator.GenerateFull
   - Meridian.Application.Services.ConfigTemplateGenerator.GenerateMinimal
   - Meridian.Application.Services.ConfigTemplateGenerator.GenerateProduction
-  - Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
   - Meridian.Application.Services.ConfigTemplateGenerator.GetAllTemplates
   - Meridian.Application.Services.ConfigTemplateGenerator.GetTemplate(System.String)
   - Meridian.Application.Services.ConfigTemplateGenerator.ValidateTemplate(System.String)
@@ -26,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigTemplateGenerator
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
@@ -65,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateMinimal
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
@@ -95,11 +94,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFull
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 52
+    startLine: 68
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -125,11 +124,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateAlpaca
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 98
+    startLine: 128
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -141,36 +140,6 @@ items:
       type: Meridian.Application.Services.ConfigTemplate
     content.vb: Public Function GenerateAlpaca() As ConfigTemplate
   overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca*
-- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
-  commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
-  id: GenerateStockSharp
-  parent: Meridian.Application.Services.ConfigTemplateGenerator
-  langs:
-  - csharp
-  - vb
-  name: GenerateStockSharp()
-  nameWithType: ConfigTemplateGenerator.GenerateStockSharp()
-  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GenerateStockSharp
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 143
-  assemblies:
-  - Meridian.Application
-  namespace: Meridian.Application.Services
-  summary: Generates a StockSharp-specific configuration template.
-  example: []
-  syntax:
-    content: public ConfigTemplate GenerateStockSharp()
-    return:
-      type: Meridian.Application.Services.ConfigTemplate
-    content.vb: Public Function GenerateStockSharp() As ConfigTemplate
-  overload: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp*
 - uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
   commentId: M:Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
   id: GenerateBackfill
@@ -185,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateBackfill
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 202
+    startLine: 173
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -215,11 +184,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateProduction
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 248
+    startLine: 235
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -245,11 +214,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateDocker
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 302
+    startLine: 289
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -275,11 +244,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllTemplates
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 346
+    startLine: 333
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -305,11 +274,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTemplate
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 363
+    startLine: 349
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -341,11 +310,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFromConfig
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 381
+    startLine: 366
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -379,11 +348,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateTemplate
     path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
-    startLine: 395
+    startLine: 380
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -670,12 +639,6 @@ references:
   name: GenerateAlpaca
   nameWithType: ConfigTemplateGenerator.GenerateAlpaca
   fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateAlpaca
-- uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp*
-  commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
-  href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateStockSharp
-  name: GenerateStockSharp
-  nameWithType: ConfigTemplateGenerator.GenerateStockSharp
-  fullName: Meridian.Application.Services.ConfigTemplateGenerator.GenerateStockSharp
 - uid: Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill*
   commentId: Overload:Meridian.Application.Services.ConfigTemplateGenerator.GenerateBackfill
   href: Meridian.Application.Services.ConfigTemplateGenerator.html#Meridian_Application_Services_ConfigTemplateGenerator_GenerateBackfill

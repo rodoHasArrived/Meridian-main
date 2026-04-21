@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionWorkloadType
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Realtime
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapFill
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledBackfill
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs

@@ -5,30 +5,155 @@
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Fund Accounts">
 
+    <Page.Resources>
+        <Style x:Key="MetricLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        </Style>
+        <Style x:Key="MetricValueStyle" TargetType="TextBlock" BasedOn="{StaticResource CardHeaderStyle}">
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
+        <Style x:Key="MetricValueMonoStyle" TargetType="TextBlock" BasedOn="{StaticResource MetricValueStyle}">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style x:Key="WorkbenchMetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="Padding" Value="16" />
+        </Style>
+    </Page.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
-        <StackPanel MaxWidth="1280">
+        <StackPanel MaxWidth="1320">
             <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="440" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="Fund Accounts" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="{Binding FundContextLabel}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Content="Refresh Accounts" Style="{StaticResource GhostButtonStyle}" Command="{Binding LoadFundAccountsCommand}" Margin="0,0,8,0" />
-                        <Button Content="Refresh Routing" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding RefreshProviderRoutingCommand}" />
-                    </StackPanel>
+
+                    <Grid Grid.Column="0" Margin="0,0,20,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44"
+                                    Height="44"
+                                    CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                    BorderBrush="{StaticResource WarningColorBrush}"
+                                    BorderThickness="1"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="&#xE8D4;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24"
+                                           Foreground="{StaticResource WarningColorBrush}"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Governance Accounts" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="{Binding FundContextLabel}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Border Grid.Row="1"
+                                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Operator Brief" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding AccountQueueStatusText}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding SelectedAccountRoutingReadinessText}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,10,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <WrapPanel Grid.Row="2" Margin="0,16,0,0">
+                            <Button Content="Refresh Accounts"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Command="{Binding LoadFundAccountsCommand}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Refresh Inspectors"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding InspectSelectedAccountCommand}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Refresh Routing"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding RefreshProviderRoutingCommand}"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                    </Grid>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <UniformGrid Columns="2" Margin="0,0,0,12">
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
+                                <StackPanel>
+                                    <TextBlock Text="Total Accounts" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding TotalAccountCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Custody + Bank" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding CustodyAndBankCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Brokerage" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding BrokerageAccountCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Other" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding OtherAccountCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <Border Grid.Row="1"
+                                Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                BorderBrush="{StaticResource BorderSubtleBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="Security Master Baseline" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding SelectedAccountSecurityMasterText}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
 
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.2*" />
+                    <ColumnDefinition Width="1.25*" />
                     <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
@@ -72,20 +197,13 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Style="{StaticResource CardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Selected Account" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                            <TextBlock Text="{Binding SelectedAccountSummary}" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,12,0,0" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
                     <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="Scoped Provider Bindings" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                            <TextBlock Text="{Binding ProviderRoutingStatus}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
+                            <TextBlock Text="{Binding ProviderRoutingStatus}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,12" />
                             <ItemsControl ItemsSource="{Binding ProviderBindings}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -119,6 +237,77 @@
                                                 <TextBlock Text="{Binding SafetyMode}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                                 <TextBlock Text="{Binding ReasonSummary}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
                                                 <TextBlock Text="{Binding FallbackSummary}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Selected Account Inspector" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding SelectedAccountSummary}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                            <TextBlock Text="{Binding SelectedAccountLifecycleText}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                            <TextBlock Text="{Binding SelectedAccountScopeText}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                            <TextBlock Text="{Binding SelectedAccountWorkflowLinkText}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" Margin="0,12,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Shared Data Access" Style="{StaticResource CardHeaderStyle}" />
+                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,12,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="Security Master" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedAccountSecurityMasterText}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="Historical Prices" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedAccountHistoricalPriceText}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CompactCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Backfill" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedAccountBackfillText}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Recent Balance Evidence" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding BalanceHistorySummaryText}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,10,0,0" />
+                            <ItemsControl ItemsSource="{Binding BalanceHistory}" Margin="0,12,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding AsOfDate, StringFormat={}{0:MMM dd yyyy}}" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding CashBalance, StringFormat=Cash {0:C0}}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,6,0,0" />
+                                                <TextBlock Text="{Binding SecuritiesMarketValue, StringFormat=Market value {0:C0}}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding PendingSettlement, StringFormat=Pending settlement {0:C0}}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding Source, StringFormat=Source {0}}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>

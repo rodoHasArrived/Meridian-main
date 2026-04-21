@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPositionSnapshotStore
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSnapshotAsync
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestSnapshotAsync
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotHistoryAsync
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs

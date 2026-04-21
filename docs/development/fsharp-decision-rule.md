@@ -121,3 +121,89 @@ Future F# adoption should be justified by similarity to this pilot:
 - measurable improvement in correctness or maintainability
 
 Do **not** expand F# because it is stylistically appealing. Expand it only when the pilot pattern demonstrates better fit than declarative C#.
+
+## Decision-Kernel Expansion Pattern
+
+When extending F# usage beyond the current validation pilot, reuse one implementation pattern:
+
+1. **C# contracts + input shaping**
+2. **F# decision kernel** (`inputs -> score/decision + structured reasons`)
+3. **C# orchestration** (timers, state, logging, I/O, cancellation, DI wiring)
+
+This keeps the boundary explicit and allows new kernels to inherit the same testability profile as the existing validation interop layer.
+
+## Recommended Expansion Sequence
+
+Apply the decision-kernel pattern in this order.
+
+### 1) Data-quality scoring kernels (highest leverage)
+
+Best-fit boundaries:
+
+- `CompletenessScoreCalculator`
+- `GapAnalyzer`
+- `SequenceErrorTracker`
+
+Scope guidance:
+
+- Keep rolling timers, state retention, and telemetry/event emission in C#.
+- Move deterministic score/severity/classification functions into F# modules.
+
+Why first:
+
+- These scores drive trust signals consumed across Data Operations, monitoring, and downstream readiness gates.
+
+### 2) Provider trust + degradation scoring
+
+Best-fit boundaries:
+
+- `ProviderTrustScoringService` in `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs`
+- `ProviderDegradationScorer` in `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs`
+
+Scope guidance:
+
+- Keep provider polling, scheduling cadence, metrics/logging, and side-effect orchestration in C#.
+- Move weighted rule evaluation into F# functions that return score plus reason codes.
+
+Why second:
+
+- Central trust/degradation outputs influence routing and operator confidence across multiple surfaces.
+
+### 3) Promotion/governance policy matrix
+
+Current state:
+
+- Promotion already has an F# seam (`BacktestToLivePromoter` via `Interop.PromotionInterop`).
+
+Next boundary:
+
+- Consolidate eligibility and governance decision trees (manual overrides, live-gate policy, approval predicates) into F# decision kernels.
+- Keep `PromotionService` and surrounding workflow orchestration in C#.
+
+### 4) Export preflight rule engine
+
+Best-fit boundary:
+
+- `src/Meridian.Storage/Export/ExportValidator.cs`
+
+Scope guidance:
+
+- Keep file-system access, permission probing, and cancellation handling in C#.
+- Express deterministic preflight rules in F# evaluators that return structured issue sets.
+
+### 5) Reconciliation break classification
+
+Best-fit boundary:
+
+- Extend rule classification on top of existing ledger-oriented F# foundations in `src/Meridian.FSharp.Ledger/`.
+
+Scope guidance:
+
+- Use exhaustive pattern matching for break-type classification and deterministic reason-code generation.
+- Keep queue persistence, review workflows, and external side effects in C# services.
+
+## Prioritization Rationale
+
+- **Highest-leverage start:** data quality + provider trust kernels (steps 1 and 2) because they centralize cross-workspace risk/trust signals.
+- **Platform bet:** one shared C#/F# decision-kernel contract reused by promotion, export, and reconciliation instead of subsystem-specific interop styles.
+- **Product signal:** better deterministic scoring lineage supports operator explainability and competitive trust narratives without moving integration-heavy services out of C#.

@@ -261,16 +261,6 @@ public sealed class SymbolMappingServiceTests
     }
 
     [Fact]
-    public void ApplyReverseTransform_StockSharp_ShouldStripExchangeSuffix()
-    {
-        // Act
-        var result = SymbolMappingService.ApplyReverseTransform("AAPL@NASDAQ", "StockSharp");
-
-        // Assert
-        result.Should().Be("AAPL");
-    }
-
-    [Fact]
     public void ApplyReverseTransform_UnknownProvider_ShouldReturnUppercase()
     {
         // Act
@@ -486,7 +476,6 @@ public sealed class SymbolMappingServiceTests
     [InlineData(SymbolTransform.DotsToSpaces)]
     [InlineData(SymbolTransform.DotsToDashes)]
     [InlineData(SymbolTransform.StooqFormat)]
-    [InlineData(SymbolTransform.StockSharpFormat)]
     public void SymbolTransform_AllValues_ShouldBeDefined(SymbolTransform transform)
     {
         // Assert

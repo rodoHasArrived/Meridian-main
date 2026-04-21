@@ -1,7 +1,7 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-17T04:53:13.295777+00:00
+> Last updated: 2026-04-21T19:34:35.665366+00:00
 
 ## Overall Health Score
 
@@ -14,10 +14,10 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 386 |
-| Total lines | 137,805 |
-| Average file size (lines) | 357.0 |
-| Orphaned files | 124 |
+| Total documentation files | 401 |
+| Total lines | 140,055 |
+| Average file size (lines) | 349.3 |
+| Orphaned files | 128 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 185 |
@@ -39,6 +39,7 @@
 
 These files are not linked from any other Markdown file in the repository:
 
+- `.artifacts/link-repair-report.md`
 - `.claude/agents/meridian-blueprint.md`
 - `.claude/agents/meridian-cleanup.md`
 - `.claude/agents/meridian-docs.md`
@@ -58,8 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
 - `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
 - `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
-- ... and 104 more
+- ... and 108 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-17 | 88 | 386 | 124 | 0 |
+| 2026-04-21 | 88 | 401 | 128 | 0 |
 
 ---
 

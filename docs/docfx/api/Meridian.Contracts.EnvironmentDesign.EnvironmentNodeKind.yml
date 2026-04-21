@@ -1,0 +1,348 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  id: EnvironmentNodeKind
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Account
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Business
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Client
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Entity
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Fund
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.InvestmentPortfolio
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.LedgerGroup
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Organization
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Sleeve
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Vehicle
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentNodeKind
+  nameWithType: EnvironmentNodeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentNodeKind
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<EnvironmentNodeKind>))]
+
+      public enum EnvironmentNodeKind
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of EnvironmentNodeKind)))>
+
+      Public Enum EnvironmentNodeKind
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind}
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Organization
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Organization
+  id: Organization
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Organization
+  nameWithType: EnvironmentNodeKind.Organization
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Organization
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Organization
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Organization = 0
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Business
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Business
+  id: Business
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Business
+  nameWithType: EnvironmentNodeKind.Business
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Business
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Business
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Business = 1
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Client
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Client
+  id: Client
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Client
+  nameWithType: EnvironmentNodeKind.Client
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Client
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Client
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Client = 2
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Fund
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Fund
+  id: Fund
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Fund
+  nameWithType: EnvironmentNodeKind.Fund
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Fund
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fund
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Fund = 3
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Sleeve
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Sleeve
+  id: Sleeve
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Sleeve
+  nameWithType: EnvironmentNodeKind.Sleeve
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Sleeve
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sleeve
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Sleeve = 4
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Vehicle
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Vehicle
+  id: Vehicle
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Vehicle
+  nameWithType: EnvironmentNodeKind.Vehicle
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Vehicle
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vehicle
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Vehicle = 5
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.InvestmentPortfolio
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.InvestmentPortfolio
+  id: InvestmentPortfolio
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: InvestmentPortfolio
+  nameWithType: EnvironmentNodeKind.InvestmentPortfolio
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.InvestmentPortfolio
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvestmentPortfolio
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: InvestmentPortfolio = 6
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Entity
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Entity
+  id: Entity
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Entity
+  nameWithType: EnvironmentNodeKind.Entity
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Entity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Entity
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Entity = 7
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Account
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Account
+  id: Account
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: Account
+  nameWithType: EnvironmentNodeKind.Account
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.Account
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Account
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Account = 8
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.LedgerGroup
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.LedgerGroup
+  id: LedgerGroup
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  langs:
+  - csharp
+  - vb
+  name: LedgerGroup
+  nameWithType: EnvironmentNodeKind.LedgerGroup
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.LedgerGroup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerGroup
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: LedgerGroup = 9
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.html
+  name: EnvironmentNodeKind
+  nameWithType: EnvironmentNodeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind

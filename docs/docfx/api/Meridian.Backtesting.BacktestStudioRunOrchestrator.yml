@@ -6,6 +6,7 @@ items:
   parent: Meridian.Backtesting
   children:
   - Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine},Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator})
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
   - Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
@@ -19,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestStudioRunOrchestrator
     path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
@@ -30,10 +31,12 @@ items:
   summary: Coordinates Backtest Studio runs across multiple engines while persisting them through the shared strategy-run model.
   example: []
   syntax:
-    content: public sealed class BacktestStudioRunOrchestrator
-    content.vb: Public NotInheritable Class BacktestStudioRunOrchestrator
+    content: 'public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable'
+    content.vb: Public NotInheritable Class BacktestStudioRunOrchestrator Implements IAsyncDisposable
   inheritance:
   - System.Object
+  implements:
+  - System.IAsyncDisposable
   inheritedMembers:
   - System.Object.Equals(System.Object)
   - System.Object.Equals(System.Object,System.Object)
@@ -55,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-    startLine: 19
+    startLine: 21
   assemblies:
   - Meridian.Backtesting
   namespace: Meridian.Backtesting
@@ -91,11 +94,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-    startLine: 34
+    startLine: 36
   assemblies:
   - Meridian.Backtesting
   namespace: Meridian.Backtesting
@@ -126,11 +129,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
     path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-    startLine: 68
+    startLine: 78
   assemblies:
   - Meridian.Backtesting
   namespace: Meridian.Backtesting
@@ -164,11 +167,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCanonicalResultAsync
     path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
-    startLine: 80
+    startLine: 90
   assemblies:
   - Meridian.Backtesting
   namespace: Meridian.Backtesting
@@ -188,6 +191,42 @@ items:
   nameWithType.vb: BacktestStudioRunOrchestrator.GetCanonicalResultAsync(String, CancellationToken)
   fullName.vb: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(String, System.Threading.CancellationToken)
   name.vb: GetCanonicalResultAsync(String, CancellationToken)
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  commentId: M:Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: BacktestStudioRunOrchestrator.DisposeAsync()
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
 references:
 - uid: Meridian.Backtesting
   commentId: N:Meridian.Backtesting
@@ -222,6 +261,14 @@ references:
   nameWithType.vb: Object
   fullName.vb: Object
   name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
 - uid: System.Object.Equals(System.Object)
   commentId: M:System.Object.Equals(System.Object)
   parent: System.Object
@@ -929,3 +976,39 @@ references:
   - uid: Meridian.Backtesting.Sdk.BacktestResult
     name: BacktestResult
   - name: )
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync*
+  commentId: Overload:Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html#Meridian_Backtesting_BacktestStudioRunOrchestrator_DisposeAsync
+  name: DisposeAsync
+  nameWithType: BacktestStudioRunOrchestrator.DisposeAsync
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

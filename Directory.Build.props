@@ -14,8 +14,12 @@
   <PropertyGroup>
     <!-- Allow resolving Windows-targeted TFMs on non-Windows CI runners to avoid NETSDK1100 -->
     <EnableWindowsTargeting Condition="'$([MSBuild]::IsOSPlatform(&quot;Windows&quot;))' != 'true'">true</EnableWindowsTargeting>
+    <!-- Optional per-run isolation root for automation or concurrent local builds. -->
+    <MeridianBuildIsolationKey Condition="'$(MeridianBuildIsolationKey)' == ''"></MeridianBuildIsolationKey>
+    <BaseIntermediateOutputPath Condition="'$(MeridianBuildIsolationKey)' != ''">$(MSBuildThisFileDirectory)artifacts/obj/$(MeridianBuildIsolationKey)/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <BaseOutputPath Condition="'$(MeridianBuildIsolationKey)' != ''">$(MSBuildThisFileDirectory)artifacts/bin/$(MeridianBuildIsolationKey)/$(MSBuildProjectName)/</BaseOutputPath>
     <!-- Keep generated build output trees out of compilation when local alternate obj/bin paths exist -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);**\obj\**;**\obj-*\**;**\bin\**;**\bin-*\**;**\artifacts\codex-obj\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\obj\**;**\obj-*\**;**\bin\**;**\bin-*\**;**\artifacts\codex-obj\**;$(MSBuildThisFileDirectory)artifacts\obj\**;$(MSBuildThisFileDirectory)artifacts\bin\**</DefaultItemExcludes>
     
     <!-- Suppress common benign warnings across all projects -->
     <!-- MSB3277: Assembly binding conflict (typically transitive dependencies, resolved automatically) -->

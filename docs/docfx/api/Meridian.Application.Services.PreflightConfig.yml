@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightConfig
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 742
+    startLine: 743
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDiskSpaceGb
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 745
+    startLine: 746
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarnDiskSpaceGb
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 748
+    startLine: 749
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -123,11 +123,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinMemoryMb
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 751
+    startLine: 752
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -154,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarnMemoryMb
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 754
+    startLine: 755
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -185,11 +185,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetworkTimeoutMs
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 757
+    startLine: 758
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -216,11 +216,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckNetworkConnectivity
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 760
+    startLine: 761
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -247,11 +247,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderConnectivity
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 763
+    startLine: 764
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -278,11 +278,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/PreflightChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Services/PreflightChecker.cs
-    startLine: 765
+    startLine: 766
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services

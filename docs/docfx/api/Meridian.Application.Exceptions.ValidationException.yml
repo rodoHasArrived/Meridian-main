@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationException
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityType
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityId
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/ValidationException.cs

@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfigurationStep
     path: ../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-    startLine: 11
+    startLine: 10
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepId
     path: ../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-    startLine: 24
+    startLine: 16
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-    startLine: 26
+    startLine: 18
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps
@@ -126,11 +126,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
     path: ../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs
-    startLine: 32
+    startLine: 33
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps

@@ -13,10 +13,63 @@ vi.mock("@/lib/api", async () => {
     cancelAllOrders: vi.fn().mockResolvedValue({ actionId: "a2", status: "Completed", message: "ok", occurredAt: new Date().toISOString() }),
     closePosition: vi.fn().mockResolvedValue({ actionId: "a3", status: "Accepted", message: "ok", occurredAt: new Date().toISOString() }),
     submitOrder: vi.fn().mockResolvedValue({ success: true, orderId: "O-1", reason: null }),
-    getExecutionSessions: vi.fn().mockResolvedValue([{ sessionId: "sess-1", strategyId: "strat-1", strategyName: null, status: "Active", initialCash: 100000, createdAt: "2026-01-01" }]),
+    getExecutionSessions: vi.fn().mockResolvedValue([{ sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true }]),
     createPaperSession: vi.fn(),
-    closePaperSession: vi.fn().mockResolvedValue(undefined),
-    getPaperSessionDetail: vi.fn().mockResolvedValue({ sessionId: "sess-1", strategyId: "strat-1", strategyName: null, status: "Active", initialCash: 100000, createdAt: "2026-01-01", closedAt: null }),
+    closePaperSession: vi.fn().mockResolvedValue({ actionId: "a4", status: "Completed", message: "closed", occurredAt: "2026-01-01T01:00:00Z", auditId: "audit-close-1" }),
+    getPaperSessionDetail: vi.fn().mockResolvedValue({
+      summary: { sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true },
+      symbols: ["AAPL", "MSFT"],
+      portfolio: {
+        cash: 99000,
+        portfolioValue: 100250,
+        unrealisedPnl: 250,
+        realisedPnl: 0,
+        positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
+        asOf: "2026-01-01T00:15:00Z"
+      },
+      orderHistory: []
+    }),
+    getPaperSessionReplayVerification: vi.fn().mockResolvedValue({
+      summary: { sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true },
+      symbols: ["AAPL", "MSFT"],
+      replaySource: "DurableFillLog",
+      isConsistent: true,
+      mismatchReasons: [],
+      currentPortfolio: {
+        cash: 99000,
+        portfolioValue: 100250,
+        unrealisedPnl: 250,
+        realisedPnl: 0,
+        positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
+        asOf: "2026-01-01T00:15:00Z"
+      },
+      replayPortfolio: {
+        cash: 99000,
+        portfolioValue: 100250,
+        unrealisedPnl: 250,
+        realisedPnl: 0,
+        positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
+        asOf: "2026-01-01T00:15:00Z"
+      },
+      verifiedAt: "2026-01-01T00:20:00Z"
+    }),
+    getExecutionAudit: vi.fn().mockResolvedValue([
+      {
+        auditId: "audit-1",
+        category: "PaperSession",
+        action: "ReplayPaperSession",
+        outcome: "Completed",
+        occurredAt: "2026-01-01T00:20:00Z",
+        actor: "ops-session",
+        brokerName: null,
+        orderId: null,
+        runId: null,
+        symbol: null,
+        correlationId: null,
+        message: "Replay matched current state for paper session sess-1.",
+        metadata: { sessionId: "sess-1" }
+      }
+    ]),
     getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
     getReplayStatus: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "running", speedMultiplier: 1, eventsProcessed: 3, totalEvents: 10, progressPercent: 30, startedAt: "2026-01-01" }),
@@ -83,7 +136,19 @@ describe("TradingScreen", () => {
 
     await user.click(screen.getByRole("button", { name: "Restore" }));
     await waitFor(() => expect(api.getPaperSessionDetail).toHaveBeenCalledWith("sess-1"));
-    expect(screen.getByText(/Active session: sess-1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Selected session: sess-1/i)).toBeInTheDocument();
+    expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
+  });
+
+  it("shows replay verification and execution audit for the selected session", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    await user.click(screen.getByRole("button", { name: /verify replay/i }));
+
+    await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
+    expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
   });
 
   it("opens confirmation dialog when Cancel order button is clicked", () => {

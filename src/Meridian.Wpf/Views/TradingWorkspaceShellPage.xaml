@@ -10,7 +10,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Trading Workspace"
+      AutomationProperties.Name="Trading Cockpit"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
 
     <Grid Margin="20">
@@ -43,7 +43,7 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Trading Cockpit"
                                        Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Live execution, active positions, and fund-aware risk posture from a single workstation shell."
+                            <TextBlock Text="Paper and live execution, active positions, and fund-aware risk posture from a single cockpit shell."
                                        Margin="0,6,0,0"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />
@@ -74,32 +74,184 @@
                             </Border>
                         </StackPanel>
 
-                        <Border Grid.Column="1"
-                                Margin="16,0,0,0"
-                                Padding="16,14"
-                                CornerRadius="12"
-                                Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1"
-                                VerticalAlignment="Top">
-                            <StackPanel>
-                                <TextBlock Text="Active Run"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                <TextBlock x:Name="TradingActiveRunText"
-                                           Margin="0,6,0,0"
-                                           FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                           Text="No active trading run" />
-                                <TextBlock x:Name="TradingActiveRunMetaText"
-                                           Margin="0,4,0,0"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                           Text="Use Research to promote a run, or open a live/paper panel below." />
-                            </StackPanel>
-                        </Border>
+                        <StackPanel Grid.Column="1"
+                                    Margin="16,0,0,0"
+                                    Width="340"
+                                    VerticalAlignment="Top">
+                            <Border Padding="16,14"
+                                    CornerRadius="12"
+                                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                    BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="Active Run"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock x:Name="TradingActiveRunText"
+                                               Margin="0,6,0,0"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               Text="No active trading run" />
+                                    <TextBlock x:Name="TradingActiveRunMetaText"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               Text="Use Research to promote a run, or open a live/paper panel below." />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Margin="0,12,0,0"
+                                    Padding="16,14"
+                                    CornerRadius="12"
+                                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                    BorderThickness="1">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="Promotion &amp; Status"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+
+                                        <Border x:Name="TradingStatusBadgeBorder"
+                                                Grid.Column="1"
+                                                Padding="8,3"
+                                                CornerRadius="999"
+                                                Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                                BorderBrush="{StaticResource InfoColorBrush}"
+                                                BorderThickness="1">
+                                            <TextBlock x:Name="TradingStatusBadgeText"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       Text="Info" />
+                                        </Border>
+                                    </Grid>
+
+                                    <TextBlock x:Name="TradingStatusSummaryText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Text="Promotion handoff, audit traceability, and validation coverage appear here for the active run or workspace." />
+
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,14,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Promotion"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <Border x:Name="PromotionStatusPill"
+                                                    Margin="0,8,0,0"
+                                                    Padding="8,3"
+                                                    CornerRadius="999"
+                                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                                    BorderThickness="1"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock x:Name="PromotionStatusLabelText"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                           Text="Awaiting runs" />
+                                            </Border>
+                                            <TextBlock x:Name="PromotionStatusDetailText"
+                                                       Margin="0,8,0,0"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       TextWrapping="Wrap"
+                                                       Text="Record or select a run to surface promotion review posture." />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Audit"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <Border x:Name="AuditStatusPill"
+                                                    Margin="0,8,0,0"
+                                                    Padding="8,3"
+                                                    CornerRadius="999"
+                                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                                    BorderThickness="1"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock x:Name="AuditStatusLabelText"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                           Text="Awaiting runs" />
+                                            </Border>
+                                            <TextBlock x:Name="AuditStatusDetailText"
+                                                       Margin="0,8,0,0"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       TextWrapping="Wrap"
+                                                       Text="Audit coverage appears after runs are recorded." />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Validation"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <Border x:Name="ValidationStatusPill"
+                                                    Margin="0,8,0,0"
+                                                    Padding="8,3"
+                                                    CornerRadius="999"
+                                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                                    BorderBrush="{StaticResource InfoColorBrush}"
+                                                    BorderThickness="1"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock x:Name="ValidationStatusLabelText"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                           Text="Awaiting runs" />
+                                            </Border>
+                                            <TextBlock x:Name="ValidationStatusDetailText"
+                                                       Margin="0,8,0,0"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       TextWrapping="Wrap"
+                                                       Text="Validation coverage appears after recorded runs project governance controls." />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <StackPanel Margin="0,14,0,0">
+                                        <TextBlock Text="Deeper Review"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <WrapPanel Margin="0,10,0,0">
+                                            <Button Content="Run Review"
+                                                    Click="OpenRunReview_Click"
+                                                    Style="{StaticResource GhostButtonStyle}"
+                                                    Margin="0,0,10,8" />
+                                            <Button Content="Replay Events"
+                                                    Click="OpenReplayReview_Click"
+                                                    Style="{StaticResource GhostButtonStyle}"
+                                                    Margin="0,0,10,8" />
+                                            <Button Content="Collection Sessions"
+                                                    Click="OpenCollectionSessions_Click"
+                                                    Style="{StaticResource GhostButtonStyle}" />
+                                        </WrapPanel>
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </Grid>
                 </Border>
 

@@ -1,9 +1,9 @@
 # Provider Confidence Baseline
 
-**Last Updated:** 2026-04-09  
-**Scope:** Wave 1 provider confidence and evidence discipline for Polygon, Robinhood, NYSE, Interactive Brokers, and StockSharp
+**Last Updated:** 2026-04-17  
+**Scope:** Active Wave 1 provider confidence for Alpaca, Robinhood, and Yahoo
 
-Wave 1 is a trust-and-evidence program. This document separates executable repo evidence from manual/runtime evidence and keeps every bounded scenario tied to a concrete artifact folder or test suite.
+Wave 1 is an evidence gate, not a coverage-inventory exercise. This baseline separates repo-closed evidence from intentionally bounded runtime evidence and keeps deferred providers out of the active closure target.
 
 Use this with:
 
@@ -13,30 +13,31 @@ Use this with:
 
 ## Baseline Rules
 
-- Offline/CI evidence is mandatory for every Wave 1 row.
-- Manual/runtime evidence must use the committed artifact layout under `artifacts/provider-validation/<provider>/<yyyy-mm-dd>/`.
-- Remaining gaps are allowed only as explicit `bounded` scenarios tied to a concrete vendor, entitlement, package, or session requirement.
+- Offline and CI evidence is mandatory for every active Wave 1 row.
+- Manual or runtime evidence is only required when the claim cannot be closed from checked-in tests.
+- Deferred providers must stay labeled as deferred, future-wave, or reference inventory and must not drift back into the active Wave 1 gate by prose alone.
 - Do not broaden live-readiness language from this document.
 
-## Polygon
+## Alpaca
 
 **Offline / CI evidence**
 
-- `PolygonRecordedSessionReplayTests`
-- `PolygonMessageParsingTests`
-- `PolygonSubscriptionTests`
-- `PolygonMarketDataClientTests`
-- committed replay fixtures under `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/Polygon/`
+- `AlpacaBrokerageGatewayTests`
+- `AlpacaCorporateActionProviderTests`
+- `AlpacaCredentialAndReconnectTests`
+- `AlpacaMessageParsingTests`
+- `AlpacaQuotePipelineGoldenTests`
+- `AlpacaQuoteRoutingTests`
+- `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam`
 
 **Manual / runtime evidence**
 
-- None required for the replay baseline.
-- Live reconnect and websocket throttling remain bounded follow-on work until a sanitized transcript is captured.
+- Not required for the active Wave 1 claim.
 
 **Wave 1 posture**
 
-- Replay confidence is strong and executable.
-- Remaining runtime gaps are bounded to live websocket reconnect/throttling behavior.
+- Alpaca is an active core provider row.
+- The current Wave 1 claim is repo-closed through checked-in provider and stable execution seam tests.
 
 ## Robinhood
 
@@ -57,108 +58,40 @@ Use this with:
 
 **Wave 1 posture**
 
-- One supported Robinhood surface is in code across brokerage submit, quote polling, historical daily bars, and symbol search.
-- Runtime confidence remains bounded by the unofficial broker API and the need for a real session outside CI.
+- Robinhood remains one supported, execution-adjacent surface in Meridian across brokerage submit, quote polling, historical daily bars, and symbol search.
+- Runtime confidence remains intentionally bounded by the unofficial API and the need for a real broker session outside CI.
 - Quote confidence is polling-path confidence, not websocket confidence.
 
-## NYSE
+## Yahoo
 
 **Offline / CI evidence**
 
-- `NyseSharedLifecycleTests`
-- `NyseMarketDataClientTests`
-- `NYSECredentialAndRateLimitTests`
-- `NYSEMessageParsingTests`
-- `NyseTaqCollectorIntegrationTests`
+- `YahooFinanceHistoricalDataProviderTests`
+- `YahooFinanceIntradayContractTests`
 
 **Manual / runtime evidence**
 
-- `artifacts/provider-validation/nyse/2026-04-09/auth-connectivity/summary.md`
-- `artifacts/provider-validation/nyse/2026-04-09/l1-streaming-reconnect/summary.md`
-- `artifacts/provider-validation/nyse/2026-04-09/rate-limit/summary.md`
-- `artifacts/provider-validation/nyse/2026-04-09/premium-depth/summary.md`
+- Not required for the active Wave 1 claim.
+- Existing live Yahoo integration suites remain optional developer reference and do not define the gate.
 
 **Wave 1 posture**
 
-- The L1/shared-lifecycle gate is driven by repo evidence.
-- Auth/connectivity and rate-limit behavior are explicitly bounded to real credentialed runtime.
-- `premium-depth` is optional-but-bounded by entitlement and does not block Wave 1 closure.
+- Yahoo is an active core provider row for historical and fallback confidence.
+- Yahoo is not part of Meridian's live runtime-provider claim for Wave 1.
 
-## Interactive Brokers
+## Deferred Provider Inventory
 
-**Offline / CI evidence**
-
-- `IBRuntimeGuidanceTests`
-- `IBOrderSampleTests`
-- `IBApiVersionValidatorTests`
-- `IBSimulationClientContractTests`
-- `scripts/dev/build-ibapi-smoke.ps1`
-
-**Manual / runtime evidence**
-
-- `artifacts/provider-validation/interactive-brokers/2026-04-09/bootstrap/summary.md`
-- `artifacts/provider-validation/interactive-brokers/2026-04-09/server-version/summary.md`
-- `artifacts/provider-validation/interactive-brokers/2026-04-09/market-data-entitlements/summary.md`
-- `artifacts/provider-validation/interactive-brokers/2026-04-09/disconnect-reconnect/summary.md`
-
-**Wave 1 posture**
-
-- Meridian keeps three IB modes separate:
-  - non-`IBAPI` simulation/runtime-guidance
-  - `EnableIbApiSmoke=true` compile-only smoke
-  - official vendor runtime via the real `IBApi` surface
-- Repo evidence now proves the version bounds and smoke-build path.
-- Runtime confidence remains bounded by vendor DLL availability, TWS/Gateway setup, and entitlements.
-
-## StockSharp
-
-**Offline / CI evidence**
-
-- `StockSharpSubscriptionTests`
-- `StockSharpMessageConversionTests`
-- `StockSharpConnectorFactoryTests`
-- `StockSharpConnectorCapabilities.GetWave1ValidatedConnectors()`
-
-**Wave 1 validated adapters**
-
-- `Rithmic`
-- `IQFeed`
-- `CQG`
-- `InteractiveBrokers`
-
-**Optional/example adapters outside the Wave 1 gate**
-
-- `Binance`
-- `Coinbase`
-- `Kraken`
-
-**Manual / runtime evidence**
-
-- `artifacts/provider-validation/stocksharp/2026-04-09/rithmic-bootstrap/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/rithmic-streaming/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/rithmic-historical/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/iqfeed-bootstrap/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/iqfeed-streaming/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/iqfeed-historical/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/cqg-bootstrap/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/cqg-streaming/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/cqg-historical/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/interactive-brokers-bootstrap/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/interactive-brokers-streaming/summary.md`
-- `artifacts/provider-validation/stocksharp/2026-04-09/interactive-brokers-historical/summary.md`
-
-**Wave 1 posture**
-
-- Meridian still recognizes more named connectors than it validates in Wave 1.
-- The Wave 1 gate is intentionally limited to the four adapters above.
-- Every runtime scenario remains explicitly bounded by package surfaces, vendor software, and credentials until a sanitized local capture exists.
+- `Polygon` is deferred from the active Wave 1 gate. Replay coverage remains useful, but live reconnect and websocket throttling are not current blockers.
+- `Interactive Brokers` is deferred from the active Wave 1 gate and remains a future runtime-validation track.
+- `NYSE` is deferred from the active Wave 1 gate and remains a future entitlement and runtime-validation track.
+- `StockSharp` remains outside the active Wave 1 gate as reference and future validation inventory only.
 
 ## Cross-Cutting Wave 1 Closures
 
 These are not provider-runtime artifacts, but they are part of the same trust gate:
 
 - Checkpoint reliability: `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests`
-- Parquet L2 flush behavior: `ParquetStorageSinkTests`, `ParquetConversionServiceTests` (including retry-safe L2 flush retention after failure or cancellation)
+- Parquet L2 flush behavior: `ParquetStorageSinkTests`, `ParquetConversionServiceTests`
 
 ## Primary Command
 

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveDataService
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentTradesAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentQuotesAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrderBookAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBboAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrderFlowStatsAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -286,7 +286,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveSubscriptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -392,7 +392,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs

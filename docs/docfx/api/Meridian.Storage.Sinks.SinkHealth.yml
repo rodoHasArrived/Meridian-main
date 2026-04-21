@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SinkHealth
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SinkType
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SinkIndex
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveFailures
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFailureTime
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitResetTime
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/CompositeSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFailures
     path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs

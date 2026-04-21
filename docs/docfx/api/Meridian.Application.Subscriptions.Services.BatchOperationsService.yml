@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchOperationsService
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleSubscriptionsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableTradesAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisableTradesAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -317,7 +317,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableDepthAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisableDepthAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -393,7 +393,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CopySettingsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -428,7 +428,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilteredSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -463,7 +463,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerformFilteredOperationAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
@@ -498,7 +498,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MoveToWatchlistAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs

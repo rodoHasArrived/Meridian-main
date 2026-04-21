@@ -10,10 +10,9 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// Range allocation:
 /// - 100,000-199,999: Alpaca Markets
 /// - 200,000-299,999: Polygon.io
-/// - 300,000-399,999: StockSharp
-/// - 400,000-499,999: Interactive Brokers
-/// - 500,000-599,999: NYSE
-/// - 600,000+: Reserved for future providers
+/// - 300,000-399,999: Interactive Brokers
+/// - 400,000-499,999: NYSE
+/// - 500,000+: Reserved for future providers
 ///
 /// Usage:
 /// <code>
@@ -34,25 +33,19 @@ public static class ProviderSubscriptionRanges
     public const int PolygonStart = 200_000;
 
     /// <summary>
-    /// Starting subscription ID for StockSharp provider (300,000).
-    /// Previously used 200,000 which collided with Polygon.
+    /// Starting subscription ID for Interactive Brokers provider (300,000).
     /// </summary>
-    public const int StockSharpStart = 300_000;
+    public const int InteractiveBrokersStart = 300_000;
 
     /// <summary>
-    /// Starting subscription ID for Interactive Brokers provider (400,000).
+    /// Starting subscription ID for NYSE provider (400,000).
     /// </summary>
-    public const int InteractiveBrokersStart = 400_000;
+    public const int NyseStart = 400_000;
 
     /// <summary>
-    /// Starting subscription ID for NYSE provider (500,000).
+    /// Starting subscription ID for reserved/future providers (500,000).
     /// </summary>
-    public const int NyseStart = 500_000;
-
-    /// <summary>
-    /// Starting subscription ID for reserved/future providers (600,000).
-    /// </summary>
-    public const int ReservedStart = 600_000;
+    public const int ReservedStart = 500_000;
 
     /// <summary>
     /// Size of each provider's ID range (100,000 IDs per provider).
@@ -70,8 +63,7 @@ public static class ProviderSubscriptionRanges
         return subscriptionId switch
         {
             >= AlpacaStart and < PolygonStart => "Alpaca",
-            >= PolygonStart and < StockSharpStart => "Polygon",
-            >= StockSharpStart and < InteractiveBrokersStart => "StockSharp",
+            >= PolygonStart and < InteractiveBrokersStart => "Polygon",
             >= InteractiveBrokersStart and < NyseStart => "InteractiveBrokers",
             >= NyseStart and < ReservedStart => "NYSE",
             >= ReservedStart => "Reserved",

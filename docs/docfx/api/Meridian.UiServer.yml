@@ -19,16 +19,16 @@ items:
   source:
     remote:
       path: src/Meridian/UiServer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UiServer
     path: ../../src/Meridian/UiServer.cs
-    startLine: 41
+    startLine: 34
   assemblies:
   - Meridian
   namespace: Meridian
   summary: >-
-    Embedded HTTP server for the web dashboard UI.
+    Embedded HTTP server for the desktop-local API surface.
 
     Uses ServiceCompositionRoot for centralized service registration.
 
@@ -87,11 +87,11 @@ items:
   source:
     remote:
       path: src/Meridian/UiServer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian/UiServer.cs
-    startLine: 65
+    startLine: 46
   assemblies:
   - Meridian
   namespace: Meridian
@@ -125,11 +125,11 @@ items:
   source:
     remote:
       path: src/Meridian/UiServer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian/UiServer.cs
-    startLine: 290
+    startLine: 253
   assemblies:
   - Meridian
   namespace: Meridian
@@ -156,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian/UiServer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian/UiServer.cs
-    startLine: 296
+    startLine: 259
   assemblies:
   - Meridian
   namespace: Meridian
@@ -187,11 +187,11 @@ items:
   source:
     remote:
       path: src/Meridian/UiServer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian/UiServer.cs
-    startLine: 302
+    startLine: 265
   assemblies:
   - Meridian
   namespace: Meridian

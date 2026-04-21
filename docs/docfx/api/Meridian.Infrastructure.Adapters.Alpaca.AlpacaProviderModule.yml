@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaProviderModule
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleId
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs

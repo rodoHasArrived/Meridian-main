@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaFieldType
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: String
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integer
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Decimal
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Boolean
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -153,7 +153,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateTime
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Array
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Object
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationProjectionService
     path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildChecks
     path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationProjectionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildBankingChecks
     path: ../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs

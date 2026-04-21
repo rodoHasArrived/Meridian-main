@@ -1,0 +1,108 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  id: ISecurityMasterIngestStatusService
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterIngestStatusService
+  nameWithType: ISecurityMasterIngestStatusService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterIngestStatusService
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Exposes runtime Security Master ingest status.
+  example: []
+  syntax:
+    content: public interface ISecurityMasterIngestStatusService
+    content.vb: Public Interface ISecurityMasterIngestStatusService
+  derivedClasses:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterImportService
+  - Meridian.Application.SecurityMaster.SecurityMasterImportService
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: ISecurityMasterIngestStatusService.GetSnapshot()
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Gets the latest ingest status snapshot.
+  example: []
+  syntax:
+    content: SecurityMasterIngestStatusSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+    content.vb: Function GetSnapshot() As SecurityMasterIngestStatusSnapshot
+  overload: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot*
+references:
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot*
+  commentId: Overload:Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+  href: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.html#Meridian_Application_SecurityMaster_ISecurityMasterIngestStatusService_GetSnapshot
+  name: GetSnapshot
+  nameWithType: ISecurityMasterIngestStatusService.GetSnapshot
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+- uid: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot.html
+  name: SecurityMasterIngestStatusSnapshot
+  nameWithType: SecurityMasterIngestStatusSnapshot
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot

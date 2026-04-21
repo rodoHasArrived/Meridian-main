@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityAliasScope
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 16
+    startLine: 30
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operations
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 19
+    startLine: 33
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -82,11 +82,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Collector
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 20
+    startLine: 34
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -108,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Execution
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 21
+    startLine: 35
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -134,11 +134,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Migration
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-    startLine: 22
+    startLine: 36
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster

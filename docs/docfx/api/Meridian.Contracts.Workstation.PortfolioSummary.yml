@@ -5,12 +5,11 @@ items:
   id: PortfolioSummary
   parent: Meridian.Contracts.Workstation
   children:
-  - Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32,System.String)
+  - Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)
   - Meridian.Contracts.Workstation.PortfolioSummary.AsOf
   - Meridian.Contracts.Workstation.PortfolioSummary.Cash
   - Meridian.Contracts.Workstation.PortfolioSummary.Commissions
   - Meridian.Contracts.Workstation.PortfolioSummary.Financing
-  - Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId
   - Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
   - Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
   - Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
@@ -33,11 +32,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioSummary
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 153
+    startLine: 171
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -57,32 +56,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32,System.String)
-  commentId: M:Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32,System.String)
-  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32,System.String)'
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)'
   parent: Meridian.Contracts.Workstation.PortfolioSummary
   langs:
   - csharp
   - vb
-  name: PortfolioSummary(string, string, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<PortfolioPositionSummary>, int, int, string?)
-  nameWithType: PortfolioSummary.PortfolioSummary(string, string, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<PortfolioPositionSummary>, int, int, string?)
-  fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioSummary(string, string, System.DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.PortfolioPositionSummary>, int, int, string?)
+  name: PortfolioSummary(string, string, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<PortfolioPositionSummary>, int, int)
+  nameWithType: PortfolioSummary.PortfolioSummary(string, string, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<PortfolioPositionSummary>, int, int)
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioSummary(string, string, System.DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.PortfolioPositionSummary>, int, int)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 153
+    startLine: 171
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
   summary: Shared portfolio rollup for workstation research and trading surfaces.
   example: []
   syntax:
-    content: public PortfolioSummary(string PortfolioId, string RunId, DateTimeOffset AsOf, decimal Cash, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, decimal RealizedPnl, decimal UnrealizedPnl, decimal Commissions, decimal Financing, IReadOnlyList<PortfolioPositionSummary> Positions, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, string? FundProfileId = null)
+    content: public PortfolioSummary(string PortfolioId, string RunId, DateTimeOffset AsOf, decimal Cash, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, decimal RealizedPnl, decimal UnrealizedPnl, decimal Commissions, decimal Financing, IReadOnlyList<PortfolioPositionSummary> Positions, int SecurityResolvedCount = 0, int SecurityMissingCount = 0)
     parameters:
     - id: PortfolioId
       type: System.String
@@ -116,13 +115,11 @@ items:
       type: System.Int32
     - id: SecurityMissingCount
       type: System.Int32
-    - id: FundProfileId
-      type: System.String
-    content.vb: Public Sub New(PortfolioId As String, RunId As String, AsOf As DateTimeOffset, Cash As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, GrossExposure As Decimal, NetExposure As Decimal, TotalEquity As Decimal, RealizedPnl As Decimal, UnrealizedPnl As Decimal, Commissions As Decimal, Financing As Decimal, Positions As IReadOnlyList(Of PortfolioPositionSummary), SecurityResolvedCount As Integer = 0, SecurityMissingCount As Integer = 0, FundProfileId As String = Nothing)
+    content.vb: Public Sub New(PortfolioId As String, RunId As String, AsOf As DateTimeOffset, Cash As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, GrossExposure As Decimal, NetExposure As Decimal, TotalEquity As Decimal, RealizedPnl As Decimal, UnrealizedPnl As Decimal, Commissions As Decimal, Financing As Decimal, Positions As IReadOnlyList(Of PortfolioPositionSummary), SecurityResolvedCount As Integer = 0, SecurityMissingCount As Integer = 0)
   overload: Meridian.Contracts.Workstation.PortfolioSummary.#ctor*
-  nameWithType.vb: PortfolioSummary.New(String, String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of PortfolioPositionSummary), Integer, Integer, String)
-  fullName.vb: Meridian.Contracts.Workstation.PortfolioSummary.New(String, String, System.DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.PortfolioPositionSummary), Integer, Integer, String)
-  name.vb: New(String, String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of PortfolioPositionSummary), Integer, Integer, String)
+  nameWithType.vb: PortfolioSummary.New(String, String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of PortfolioPositionSummary), Integer, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.PortfolioSummary.New(String, String, System.DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.PortfolioPositionSummary), Integer, Integer)
+  name.vb: New(String, String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of PortfolioPositionSummary), Integer, Integer)
 - uid: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
   commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
   id: PortfolioId
@@ -137,11 +134,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 154
+    startLine: 172
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -166,11 +163,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 155
+    startLine: 173
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -195,11 +192,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 156
+    startLine: 174
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -224,11 +221,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 157
+    startLine: 175
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -253,11 +250,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMarketValue
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 158
+    startLine: 176
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -282,11 +279,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarketValue
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 159
+    startLine: 177
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -311,11 +308,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GrossExposure
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 160
+    startLine: 178
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -340,11 +337,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetExposure
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 161
+    startLine: 179
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -369,11 +366,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEquity
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 162
+    startLine: 180
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -398,11 +395,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 163
+    startLine: 181
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -427,11 +424,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 164
+    startLine: 182
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -456,11 +453,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commissions
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 165
+    startLine: 183
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -485,11 +482,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Financing
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 166
+    startLine: 184
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -514,11 +511,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 167
+    startLine: 185
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -543,11 +540,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityResolvedCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 168
+    startLine: 186
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -572,11 +569,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMissingCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 169
+    startLine: 187
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -587,35 +584,6 @@ items:
       type: System.Int32
     content.vb: Public Property SecurityMissingCount As Integer
   overload: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount*
-- uid: Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId
-  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId
-  id: FundProfileId
-  parent: Meridian.Contracts.Workstation.PortfolioSummary
-  langs:
-  - csharp
-  - vb
-  name: FundProfileId
-  nameWithType: PortfolioSummary.FundProfileId
-  fullName: Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: FundProfileId
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 170
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.Workstation
-  syntax:
-    content: public string? FundProfileId { get; init; }
-    parameters: []
-    return:
-      type: System.String
-    content.vb: Public Property FundProfileId As String
-  overload: Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId*
 references:
 - uid: Meridian.Contracts.Workstation
   commentId: N:Meridian.Contracts.Workstation
@@ -923,7 +891,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Workstation.PortfolioSummary.#ctor*
   commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.#ctor
-  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary__ctor_System_String_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_PortfolioPositionSummary__System_Int32_System_Int32_System_String_
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary__ctor_System_String_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_PortfolioPositionSummary__System_Int32_System_Int32_
   name: PortfolioSummary
   nameWithType: PortfolioSummary.PortfolioSummary
   fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioSummary
@@ -1165,9 +1133,3 @@ references:
   name: SecurityMissingCount
   nameWithType: PortfolioSummary.SecurityMissingCount
   fullName: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount
-- uid: Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId*
-  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId
-  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_FundProfileId
-  name: FundProfileId
-  nameWithType: PortfolioSummary.FundProfileId
-  fullName: Meridian.Contracts.Workstation.PortfolioSummary.FundProfileId

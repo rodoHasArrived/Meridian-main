@@ -84,14 +84,19 @@ public sealed class HistoricalBackfillService
         IReadOnlyDictionary<string, DateOnly>? symbolCheckpoints = null;
         if (request.ResumeFromCheckpoint && _checkpointStore is not null)
         {
-            symbolCheckpoints = _checkpointStore.TryReadSymbolCheckpoints();
+            symbolCheckpoints = _checkpointStore.TryReadSymbolCheckpoints(request.Granularity);
             if (symbolCheckpoints is { Count: > 0 })
-                _log.Information("Resume mode: {Count} symbol checkpoints loaded", symbolCheckpoints.Count);
+            {
+                _log.Information(
+                    "Resume mode: {Count} symbol checkpoints loaded for {Granularity}",
+                    symbolCheckpoints.Count,
+                    request.Granularity.ToDisplayName());
+            }
         }
         else if (!request.ResumeFromCheckpoint && _checkpointStore is not null)
         {
-            // Fresh run — clear any stale checkpoints so a subsequent resume starts clean.
-            await _checkpointStore.ClearSymbolCheckpointsAsync(ct).ConfigureAwait(false);
+            // Fresh runs clear only the matching granularity lane so other resume paths survive.
+            await _checkpointStore.ClearSymbolCheckpointsAsync(request.Granularity, ct).ConfigureAwait(false);
         }
 
         // Determine concurrency: per-request override → config default (floor: 1)
@@ -123,7 +128,7 @@ public sealed class HistoricalBackfillService
         // Pre-load bar counts from checkpoint sidecar for skip reconciliation.
         IReadOnlyDictionary<string, long>? checkpointBarCounts = null;
         if (request.ResumeFromCheckpoint && _checkpointStore is not null)
-            checkpointBarCounts = _checkpointStore.TryReadSymbolBarCounts();
+            checkpointBarCounts = _checkpointStore.TryReadSymbolBarCounts(request.Granularity);
 
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
@@ -206,7 +211,12 @@ public sealed class HistoricalBackfillService
                 // Persist per-symbol checkpoint after successful completion.
                 if (_checkpointStore is not null && lastBarDate.HasValue)
                 {
-                    await _checkpointStore.WriteSymbolCheckpointAsync(symbol, lastBarDate.Value, symbolBars, ct).ConfigureAwait(false);
+                    await _checkpointStore.WriteSymbolCheckpointAsync(
+                        symbol,
+                        request.Granularity,
+                        lastBarDate.Value,
+                        symbolBars,
+                        ct).ConfigureAwait(false);
                 }
 
                 // Emit validation signal.

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileMigrationResult
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourcePath
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetPath
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalSize
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewSize
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs

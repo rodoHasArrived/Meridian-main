@@ -1,7 +1,7 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-13
-**Status:** Active productization — Waves 1-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
+**Last Updated:** 2026-04-20
+**Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Waves 2-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
 **Repository Snapshot (2026-04-13 working tree):** solution projects: 39 | `src/` project files: 27 | test projects: 9 | workflow files: 42
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance without letting the product split into parallel subsystems.
@@ -24,7 +24,9 @@ Use this document with:
 - [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md) - shortest combined roadmap, opportunity, and target-state entry point
 - [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) - workstation target state
 - [`../plans/governance-fund-ops-blueprint.md`](../plans/governance-fund-ops-blueprint.md) - governance target state
+- [`../plans/brokerage-portfolio-sync-blueprint.md`](../plans/brokerage-portfolio-sync-blueprint.md) - external brokerage and custodian account-sync design
 - [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) - current short-horizon execution plan
+- [`../plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - concrete owner-based workstreams, dependencies, and exit criteria for the active Waves 2-4 path
 
 ---
 
@@ -70,10 +72,11 @@ These are conservative "in code and materially usable" claims as of 2026-04-13:
 
 These areas exist in code but are not yet complete enough to treat as finished operator workflows:
 
-- Provider confidence remains uneven. Polygon, Robinhood, Interactive Brokers, StockSharp, and NYSE all still have at least one runtime-bounded scenario tied to credentials, entitlements, packages, or vendor sessions.
-- Backfill reliability and Parquet L2 flush behavior now have repo-backed proof, but the docs, scripts, and operator-facing acceptance language still need to stay synchronized with the validation matrix.
+- The active Wave 1 trust gate is intentionally narrow and now repo-closed. Alpaca and Yahoo are closed by checked-in evidence, Robinhood remains explicitly bounded by committed runtime artifacts, and Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred from the active gate.
+- Backfill reliability and Parquet L2 flush behavior are closed by repo-backed proof, but the docs, scripts, and operator-facing acceptance language still need to stay synchronized with the validation matrix so the gate stays closed.
 - The web workstation is no longer just a shell, but the paper-trading cockpit still needs stronger daily-use acceptance criteria, replay confidence, audit visibility, and clearer hardening boundaries.
 - Shared run coverage spans backtest, paper, and live-aware models in contracts and UI, but portfolio, ledger, cash-flow, and reconciliation continuity are not yet equally deep in every mode.
+- External brokerage and custodian account state still reaches Meridian mostly through paper sessions, statement ingestion, and read-model joins; first-class brokerage portfolio sync into fund-account, ledger, and governance workflows is not yet productized.
 - Governance workflows now build on a delivered Security Master baseline, but account/entity structure, multi-ledger, cash-flow modeling, report-pack generation, and broader exception handling are still early product layers rather than finished experiences.
 - WPF workstation migration is meaningfully underway. The current working tree shows workspace shell descriptors, richer shell navigation, related-workflow routing, and new shell smoke coverage, but that should still count as active K1 delivery work rather than closed migration.
 - Live brokerage validation and controlled `Paper -> Live` promotion remain incomplete and should not yet be treated as an operator-ready live-trading claim.
@@ -82,9 +85,9 @@ These areas exist in code but are not yet complete enough to treat as finished o
 
 These are active productization tracks rather than greenfield invention:
 
-- close Wave 1 provider-confidence and checkpoint-evidence gaps
 - harden Wave 2 paper-trading cockpit workflows and operator acceptance criteria
 - deepen Wave 3 shared run / portfolio / ledger / reconciliation continuity
+- add brokerage and custodian portfolio-sync ingestion through execution and fund-account seams without moving portfolio logic into market-data providers
 - productize Wave 4 governance and fund-operations workflows on top of Security Master and shared read-model seams
 - unify native and Lean backtesting into one Wave 5 Backtest Studio workflow
 - validate at least one broader Wave 6 live brokerage path with explicit audit trail and operator controls
@@ -135,7 +138,7 @@ These remain valuable, but they are not on the shortest path to Meridian's core 
 
 ## What Remains
 
-- **Wave 1:** close the remaining provider-confidence, replay, checkpoint, and runtime-bounded evidence gaps
+- **Wave 1 maintenance:** keep the closed provider-confidence, checkpoint, and Parquet evidence gate aligned around Alpaca, Robinhood, and Yahoo
 - **Wave 2:** turn the current paper-trading cockpit from "visible" into "dependable"
 - **Wave 3:** make run history, portfolio, ledger, cash-flow, and reconciliation behave like one cross-workspace model
 - **Wave 4:** deepen governance and fund-operations workflows on top of the delivered Security Master baseline
@@ -159,20 +162,19 @@ The product promise is continuity: one operator can move from data trust to rese
 
 Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, and architecture simplification reinforcing the same read-model and orchestration seams rather than becoming a parallel delivery program.
 
-### Wave 1: Provider confidence and checkpoint evidence
+### Wave 1: Closed provider confidence and checkpoint evidence gate
 
-**Why now:** This remains the first dependency for every downstream readiness claim Meridian wants to make.
+**Why now:** This gate is now closed in repo evidence and should be preserved as the trust boundary for every downstream readiness claim.
 
 **Focus:**
 
-- expand Polygon replay coverage across feeds and edge cases and keep live reconnect/throttling explicitly bounded until a transcript exists
-- validate Interactive Brokers runtime and bootstrap behavior against real vendor surfaces without conflating smoke builds, simulations, and vendor-runtime modes
-- deepen NYSE shared-lifecycle and transport coverage while keeping auth, rate-limit, and cancellation behavior explicit
-- keep StockSharp connector guidance aligned with the validated adapter set Meridian is prepared to recommend
+- keep Alpaca provider and stable execution seam evidence explicit as the repo-closed core provider baseline
+- keep Robinhood supported-surface evidence aligned with its bounded runtime artifact set without overstating live readiness
+- formalize Yahoo as a historical-only core provider row backed by deterministic repo tests
 - keep checkpoint reliability and Parquet L2 flush behavior on the passing suite list inside `run-wave1-provider-validation.ps1`
-- keep provider-confidence docs, runtime artifact folders, and the validation matrix synchronized with executable evidence
+- keep provider-confidence docs, deferred-provider language, runtime artifact folders, the validation matrix, and the latest automation summary synchronized with executable evidence
 
-**Exit signal:** The Wave 1 matrix has no unexplained `❌` rows, checkpoint and L2 rows are closed in repo tests, each supported validation suite passes, and remaining provider gaps are explicitly bounded instead of implied away.
+**Exit signal:** The Wave 1 matrix, roadmap, status docs, and automation summary all describe the same active provider set, Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly bounded, checkpoint and L2 rows stay closed in repo tests, and deferred providers are not implied to be current blockers.
 
 ### Wave 2: Web paper-trading cockpit completion
 
@@ -195,6 +197,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 - deepen run history and comparison depth across backtest, paper, and live-aware modes
 - strengthen portfolio, attribution, fills, ledger, cash-flow, and reconciliation continuity
+- land brokerage and custodian account-sync ingestion that feeds the same shared portfolio, ledger, and reconciliation seams
 - keep Security Master enrichment and WPF workflow work tied to the same shared read-model seam
 
 **Exit signal:** Strategy runs become Meridian's primary cross-workspace product object rather than one of several overlapping representations.
@@ -207,6 +210,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 - add account/entity and strategy-structure workflows on top of the existing governance baseline
 - add multi-ledger, cash-flow, reconciliation, and reporting slices on top of shared DTOs, read services, and export seams
+- connect external brokerage account state to fund-account review, cash movement, and reconciliation workflows through shared projections
 - deepen governance workflows without creating separate reporting or accounting stacks
 
 **Exit signal:** Governance becomes a real operator workflow with concrete review, drill-in, and governed-output seams built on the same contracts already used elsewhere in the workstation.
@@ -237,6 +241,8 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 **Exit signal:** Meridian can support a controlled live-readiness story without overclaiming broad live-trading completion.
 
+<a id="phase-16-assembly-level-performance-optimizations"></a>
+
 ### Optional advanced research / scale tracks
 
 **Focus:**
@@ -251,9 +257,126 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 ---
 
+<a id="desktop-improvements"></a>
+<a id="phase-8-repository-organization--optimization"></a>
+
+## Wave DK Program (Focused Migration Wrapper for Waves 2-4)
+
+To avoid piecemeal adoption, Meridian now treats the active workstation migration as a two-wave **Delivery Kernel (DK)** program that wraps and strengthens Waves 2-4 rather than running in parallel.
+
+### Program intent
+
+- keep one dependency-ordered path from provider trust to operator-ready cockpit, then into shared-model continuity and governance productization
+- require the same quality gates in each wave: **parity pass**, **explainability pass**, **calibration pass**, and **operator sign-off**
+- enforce shared interop contracts through one cross-wave owner so subsystem delivery does not drift into incompatible seams
+
+### Wave DK1 - Data quality and provider trust hardening
+
+**Scope alignment:** operationally reinforces Wave 2 and the trust-dependent portions of Wave 3.
+
+**Primary outcomes:**
+
+- maintain and extend the closed Wave 1 evidence gate into daily operator workflows
+- make provider behavior, replay outcomes, and cockpit data surfaces explainable to operators
+- calibrate trust metrics and promotion thresholds before expanding promotion scope
+
+**Entry criteria (must all be true):**
+
+1. **Parity entry:** Wave 1 matrix remains repo-closed for Alpaca, Robinhood (bounded), Yahoo, checkpoint reliability, and Parquet L2 proof.
+2. **Explainability entry:** provider-confidence evidence is visible in operator-facing docs and workstation drill-ins, not only in scripts.
+3. **Calibration entry:** baseline trust thresholds are declared for freshness, completeness, and replay consistency.
+4. **Operator entry:** Data Operations and Trading operator reps agree on the DK1 pilot symbol/account set.
+
+**Exit criteria (must all be true):**
+
+1. **Parity pass:** paper-cockpit data views match validated provider and replay outputs for the agreed pilot set.
+2. **Explainability pass:** every trust alert in scope has attributable source, reason code, and operator action guidance.
+3. **Calibration pass:** trust thresholds are tuned against replay + paper session evidence with documented false-positive and false-negative review.
+4. **Operator sign-off:** named Data Operations and Trading owners approve DK1 completion and unblock DK2 promotion scope.
+
+### Wave DK2 - Promotion, export, and reconciliation continuity
+
+**Scope alignment:** delivers the integration-critical path of Waves 3-4 (promotion workflow, export reliability, and governance reconciliation).
+
+**Primary outcomes:**
+
+- make `Backtest -> Paper -> Governance` promotion a single audited path
+- ensure exports and governed outputs are consistent with shared run/portfolio/ledger contracts
+- establish reconciliation as an always-on control rather than end-of-process cleanup
+
+**Entry criteria (must all be true):**
+
+1. **Parity entry:** DK1 exit is signed and shared run/portfolio/ledger DTO seams are the active path for pilot workflows.
+2. **Explainability entry:** promotion and export decisions emit audit-grade rationale with linked run, portfolio, and ledger context.
+3. **Calibration entry:** reconciliation tolerance bands and exception severities are defined per subsystem.
+4. **Operator entry:** Governance and Trading operators accept the DK2 pilot operating playbook.
+
+**Exit criteria (must all be true):**
+
+1. **Parity pass:** promoted runs, exported artifacts, and reconciliation outputs agree across workstation, API, and governance views for pilot scenarios.
+2. **Explainability pass:** operators can trace each promoted run to source data trust signals, approval chain, exported package, and reconciliation state.
+3. **Calibration pass:** reconciliation thresholds and promotion controls are tuned with documented exception burn-down and zero unresolved critical mismatches.
+4. **Operator sign-off:** Trading and Governance owners sign production-readiness for the DK2 scope.
+
+### Subsystem ownership and interop governance
+
+| Subsystem | Primary owner | Responsibilities |
+| --- | --- | --- |
+| Data quality + provider trust | Data Operations & Provider Reliability owner | Provider evidence gate maintenance, trust metrics, provider incident review |
+| Promotion + paper-trading cockpit | Trading Workstation owner | Promotion controls, paper workflow reliability, operator controls |
+| Export + packaging | Data Operations Export owner | Export contract parity, package lineage, operator-facing export diagnostics |
+| Reconciliation + governance | Governance/Fund Ops owner | Reconciliation policy, exception workflow, governed outputs |
+| Shared run/portfolio/ledger contracts | Shared Platform Interop owner (Architecture + Contracts) | Cross-subsystem DTO/version governance, compatibility policy, contract change review |
+
+**Interop contract governance rule:** no DK subsystem can ship a contract-breaking change without Shared Platform Interop owner approval and a documented compatibility/rollback note.
+
+### Risk register and rollback plans by subsystem
+
+| Subsystem | Key risk | Leading indicator | Rollback plan |
+| --- | --- | --- | --- |
+| Data quality + provider trust | trust drift between validation scripts and cockpit surfaces | rising unresolved trust alert delta between scripts and UI | freeze promotion expansion, pin to last verified provider matrix + replay baseline, rerun DK1 calibration |
+| Promotion + paper cockpit | promotion path divergence across UI/API | mismatched promotion state or approval chain in audits | revert promotion workflow to last signed contract version, disable new promotion lanes behind feature flags |
+| Export + packaging | exported artifact schema drift or lineage gaps | increase in export validation failures or missing lineage links | roll back exporter contract version, regenerate artifacts from last good run snapshots |
+| Reconciliation + governance | tolerance miscalibration causing exception floods or misses | sustained spike in unresolved critical exceptions | restore prior tolerance profile, reprocess affected window, require manual governance approval for new promotions |
+| Shared interop contracts | uncoordinated DTO/version change cascades | cross-workspace contract test failures | revert to previous shared contract package/API shape and block downstream deploy until compatibility suite passes |
+
+### Kernel readiness dashboard (single status surface)
+
+Use [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md) as the single hand-authored status dashboard for DK wave and subsystem readiness.
+
+Dashboard requirements:
+
+- one row per subsystem with current DK wave state, gate status, owner, and next milestone
+- explicit tracking of parity/explainability/calibration/operator-sign-off per subsystem
+- linked evidence and rollback status so release decisions are auditable
+
+### Alignment guardrail with Waves 2-4
+
+DK1 and DK2 are **execution wrappers** for existing Waves 2-4, not new parallel scope:
+
+- Wave 2 cockpit hardening work is planned and reported through DK1
+- Wave 3 shared-model continuity is split: trust-dependent scope in DK1, promotion/export/reconciliation continuity in DK2
+- Wave 4 governance productization readiness gates are tracked through DK2 exit criteria
+
+Any proposed work item that cannot map to Wave 2, 3, or 4 plus DK1/DK2 gates should be treated as optional or deferred work, not core operator-readiness path.
+
+### Immediate implementation commitments (2026-04-20 to 2026-05-29)
+
+To move from planning into execution, the DK program now carries date-bounded commitments tracked in the dashboard:
+
+1. **2026-04-20 -> 2026-05-01:** close DK1 pilot parity runbook and replay/sample standardization for Alpaca/Robinhood/Yahoo.
+2. **2026-04-20 -> 2026-05-01:** publish shared interop compatibility matrix template and contract-review cadence.
+3. **2026-05-02 -> 2026-05-15:** lock promotion rationale fields and operator approval checklist coverage for DK1 -> DK2 handoff.
+4. **2026-05-09 -> 2026-05-22:** freeze governed export schema/version contract and validate pilot scenarios.
+5. **2026-05-16 -> 2026-05-29:** calibrate reconciliation tolerance profiles and exception routing for governance sign-off readiness.
+
+The implementation source of truth remains [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md), which must be updated weekly.
+
+---
+
 ## Risks and Dependencies
 
-- **Provider trust is still the first dependency.** Without replay and runtime evidence, downstream workflow polish risks overstating readiness.
+- **Provider trust is still the first dependency.** The narrow Wave 1 gate is now closed, but downstream workflow polish still depends on preserving that evidence boundary instead of reopening provider scope by prose drift.
 - **Stronger tests are not the same as broad live-vendor proof.** Replay, contract, and pipeline evidence materially improve confidence but do not close every vendor-runtime gap by themselves.
 - **Cockpit hardening should precede live-readiness claims.** Meridian now has meaningful trading surfaces, but operator trust still matters more than feature count.
 - **The shared run model must remain the center of gravity.** If Research, Trading, Portfolio, Ledger, and Governance drift apart again, the workstation migration loses its product logic.
@@ -268,7 +391,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, checkpoint reliability plus Parquet L2 flush behavior are closed in repo tests, and `run-wave1-provider-validation.ps1` reproduces the offline gate.
+1. **Wave 1 gates:** the active provider gate for Alpaca, Robinhood, and Yahoo is documented in executable evidence, checkpoint reliability plus Parquet L2 flush behavior are closed in repo tests, and `run-wave1-provider-validation.ps1` reproduces the offline gate.
 2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UserAccountConfig
     path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Username
     path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Password
     path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Role
     path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs

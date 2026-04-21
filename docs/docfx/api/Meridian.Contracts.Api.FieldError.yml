@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ErrorResponse.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldError
     path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ErrorResponse.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ErrorResponse.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Field
     path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ErrorResponse.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ErrorResponse.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
     path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ErrorResponse.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AttemptedValue
     path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs

@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundAuditEntry
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-    startLine: 176
+    startLine: 184
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-    startLine: 176
+    startLine: 184
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-    startLine: 177
+    startLine: 185
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -127,11 +127,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-    startLine: 178
+    startLine: 186
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -156,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-    startLine: 179
+    startLine: 187
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -185,11 +185,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reference
     path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
-    startLine: 180
+    startLine: 188
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitInfo
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsMade
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Window
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetsAt
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLimited
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -284,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryAfter
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsageRatio
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -371,7 +371,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeUntilReset
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs

@@ -40,7 +40,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestRequest
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualMarginRate
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualShortRebateRate
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -392,7 +392,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -423,7 +423,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultBrokerageAccountId
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -454,7 +454,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataRoot
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -485,7 +485,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyAssemblyPath
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -519,7 +519,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetEvents
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -550,7 +550,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineMode
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -581,7 +581,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultExecutionModel
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -615,7 +615,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlippageBasisPoints
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -649,7 +649,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionKind
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -680,7 +680,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionRate
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -715,7 +715,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionMinimum
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -746,7 +746,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionMaximum
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -777,7 +777,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketImpactCoefficient
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -811,7 +811,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustForCorporateActions
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -842,7 +842,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskFreeRate
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -876,7 +876,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxParticipationRate
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -916,7 +916,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailOnUnknownSymbols
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
@@ -945,7 +945,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAccounts
     path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs

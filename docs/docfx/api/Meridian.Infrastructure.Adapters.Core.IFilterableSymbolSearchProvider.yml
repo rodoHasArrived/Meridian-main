@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IFilterableSymbolSearchProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs

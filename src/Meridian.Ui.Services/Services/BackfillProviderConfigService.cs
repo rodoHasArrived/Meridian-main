@@ -43,7 +43,7 @@ public sealed class BackfillProviderConfigService
                 DisplayName = "Alpaca",
                 Description = "Bars, trades, and quotes via REST API. Free IEX tier available.",
                 DataTypes = ["Bars", "Trades", "Quotes"],
-                SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"],
+                SupportedGranularities = ["Daily"],
                 RequiresApiKey = true,
                 FreeTier = true,
                 DefaultPriority = 5,

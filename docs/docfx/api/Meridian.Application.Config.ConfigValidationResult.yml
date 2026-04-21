@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigValidationResult
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Property
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Suggestion
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsError
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs

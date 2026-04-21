@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationResult
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromVersion
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToVersion
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsFailed
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs

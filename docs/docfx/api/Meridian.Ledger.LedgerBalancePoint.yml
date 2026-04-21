@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerBalancePoint
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Debit
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Credit
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balance
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerBalancePoint.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Ledger/LedgerBalancePoint.cs

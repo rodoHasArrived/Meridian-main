@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotificationSettings
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyConnectionStatus
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyErrors
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyBackfillComplete
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyDataGaps
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyStorageWarnings
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SoundType
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuietHoursEnabled
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuietHoursStart
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuietHoursEnd
     path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs

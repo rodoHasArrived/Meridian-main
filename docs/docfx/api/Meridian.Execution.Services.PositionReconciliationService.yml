@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionReconciliationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionReconciliationService
     path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionReconciliationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastReconciliationReport
     path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionReconciliationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PositionReconciliationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAsync
     path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs

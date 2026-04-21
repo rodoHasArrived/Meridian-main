@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProvidersConfig
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Yahoo
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nasdaq
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stooq
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFigi
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tiingo
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlphaVantage
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Finnhub
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fred
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Synthetic
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -441,7 +441,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Robinhood
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs

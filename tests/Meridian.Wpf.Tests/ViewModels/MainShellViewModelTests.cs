@@ -8,6 +8,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using Xunit.Sdk;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -20,6 +21,7 @@ public sealed class MainShellViewModelTests
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -34,6 +36,7 @@ public sealed class MainShellViewModelTests
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -203,6 +206,7 @@ public sealed class MainShellViewModelTests
         WpfTestThread.Run(() =>
         {
             NavigationService.Instance.ResetForTests();
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
             WorkspaceService.Instance.ResetForTests();
             var detector = FixtureModeDetector.Instance;
             detector.SetFixtureMode(false);
@@ -319,6 +323,59 @@ public sealed class MainShellViewModelTests
         });
     }
 
+    [Fact]
+    public void OperatingContextUpdates_FromBackgroundThread_MarshalBackIntoShellState()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
+            using var vm = CreateMainPageViewModel(fundContext, operatingContextService);
+
+            await Task.Run(() => operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review"));
+            await WaitForConditionAsync(
+                () => vm.SelectedWindowMode == Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
+                      && vm.CurrentModeName.Contains("Accounting Review", StringComparison.Ordinal));
+
+            vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
+            vm.CurrentModeName.Should().Contain("Accounting Review");
+        });
+    }
+
+    [Fact]
+    public void FreshOperatingContextCatalog_DoesNotPretendFirstEntryIsActive()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-main-shell-tests",
+                $"{Guid.NewGuid():N}.fresh-operating-context.json");
+
+            var operatingContextService = new WorkstationOperatingContextService(fundContext, storagePath: storagePath);
+            await operatingContextService.LoadAsync();
+            using var vm = CreateMainPageViewModel(fundContext, operatingContextService);
+
+            vm.OperatingContexts.Should().NotBeEmpty();
+            vm.SelectedOperatingContext.Should().BeNull();
+            operatingContextService.CurrentContext.Should().BeNull();
+
+            var firstContext = vm.OperatingContexts[0];
+            vm.SelectedOperatingContext = firstContext;
+
+            await WaitForConditionAsync(() =>
+                string.Equals(
+                    operatingContextService.CurrentContext?.ContextKey,
+                    firstContext.ContextKey,
+                    StringComparison.OrdinalIgnoreCase));
+
+            vm.SelectedOperatingContext.Should().NotBeNull();
+            operatingContextService.CurrentContext.Should().NotBeNull();
+            operatingContextService.CurrentContext!.ContextKey.Should().Be(firstContext.ContextKey);
+        });
+    }
+
     private static async Task<FundContextService> CreateFundContextAsync()
     {
         var storagePath = Path.Combine(
@@ -351,5 +408,19 @@ public sealed class MainShellViewModelTests
         await service.LoadAsync();
         await service.SelectContextAsync(service.Contexts[0].ContextKey);
         return service;
+    }
+
+    private static async Task WaitForConditionAsync(Func<bool> predicate, int timeoutMs = 5000)
+    {
+        var start = DateTime.UtcNow;
+        while (!predicate())
+        {
+            if ((DateTime.UtcNow - start).TotalMilliseconds > timeoutMs)
+            {
+                throw new XunitException("Timed out waiting for condition.");
+            }
+
+            await Task.Delay(25);
+        }
     }
 }

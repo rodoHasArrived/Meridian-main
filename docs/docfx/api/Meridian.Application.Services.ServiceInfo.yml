@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceInfo
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceType
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAsync
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs

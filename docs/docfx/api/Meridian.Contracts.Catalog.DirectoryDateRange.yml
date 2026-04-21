@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryDateRange
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Earliest
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Latest
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Granularity
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatesWithData
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleDataGenerator
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Generate
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateToFileAsync
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratePreview
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs

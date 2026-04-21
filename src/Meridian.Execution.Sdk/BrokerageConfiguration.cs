@@ -8,7 +8,7 @@ public sealed class BrokerageConfiguration
 {
     /// <summary>
     /// The brokerage gateway to use. Must match a registered gateway ID
-    /// (e.g., "alpaca", "ib", "stocksharp-rithmic", "paper").
+    /// (e.g., "alpaca", "ib", "paper").
     /// Default is "paper" for safety.
     /// </summary>
     public string Gateway { get; set; } = "paper";

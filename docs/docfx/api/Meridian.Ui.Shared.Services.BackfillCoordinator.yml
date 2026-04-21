@@ -16,6 +16,7 @@ items:
   - Meridian.Ui.Shared.Services.BackfillCoordinator.TryReadLast
   - Meridian.Ui.Shared.Services.BackfillCoordinator.TryReadSymbolBarCounts
   - Meridian.Ui.Shared.Services.BackfillCoordinator.TryReadSymbolCheckpoints
+  - Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest(Meridian.Application.Backfill.BackfillRequest)
   langs:
   - csharp
   - vb
@@ -26,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCoordinator
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -93,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -134,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DescribeProviders
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -164,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadLast
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -194,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolCheckpoints
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -224,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolBarCounts
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -254,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -275,6 +276,35 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}
     content.vb: Public Function RunAsync(request As BackfillRequest, ct As CancellationToken = Nothing) As Task(Of BackfillResult)
   overload: Meridian.Ui.Shared.Services.BackfillCoordinator.RunAsync*
+- uid: Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest(Meridian.Application.Backfill.BackfillRequest)
+  commentId: M:Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest(Meridian.Application.Backfill.BackfillRequest)
+  id: ValidateRequest(Meridian.Application.Backfill.BackfillRequest)
+  parent: Meridian.Ui.Shared.Services.BackfillCoordinator
+  langs:
+  - csharp
+  - vb
+  name: ValidateRequest(BackfillRequest)
+  nameWithType: BackfillCoordinator.ValidateRequest(BackfillRequest)
+  fullName: Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest(Meridian.Application.Backfill.BackfillRequest)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateRequest
+    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public void ValidateRequest(BackfillRequest request)
+    parameters:
+    - id: request
+      type: Meridian.Application.Backfill.BackfillRequest
+    content.vb: Public Sub ValidateRequest(request As BackfillRequest)
+  overload: Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest*
 - uid: Meridian.Ui.Shared.Services.BackfillCoordinator.CheckProviderHealthAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Shared.Services.BackfillCoordinator.CheckProviderHealthAsync(System.Threading.CancellationToken)
   id: CheckProviderHealthAsync(System.Threading.CancellationToken)
@@ -289,11 +319,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderHealthAsync
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-    startLine: 115
+    startLine: 117
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -322,11 +352,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAsync
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-    startLine: 121
+    startLine: 123
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -360,11 +390,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProgress
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-    startLine: 127
+    startLine: 129
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -390,11 +420,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-    startLine: 129
+    startLine: 131
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -420,11 +450,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewAsync
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-    startLine: 135
+    startLine: 137
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -1259,6 +1289,12 @@ references:
     name: Tasks
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest*
+  commentId: Overload:Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest
+  href: Meridian.Ui.Shared.Services.BackfillCoordinator.html#Meridian_Ui_Shared_Services_BackfillCoordinator_ValidateRequest_Meridian_Application_Backfill_BackfillRequest_
+  name: ValidateRequest
+  nameWithType: BackfillCoordinator.ValidateRequest
+  fullName: Meridian.Ui.Shared.Services.BackfillCoordinator.ValidateRequest
 - uid: Meridian.Ui.Shared.Services.BackfillCoordinator.CheckProviderHealthAsync*
   commentId: Overload:Meridian.Ui.Shared.Services.BackfillCoordinator.CheckProviderHealthAsync
   href: Meridian.Ui.Shared.Services.BackfillCoordinator.html#Meridian_Ui_Shared_Services_BackfillCoordinator_CheckProviderHealthAsync_System_Threading_CancellationToken_

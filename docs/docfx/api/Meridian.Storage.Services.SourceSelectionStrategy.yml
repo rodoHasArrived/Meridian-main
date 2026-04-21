@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceSelectionStrategy
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighestQualityScore
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostComplete
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowestLatency
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostConsistent
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Merge
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs

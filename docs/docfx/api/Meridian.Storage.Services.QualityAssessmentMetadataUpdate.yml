@@ -1,0 +1,603 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  commentId: T:Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  id: QualityAssessmentMetadataUpdate
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate.#ctor(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.String)
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy
+  langs:
+  - csharp
+  - vb
+  name: QualityAssessmentMetadataUpdate
+  nameWithType: QualityAssessmentMetadataUpdate
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityAssessmentMetadataUpdate
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record QualityAssessmentMetadataUpdate : IEquatable<QualityAssessmentMetadataUpdate>'
+    content.vb: Public NotInheritable Class QualityAssessmentMetadataUpdate Implements IEquatable(Of QualityAssessmentMetadataUpdate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.QualityAssessmentMetadataUpdate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.#ctor(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.String)
+  commentId: M:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.#ctor(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.String)
+  id: '#ctor(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.String)'
+  parent: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  langs:
+  - csharp
+  - vb
+  name: QualityAssessmentMetadataUpdate(string, double, DataInsight, string?, string)
+  nameWithType: QualityAssessmentMetadataUpdate.QualityAssessmentMetadataUpdate(string, double, DataInsight, string?, string)
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.QualityAssessmentMetadataUpdate(string, double, Meridian.Storage.Services.DataInsight, string?, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public QualityAssessmentMetadataUpdate(string FilePath, double Score, DataInsight Insight, string? ScoredBy = null, string InsightKey = "quality_assessment")
+    parameters:
+    - id: FilePath
+      type: System.String
+    - id: Score
+      type: System.Double
+    - id: Insight
+      type: Meridian.Storage.Services.DataInsight
+    - id: ScoredBy
+      type: System.String
+    - id: InsightKey
+      type: System.String
+    content.vb: Public Sub New(FilePath As String, Score As Double, Insight As DataInsight, ScoredBy As String = Nothing, InsightKey As String = "quality_assessment")
+  overload: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.#ctor*
+  nameWithType.vb: QualityAssessmentMetadataUpdate.New(String, Double, DataInsight, String, String)
+  fullName.vb: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.New(String, Double, Meridian.Storage.Services.DataInsight, String, String)
+  name.vb: New(String, Double, DataInsight, String, String)
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath
+  commentId: P:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath
+  id: FilePath
+  parent: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  langs:
+  - csharp
+  - vb
+  name: FilePath
+  nameWithType: QualityAssessmentMetadataUpdate.FilePath
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilePath
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 413
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string FilePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FilePath As String
+  overload: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath*
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score
+  commentId: P:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score
+  id: Score
+  parent: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: QualityAssessmentMetadataUpdate.Score
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double Score { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Score As Double
+  overload: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score*
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight
+  commentId: P:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight
+  id: Insight
+  parent: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  langs:
+  - csharp
+  - vb
+  name: Insight
+  nameWithType: QualityAssessmentMetadataUpdate.Insight
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Insight
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 415
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DataInsight Insight { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.DataInsight
+    content.vb: Public Property Insight As DataInsight
+  overload: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight*
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy
+  commentId: P:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy
+  id: ScoredBy
+  parent: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  langs:
+  - csharp
+  - vb
+  name: ScoredBy
+  nameWithType: QualityAssessmentMetadataUpdate.ScoredBy
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoredBy
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string? ScoredBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScoredBy As String
+  overload: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy*
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey
+  commentId: P:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey
+  id: InsightKey
+  parent: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  langs:
+  - csharp
+  - vb
+  name: InsightKey
+  nameWithType: QualityAssessmentMetadataUpdate.InsightKey
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsightKey
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string InsightKey { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property InsightKey As String
+  overload: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.QualityAssessmentMetadataUpdate}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.QualityAssessmentMetadataUpdate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityAssessmentMetadataUpdate>
+  nameWithType: IEquatable<QualityAssessmentMetadataUpdate>
+  fullName: System.IEquatable<Meridian.Storage.Services.QualityAssessmentMetadataUpdate>
+  nameWithType.vb: IEquatable(Of QualityAssessmentMetadataUpdate)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.QualityAssessmentMetadataUpdate)
+  name.vb: IEquatable(Of QualityAssessmentMetadataUpdate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+    name: QualityAssessmentMetadataUpdate
+    href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+    name: QualityAssessmentMetadataUpdate
+    href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.#ctor*
+  commentId: Overload:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.#ctor
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html#Meridian_Storage_Services_QualityAssessmentMetadataUpdate__ctor_System_String_System_Double_Meridian_Storage_Services_DataInsight_System_String_System_String_
+  name: QualityAssessmentMetadataUpdate
+  nameWithType: QualityAssessmentMetadataUpdate.QualityAssessmentMetadataUpdate
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.QualityAssessmentMetadataUpdate
+  nameWithType.vb: QualityAssessmentMetadataUpdate.New
+  fullName.vb: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Services.DataInsight
+  commentId: T:Meridian.Storage.Services.DataInsight
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.DataInsight.html
+  name: DataInsight
+  nameWithType: DataInsight
+  fullName: Meridian.Storage.Services.DataInsight
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath*
+  commentId: Overload:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html#Meridian_Storage_Services_QualityAssessmentMetadataUpdate_FilePath
+  name: FilePath
+  nameWithType: QualityAssessmentMetadataUpdate.FilePath
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.FilePath
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score*
+  commentId: Overload:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html#Meridian_Storage_Services_QualityAssessmentMetadataUpdate_Score
+  name: Score
+  nameWithType: QualityAssessmentMetadataUpdate.Score
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Score
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight*
+  commentId: Overload:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html#Meridian_Storage_Services_QualityAssessmentMetadataUpdate_Insight
+  name: Insight
+  nameWithType: QualityAssessmentMetadataUpdate.Insight
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.Insight
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy*
+  commentId: Overload:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html#Meridian_Storage_Services_QualityAssessmentMetadataUpdate_ScoredBy
+  name: ScoredBy
+  nameWithType: QualityAssessmentMetadataUpdate.ScoredBy
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.ScoredBy
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey*
+  commentId: Overload:Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html#Meridian_Storage_Services_QualityAssessmentMetadataUpdate_InsightKey
+  name: InsightKey
+  nameWithType: QualityAssessmentMetadataUpdate.InsightKey
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.InsightKey

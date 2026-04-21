@@ -1,0 +1,134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  id: Meridian.Contracts.RuleEvaluation
+  children:
+  - Meridian.Contracts.RuleEvaluation.DecisionInput
+  - Meridian.Contracts.RuleEvaluation.DecisionReason
+  - Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  - Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  - Meridian.Contracts.RuleEvaluation.DecisionTrace
+  - Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.RuleEvaluation.DecisionInput
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionInput
+  href: Meridian.Contracts.RuleEvaluation.DecisionInput.html
+  name: DecisionInput
+  nameWithType: DecisionInput
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionInput
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  parent: Meridian.Contracts.RuleEvaluation
+  href: Meridian.Contracts.RuleEvaluation.DecisionSeverity.html
+  name: DecisionSeverity
+  nameWithType: DecisionSeverity
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionReason
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html
+  name: DecisionReason
+  nameWithType: DecisionReason
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason
+- uid: Meridian.Contracts.RuleEvaluation.DecisionTrace
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionTrace
+  parent: Meridian.Contracts.RuleEvaluation
+  href: Meridian.Contracts.RuleEvaluation.DecisionTrace.html
+  name: DecisionTrace
+  nameWithType: DecisionTrace
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionTrace
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<TScore>
+  nameWithType: DecisionResult<TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<TScore>
+  nameWithType.vb: DecisionResult(Of TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of TScore)
+  name.vb: DecisionResult(Of TScore)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - name: TScore
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TScore
+  - name: )
+- uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+  commentId: T:Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+  href: Meridian.Contracts.RuleEvaluation.IDecisionKernel-2.html
+  name: IDecisionKernel<TInput, TScore>
+  nameWithType: IDecisionKernel<TInput, TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.IDecisionKernel<TInput, TScore>
+  nameWithType.vb: IDecisionKernel(Of TInput, TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.IDecisionKernel(Of TInput, TScore)
+  name.vb: IDecisionKernel(Of TInput, TScore)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+    name: IDecisionKernel
+    href: Meridian.Contracts.RuleEvaluation.IDecisionKernel-2.html
+  - name: <
+  - name: TInput
+  - name: ','
+  - name: " "
+  - name: TScore
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+    name: IDecisionKernel
+    href: Meridian.Contracts.RuleEvaluation.IDecisionKernel-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TInput
+  - name: ','
+  - name: " "
+  - name: TScore
+  - name: )
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  href: Meridian.html
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html

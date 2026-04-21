@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionManager
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSubscriptionCount
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unsubscribe
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolsByKind
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSubscriptions
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasSubscription
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -385,7 +385,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveKinds
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -416,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -447,7 +447,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -478,7 +478,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs

@@ -470,38 +470,6 @@ public static class ProviderCatalog
             }
         },
 
-        ["stocksharp"] = new ProviderCatalogEntry
-        {
-            ProviderId = "stocksharp",
-            DisplayName = "StockSharp",
-            Description = "Multi-connector trading framework",
-            ProviderType = ProviderTypeKind.Streaming,
-            RequiresCredentials = true,
-            CredentialFields = new[]
-            {
-                new CredentialFieldInfo("ConnectorType", null, "Connector Type", true, "Rithmic")
-            },
-            RateLimit = null,
-            Notes = new[]
-            {
-                "Supports multiple underlying connectors.",
-                "Configure specific connector settings in StockSharp section.",
-                "Supports Rithmic, IQFeed, CQG, and more."
-            },
-            Warnings = new[]
-            {
-                "Requires StockSharp connector-specific credentials."
-            },
-            SupportedMarkets = new[] { "US", "Futures" },
-            DataTypes = new[] { "Trades", "Quotes", "MarketDepth" },
-            Capabilities = new CapabilityInfo
-            {
-                SupportsStreaming = true,
-                SupportsMarketDepth = true,
-                SupportsTrades = true,
-                SupportsQuotes = true
-            }
-        }
     };
 
     /// <summary>

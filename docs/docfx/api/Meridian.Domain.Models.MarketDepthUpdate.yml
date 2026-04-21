@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDepthUpdate
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Position
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -278,7 +278,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketMaker
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -365,7 +365,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -394,7 +394,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs
@@ -423,7 +423,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/MarketDepthUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Domain/Models/MarketDepthUpdate.cs

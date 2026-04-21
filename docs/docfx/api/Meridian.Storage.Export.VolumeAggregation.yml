@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeAggregation
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sum
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mean
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Max
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Last
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs

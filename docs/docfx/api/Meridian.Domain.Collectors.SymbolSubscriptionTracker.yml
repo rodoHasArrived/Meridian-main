@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSubscriptionTracker
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireExplicitSubscription
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSubscription
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterSubscription
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSubscribed
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAutoSubscribe
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShouldProcessUpdate
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
@@ -303,7 +303,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSubscribedSymbols
     path: ../../src/Meridian.Domain/Collectors/SymbolSubscriptionTracker.cs

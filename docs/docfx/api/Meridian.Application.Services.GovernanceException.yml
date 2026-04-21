@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceException
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExceptionId
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioId
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckId
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Label
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -369,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedAmount
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -398,7 +398,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualAmount
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -427,7 +427,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Variance
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -456,7 +456,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -485,7 +485,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -514,7 +514,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -543,7 +543,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -572,7 +572,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvedAt
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -601,7 +601,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs

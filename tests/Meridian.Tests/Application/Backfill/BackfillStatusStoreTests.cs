@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
+using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
 
 namespace Meridian.Tests.Application.Backfill;
@@ -266,6 +267,29 @@ public sealed class BackfillStatusStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task WriteSymbolCheckpointAsync_ScopesEntriesByGranularity()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 6, 30), barsWritten: 10);
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 7, 15), barsWritten: 390);
+
+        var dailyCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Daily);
+        var intradayCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Minute1);
+        var dailyBarCounts = store.TryReadSymbolBarCounts(DataGranularity.Daily);
+        var intradayBarCounts = store.TryReadSymbolBarCounts(DataGranularity.Minute1);
+
+        dailyCheckpoints.Should().NotBeNull();
+        intradayCheckpoints.Should().NotBeNull();
+        dailyBarCounts.Should().NotBeNull();
+        intradayBarCounts.Should().NotBeNull();
+        dailyCheckpoints!["SPY"].Should().Be(new DateOnly(2024, 6, 30));
+        intradayCheckpoints!["SPY"].Should().Be(new DateOnly(2024, 7, 15));
+        dailyBarCounts!["SPY"].Should().Be(10);
+        intradayBarCounts!["SPY"].Should().Be(390);
+    }
+
+    [Fact]
     public async Task WriteSymbolCheckpointAsync_UpdatesOnlyIfNewer()
     {
         var store = new BackfillStatusStore(_testRoot);
@@ -299,6 +323,25 @@ public sealed class BackfillStatusStoreTests : IDisposable
         checkpoints!["SPY"].Should().Be(later);
         barCounts!["SPY"].Should().Be(25,
             "older overlapping windows must not regress the sidecar count once a later checkpoint is recorded");
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_SameDate_DoesNotOverwriteBarCountSidecar()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var coveredThrough = new DateOnly(2024, 6, 30);
+
+        await store.WriteSymbolCheckpointAsync("SPY", coveredThrough, barsWritten: 25);
+        await store.WriteSymbolCheckpointAsync("SPY", coveredThrough, barsWritten: 5);
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+        var barCounts = store.TryReadSymbolBarCounts();
+
+        checkpoints.Should().NotBeNull();
+        barCounts.Should().NotBeNull();
+        checkpoints!["SPY"].Should().Be(coveredThrough);
+        barCounts!["SPY"].Should().Be(25,
+            "non-advancing overlapping windows must keep the stronger checkpoint sidecar evidence");
     }
 
     [Fact]
@@ -344,6 +387,28 @@ public sealed class BackfillStatusStoreTests : IDisposable
         // After clearing the file contains "{}" — an empty dict, not null
         checkpoints.Should().NotBeNull();
         checkpoints!.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClearSymbolCheckpointsAsync_WithGranularity_PreservesOtherLanes()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 6, 30), barsWritten: 10);
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 7, 1), barsWritten: 390);
+
+        await store.ClearSymbolCheckpointsAsync(DataGranularity.Daily);
+
+        var dailyCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Daily);
+        var intradayCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Minute1);
+        var intradayBarCounts = store.TryReadSymbolBarCounts(DataGranularity.Minute1);
+
+        dailyCheckpoints.Should().NotBeNull();
+        intradayCheckpoints.Should().NotBeNull();
+        intradayBarCounts.Should().NotBeNull();
+        dailyCheckpoints!.Should().BeEmpty();
+        intradayCheckpoints!["SPY"].Should().Be(new DateOnly(2024, 7, 1));
+        intradayBarCounts!["SPY"].Should().Be(390);
     }
 
     [Fact]

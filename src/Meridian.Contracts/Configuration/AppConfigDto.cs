@@ -29,9 +29,6 @@ public sealed class AppConfigDto
     [JsonPropertyName("polygon")]
     public PolygonOptionsDto? Polygon { get; set; }
 
-    [JsonPropertyName("stockSharp")]
-    public StockSharpOptionsDto? StockSharp { get; set; }
-
     [JsonPropertyName("storage")]
     public StorageConfigDto? Storage { get; set; }
 
@@ -73,114 +70,6 @@ public sealed class AlpacaOptionsDto
 
     [JsonPropertyName("subscribeQuotes")]
     public bool SubscribeQuotes { get; set; }
-}
-
-/// <summary>
-/// StockSharp connector configuration.
-/// </summary>
-public sealed class StockSharpOptionsDto
-{
-    [JsonPropertyName("enabled")]
-    public bool Enabled { get; set; }
-
-    [JsonPropertyName("connectorType")]
-    public string ConnectorType { get; set; } = "Rithmic";
-
-    [JsonPropertyName("adapterType")]
-    public string? AdapterType { get; set; }
-
-    [JsonPropertyName("adapterAssembly")]
-    public string? AdapterAssembly { get; set; }
-
-    [JsonPropertyName("connectionParams")]
-    public Dictionary<string, string>? ConnectionParams { get; set; }
-
-    [JsonPropertyName("useBinaryStorage")]
-    public bool UseBinaryStorage { get; set; }
-
-    [JsonPropertyName("storagePath")]
-    public string StoragePath { get; set; } = "data/stocksharp/{connector}";
-
-    [JsonPropertyName("enableRealTime")]
-    public bool EnableRealTime { get; set; } = true;
-
-    [JsonPropertyName("enableHistorical")]
-    public bool EnableHistorical { get; set; } = true;
-
-    [JsonPropertyName("rithmic")]
-    public RithmicOptionsDto? Rithmic { get; set; }
-
-    [JsonPropertyName("iqFeed")]
-    public IQFeedOptionsDto? IQFeed { get; set; }
-
-    [JsonPropertyName("cqg")]
-    public CQGOptionsDto? CQG { get; set; }
-
-    [JsonPropertyName("interactiveBrokers")]
-    public StockSharpIBOptionsDto? InteractiveBrokers { get; set; }
-}
-
-public sealed class RithmicOptionsDto
-{
-    [JsonPropertyName("server")]
-    public string Server { get; set; } = "Rithmic Test";
-
-    [JsonPropertyName("userName")]
-    public string? UserName { get; set; }
-
-    [JsonPropertyName("password")]
-    public string? Password { get; set; }
-
-    [JsonPropertyName("certFile")]
-    public string? CertFile { get; set; }
-
-    [JsonPropertyName("usePaperTrading")]
-    public bool UsePaperTrading { get; set; } = true;
-}
-
-public sealed class IQFeedOptionsDto
-{
-    [JsonPropertyName("host")]
-    public string Host { get; set; } = "127.0.0.1";
-
-    [JsonPropertyName("level1Port")]
-    public int Level1Port { get; set; } = 9100;
-
-    [JsonPropertyName("level2Port")]
-    public int Level2Port { get; set; } = 9200;
-
-    [JsonPropertyName("lookupPort")]
-    public int LookupPort { get; set; } = 9300;
-
-    [JsonPropertyName("productId")]
-    public string? ProductId { get; set; }
-
-    [JsonPropertyName("productVersion")]
-    public string ProductVersion { get; set; } = "1.0";
-}
-
-public sealed class CQGOptionsDto
-{
-    [JsonPropertyName("userName")]
-    public string? UserName { get; set; }
-
-    [JsonPropertyName("password")]
-    public string? Password { get; set; }
-
-    [JsonPropertyName("useDemoServer")]
-    public bool UseDemoServer { get; set; } = true;
-}
-
-public sealed class StockSharpIBOptionsDto
-{
-    [JsonPropertyName("host")]
-    public string Host { get; set; } = "127.0.0.1";
-
-    [JsonPropertyName("port")]
-    public int Port { get; set; } = 7496;
-
-    [JsonPropertyName("clientId")]
-    public int ClientId { get; set; } = 1;
 }
 
 /// <summary>

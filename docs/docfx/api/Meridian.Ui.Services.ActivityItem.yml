@@ -26,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivityItem
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 452
+    startLine: 531
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -62,11 +62,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 454
+    startLine: 533
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -91,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 455
+    startLine: 534
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -120,11 +120,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 456
+    startLine: 535
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -149,11 +149,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 457
+    startLine: 536
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -178,11 +178,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 458
+    startLine: 537
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -207,11 +207,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 459
+    startLine: 538
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -236,11 +236,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 460
+    startLine: 539
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -265,11 +265,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 461
+    startLine: 540
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -294,11 +294,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 466
+    startLine: 545
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -325,11 +325,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ColorCategory
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 506
+    startLine: 585
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -356,11 +356,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativeTime
     path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
-    startLine: 527
+    startLine: 606
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

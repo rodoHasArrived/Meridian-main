@@ -18,7 +18,7 @@ items:
   - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.ScheduleDeleted
   - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.ScheduleUpdated
   - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.SetScheduleEnabledAsync(System.String,System.Boolean,System.Threading.CancellationToken)
-  - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(System.String,Meridian.Storage.Maintenance.MaintenanceExecution)
+  - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(System.String,Meridian.Storage.Maintenance.MaintenanceExecution,System.Threading.CancellationToken)
   - Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAsync(Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule,System.Threading.CancellationToken)
   langs:
   - csharp
@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveMaintenanceScheduleManager
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleCreated
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleUpdated
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleDeleted
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionHistory
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSchedules
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSchedule
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateScheduleAsync
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromPresetAsync
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateScheduleAsync
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteScheduleAsync
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -455,7 +455,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetScheduleEnabledAsync
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -497,7 +497,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDueSchedules
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -532,7 +532,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusSummary
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
@@ -550,40 +550,44 @@ items:
   overload: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.GetStatusSummary*
   implements:
   - Meridian.Storage.Maintenance.IArchiveMaintenanceScheduleManager.GetStatusSummary
-- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(System.String,Meridian.Storage.Maintenance.MaintenanceExecution)
-  commentId: M:Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(System.String,Meridian.Storage.Maintenance.MaintenanceExecution)
-  id: UpdateScheduleAfterExecution(System.String,Meridian.Storage.Maintenance.MaintenanceExecution)
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(System.String,Meridian.Storage.Maintenance.MaintenanceExecution,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(System.String,Meridian.Storage.Maintenance.MaintenanceExecution,System.Threading.CancellationToken)
+  id: UpdateScheduleAfterExecutionAsync(System.String,Meridian.Storage.Maintenance.MaintenanceExecution,System.Threading.CancellationToken)
   parent: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager
   langs:
   - csharp
   - vb
-  name: UpdateScheduleAfterExecution(string, MaintenanceExecution)
-  nameWithType: ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(string, MaintenanceExecution)
-  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(string, Meridian.Storage.Maintenance.MaintenanceExecution)
+  name: UpdateScheduleAfterExecutionAsync(string, MaintenanceExecution, CancellationToken)
+  nameWithType: ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(string, MaintenanceExecution, CancellationToken)
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(string, Meridian.Storage.Maintenance.MaintenanceExecution, System.Threading.CancellationToken)
   type: Method
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: UpdateScheduleAfterExecution
+    id: UpdateScheduleAfterExecutionAsync
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs
     startLine: 200
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Maintenance
   syntax:
-    content: public void UpdateScheduleAfterExecution(string scheduleId, MaintenanceExecution execution)
+    content: public Task UpdateScheduleAfterExecutionAsync(string scheduleId, MaintenanceExecution execution, CancellationToken ct = default)
     parameters:
     - id: scheduleId
       type: System.String
     - id: execution
       type: Meridian.Storage.Maintenance.MaintenanceExecution
-    content.vb: Public Sub UpdateScheduleAfterExecution(scheduleId As String, execution As MaintenanceExecution)
-  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution*
-  nameWithType.vb: ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(String, MaintenanceExecution)
-  fullName.vb: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution(String, Meridian.Storage.Maintenance.MaintenanceExecution)
-  name.vb: UpdateScheduleAfterExecution(String, MaintenanceExecution)
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateScheduleAfterExecutionAsync(scheduleId As String, execution As MaintenanceExecution, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync*
+  nameWithType.vb: ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(String, MaintenanceExecution, CancellationToken)
+  fullName.vb: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync(String, Meridian.Storage.Maintenance.MaintenanceExecution, System.Threading.CancellationToken)
+  name.vb: UpdateScheduleAfterExecutionAsync(String, MaintenanceExecution, CancellationToken)
 references:
 - uid: Meridian.Storage.Maintenance
   commentId: N:Meridian.Storage.Maintenance
@@ -1762,12 +1766,12 @@ references:
   name: MaintenanceScheduleSummary
   nameWithType: MaintenanceScheduleSummary
   fullName: Meridian.Storage.Maintenance.MaintenanceScheduleSummary
-- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution*
-  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution
-  href: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.html#Meridian_Storage_Maintenance_ArchiveMaintenanceScheduleManager_UpdateScheduleAfterExecution_System_String_Meridian_Storage_Maintenance_MaintenanceExecution_
-  name: UpdateScheduleAfterExecution
-  nameWithType: ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution
-  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecution
+- uid: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync*
+  commentId: Overload:Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync
+  href: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.html#Meridian_Storage_Maintenance_ArchiveMaintenanceScheduleManager_UpdateScheduleAfterExecutionAsync_System_String_Meridian_Storage_Maintenance_MaintenanceExecution_System_Threading_CancellationToken_
+  name: UpdateScheduleAfterExecutionAsync
+  nameWithType: ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync
+  fullName: Meridian.Storage.Maintenance.ArchiveMaintenanceScheduleManager.UpdateScheduleAfterExecutionAsync
 - uid: Meridian.Storage.Maintenance.MaintenanceExecution
   commentId: T:Meridian.Storage.Maintenance.MaintenanceExecution
   parent: Meridian.Storage.Maintenance
@@ -1775,3 +1779,11 @@ references:
   name: MaintenanceExecution
   nameWithType: MaintenanceExecution
   fullName: Meridian.Storage.Maintenance.MaintenanceExecution
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampSettings
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timezone
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportProfile.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeNanoseconds
     path: ../../src/Meridian.Storage/Export/ExportProfile.cs

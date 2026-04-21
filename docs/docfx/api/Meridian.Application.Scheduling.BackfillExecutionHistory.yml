@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillExecutionHistory
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddExecution
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecution
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionsForSchedule
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentExecutions
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFailedExecutions
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionsInRange
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScheduleSummary
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSystemSummary
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs

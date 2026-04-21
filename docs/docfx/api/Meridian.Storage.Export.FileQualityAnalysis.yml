@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileQualityAnalysis
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceStats
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeStats
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeStats
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Outliers
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gaps
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -382,7 +382,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisErrors
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs

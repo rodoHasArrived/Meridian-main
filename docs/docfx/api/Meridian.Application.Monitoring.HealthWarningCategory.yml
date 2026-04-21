@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthWarningCategory
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiskSpace
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Memory
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cpu
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Network
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQuality
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connection
     path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs

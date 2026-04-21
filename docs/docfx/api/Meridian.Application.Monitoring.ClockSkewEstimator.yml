@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClockSkewEstimator
     path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordObservation
     path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEstimatedSkewMs
     path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ClockSkewEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSnapshots
     path: ../../src/Meridian.Application/Monitoring/ClockSkewEstimator.cs

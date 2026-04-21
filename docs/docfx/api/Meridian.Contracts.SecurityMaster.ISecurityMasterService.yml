@@ -5,6 +5,8 @@ items:
   id: ISecurityMasterService
   parent: Meridian.Contracts.SecurityMaster
   children:
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest,System.Threading.CancellationToken)
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest,System.Threading.CancellationToken)
   - Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
   - Meridian.Contracts.SecurityMaster.ISecurityMasterService.CreateAsync(Meridian.Contracts.SecurityMaster.CreateSecurityRequest,System.Threading.CancellationToken)
   - Meridian.Contracts.SecurityMaster.ISecurityMasterService.DeactivateAsync(Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest,System.Threading.CancellationToken)
@@ -19,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterService
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
@@ -31,6 +33,7 @@ items:
     content: public interface ISecurityMasterService
     content.vb: Public Interface ISecurityMasterService
   derivedClasses:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterService
   - Meridian.Application.SecurityMaster.SecurityMasterService
 - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.CreateAsync(Meridian.Contracts.SecurityMaster.CreateSecurityRequest,System.Threading.CancellationToken)
   commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterService.CreateAsync(Meridian.Contracts.SecurityMaster.CreateSecurityRequest,System.Threading.CancellationToken)
@@ -46,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAsync
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
@@ -79,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
@@ -98,6 +101,76 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
     content.vb: Function AmendTermsAsync(request As AmendSecurityTermsRequest, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
   overload: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendTermsAsync*
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest,System.Threading.CancellationToken)
+  id: AmendPreferredEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterService
+  langs:
+  - csharp
+  - vb
+  name: AmendPreferredEquityTermsAsync(Guid, AmendPreferredEquityTermsRequest, CancellationToken)
+  nameWithType: ISecurityMasterService.AmendPreferredEquityTermsAsync(Guid, AmendPreferredEquityTermsRequest, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync(System.Guid, Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmendPreferredEquityTermsAsync
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Function AmendPreferredEquityTermsAsync(securityId As Guid, request As AmendPreferredEquityTermsRequest, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
+  overload: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync*
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest,System.Threading.CancellationToken)
+  id: AmendConvertibleEquityTermsAsync(System.Guid,Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterService
+  langs:
+  - csharp
+  - vb
+  name: AmendConvertibleEquityTermsAsync(Guid, AmendConvertibleEquityTermsRequest, CancellationToken)
+  nameWithType: ISecurityMasterService.AmendConvertibleEquityTermsAsync(Guid, AmendConvertibleEquityTermsRequest, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync(System.Guid, Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmendConvertibleEquityTermsAsync
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Function AmendConvertibleEquityTermsAsync(securityId As Guid, request As AmendConvertibleEquityTermsRequest, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
+  overload: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync*
 - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.DeactivateAsync(Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest,System.Threading.CancellationToken)
   commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterService.DeactivateAsync(Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest,System.Threading.CancellationToken)
   id: DeactivateAsync(Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest,System.Threading.CancellationToken)
@@ -112,11 +185,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateAsync
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-    startLine: 6
+    startLine: 8
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -145,11 +218,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAliasAsync
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs
-    startLine: 7
+    startLine: 9
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -354,6 +427,47 @@ references:
   name: AmendSecurityTermsRequest
   nameWithType: AmendSecurityTermsRequest
   fullName: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterService.html#Meridian_Contracts_SecurityMaster_ISecurityMasterService_AmendPreferredEquityTermsAsync_System_Guid_Meridian_Contracts_SecurityMaster_AmendPreferredEquityTermsRequest_System_Threading_CancellationToken_
+  name: AmendPreferredEquityTermsAsync
+  nameWithType: ISecurityMasterService.AmendPreferredEquityTermsAsync
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendPreferredEquityTermsAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest.html
+  name: AmendPreferredEquityTermsRequest
+  nameWithType: AmendPreferredEquityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterService.html#Meridian_Contracts_SecurityMaster_ISecurityMasterService_AmendConvertibleEquityTermsAsync_System_Guid_Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest_System_Threading_CancellationToken_
+  name: AmendConvertibleEquityTermsAsync
+  nameWithType: ISecurityMasterService.AmendConvertibleEquityTermsAsync
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterService.AmendConvertibleEquityTermsAsync
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html
+  name: AmendConvertibleEquityTermsRequest
+  nameWithType: AmendConvertibleEquityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
 - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService.DeactivateAsync*
   commentId: Overload:Meridian.Contracts.SecurityMaster.ISecurityMasterService.DeactivateAsync
   href: Meridian.Contracts.SecurityMaster.ISecurityMasterService.html#Meridian_Contracts_SecurityMaster_ISecurityMasterService_DeactivateAsync_Meridian_Contracts_SecurityMaster_DeactivateSecurityRequest_System_Threading_CancellationToken_

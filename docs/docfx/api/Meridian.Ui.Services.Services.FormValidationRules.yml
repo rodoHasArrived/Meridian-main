@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormValidationRules
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateRequired
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbol
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbolList
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateDateRange
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateDateRange
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateApiKey
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateUrl
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatePort
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -381,7 +381,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateFilePath
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -419,7 +419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateNumericRange
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs

@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityScoringReport
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 460
+    startLine: 487
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 460
+    startLine: 487
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -91,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAtUtc
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 461
+    startLine: 488
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -120,11 +120,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Assessments
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 462
+    startLine: 489
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -149,11 +149,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 463
+    startLine: 490
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertSeverity
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Emergency
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs

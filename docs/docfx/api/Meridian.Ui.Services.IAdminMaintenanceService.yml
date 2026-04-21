@@ -35,7 +35,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAdminMaintenanceService
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaintenanceScheduleAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMaintenanceScheduleAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunMaintenanceNowAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaintenanceRunStatusAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaintenanceHistoryAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTierConfigurationAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateTierConfigurationAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrateToTierAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -350,7 +350,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTierUsageAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -381,7 +381,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRetentionPoliciesAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveRetentionPolicyAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -445,7 +445,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteRetentionPolicyAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -481,7 +481,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyRetentionPoliciesAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -517,7 +517,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewCleanupAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -550,7 +550,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteCleanupAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -583,7 +583,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatePermissionsAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -614,7 +614,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunSelfTestAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -650,7 +650,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetErrorCodesAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -681,7 +681,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShowConfigAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
@@ -712,7 +712,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQuickCheckAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs

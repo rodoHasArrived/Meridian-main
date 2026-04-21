@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSizeValidator
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnViolation
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTickSize
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateTrade
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateQuote
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateBar
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -306,7 +306,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStats
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalViolationsDetected
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -367,7 +367,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs

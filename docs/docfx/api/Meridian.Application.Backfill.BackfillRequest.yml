@@ -5,9 +5,10 @@ items:
   id: BackfillRequest
   parent: Meridian.Application.Backfill
   children:
-  - Meridian.Application.Backfill.BackfillRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)
+  - Meridian.Application.Backfill.BackfillRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)
   - Meridian.Application.Backfill.BackfillRequest.From
   - Meridian.Application.Backfill.BackfillRequest.FromConfig(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Backfill.BackfillRequest.Granularity
   - Meridian.Application.Backfill.BackfillRequest.MaxConcurrentSymbols
   - Meridian.Application.Backfill.BackfillRequest.Provider
   - Meridian.Application.Backfill.BackfillRequest.ResumeFromCheckpoint
@@ -24,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillRequest
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 27
+    startLine: 29
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -48,32 +49,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Application.Backfill.BackfillRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)
-  commentId: M:Meridian.Application.Backfill.BackfillRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)
-  id: '#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)'
+- uid: Meridian.Application.Backfill.BackfillRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)
+  commentId: M:Meridian.Application.Backfill.BackfillRequest.#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)
+  id: '#ctor(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.Int32},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int32},System.Boolean)'
   parent: Meridian.Application.Backfill.BackfillRequest
   langs:
   - csharp
   - vb
-  name: BackfillRequest(string, IReadOnlyList<string>, DateOnly?, DateOnly?, int?, IReadOnlyDictionary<string, int>?, bool)
-  nameWithType: BackfillRequest.BackfillRequest(string, IReadOnlyList<string>, DateOnly?, DateOnly?, int?, IReadOnlyDictionary<string, int>?, bool)
-  fullName: Meridian.Application.Backfill.BackfillRequest.BackfillRequest(string, System.Collections.Generic.IReadOnlyList<string>, System.DateOnly?, System.DateOnly?, int?, System.Collections.Generic.IReadOnlyDictionary<string, int>?, bool)
+  name: BackfillRequest(string, IReadOnlyList<string>, DateOnly?, DateOnly?, DataGranularity, int?, IReadOnlyDictionary<string, int>?, bool)
+  nameWithType: BackfillRequest.BackfillRequest(string, IReadOnlyList<string>, DateOnly?, DateOnly?, DataGranularity, int?, IReadOnlyDictionary<string, int>?, bool)
+  fullName: Meridian.Application.Backfill.BackfillRequest.BackfillRequest(string, System.Collections.Generic.IReadOnlyList<string>, System.DateOnly?, System.DateOnly?, Meridian.Infrastructure.Adapters.Core.DataGranularity, int?, System.Collections.Generic.IReadOnlyDictionary<string, int>?, bool)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 27
+    startLine: 29
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
   summary: Incoming request describing a historical backfill.
   example: []
   syntax:
-    content: public BackfillRequest(string Provider, IReadOnlyList<string> Symbols, DateOnly? From = null, DateOnly? To = null, int? MaxConcurrentSymbols = null, IReadOnlyDictionary<string, int>? SymbolPriorities = null, bool ResumeFromCheckpoint = false)
+    content: public BackfillRequest(string Provider, IReadOnlyList<string> Symbols, DateOnly? From = null, DateOnly? To = null, DataGranularity Granularity = DataGranularity.Daily, int? MaxConcurrentSymbols = null, IReadOnlyDictionary<string, int>? SymbolPriorities = null, bool ResumeFromCheckpoint = false)
     parameters:
     - id: Provider
       type: System.String
@@ -87,6 +88,9 @@ items:
     - id: To
       type: System.Nullable{System.DateOnly}
       description: Optional inclusive end date.
+    - id: Granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+      description: Requested backfill granularity. Defaults to daily bars.
     - id: MaxConcurrentSymbols
       type: System.Nullable{System.Int32}
       description: >-
@@ -111,11 +115,11 @@ items:
         date advanced to the day after the last recorded checkpoint date, reducing redundant
 
         work on restart.
-    content.vb: Public Sub New(Provider As String, Symbols As IReadOnlyList(Of String), From As DateOnly? = Nothing, [To] As DateOnly? = Nothing, MaxConcurrentSymbols As Integer? = Nothing, SymbolPriorities As IReadOnlyDictionary(Of String, Integer) = Nothing, ResumeFromCheckpoint As Boolean = False)
+    content.vb: Public Sub New(Provider As String, Symbols As IReadOnlyList(Of String), From As DateOnly? = Nothing, [To] As DateOnly? = Nothing, Granularity As DataGranularity = DataGranularity.Daily, MaxConcurrentSymbols As Integer? = Nothing, SymbolPriorities As IReadOnlyDictionary(Of String, Integer) = Nothing, ResumeFromCheckpoint As Boolean = False)
   overload: Meridian.Application.Backfill.BackfillRequest.#ctor*
-  nameWithType.vb: BackfillRequest.New(String, IReadOnlyList(Of String), DateOnly?, DateOnly?, Integer?, IReadOnlyDictionary(Of String, Integer), Boolean)
-  fullName.vb: Meridian.Application.Backfill.BackfillRequest.New(String, System.Collections.Generic.IReadOnlyList(Of String), System.DateOnly?, System.DateOnly?, Integer?, System.Collections.Generic.IReadOnlyDictionary(Of String, Integer), Boolean)
-  name.vb: New(String, IReadOnlyList(Of String), DateOnly?, DateOnly?, Integer?, IReadOnlyDictionary(Of String, Integer), Boolean)
+  nameWithType.vb: BackfillRequest.New(String, IReadOnlyList(Of String), DateOnly?, DateOnly?, DataGranularity, Integer?, IReadOnlyDictionary(Of String, Integer), Boolean)
+  fullName.vb: Meridian.Application.Backfill.BackfillRequest.New(String, System.Collections.Generic.IReadOnlyList(Of String), System.DateOnly?, System.DateOnly?, Meridian.Infrastructure.Adapters.Core.DataGranularity, Integer?, System.Collections.Generic.IReadOnlyDictionary(Of String, Integer), Boolean)
+  name.vb: New(String, IReadOnlyList(Of String), DateOnly?, DateOnly?, DataGranularity, Integer?, IReadOnlyDictionary(Of String, Integer), Boolean)
 - uid: Meridian.Application.Backfill.BackfillRequest.Provider
   commentId: P:Meridian.Application.Backfill.BackfillRequest.Provider
   id: Provider
@@ -130,11 +134,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 28
+    startLine: 30
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -161,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 29
+    startLine: 31
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -192,11 +196,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 30
+    startLine: 32
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -223,11 +227,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 31
+    startLine: 33
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -240,6 +244,37 @@ items:
       type: System.Nullable{System.DateOnly}
     content.vb: Public Property [To] As DateOnly?
   overload: Meridian.Application.Backfill.BackfillRequest.To*
+- uid: Meridian.Application.Backfill.BackfillRequest.Granularity
+  commentId: P:Meridian.Application.Backfill.BackfillRequest.Granularity
+  id: Granularity
+  parent: Meridian.Application.Backfill.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: BackfillRequest.Granularity
+  fullName: Meridian.Application.Backfill.BackfillRequest.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Requested backfill granularity. Defaults to daily bars.
+  example: []
+  syntax:
+    content: public DataGranularity Granularity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    content.vb: Public Property Granularity As DataGranularity
+  overload: Meridian.Application.Backfill.BackfillRequest.Granularity*
 - uid: Meridian.Application.Backfill.BackfillRequest.MaxConcurrentSymbols
   commentId: P:Meridian.Application.Backfill.BackfillRequest.MaxConcurrentSymbols
   id: MaxConcurrentSymbols
@@ -254,11 +289,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentSymbols
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 32
+    startLine: 35
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -288,11 +323,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPriorities
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 33
+    startLine: 36
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -322,11 +357,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumeFromCheckpoint
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 34
+    startLine: 37
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -362,11 +397,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromConfig
     path: ../../src/Meridian.Application/Backfill/BackfillRequest.cs
-    startLine: 37
+    startLine: 40
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -710,7 +745,7 @@ references:
   - name: )
 - uid: Meridian.Application.Backfill.BackfillRequest.#ctor*
   commentId: Overload:Meridian.Application.Backfill.BackfillRequest.#ctor
-  href: Meridian.Application.Backfill.BackfillRequest.html#Meridian_Application_Backfill_BackfillRequest__ctor_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Nullable_System_Int32__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Int32__System_Boolean_
+  href: Meridian.Application.Backfill.BackfillRequest.html#Meridian_Application_Backfill_BackfillRequest__ctor_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_Int32__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Int32__System_Boolean_
   name: BackfillRequest
   nameWithType: BackfillRequest.BackfillRequest
   fullName: Meridian.Application.Backfill.BackfillRequest.BackfillRequest
@@ -783,6 +818,13 @@ references:
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.dateonly
   - name: '?'
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
 - uid: System.Nullable{System.Int32}
   commentId: T:System.Nullable{System.Int32}
   parent: System
@@ -957,6 +999,44 @@ references:
   - name: " "
   - name: T
   - name: )
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
 - uid: System.Collections.Generic.IReadOnlyDictionary`2
   commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
   isExternal: true
@@ -1015,6 +1095,12 @@ references:
   name: To
   nameWithType: BackfillRequest.To
   fullName: Meridian.Application.Backfill.BackfillRequest.To
+- uid: Meridian.Application.Backfill.BackfillRequest.Granularity*
+  commentId: Overload:Meridian.Application.Backfill.BackfillRequest.Granularity
+  href: Meridian.Application.Backfill.BackfillRequest.html#Meridian_Application_Backfill_BackfillRequest_Granularity
+  name: Granularity
+  nameWithType: BackfillRequest.Granularity
+  fullName: Meridian.Application.Backfill.BackfillRequest.Granularity
 - uid: Meridian.Application.Backfill.BackfillRequest.MaxConcurrentSymbols*
   commentId: Overload:Meridian.Application.Backfill.BackfillRequest.MaxConcurrentSymbols
   href: Meridian.Application.Backfill.BackfillRequest.html#Meridian_Application_Backfill_BackfillRequest_MaxConcurrentSymbols

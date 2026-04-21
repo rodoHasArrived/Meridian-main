@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenApiSpec
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenApi
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Servers
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paths
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Components
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs

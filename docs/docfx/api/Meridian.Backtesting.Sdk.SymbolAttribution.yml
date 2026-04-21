@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolAttribution
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 51
+    startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 51
+    startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -104,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 52
+    startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -133,11 +133,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 53
+    startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -162,11 +162,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 54
+    startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -191,11 +191,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 55
+    startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -220,11 +220,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commissions
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 56
+    startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk
@@ -249,11 +249,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginInterestAllocated
     path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
-    startLine: 57
+    startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk

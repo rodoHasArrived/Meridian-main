@@ -1,6 +1,6 @@
 # Historical Data Backfill Guide
 
-**Last Updated:** 2026-02-17
+**Last Updated:** 2026-04-17
 **Version:** 1.6.2
 
 This document provides a comprehensive guide for backfilling historical market data using the Meridian.
@@ -68,6 +68,12 @@ Check backfill status via:
 - **HTTP API (active run)**: `GET /api/backfill/progress`
 - **Dashboard UI**: Backfill status/progress panel
 - **Logs**: Serilog structured logging
+
+### Resume And Preview Semantics
+
+- Resume checkpoints are scoped by requested granularity, so daily and intraday runs for the same symbol do not suppress each other.
+- Preview existing-data checks now compare only files that match the requested storage lane, avoiding false positives when a symbol has daily files but no intraday archive yet.
+- Status and desktop provider metadata should only advertise granularities that the runtime backfill contracts actually accept. In the current workflow, Alpaca remains daily-only while Yahoo exposes the supported intraday aggregate lanes.
 
 ---
 

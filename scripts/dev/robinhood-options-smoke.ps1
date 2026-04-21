@@ -16,6 +16,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."))
+. (Join-Path $PSScriptRoot 'SharedBuild.ps1')
 
 function Resolve-RepoPath {
     param([string]$Path)
@@ -72,9 +73,9 @@ Set-Location $RepoRoot
 $ResolvedProjectPath = Resolve-RepoPath $ProjectPath
 $ResolvedOutputDirectory = Resolve-RepoPath $OutputDirectory
 $ResolvedSeedWorkspacePath = Resolve-RepoPath $SeedWorkspacePath
+$BuildIsolationKey = New-MeridianBuildIsolationKey -Prefix 'robinhood-smoke'
 $ResolvedExecutablePath = if ([string]::IsNullOrWhiteSpace($ExecutablePath)) {
-    $projectDirectory = Split-Path -Parent $ResolvedProjectPath
-    [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "bin/$Configuration/$Framework/Meridian.Desktop.exe"))
+    Get-MeridianProjectBinaryPath -RepoRoot $RepoRoot -ProjectPath $ResolvedProjectPath -Configuration $Configuration -Framework $Framework -BinaryName 'Meridian.Desktop.exe' -IsolationKey $BuildIsolationKey
 }
 else {
     Resolve-RepoPath $ExecutablePath
@@ -328,7 +329,16 @@ function Invoke-DesktopBuild {
     )
 
     Write-Log "Building desktop project $ProjectPath ($Configuration, $Framework)."
-    & dotnet build $ProjectPath -c $Configuration -p:TargetFramework=$Framework /p:EnableFullWpfBuild=true -nologo --verbosity minimal
+    & dotnet restore $ProjectPath --verbosity minimal @(
+        Get-MeridianBuildArguments -IsolationKey $BuildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+    )
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet restore failed for $ProjectPath"
+    }
+
+    & dotnet build $ProjectPath -c $Configuration --no-restore -nologo --verbosity minimal @(
+        Get-MeridianBuildArguments -IsolationKey $BuildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+    )
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet build failed for $ProjectPath"
     }

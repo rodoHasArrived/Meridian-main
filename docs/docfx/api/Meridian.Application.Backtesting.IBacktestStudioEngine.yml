@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBacktestStudioEngine
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCanonicalResultAsync
     path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs

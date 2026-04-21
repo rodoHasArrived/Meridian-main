@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFigiClient
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupByTickerAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupByIsinAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -288,7 +288,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupByCusipAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupBySedolAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkLookupByTickersAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -410,7 +410,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -456,7 +456,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnrichWithFigiAsync
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
@@ -494,7 +494,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs

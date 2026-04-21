@@ -16,7 +16,7 @@ build: ## Build the project (Release)
 	@BUILD_VERBOSITY=$(BUILD_VERBOSITY) $(BUILDCTL) build --project $(PROJECT) --configuration Release
 
 build-quick: ## Fast incremental build (Debug, no analyzers)
-	@dotnet build Meridian.sln -c Debug --verbosity quiet --nologo /p:EnableWindowsTargeting=true
+	@python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
 
 run: setup-config ## Run the collector
 	@echo "$(BLUE)Running collector...$(NC)"
@@ -64,16 +64,15 @@ setup-dev: install-hooks setup-config ## Full local dev setup (hooks, config, re
 	@command -v git >/dev/null 2>&1 || { echo "$(YELLOW)ERROR: git not found$(NC)"; exit 1; }
 	@echo "  git $$(git --version | cut -d' ' -f3)"
 	@echo ""
-	@echo "$(BLUE)[2/4] Restoring packages...$(NC)"
-	@dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity quiet
-	@echo "  $(GREEN)Packages restored$(NC)"
+	@echo "$(BLUE)[2/4] Restoring packages and building sequentially...$(NC)"
+	@python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
+	@echo "  $(GREEN)Restore + build succeeded$(NC)"
 	@echo ""
-	@echo "$(BLUE)[3/4] Building (Debug)...$(NC)"
-	@dotnet build Meridian.sln -c Debug --verbosity quiet --nologo /p:EnableWindowsTargeting=true
-	@echo "  $(GREEN)Build succeeded$(NC)"
-	@echo ""
-	@echo "$(BLUE)[4/4] Running quick test...$(NC)"
+	@echo "$(BLUE)[3/4] Running quick test...$(NC)"
 	@dotnet test $(TEST_PROJECT) --verbosity quiet --nologo --no-build -c Debug --filter "Category!=Integration" 2>&1 | tail -3
+	@echo ""
+	@echo "$(BLUE)[4/4] Shared build workflow configured...$(NC)"
+	@echo "  $(GREEN)Sequential restore/build is now the default setup path$(NC)"
 	@echo ""
 	@echo "$(GREEN)Development environment ready!$(NC)"
 	@echo "  Run 'make watch' to start test-on-save mode"

@@ -5,7 +5,7 @@
 
 This document catalogs the current provider inventory in Meridian across historical backfill, streaming, symbol search, and reference-data workflows.
 
-For the current validation baseline for Polygon, NYSE, Interactive Brokers, and StockSharp, see [Provider Confidence Baseline](provider-confidence-baseline.md). That document is the source of truth for what Meridian validates offline today versus what still requires manual vendor/runtime checks.
+For the current validation baseline for Polygon, Robinhood, NYSE, and Interactive Brokers, see [Provider Confidence Baseline](provider-confidence-baseline.md). That document is the source of truth for what Meridian validates offline today versus what still requires manual vendor/runtime checks.
 
 ---
 
@@ -22,7 +22,6 @@ For the current validation baseline for Polygon, NYSE, Interactive Brokers, and 
 | Alpha Vantage | Implemented | Equities, indices, forex, crypto | Requires credentials | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
 | Polygon | Implemented | US equities, options, forex, crypto | Requires credentials | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
 | Interactive Brokers | Requires `IBAPI` | US equities, options, futures, forex | With account | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
-| StockSharp | Requires `STOCKSHARP` | Connector-dependent multi-exchange coverage | With account/license | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
 | Twelve Data | Implemented | Equities, ETFs, forex, crypto | Requires credentials | `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs` |
 | FRED | Implemented | Economic time series mapped to daily bars | Free API key | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |
 | Synthetic Historical | Implemented | Deterministic offline bars, quotes, trades, auctions, dividends, splits | No credentials | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
@@ -37,7 +36,6 @@ For the current validation baseline for Polygon, NYSE, Interactive Brokers, and 
 | Alpaca | Implemented | US equities | REST + WebSocket workflow | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs` |
 | Interactive Brokers | Implemented with `IBAPI` | Global multi-asset | Real TWS / Gateway access requires the official `IBApi` vendor path; non-`IBAPI` builds stay on simulation/runtime-guidance paths | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs` |
 | Polygon | Implemented | Equities, options, forex, crypto | WebSocket streaming for trades, quotes, and aggregates | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs` |
-| StockSharp | Implemented with `STOCKSHARP` | Connector-dependent multi-exchange coverage | Connector-runtime path; actual coverage depends on adapter, package surface, and entitlement | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs` |
 | NYSE Streaming | Implemented | NYSE-focused feed | Unified client backed by `NYSEDataSource` | `src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs` |
 | Synthetic Market Data | Implemented | Offline stocks and ETFs | Deterministic streaming, history, and symbol search | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
 
@@ -51,7 +49,6 @@ For the current validation baseline for Polygon, NYSE, Interactive Brokers, and 
 | Finnhub Symbol Search | Implemented | 60K+ global | Company profile and symbol lookup | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | Polygon Symbol Search | Implemented | US equities | Filterable symbol search | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | OpenFIGI | Implemented | Global instruments | FIGI normalization and mapping | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
-| StockSharp Symbol Search | Requires `STOCKSHARP` | Connector-dependent multi-asset search | Uses connector-native security lookup | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
 | Synthetic Symbol Search | Implemented | Offline stock and ETF catalog | Good for fixture mode and demos | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
 
 ---
@@ -63,7 +60,6 @@ For the current validation baseline for Polygon, NYSE, Interactive Brokers, and 
 | Polygon | Replay fixtures plus `PolygonRecordedSessionReplayTests`, parsing tests, and subscription tests | Live credentials, entitlements, and plan-tier/runtime confirmation |
 | NYSE Streaming | Shared-lifecycle, parser, and client tests around `NyseMarketDataClient` / `NYSEDataSource` | Credentialed auth/connectivity and entitlement checks |
 | Interactive Brokers | Runtime-guidance tests, order fixtures, and compile-only smoke build | Official vendor `IBApi` path with local TWS/Gateway validation |
-| StockSharp | Subscription, connector-factory, and message-conversion capability tests | `EnableStockSharp=true`, connector package installation, and connector-specific local runtime validation |
 
 ---
 
@@ -80,10 +76,6 @@ FRED is not an equities price feed. Meridian normalizes FRED observations into s
 ### Synthetic Providers
 
 The synthetic providers are intended for offline development, demos, deterministic tests, and fixture-mode desktop workflows. They are not substitutes for live or vendor-sourced market data.
-
-### StockSharp
-
-StockSharp support is connector-dependent and gated by the `STOCKSHARP` build path. Available coverage depends on the configured connector, installed package surfaces, and any applicable StockSharp licensing or crowdfunding access. The default CI-friendly path validates guidance and metadata without claiming live connector availability.
 
 ### Interactive Brokers
 

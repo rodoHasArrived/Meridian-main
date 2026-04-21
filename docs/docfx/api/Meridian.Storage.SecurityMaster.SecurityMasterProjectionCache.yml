@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterProjectionCache
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upsert
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceAll
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs

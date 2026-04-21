@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticBundleResult
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BundleId
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ZipPath
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesIncluded
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs

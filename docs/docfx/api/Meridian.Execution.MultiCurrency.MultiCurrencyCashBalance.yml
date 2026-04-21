@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MultiCurrencyCashBalance
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balances
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subtract
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToBaseCurrency
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
     path: ../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs

@@ -5,32 +5,22 @@ items:
   id: ProviderManagementService
   parent: Meridian.Ui.Services
   children:
-  - Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync(System.String,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync(System.String,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetAllProvidersStatusAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetCapabilitiesAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetFailoverConfigAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetProviderBindingsAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetProviderConnectionsAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetProviderDetailAsync(System.String,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetRateLimitHistoryAsync(System.String,System.Int32,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.GetRateLimitsAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.Instance
   - Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.ResetFailoverAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.SwitchProviderAsync(System.String,System.Boolean,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.TestProviderAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.TriggerFailoverAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ProviderManagementService.UpdateFailoverConfigAsync(System.Boolean,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync(Meridian.Contracts.Api.CreateProviderConnectionRequest,System.Threading.CancellationToken)
   langs:
   - csharp
   - vb
@@ -41,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderManagementService
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -80,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -109,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProvidersStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -142,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderDetailAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -180,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFailoverConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -213,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFailoverConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -257,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TriggerFailoverAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -295,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetFailoverAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -328,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitsAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -361,7 +351,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -401,7 +391,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCapabilitiesAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -434,7 +424,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SwitchProviderAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -474,7 +464,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestProviderAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -512,7 +502,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderConnectionsAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
@@ -520,7 +510,7 @@ items:
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
-  summary: Gets relationship-aware provider connections.
+  summary: Gets the current provider-routing connection catalog.
   example: []
   syntax:
     content: public Task<ProviderConnectionsResult> GetProviderConnectionsAsync(CancellationToken ct = default)
@@ -531,79 +521,6 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderConnectionsResult}
     content.vb: Public Function GetProviderConnectionsAsync(ct As CancellationToken = Nothing) As Task(Of ProviderConnectionsResult)
   overload: Meridian.Ui.Services.ProviderManagementService.GetProviderConnectionsAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync(Meridian.Contracts.Api.CreateProviderConnectionRequest,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync(Meridian.Contracts.Api.CreateProviderConnectionRequest,System.Threading.CancellationToken)
-  id: UpsertProviderConnectionAsync(Meridian.Contracts.Api.CreateProviderConnectionRequest,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: UpsertProviderConnectionAsync(CreateProviderConnectionRequest, CancellationToken)
-  nameWithType: ProviderManagementService.UpsertProviderConnectionAsync(CreateProviderConnectionRequest, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync(Meridian.Contracts.Api.CreateProviderConnectionRequest, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: UpsertProviderConnectionAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 357
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Creates or updates a relationship-aware provider connection.
-  example: []
-  syntax:
-    content: public Task<ProviderConnectionMutationResult> UpsertProviderConnectionAsync(CreateProviderConnectionRequest request, CancellationToken ct = default)
-    parameters:
-    - id: request
-      type: Meridian.Contracts.Api.CreateProviderConnectionRequest
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderConnectionMutationResult}
-    content.vb: Public Function UpsertProviderConnectionAsync(request As CreateProviderConnectionRequest, ct As CancellationToken = Nothing) As Task(Of ProviderConnectionMutationResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync(System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync(System.String,System.Threading.CancellationToken)
-  id: DeleteProviderConnectionAsync(System.String,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: DeleteProviderConnectionAsync(string, CancellationToken)
-  nameWithType: ProviderManagementService.DeleteProviderConnectionAsync(string, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync(string, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: DeleteProviderConnectionAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 378
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Deletes a provider connection.
-  example: []
-  syntax:
-    content: public Task<OperationResult> DeleteProviderConnectionAsync(string connectionId, CancellationToken ct = default)
-    parameters:
-    - id: connectionId
-      type: System.String
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
-    content.vb: Public Function DeleteProviderConnectionAsync(connectionId As String, ct As CancellationToken = Nothing) As Task(Of OperationResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync*
-  nameWithType.vb: ProviderManagementService.DeleteProviderConnectionAsync(String, CancellationToken)
-  fullName.vb: Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync(String, System.Threading.CancellationToken)
-  name.vb: DeleteProviderConnectionAsync(String, CancellationToken)
 - uid: Meridian.Ui.Services.ProviderManagementService.GetProviderBindingsAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.ProviderManagementService.GetProviderBindingsAsync(System.Threading.CancellationToken)
   id: GetProviderBindingsAsync(System.Threading.CancellationToken)
@@ -618,15 +535,15 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderBindingsAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 394
+    startLine: 354
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
-  summary: Gets relationship-aware provider bindings.
+  summary: Gets the active provider-routing bindings.
   example: []
   syntax:
     content: public Task<ProviderBindingsResult> GetProviderBindingsAsync(CancellationToken ct = default)
@@ -637,322 +554,6 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderBindingsResult}
     content.vb: Public Function GetProviderBindingsAsync(ct As CancellationToken = Nothing) As Task(Of ProviderBindingsResult)
   overload: Meridian.Ui.Services.ProviderManagementService.GetProviderBindingsAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
-  id: UpsertProviderBindingAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: UpsertProviderBindingAsync(UpdateProviderBindingRequest, CancellationToken)
-  nameWithType: ProviderManagementService.UpsertProviderBindingAsync(UpdateProviderBindingRequest, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync(Meridian.Contracts.Api.UpdateProviderBindingRequest, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: UpsertProviderBindingAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 419
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Creates or updates a provider capability binding.
-  example: []
-  syntax:
-    content: public Task<ProviderBindingMutationResult> UpsertProviderBindingAsync(UpdateProviderBindingRequest request, CancellationToken ct = default)
-    parameters:
-    - id: request
-      type: Meridian.Contracts.Api.UpdateProviderBindingRequest
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderBindingMutationResult}
-    content.vb: Public Function UpsertProviderBindingAsync(request As UpdateProviderBindingRequest, ct As CancellationToken = Nothing) As Task(Of ProviderBindingMutationResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync(System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync(System.String,System.Threading.CancellationToken)
-  id: DeleteProviderBindingAsync(System.String,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: DeleteProviderBindingAsync(string, CancellationToken)
-  nameWithType: ProviderManagementService.DeleteProviderBindingAsync(string, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync(string, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: DeleteProviderBindingAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 440
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Deletes a provider capability binding.
-  example: []
-  syntax:
-    content: public Task<OperationResult> DeleteProviderBindingAsync(string bindingId, CancellationToken ct = default)
-    parameters:
-    - id: bindingId
-      type: System.String
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
-    content.vb: Public Function DeleteProviderBindingAsync(bindingId As String, ct As CancellationToken = Nothing) As Task(Of OperationResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync*
-  nameWithType.vb: ProviderManagementService.DeleteProviderBindingAsync(String, CancellationToken)
-  fullName.vb: Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync(String, System.Threading.CancellationToken)
-  name.vb: DeleteProviderBindingAsync(String, CancellationToken)
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync(System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync(System.Threading.CancellationToken)
-  id: GetProviderPoliciesAsync(System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: GetProviderPoliciesAsync(CancellationToken)
-  nameWithType: ProviderManagementService.GetProviderPoliciesAsync(CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync(System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetProviderPoliciesAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 456
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Gets effective provider safety policies.
-  example: []
-  syntax:
-    content: public Task<ProviderPoliciesResult> GetProviderPoliciesAsync(CancellationToken ct = default)
-    parameters:
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPoliciesResult}
-    content.vb: Public Function GetProviderPoliciesAsync(ct As CancellationToken = Nothing) As Task(Of ProviderPoliciesResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
-  id: PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: PreviewRouteAsync(RoutePreviewRequest, CancellationToken)
-  nameWithType: ProviderManagementService.PreviewRouteAsync(RoutePreviewRequest, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: PreviewRouteAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 481
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Previews a provider route using the relationship-aware router.
-  example: []
-  syntax:
-    content: public Task<ProviderRoutePreviewQueryResult> PreviewRouteAsync(RoutePreviewRequest request, CancellationToken ct = default)
-    parameters:
-    - id: request
-      type: Meridian.Contracts.Api.RoutePreviewRequest
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderRoutePreviewQueryResult}
-    content.vb: Public Function PreviewRouteAsync(request As RoutePreviewRequest, ct As CancellationToken = Nothing) As Task(Of ProviderRoutePreviewQueryResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync(System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync(System.Threading.CancellationToken)
-  id: GetProviderRouteHistoryAsync(System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: GetProviderRouteHistoryAsync(CancellationToken)
-  nameWithType: ProviderManagementService.GetProviderRouteHistoryAsync(CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync(System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetProviderRouteHistoryAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 499
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Gets recent provider route history.
-  example: []
-  syntax:
-    content: public Task<ProviderRouteHistoryResult> GetProviderRouteHistoryAsync(CancellationToken ct = default)
-    parameters:
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderRouteHistoryResult}
-    content.vb: Public Function GetProviderRouteHistoryAsync(ct As CancellationToken = Nothing) As Task(Of ProviderRouteHistoryResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync(System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync(System.Threading.CancellationToken)
-  id: GetProviderPresetsAsync(System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: GetProviderPresetsAsync(CancellationToken)
-  nameWithType: ProviderManagementService.GetProviderPresetsAsync(CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync(System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetProviderPresetsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 524
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Gets provider routing presets.
-  example: []
-  syntax:
-    content: public Task<ProviderPresetsResult> GetProviderPresetsAsync(CancellationToken ct = default)
-    parameters:
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPresetsResult}
-    content.vb: Public Function GetProviderPresetsAsync(ct As CancellationToken = Nothing) As Task(Of ProviderPresetsResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync(System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync(System.String,System.Threading.CancellationToken)
-  id: ApplyProviderPresetAsync(System.String,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: ApplyProviderPresetAsync(string, CancellationToken)
-  nameWithType: ProviderManagementService.ApplyProviderPresetAsync(string, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync(string, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ApplyProviderPresetAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 549
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Applies a provider routing preset.
-  example: []
-  syntax:
-    content: public Task<ProviderPresetApplyResult> ApplyProviderPresetAsync(string presetId, CancellationToken ct = default)
-    parameters:
-    - id: presetId
-      type: System.String
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPresetApplyResult}
-    content.vb: Public Function ApplyProviderPresetAsync(presetId As String, ct As CancellationToken = Nothing) As Task(Of ProviderPresetApplyResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync*
-  nameWithType.vb: ProviderManagementService.ApplyProviderPresetAsync(String, CancellationToken)
-  fullName.vb: Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync(String, System.Threading.CancellationToken)
-  name.vb: ApplyProviderPresetAsync(String, CancellationToken)
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync(System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync(System.Threading.CancellationToken)
-  id: GetProviderCertificationsAsync(System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: GetProviderCertificationsAsync(CancellationToken)
-  nameWithType: ProviderManagementService.GetProviderCertificationsAsync(CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync(System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetProviderCertificationsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 568
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Gets provider certifications.
-  example: []
-  syntax:
-    content: public Task<ProviderCertificationsResult> GetProviderCertificationsAsync(CancellationToken ct = default)
-    parameters:
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderCertificationsResult}
-    content.vb: Public Function GetProviderCertificationsAsync(ct As CancellationToken = Nothing) As Task(Of ProviderCertificationsResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync*
-- uid: Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync(System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync(System.String,System.Threading.CancellationToken)
-  id: RunProviderCertificationAsync(System.String,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.ProviderManagementService
-  langs:
-  - csharp
-  - vb
-  name: RunProviderCertificationAsync(string, CancellationToken)
-  nameWithType: ProviderManagementService.RunProviderCertificationAsync(string, CancellationToken)
-  fullName: Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync(string, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: RunProviderCertificationAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 593
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Runs provider certification for a saved connection.
-  example: []
-  syntax:
-    content: public Task<ProviderCertificationMutationResult> RunProviderCertificationAsync(string connectionId, CancellationToken ct = default)
-    parameters:
-    - id: connectionId
-      type: System.String
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderCertificationMutationResult}
-    content.vb: Public Function RunProviderCertificationAsync(connectionId As String, ct As CancellationToken = Nothing) As Task(Of ProviderCertificationMutationResult)
-  overload: Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync*
-  nameWithType.vb: ProviderManagementService.RunProviderCertificationAsync(String, CancellationToken)
-  fullName.vb: Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync(String, System.Threading.CancellationToken)
-  name.vb: RunProviderCertificationAsync(String, CancellationToken)
 - uid: Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync(System.Threading.CancellationToken)
   id: GetProviderTrustSnapshotsAsync(System.Threading.CancellationToken)
@@ -967,15 +568,15 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderTrustSnapshotsAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 614
+    startLine: 376
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
-  summary: Gets provider trust snapshots.
+  summary: Gets the latest provider trust snapshots.
   example: []
   syntax:
     content: public Task<ProviderTrustSnapshotsResult> GetProviderTrustSnapshotsAsync(CancellationToken ct = default)
@@ -986,6 +587,41 @@ items:
       type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTrustSnapshotsResult}
     content.vb: Public Function GetProviderTrustSnapshotsAsync(ct As CancellationToken = Nothing) As Task(Of ProviderTrustSnapshotsResult)
   overload: Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync*
+- uid: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
+  id: PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ProviderManagementService
+  langs:
+  - csharp
+  - vb
+  name: PreviewRouteAsync(RoutePreviewRequest, CancellationToken)
+  nameWithType: ProviderManagementService.PreviewRouteAsync(RoutePreviewRequest, CancellationToken)
+  fullName: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync(Meridian.Contracts.Api.RoutePreviewRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviewRouteAsync
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Previews the selected route for a provider-routing capability request.
+  example: []
+  syntax:
+    content: public Task<ProviderRoutePreviewQueryResult> PreviewRouteAsync(RoutePreviewRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Api.RoutePreviewRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderRoutePreviewQueryResult}
+    content.vb: Public Function PreviewRouteAsync(request As RoutePreviewRequest, ct As CancellationToken = Nothing) As Task(Of ProviderRoutePreviewQueryResult)
+  overload: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync*
 references:
 - uid: Meridian.Ui.Services
   commentId: N:Meridian.Ui.Services
@@ -1911,88 +1547,6 @@ references:
     name: ProviderConnectionsResult
     href: Meridian.Ui.Services.ProviderConnectionsResult.html
   - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_UpsertProviderConnectionAsync_Meridian_Contracts_Api_CreateProviderConnectionRequest_System_Threading_CancellationToken_
-  name: UpsertProviderConnectionAsync
-  nameWithType: ProviderManagementService.UpsertProviderConnectionAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.UpsertProviderConnectionAsync
-- uid: Meridian.Contracts.Api.CreateProviderConnectionRequest
-  commentId: T:Meridian.Contracts.Api.CreateProviderConnectionRequest
-  parent: Meridian.Contracts.Api
-  href: Meridian.Contracts.Api.CreateProviderConnectionRequest.html
-  name: CreateProviderConnectionRequest
-  nameWithType: CreateProviderConnectionRequest
-  fullName: Meridian.Contracts.Api.CreateProviderConnectionRequest
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderConnectionMutationResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderConnectionMutationResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderConnectionMutationResult>
-  nameWithType: Task<ProviderConnectionMutationResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderConnectionMutationResult>
-  nameWithType.vb: Task(Of ProviderConnectionMutationResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderConnectionMutationResult)
-  name.vb: Task(Of ProviderConnectionMutationResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderConnectionMutationResult
-    name: ProviderConnectionMutationResult
-    href: Meridian.Ui.Services.ProviderConnectionMutationResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderConnectionMutationResult
-    name: ProviderConnectionMutationResult
-    href: Meridian.Ui.Services.ProviderConnectionMutationResult.html
-  - name: )
-- uid: Meridian.Contracts.Api
-  commentId: N:Meridian.Contracts.Api
-  href: Meridian.html
-  name: Meridian.Contracts.Api
-  nameWithType: Meridian.Contracts.Api
-  fullName: Meridian.Contracts.Api
-  spec.csharp:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Contracts
-    name: Contracts
-    href: Meridian.Contracts.html
-  - name: .
-  - uid: Meridian.Contracts.Api
-    name: Api
-    href: Meridian.Contracts.Api.html
-  spec.vb:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Contracts
-    name: Contracts
-    href: Meridian.Contracts.html
-  - name: .
-  - uid: Meridian.Contracts.Api
-    name: Api
-    href: Meridian.Contracts.Api.html
-- uid: Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_DeleteProviderConnectionAsync_System_String_System_Threading_CancellationToken_
-  name: DeleteProviderConnectionAsync
-  nameWithType: ProviderManagementService.DeleteProviderConnectionAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.DeleteProviderConnectionAsync
 - uid: Meridian.Ui.Services.ProviderManagementService.GetProviderBindingsAsync*
   commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderBindingsAsync
   href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderBindingsAsync_System_Threading_CancellationToken_
@@ -2032,39 +1586,32 @@ references:
     name: ProviderBindingsResult
     href: Meridian.Ui.Services.ProviderBindingsResult.html
   - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_UpsertProviderBindingAsync_Meridian_Contracts_Api_UpdateProviderBindingRequest_System_Threading_CancellationToken_
-  name: UpsertProviderBindingAsync
-  nameWithType: ProviderManagementService.UpsertProviderBindingAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.UpsertProviderBindingAsync
-- uid: Meridian.Contracts.Api.UpdateProviderBindingRequest
-  commentId: T:Meridian.Contracts.Api.UpdateProviderBindingRequest
-  parent: Meridian.Contracts.Api
-  href: Meridian.Contracts.Api.UpdateProviderBindingRequest.html
-  name: UpdateProviderBindingRequest
-  nameWithType: UpdateProviderBindingRequest
-  fullName: Meridian.Contracts.Api.UpdateProviderBindingRequest
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderBindingMutationResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderBindingMutationResult}
+- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync*
+  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync
+  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderTrustSnapshotsAsync_System_Threading_CancellationToken_
+  name: GetProviderTrustSnapshotsAsync
+  nameWithType: ProviderManagementService.GetProviderTrustSnapshotsAsync
+  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTrustSnapshotsResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTrustSnapshotsResult}
   parent: System.Threading.Tasks
   definition: System.Threading.Tasks.Task`1
   href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderBindingMutationResult>
-  nameWithType: Task<ProviderBindingMutationResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderBindingMutationResult>
-  nameWithType.vb: Task(Of ProviderBindingMutationResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderBindingMutationResult)
-  name.vb: Task(Of ProviderBindingMutationResult)
+  name: Task<ProviderTrustSnapshotsResult>
+  nameWithType: Task<ProviderTrustSnapshotsResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderTrustSnapshotsResult>
+  nameWithType.vb: Task(Of ProviderTrustSnapshotsResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderTrustSnapshotsResult)
+  name.vb: Task(Of ProviderTrustSnapshotsResult)
   spec.csharp:
   - uid: System.Threading.Tasks.Task`1
     name: Task
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
   - name: <
-  - uid: Meridian.Ui.Services.ProviderBindingMutationResult
-    name: ProviderBindingMutationResult
-    href: Meridian.Ui.Services.ProviderBindingMutationResult.html
+  - uid: Meridian.Ui.Services.ProviderTrustSnapshotsResult
+    name: ProviderTrustSnapshotsResult
+    href: Meridian.Ui.Services.ProviderTrustSnapshotsResult.html
   - name: '>'
   spec.vb:
   - uid: System.Threading.Tasks.Task`1
@@ -2074,54 +1621,9 @@ references:
   - name: (
   - name: Of
   - name: " "
-  - uid: Meridian.Ui.Services.ProviderBindingMutationResult
-    name: ProviderBindingMutationResult
-    href: Meridian.Ui.Services.ProviderBindingMutationResult.html
-  - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_DeleteProviderBindingAsync_System_String_System_Threading_CancellationToken_
-  name: DeleteProviderBindingAsync
-  nameWithType: ProviderManagementService.DeleteProviderBindingAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.DeleteProviderBindingAsync
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderPoliciesAsync_System_Threading_CancellationToken_
-  name: GetProviderPoliciesAsync
-  nameWithType: ProviderManagementService.GetProviderPoliciesAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderPoliciesAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPoliciesResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPoliciesResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderPoliciesResult>
-  nameWithType: Task<ProviderPoliciesResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderPoliciesResult>
-  nameWithType.vb: Task(Of ProviderPoliciesResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderPoliciesResult)
-  name.vb: Task(Of ProviderPoliciesResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderPoliciesResult
-    name: ProviderPoliciesResult
-    href: Meridian.Ui.Services.ProviderPoliciesResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderPoliciesResult
-    name: ProviderPoliciesResult
-    href: Meridian.Ui.Services.ProviderPoliciesResult.html
+  - uid: Meridian.Ui.Services.ProviderTrustSnapshotsResult
+    name: ProviderTrustSnapshotsResult
+    href: Meridian.Ui.Services.ProviderTrustSnapshotsResult.html
   - name: )
 - uid: Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync*
   commentId: Overload:Meridian.Ui.Services.ProviderManagementService.PreviewRouteAsync
@@ -2169,237 +1671,33 @@ references:
     name: ProviderRoutePreviewQueryResult
     href: Meridian.Ui.Services.ProviderRoutePreviewQueryResult.html
   - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderRouteHistoryAsync_System_Threading_CancellationToken_
-  name: GetProviderRouteHistoryAsync
-  nameWithType: ProviderManagementService.GetProviderRouteHistoryAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderRouteHistoryAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderRouteHistoryResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderRouteHistoryResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderRouteHistoryResult>
-  nameWithType: Task<ProviderRouteHistoryResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderRouteHistoryResult>
-  nameWithType.vb: Task(Of ProviderRouteHistoryResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderRouteHistoryResult)
-  name.vb: Task(Of ProviderRouteHistoryResult)
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
   spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderRouteHistoryResult
-    name: ProviderRouteHistoryResult
-    href: Meridian.Ui.Services.ProviderRouteHistoryResult.html
-  - name: '>'
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
   spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderRouteHistoryResult
-    name: ProviderRouteHistoryResult
-    href: Meridian.Ui.Services.ProviderRouteHistoryResult.html
-  - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderPresetsAsync_System_Threading_CancellationToken_
-  name: GetProviderPresetsAsync
-  nameWithType: ProviderManagementService.GetProviderPresetsAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderPresetsAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPresetsResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPresetsResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderPresetsResult>
-  nameWithType: Task<ProviderPresetsResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderPresetsResult>
-  nameWithType.vb: Task(Of ProviderPresetsResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderPresetsResult)
-  name.vb: Task(Of ProviderPresetsResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderPresetsResult
-    name: ProviderPresetsResult
-    href: Meridian.Ui.Services.ProviderPresetsResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderPresetsResult
-    name: ProviderPresetsResult
-    href: Meridian.Ui.Services.ProviderPresetsResult.html
-  - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_ApplyProviderPresetAsync_System_String_System_Threading_CancellationToken_
-  name: ApplyProviderPresetAsync
-  nameWithType: ProviderManagementService.ApplyProviderPresetAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.ApplyProviderPresetAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPresetApplyResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderPresetApplyResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderPresetApplyResult>
-  nameWithType: Task<ProviderPresetApplyResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderPresetApplyResult>
-  nameWithType.vb: Task(Of ProviderPresetApplyResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderPresetApplyResult)
-  name.vb: Task(Of ProviderPresetApplyResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderPresetApplyResult
-    name: ProviderPresetApplyResult
-    href: Meridian.Ui.Services.ProviderPresetApplyResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderPresetApplyResult
-    name: ProviderPresetApplyResult
-    href: Meridian.Ui.Services.ProviderPresetApplyResult.html
-  - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderCertificationsAsync_System_Threading_CancellationToken_
-  name: GetProviderCertificationsAsync
-  nameWithType: ProviderManagementService.GetProviderCertificationsAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderCertificationsAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderCertificationsResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderCertificationsResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderCertificationsResult>
-  nameWithType: Task<ProviderCertificationsResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderCertificationsResult>
-  nameWithType.vb: Task(Of ProviderCertificationsResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderCertificationsResult)
-  name.vb: Task(Of ProviderCertificationsResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderCertificationsResult
-    name: ProviderCertificationsResult
-    href: Meridian.Ui.Services.ProviderCertificationsResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderCertificationsResult
-    name: ProviderCertificationsResult
-    href: Meridian.Ui.Services.ProviderCertificationsResult.html
-  - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_RunProviderCertificationAsync_System_String_System_Threading_CancellationToken_
-  name: RunProviderCertificationAsync
-  nameWithType: ProviderManagementService.RunProviderCertificationAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.RunProviderCertificationAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderCertificationMutationResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderCertificationMutationResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderCertificationMutationResult>
-  nameWithType: Task<ProviderCertificationMutationResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderCertificationMutationResult>
-  nameWithType.vb: Task(Of ProviderCertificationMutationResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderCertificationMutationResult)
-  name.vb: Task(Of ProviderCertificationMutationResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderCertificationMutationResult
-    name: ProviderCertificationMutationResult
-    href: Meridian.Ui.Services.ProviderCertificationMutationResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderCertificationMutationResult
-    name: ProviderCertificationMutationResult
-    href: Meridian.Ui.Services.ProviderCertificationMutationResult.html
-  - name: )
-- uid: Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync*
-  commentId: Overload:Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync
-  href: Meridian.Ui.Services.ProviderManagementService.html#Meridian_Ui_Services_ProviderManagementService_GetProviderTrustSnapshotsAsync_System_Threading_CancellationToken_
-  name: GetProviderTrustSnapshotsAsync
-  nameWithType: ProviderManagementService.GetProviderTrustSnapshotsAsync
-  fullName: Meridian.Ui.Services.ProviderManagementService.GetProviderTrustSnapshotsAsync
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTrustSnapshotsResult}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTrustSnapshotsResult}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<ProviderTrustSnapshotsResult>
-  nameWithType: Task<ProviderTrustSnapshotsResult>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderTrustSnapshotsResult>
-  nameWithType.vb: Task(Of ProviderTrustSnapshotsResult)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderTrustSnapshotsResult)
-  name.vb: Task(Of ProviderTrustSnapshotsResult)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.ProviderTrustSnapshotsResult
-    name: ProviderTrustSnapshotsResult
-    href: Meridian.Ui.Services.ProviderTrustSnapshotsResult.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.ProviderTrustSnapshotsResult
-    name: ProviderTrustSnapshotsResult
-    href: Meridian.Ui.Services.ProviderTrustSnapshotsResult.html
-  - name: )
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParquetStorageSink
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
@@ -85,11 +85,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 93
+    startLine: 94
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -119,11 +119,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 104
+    startLine: 114
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -155,11 +155,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 123
+    startLine: 133
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -190,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs
-    startLine: 584
+    startLine: 608
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks

@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityApiClient
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDashboardAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapsAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyStatisticsAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderComparisonAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgeAnomalyAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairGapAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -375,7 +375,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairAllGapsAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -409,7 +409,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostWithResponseAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs

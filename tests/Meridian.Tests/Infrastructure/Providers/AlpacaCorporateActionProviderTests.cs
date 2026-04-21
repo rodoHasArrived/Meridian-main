@@ -63,7 +63,13 @@ public sealed class AlpacaCorporateActionProviderTests
     public async Task FetchAsync_WithoutCredentials_ReturnsEmptyWithoutCreatingClient()
     {
         var factory = Substitute.For<IHttpClientFactory>();
-        var configuration = new ConfigurationBuilder().Build();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ALPACA_KEY_ID"] = string.Empty,
+                ["ALPACA_SECRET_KEY"] = string.Empty,
+            })
+            .Build();
         var provider = new AlpacaCorporateActionProvider(
             factory,
             configuration,

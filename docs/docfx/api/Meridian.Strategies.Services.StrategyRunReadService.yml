@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunReadService
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMergedTimelineAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunDetailAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLedgerSummaryAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareRunsAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunComparisonDtosAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
@@ -346,11 +346,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEquityCurveAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 424
+    startLine: 425
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -387,11 +387,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFillsAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 477
+    startLine: 478
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -428,11 +428,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyRunReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAttributionAsync
     path: ../../src/Meridian.Strategies/Services/StrategyRunReadService.cs
-    startLine: 515
+    startLine: 516
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services

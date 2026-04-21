@@ -8,14 +8,6 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
-    <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Configuration Management -->
     <PackageReference Include="Microsoft.Extensions.Configuration" />

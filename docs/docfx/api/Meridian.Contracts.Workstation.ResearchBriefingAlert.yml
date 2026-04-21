@@ -1,0 +1,627 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingAlert
+  id: ResearchBriefingAlert
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.Title
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone
+  langs:
+  - csharp
+  - vb
+  name: ResearchBriefingAlert
+  nameWithType: ResearchBriefingAlert
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchBriefingAlert
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Actionable alert shown on the research briefing surface.
+  example: []
+  syntax:
+    content: 'public sealed record ResearchBriefingAlert : IEquatable<ResearchBriefingAlert>'
+    content.vb: Public NotInheritable Class ResearchBriefingAlert Implements IEquatable(Of ResearchBriefingAlert)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.ResearchBriefingAlert.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: ResearchBriefingAlert(string, string, string, string, string?, string?)
+  nameWithType: ResearchBriefingAlert.ResearchBriefingAlert(string, string, string, string, string?, string?)
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.ResearchBriefingAlert(string, string, string, string, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Actionable alert shown on the research briefing surface.
+  example: []
+  syntax:
+    content: public ResearchBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null)
+    parameters:
+    - id: AlertId
+      type: System.String
+    - id: Title
+      type: System.String
+    - id: Summary
+      type: System.String
+    - id: Tone
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: ActionLabel
+      type: System.String
+    content.vb: Public Sub New(AlertId As String, Title As String, Summary As String, Tone As String, RunId As String = Nothing, ActionLabel As String = Nothing)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.#ctor*
+  nameWithType.vb: ResearchBriefingAlert.New(String, String, String, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.ResearchBriefingAlert.New(String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String)
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId
+  id: AlertId
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: AlertId
+  nameWithType: ResearchBriefingAlert.AlertId
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AlertId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AlertId As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.Title
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingAlert.Title
+  id: Title
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: ResearchBriefingAlert.Title
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Title { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.Title*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary
+  id: Summary
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: ResearchBriefingAlert.Summary
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Summary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone
+  id: Tone
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: Tone
+  nameWithType: ResearchBriefingAlert.Tone
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tone
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Tone { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Tone As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ResearchBriefingAlert.RunId
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel
+  id: ActionLabel
+  parent: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  langs:
+  - csharp
+  - vb
+  name: ActionLabel
+  nameWithType: ResearchBriefingAlert.ActionLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActionLabel
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ActionLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActionLabel As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResearchBriefingAlert>
+  nameWithType: IEquatable<ResearchBriefingAlert>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ResearchBriefingAlert>
+  nameWithType.vb: IEquatable(Of ResearchBriefingAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ResearchBriefingAlert)
+  name.vb: IEquatable(Of ResearchBriefingAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+    name: ResearchBriefingAlert
+    href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+    name: ResearchBriefingAlert
+    href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.#ctor
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert__ctor_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: ResearchBriefingAlert
+  nameWithType: ResearchBriefingAlert.ResearchBriefingAlert
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.ResearchBriefingAlert
+  nameWithType.vb: ResearchBriefingAlert.New
+  fullName.vb: Meridian.Contracts.Workstation.ResearchBriefingAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert_AlertId
+  name: AlertId
+  nameWithType: ResearchBriefingAlert.AlertId
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.AlertId
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.Title*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.Title
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert_Title
+  name: Title
+  nameWithType: ResearchBriefingAlert.Title
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.Title
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert_Summary
+  name: Summary
+  nameWithType: ResearchBriefingAlert.Summary
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.Summary
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert_Tone
+  name: Tone
+  nameWithType: ResearchBriefingAlert.Tone
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.Tone
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert_RunId
+  name: RunId
+  nameWithType: ResearchBriefingAlert.RunId
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.RunId
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html#Meridian_Contracts_Workstation_ResearchBriefingAlert_ActionLabel
+  name: ActionLabel
+  nameWithType: ResearchBriefingAlert.ActionLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert.ActionLabel

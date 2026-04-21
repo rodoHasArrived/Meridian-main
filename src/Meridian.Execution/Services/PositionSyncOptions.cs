@@ -11,8 +11,8 @@ public sealed class PositionSyncOptions
     /// Ordered list of brokerage provider names to attempt for position syncing.
     /// The first entry in the list that has an active connection is used.
     /// <para>
-    /// Recognised values (case-insensitive): <c>"Alpaca"</c>, <c>"InteractiveBrokers"</c>,
-    /// <c>"StockSharp"</c>.  Any name not matching a registered provider is silently skipped.
+    /// Recognised values (case-insensitive): <c>"Alpaca"</c>, <c>"InteractiveBrokers"</c>.
+    /// Any name not matching a registered provider is silently skipped.
     /// Leave empty to accept the default discovery order (all registered providers are queried
     /// in registration order).
     /// </para>

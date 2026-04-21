@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  id: DecisionSeverity
+  parent: Meridian.Contracts.RuleEvaluation
+  children:
+  - Meridian.Contracts.RuleEvaluation.DecisionSeverity.Critical
+  - Meridian.Contracts.RuleEvaluation.DecisionSeverity.Error
+  - Meridian.Contracts.RuleEvaluation.DecisionSeverity.Info
+  - Meridian.Contracts.RuleEvaluation.DecisionSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: DecisionSeverity
+  nameWithType: DecisionSeverity
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DecisionSeverity
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  summary: Indicates how severe a specific rule reason is for downstream automation and UI.
+  example: []
+  syntax:
+    content: public enum DecisionSeverity
+    content.vb: Public Enum DecisionSeverity
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Info
+  commentId: F:Meridian.Contracts.RuleEvaluation.DecisionSeverity.Info
+  id: Info
+  parent: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: DecisionSeverity.Info
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Warning
+  commentId: F:Meridian.Contracts.RuleEvaluation.DecisionSeverity.Warning
+  id: Warning
+  parent: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: DecisionSeverity.Warning
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Error
+  commentId: F:Meridian.Contracts.RuleEvaluation.DecisionSeverity.Error
+  id: Error
+  parent: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: DecisionSeverity.Error
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Critical
+  commentId: F:Meridian.Contracts.RuleEvaluation.DecisionSeverity.Critical
+  id: Critical
+  parent: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: DecisionSeverity.Critical
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+references:
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  href: Meridian.html
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  parent: Meridian.Contracts.RuleEvaluation
+  href: Meridian.Contracts.RuleEvaluation.DecisionSeverity.html
+  name: DecisionSeverity
+  nameWithType: DecisionSeverity
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity

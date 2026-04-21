@@ -13,6 +13,8 @@ The current WPF application already spans research, trading-adjacent, data-opera
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
+Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
+
 ## Why WPF?
 
 This project was migrated from UWP/WinUI 3 to WPF for several reasons:
@@ -105,7 +107,7 @@ Examples:
 - `Research`: `Dashboard`, `Backtest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
 - `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
 - `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
-- `Governance`: `DataQuality`, `RunLedger`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
+- `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
 
 ## Development Notes
 
@@ -167,4 +169,5 @@ Workspace/session state is stored separately under the Meridian local app-data a
 
 - The workstation shell is real, but some flows still rely on older page-first composition.
 - Shared run drill-ins are established, but broader paper/live and governance-grade reconciliation/reporting workflows are still in progress.
+- Governance account operations now expose richer shell-native inspectors, but adjacent governance pages still need the same page-body harmonization pass.
 - MVVM extraction is incremental rather than complete across every page.

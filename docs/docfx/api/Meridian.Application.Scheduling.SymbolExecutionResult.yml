@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolExecutionResult
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsRetrieved
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceValidationType
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gap
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrder
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duplicate
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs

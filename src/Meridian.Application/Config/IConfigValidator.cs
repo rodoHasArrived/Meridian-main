@@ -124,8 +124,6 @@ public sealed class FieldValidationStage : IConfigValidationStage
             "IBClientPortal.Enabled" => "Enable this only when Client Portal Gateway is running and you want portfolio/account import",
             "IBClientPortal.BaseUrl" => "Point this at the Client Portal HTTP endpoint, typically https://localhost:5000",
             "IBClientPortal.AllowSelfSignedCertificates" => "Enable this when using the local Client Portal Gateway default self-signed HTTPS certificate",
-            "StockSharp.Enabled" => "Set StockSharp:Enabled to true when using StockSharp",
-            "StockSharp.ConnectorType" => "Use Rithmic, IQFeed, CQG, InteractiveBrokers, or Custom with AdapterType",
             var p when p.Contains("Symbol") => "Symbol must be 1-20 uppercase characters",
             var p when p.Contains("DepthLevels") => "Depth levels should be between 1 and 50",
             _ => null

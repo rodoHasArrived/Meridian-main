@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusSnapshot
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IbEnabled
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCount
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthSubscriptions
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeSubscriptions
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs
@@ -339,7 +339,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromRuntime
     path: ../../src/Meridian.Application/Monitoring/StatusSnapshot.cs

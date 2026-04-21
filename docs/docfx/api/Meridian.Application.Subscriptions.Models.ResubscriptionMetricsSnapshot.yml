@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscriptionMetricsSnapshot
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAttempts
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeSuccesses
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeFailures
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitedSkips
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerOpens
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerCloses
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerHalfOpens
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -326,7 +326,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentCircuitState
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsInCooldown
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -384,7 +384,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsCircuitOpen
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -413,7 +413,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessRate
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -442,7 +442,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageResubscribeTimeMs
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
@@ -471,7 +471,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs

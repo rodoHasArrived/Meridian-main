@@ -111,6 +111,29 @@ public sealed class AppServiceRegistrationTests
     }
 
     [Fact]
+    public void ResearchWorkspaceShellPage_ShouldResolveEvenWithoutWorkspaceServiceRegistration()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var env = new EnvironmentVariableScope()
+                .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null)
+                .Set("POLYGON_API_KEY", null);
+
+            var services = BuildServiceCollection();
+            foreach (var descriptor in services.Where(static descriptor => descriptor.ServiceType == typeof(WorkspaceService)).ToArray())
+            {
+                services.Remove(descriptor);
+            }
+
+            using var serviceProvider = services.BuildServiceProvider();
+
+            var exception = Record.Exception(() => serviceProvider.GetRequiredService<ResearchWorkspaceShellPage>());
+
+            exception.Should().BeNull();
+        });
+    }
+
+    [Fact]
     public void ConfigureServices_WithoutSecurityMasterConnection_ShouldResolveSecurityMasterPageWithNullServices()
     {
         WpfTestThread.Run(() =>

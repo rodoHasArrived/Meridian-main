@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatedConfig
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Config
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourcePath
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationErrors
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppliedFixes
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BlockedFixes
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentName
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromConfig
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -441,7 +441,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -483,7 +483,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
@@ -513,7 +513,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/ValidatedConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
     path: ../../src/Meridian.Core/Config/ValidatedConfig.cs

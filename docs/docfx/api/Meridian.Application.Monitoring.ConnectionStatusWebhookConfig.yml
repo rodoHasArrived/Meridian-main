@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatusWebhookConfig
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinAlertIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnConnectionLost
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnConnectionRecovered
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnHeartbeatMissed
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnHighLatency
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatMissedThreshold
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighLatencyThresholdMs
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
@@ -278,7 +278,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs

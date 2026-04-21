@@ -24,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionPosition
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 13
+    startLine: 15
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -42,11 +42,12 @@ items:
     (per ADR-016 pillar isolation rules).
   example: []
   syntax:
-    content: 'public sealed record ExecutionPosition : IEquatable<ExecutionPosition>'
-    content.vb: Public NotInheritable Class ExecutionPosition Implements IEquatable(Of ExecutionPosition)
+    content: 'public sealed record ExecutionPosition : IPosition, IEquatable<ExecutionPosition>'
+    content.vb: Public NotInheritable Class ExecutionPosition Implements IPosition, IEquatable(Of ExecutionPosition)
   inheritance:
   - System.Object
   implements:
+  - Meridian.Execution.Sdk.IPosition
   - System.IEquatable{Meridian.Execution.Models.ExecutionPosition}
   inheritedMembers:
   - System.Object.Equals(System.Object)
@@ -69,11 +70,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 13
+    startLine: 15
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -123,11 +124,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 14
+    startLine: 16
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -140,6 +141,8 @@ items:
       type: System.String
     content.vb: Public Property Symbol As String
   overload: Meridian.Execution.Models.ExecutionPosition.Symbol*
+  implements:
+  - Meridian.Execution.Sdk.IPosition.Symbol
 - uid: Meridian.Execution.Models.ExecutionPosition.Quantity
   commentId: P:Meridian.Execution.Models.ExecutionPosition.Quantity
   id: Quantity
@@ -154,11 +157,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 15
+    startLine: 17
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -171,6 +174,8 @@ items:
       type: System.Int64
     content.vb: Public Property Quantity As Long
   overload: Meridian.Execution.Models.ExecutionPosition.Quantity*
+  implements:
+  - Meridian.Execution.Sdk.IPosition.Quantity
 - uid: Meridian.Execution.Models.ExecutionPosition.AverageCostBasis
   commentId: P:Meridian.Execution.Models.ExecutionPosition.AverageCostBasis
   id: AverageCostBasis
@@ -185,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 16
+    startLine: 18
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -202,6 +207,8 @@ items:
       type: System.Decimal
     content.vb: Public Property AverageCostBasis As Decimal
   overload: Meridian.Execution.Models.ExecutionPosition.AverageCostBasis*
+  implements:
+  - Meridian.Execution.Sdk.IPosition.AverageCostBasis
 - uid: Meridian.Execution.Models.ExecutionPosition.UnrealisedPnl
   commentId: P:Meridian.Execution.Models.ExecutionPosition.UnrealisedPnl
   id: UnrealisedPnl
@@ -216,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 17
+    startLine: 19
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -247,11 +254,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 18
+    startLine: 20
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -278,11 +285,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsShort
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 21
+    startLine: 23
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -295,6 +302,8 @@ items:
       type: System.Boolean
     content.vb: Public ReadOnly Property IsShort As Boolean
   overload: Meridian.Execution.Models.ExecutionPosition.IsShort*
+  implements:
+  - Meridian.Execution.Sdk.IPosition.IsShort
 - uid: Meridian.Execution.Models.ExecutionPosition.AbsoluteQuantity
   commentId: P:Meridian.Execution.Models.ExecutionPosition.AbsoluteQuantity
   id: AbsoluteQuantity
@@ -309,11 +318,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AbsoluteQuantity
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 24
+    startLine: 26
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -326,6 +335,8 @@ items:
       type: System.Int64
     content.vb: Public ReadOnly Property AbsoluteQuantity As Long
   overload: Meridian.Execution.Models.ExecutionPosition.AbsoluteQuantity*
+  implements:
+  - Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
 - uid: Meridian.Execution.Models.ExecutionPosition.NotionalValue(System.Decimal)
   commentId: M:Meridian.Execution.Models.ExecutionPosition.NotionalValue(System.Decimal)
   id: NotionalValue(System.Decimal)
@@ -340,11 +351,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
     path: ../../src/Meridian.Execution/Models/ExecutionPosition.cs
-    startLine: 27
+    startLine: 29
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
@@ -359,6 +370,8 @@ items:
       type: System.Decimal
     content.vb: Public Function NotionalValue(lastPrice As Decimal) As Decimal
   overload: Meridian.Execution.Models.ExecutionPosition.NotionalValue*
+  implements:
+  - Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
   nameWithType.vb: ExecutionPosition.NotionalValue(Decimal)
   fullName.vb: Meridian.Execution.Models.ExecutionPosition.NotionalValue(Decimal)
   name.vb: NotionalValue(Decimal)
@@ -404,6 +417,13 @@ references:
   nameWithType.vb: Object
   fullName.vb: Object
   name.vb: Object
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPosition.html
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
 - uid: System.IEquatable{Meridian.Execution.Models.ExecutionPosition}
   commentId: T:System.IEquatable{Meridian.Execution.Models.ExecutionPosition}
   parent: System
@@ -639,6 +659,36 @@ references:
   name: System
   nameWithType: System
   fullName: System
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
 - uid: System.IEquatable`1
   commentId: T:System.IEquatable`1
   isExternal: true
@@ -715,18 +765,36 @@ references:
   name: Symbol
   nameWithType: ExecutionPosition.Symbol
   fullName: Meridian.Execution.Models.ExecutionPosition.Symbol
+- uid: Meridian.Execution.Sdk.IPosition.Symbol
+  commentId: P:Meridian.Execution.Sdk.IPosition.Symbol
+  parent: Meridian.Execution.Sdk.IPosition
+  name: Symbol
+  nameWithType: IPosition.Symbol
+  fullName: Meridian.Execution.Sdk.IPosition.Symbol
 - uid: Meridian.Execution.Models.ExecutionPosition.Quantity*
   commentId: Overload:Meridian.Execution.Models.ExecutionPosition.Quantity
   href: Meridian.Execution.Models.ExecutionPosition.html#Meridian_Execution_Models_ExecutionPosition_Quantity
   name: Quantity
   nameWithType: ExecutionPosition.Quantity
   fullName: Meridian.Execution.Models.ExecutionPosition.Quantity
+- uid: Meridian.Execution.Sdk.IPosition.Quantity
+  commentId: P:Meridian.Execution.Sdk.IPosition.Quantity
+  parent: Meridian.Execution.Sdk.IPosition
+  name: Quantity
+  nameWithType: IPosition.Quantity
+  fullName: Meridian.Execution.Sdk.IPosition.Quantity
 - uid: Meridian.Execution.Models.ExecutionPosition.AverageCostBasis*
   commentId: Overload:Meridian.Execution.Models.ExecutionPosition.AverageCostBasis
   href: Meridian.Execution.Models.ExecutionPosition.html#Meridian_Execution_Models_ExecutionPosition_AverageCostBasis
   name: AverageCostBasis
   nameWithType: ExecutionPosition.AverageCostBasis
   fullName: Meridian.Execution.Models.ExecutionPosition.AverageCostBasis
+- uid: Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  commentId: P:Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  parent: Meridian.Execution.Sdk.IPosition
+  name: AverageCostBasis
+  nameWithType: IPosition.AverageCostBasis
+  fullName: Meridian.Execution.Sdk.IPosition.AverageCostBasis
 - uid: Meridian.Execution.Models.ExecutionPosition.UnrealisedPnl*
   commentId: Overload:Meridian.Execution.Models.ExecutionPosition.UnrealisedPnl
   href: Meridian.Execution.Models.ExecutionPosition.html#Meridian_Execution_Models_ExecutionPosition_UnrealisedPnl
@@ -745,6 +813,13 @@ references:
   name: IsShort
   nameWithType: ExecutionPosition.IsShort
   fullName: Meridian.Execution.Models.ExecutionPosition.IsShort
+- uid: Meridian.Execution.Sdk.IPosition.IsShort
+  commentId: P:Meridian.Execution.Sdk.IPosition.IsShort
+  parent: Meridian.Execution.Sdk.IPosition
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_IsShort
+  name: IsShort
+  nameWithType: IPosition.IsShort
+  fullName: Meridian.Execution.Sdk.IPosition.IsShort
 - uid: System.Boolean
   commentId: T:System.Boolean
   parent: System
@@ -762,9 +837,47 @@ references:
   name: AbsoluteQuantity
   nameWithType: ExecutionPosition.AbsoluteQuantity
   fullName: Meridian.Execution.Models.ExecutionPosition.AbsoluteQuantity
+- uid: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  commentId: P:Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  parent: Meridian.Execution.Sdk.IPosition
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_AbsoluteQuantity
+  name: AbsoluteQuantity
+  nameWithType: IPosition.AbsoluteQuantity
+  fullName: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
 - uid: Meridian.Execution.Models.ExecutionPosition.NotionalValue*
   commentId: Overload:Meridian.Execution.Models.ExecutionPosition.NotionalValue
   href: Meridian.Execution.Models.ExecutionPosition.html#Meridian_Execution_Models_ExecutionPosition_NotionalValue_System_Decimal_
   name: NotionalValue
   nameWithType: ExecutionPosition.NotionalValue
   fullName: Meridian.Execution.Models.ExecutionPosition.NotionalValue
+- uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  commentId: M:Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  parent: Meridian.Execution.Sdk.IPosition
+  isExternal: true
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  name: NotionalValue(decimal)
+  nameWithType: IPosition.NotionalValue(decimal)
+  fullName: Meridian.Execution.Sdk.IPosition.NotionalValue(decimal)
+  nameWithType.vb: IPosition.NotionalValue(Decimal)
+  fullName.vb: Meridian.Execution.Sdk.IPosition.NotionalValue(Decimal)
+  name.vb: NotionalValue(Decimal)
+  spec.csharp:
+  - uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+    name: NotionalValue
+    href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+    name: NotionalValue
+    href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )

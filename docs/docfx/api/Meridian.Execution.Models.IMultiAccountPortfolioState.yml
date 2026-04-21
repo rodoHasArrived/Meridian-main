@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMultiAccountPortfolioState
     path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccount
     path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregateSnapshot
     path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs

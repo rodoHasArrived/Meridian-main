@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusWriter
     path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteOnceAsync
     path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
@@ -153,11 +153,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/StatusWriter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Monitoring/StatusWriter.cs
-    startLine: 71
+    startLine: 75
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring

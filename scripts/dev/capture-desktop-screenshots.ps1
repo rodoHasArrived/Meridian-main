@@ -12,6 +12,16 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
+. (Join-Path $PSScriptRoot 'SharedBuild.ps1')
+$resolvedProjectPath = if ([System.IO.Path]::IsPathRooted($ProjectPath)) {
+  [System.IO.Path]::GetFullPath($ProjectPath)
+}
+else {
+  [System.IO.Path]::GetFullPath((Join-Path $repoRoot $ProjectPath))
+}
+$buildIsolationKey = New-MeridianBuildIsolationKey -Prefix 'desktop-screenshots'
+
 function Assert-Command {
   param([string]$Name)
   if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
@@ -305,15 +315,18 @@ if (-not (Test-Path 'config/appsettings.json')) {
 
 if (-not $SkipBuild) {
   Write-Host "Restoring $ProjectPath ..."
-  dotnet restore $ProjectPath -p:EnableFullWpfBuild=true --verbosity minimal
+  dotnet restore $resolvedProjectPath --verbosity minimal @(
+    Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+  )
 
   Write-Host "Building $ProjectPath ($Configuration) ..."
-  dotnet build $ProjectPath -c $Configuration --no-restore -p:EnableFullWpfBuild=true --verbosity minimal
+  dotnet build $resolvedProjectPath -c $Configuration --no-restore --verbosity minimal @(
+    Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+  )
 }
 
 $env:MDC_FIXTURE_MODE = '1'
-$projectDir = Split-Path -Parent $ProjectPath
-$exePath = Join-Path $projectDir "bin/$Configuration/$Framework/$ExeName"
+$exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $Configuration -Framework $Framework -BinaryName $ExeName -IsolationKey $buildIsolationKey
 $stdoutPath = 'wpf-startup-stdout.log'
 $stderrPath = 'wpf-startup-stderr.log'
 

@@ -21,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonOptionsDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 554
+    startLine: 449
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKey
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 556
+    startLine: 451
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseDelayed
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 559
+    startLine: 454
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -139,11 +139,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 562
+    startLine: 457
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -180,11 +180,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 565
+    startLine: 460
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -221,11 +221,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeQuotes
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 568
+    startLine: 463
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -262,11 +262,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeAggregates
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 571
+    startLine: 466
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

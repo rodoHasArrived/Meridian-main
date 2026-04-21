@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/SecurityMasterGate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterGate
     path: ../../src/Meridian.Execution/SecurityMasterGate.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/SecurityMasterGate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/SecurityMasterGate.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/SecurityMasterGate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAsync
     path: ../../src/Meridian.Execution/SecurityMasterGate.cs

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectionGap
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectedAt
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectedAt
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectAttempts
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
     path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs

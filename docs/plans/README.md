@@ -12,6 +12,7 @@ These are the plan documents that directly support the current path to the core 
 |----------|---------|
 | [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current six-week execution slice for Waves 1-4 |
 | [provider-reliability-data-confidence-wave-1-blueprint.md](provider-reliability-data-confidence-wave-1-blueprint.md) | Wave 1 provider-confidence and checkpoint-evidence blueprint |
+| [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Wave 2 reliability sprint blueprint for replay confidence, session persistence, risk auditability, and promotion traceability |
 | [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Release-readiness checklist for workstation hardening |
 | [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint backlog for workstation delivery |
 | [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | Workstation productization blueprint across web and WPF |

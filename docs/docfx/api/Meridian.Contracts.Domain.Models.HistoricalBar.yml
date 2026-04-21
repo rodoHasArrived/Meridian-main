@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBar
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionDate
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToTimestampUtc
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -442,7 +442,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Range
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BodySize
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -507,7 +507,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBullish
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -541,7 +541,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBearish
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -575,7 +575,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangePercent
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -609,7 +609,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TypicalPrice
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
@@ -643,7 +643,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notional
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs

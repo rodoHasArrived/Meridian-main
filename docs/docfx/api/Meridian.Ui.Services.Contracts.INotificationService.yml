@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: INotificationService
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyErrorAsync
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyWarningAsync
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyAsync
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyBackfillCompleteAsync
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyScheduledJobAsync
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyStorageWarningAsync
     path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs

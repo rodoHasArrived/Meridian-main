@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingCalendar
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreMarketOpen
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegularMarketOpen
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegularMarketClose
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HalfDayClose
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AfterHoursClose
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentStatus
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAt
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTradingDay
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -351,7 +351,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHalfDay
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -384,7 +384,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTodayTradingDay
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextTradingDay
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -447,7 +447,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPreviousTradingDay
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -480,7 +480,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingDays
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -515,7 +515,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingDayCount
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -550,7 +550,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTimeUntilOpen
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -583,7 +583,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTimeUntilClose
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -616,7 +616,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHolidays
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs
@@ -652,7 +652,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/TradingCalendar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHalfDays
     path: ../../src/Meridian.Application/Services/TradingCalendar.cs

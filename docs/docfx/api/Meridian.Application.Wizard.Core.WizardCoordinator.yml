@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardCoordinator
     path: ../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddStep
     path: ../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddTransition
     path: ../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs

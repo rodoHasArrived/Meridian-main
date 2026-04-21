@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IFundAccountService
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAccountsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCustodianDetailsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBankDetailsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundAccountsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordBalanceSnapshotAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalanceHistoryAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestBalanceSnapshotAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -410,7 +410,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestCustodianStatementAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -443,7 +443,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestBankStatementAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -476,7 +476,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCustodianPositionsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -511,7 +511,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBankStatementLinesAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -548,7 +548,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -581,7 +581,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationRunsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs
@@ -614,7 +614,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/IFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationResultsAsync
     path: ../../src/Meridian.Application/FundAccounts/IFundAccountService.cs

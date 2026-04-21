@@ -39,7 +39,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceOptionsDto
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateChecksums
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckSequenceContinuity
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifyCorruption
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckFilePermissions
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelOperations
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteOrphans
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -326,7 +326,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteTemporaryFiles
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteEmptyDirectories
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -384,7 +384,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanAgeDays
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -413,7 +413,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinFileSizeBytes
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -442,7 +442,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFilesPerMerge
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -471,7 +471,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileAgeDaysThreshold
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -500,7 +500,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRun
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -529,7 +529,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSourceAfterMigration
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -558,7 +558,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyAfterMigration
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -587,7 +587,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetCompressionCodec
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -616,7 +616,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionLevel
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -645,7 +645,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecompressExisting
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -674,7 +674,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupBeforeRepair
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -703,7 +703,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupPath
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -732,7 +732,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TruncateCorrupted
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -761,7 +761,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverrideRetentionDays
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -790,7 +790,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipCriticalData
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs

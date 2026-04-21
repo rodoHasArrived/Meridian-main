@@ -35,7 +35,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TracedEventMetrics
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Published
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdates
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBars
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DropRate
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncPublished
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncDropped
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -479,7 +479,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncIntegrity
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -508,7 +508,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncTrades
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -537,7 +537,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncDepthUpdates
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -566,7 +566,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncQuotes
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -595,7 +595,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncHistoricalBars
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -624,7 +624,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -659,7 +659,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs
@@ -688,7 +688,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/TracedEventMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
     path: ../../src/Meridian.Application/Tracing/TracedEventMetrics.cs

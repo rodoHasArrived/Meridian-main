@@ -251,6 +251,29 @@ public sealed class ScriptRunnerTests
         result.ConsoleOutput.Should().Contain("Lookback=50");
     }
 
+    [Fact]
+    public async Task RunAsync_ContextHelpers_ReadToolbarContext()
+    {
+        var runner = BuildRunner();
+        const string source = """
+            var from = ContextFrom.HasValue ? ContextFrom.Value.ToString("yyyy-MM-dd") : "none";
+            var to = ContextTo.HasValue ? ContextTo.Value.ToString("yyyy-MM-dd") : "none";
+            Print($"ctx={ContextSymbol}|{from}|{to}|{ContextInterval}");
+            """;
+        var parameters = new Dictionary<string, object?>
+        {
+            ["symbol"] = "SPY",
+            ["from"] = new DateOnly(2024, 1, 2),
+            ["to"] = new DateOnly(2024, 2, 3),
+            ["interval"] = "daily"
+        };
+
+        var result = await runner.RunAsync(source, parameters);
+
+        result.Success.Should().BeTrue();
+        result.ConsoleOutput.Should().Contain("ctx=SPY|2024-01-02|2024-02-03|daily");
+    }
+
     // ── Null-parameters coercion ──────────────────────────────────────────────
 
     [Fact]

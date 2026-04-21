@@ -5,6 +5,8 @@ items:
   id: Meridian.Execution.Margin
   children:
   - Meridian.Execution.Margin.IMarginModel
+  - Meridian.Execution.Margin.MarginAccountType
+  - Meridian.Execution.Margin.MarginCallStatus
   - Meridian.Execution.Margin.MarginRequirement
   - Meridian.Execution.Margin.PortfolioMarginModel
   - Meridian.Execution.Margin.RegTMarginModel
@@ -25,6 +27,20 @@ references:
   name: IMarginModel
   nameWithType: IMarginModel
   fullName: Meridian.Execution.Margin.IMarginModel
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginAccountType.html
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType
+- uid: Meridian.Execution.Margin.MarginCallStatus
+  commentId: T:Meridian.Execution.Margin.MarginCallStatus
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginCallStatus.html
+  name: MarginCallStatus
+  nameWithType: MarginCallStatus
+  fullName: Meridian.Execution.Margin.MarginCallStatus
 - uid: Meridian.Execution.Margin.MarginRequirement
   commentId: T:Meridian.Execution.Margin.MarginRequirement
   parent: Meridian.Execution.Margin

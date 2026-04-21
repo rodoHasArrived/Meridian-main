@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FixtureScenario
     path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
     path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disconnected
     path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Degraded
     path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureScenario.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Loading
     path: ../../src/Meridian.Ui.Services/Services/FixtureScenario.cs

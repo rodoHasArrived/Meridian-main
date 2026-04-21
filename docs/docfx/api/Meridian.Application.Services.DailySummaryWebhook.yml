@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailySummaryWebhook
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnSummarySent
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnSummaryFailed
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStatisticsProviders
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendSummaryAsync
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendMessageAsync
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs

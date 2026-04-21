@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equity
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquityOption
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOption
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Future
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SingleStockFuture
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Forex
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commodity
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Crypto
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -286,7 +286,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bond
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FuturesOption
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -370,7 +370,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CFD
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -398,7 +398,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warrant
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -426,7 +426,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Swap
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -434,7 +434,7 @@ items:
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain.Enums
-  summary: Interest-rate, credit, or total-return swap.
+  summary: Over-the-counter or listed interest rate / credit / equity swap.
   example: []
   syntax:
     content: Swap = 13
@@ -454,7 +454,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLoan
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -462,7 +462,7 @@ items:
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain.Enums
-  summary: Directly originated private-credit loan.
+  summary: Direct lending / private credit loan instrument.
   example: []
   syntax:
     content: DirectLoan = 14
@@ -482,7 +482,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Repo
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -490,7 +490,7 @@ items:
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain.Enums
-  summary: Repurchase agreement (repo / reverse-repo).
+  summary: Repo or reverse repo financing instrument.
   example: []
   syntax:
     content: Repo = 15
@@ -510,7 +510,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deposit
     path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
@@ -518,7 +518,7 @@ items:
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain.Enums
-  summary: Bank deposit instrument (demand, time, or notice deposit).
+  summary: Bank deposit, time deposit, or demand deposit.
   example: []
   syntax:
     content: Deposit = 16

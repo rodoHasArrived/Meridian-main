@@ -1,0 +1,803 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults
+  commentId: T:Meridian.Contracts.Configuration.MeridianPathDefaults
+  id: MeridianPathDefaults
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.ApplicationName
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.ConfigFileName
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.DefaultDataRoot
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot(System.String)
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory(System.String)
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson(System.String,System.String)
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot(System.String,System.String)
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase(System.String,System.String,System.String)
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot(System.String)
+  - Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(System.String)
+  langs:
+  - csharp
+  - vb
+  name: MeridianPathDefaults
+  nameWithType: MeridianPathDefaults
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeridianPathDefaults
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Shared helpers for resolving Meridian config and data paths across hosts.
+  example: []
+  syntax:
+    content: public static class MeridianPathDefaults
+    content.vb: Public Module MeridianPathDefaults
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ApplicationName
+  commentId: F:Meridian.Contracts.Configuration.MeridianPathDefaults.ApplicationName
+  id: ApplicationName
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: ApplicationName
+  nameWithType: MeridianPathDefaults.ApplicationName
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ApplicationName
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplicationName
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public const string ApplicationName = "Meridian"
+    return:
+      type: System.String
+    content.vb: Public Const ApplicationName As String = "Meridian"
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ConfigFileName
+  commentId: F:Meridian.Contracts.Configuration.MeridianPathDefaults.ConfigFileName
+  id: ConfigFileName
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: ConfigFileName
+  nameWithType: MeridianPathDefaults.ConfigFileName
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ConfigFileName
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigFileName
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public const string ConfigFileName = "appsettings.json"
+    return:
+      type: System.String
+    content.vb: Public Const ConfigFileName As String = "appsettings.json"
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.DefaultDataRoot
+  commentId: F:Meridian.Contracts.Configuration.MeridianPathDefaults.DefaultDataRoot
+  id: DefaultDataRoot
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: DefaultDataRoot
+  nameWithType: MeridianPathDefaults.DefaultDataRoot
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.DefaultDataRoot
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultDataRoot
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public const string DefaultDataRoot = "data"
+    return:
+      type: System.String
+    content.vb: Public Const DefaultDataRoot As String = "data"
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot
+  id: GetLocalApplicationDataRoot
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: GetLocalApplicationDataRoot()
+  nameWithType: MeridianPathDefaults.GetLocalApplicationDataRoot()
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLocalApplicationDataRoot
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string GetLocalApplicationDataRoot()
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetLocalApplicationDataRoot() As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot*
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath
+  id: GetDesktopConfigPath
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: GetDesktopConfigPath()
+  nameWithType: MeridianPathDefaults.GetDesktopConfigPath()
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDesktopConfigPath
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string GetDesktopConfigPath()
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetDesktopConfigPath() As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath*
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath
+  id: GetFirstRunMarkerPath
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: GetFirstRunMarkerPath()
+  nameWithType: MeridianPathDefaults.GetFirstRunMarkerPath()
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFirstRunMarkerPath
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string GetFirstRunMarkerPath()
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetFirstRunMarkerPath() As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath*
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot(System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot(System.String)
+  id: GetCatalogRoot(System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: GetCatalogRoot(string?)
+  nameWithType: MeridianPathDefaults.GetCatalogRoot(string?)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCatalogRoot
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string GetCatalogRoot(string? configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetCatalogRoot(configPath As String) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot*
+  nameWithType.vb: MeridianPathDefaults.GetCatalogRoot(String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot(String)
+  name.vb: GetCatalogRoot(String)
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory(System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory(System.String)
+  id: GetConfigBaseDirectory(System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: GetConfigBaseDirectory(string?)
+  nameWithType: MeridianPathDefaults.GetConfigBaseDirectory(string?)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConfigBaseDirectory
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string GetConfigBaseDirectory(string? configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetConfigBaseDirectory(configPath As String) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory*
+  nameWithType.vb: MeridianPathDefaults.GetConfigBaseDirectory(String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory(String)
+  name.vb: GetConfigBaseDirectory(String)
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot(System.String,System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot(System.String,System.String)
+  id: ResolveDataRoot(System.String,System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: ResolveDataRoot(string?, string?)
+  nameWithType: MeridianPathDefaults.ResolveDataRoot(string?, string?)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot(string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveDataRoot
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string ResolveDataRoot(string? configPath, string? configuredDataRoot)
+    parameters:
+    - id: configPath
+      type: System.String
+    - id: configuredDataRoot
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function ResolveDataRoot(configPath As String, configuredDataRoot As String) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot*
+  nameWithType.vb: MeridianPathDefaults.ResolveDataRoot(String, String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot(String, String)
+  name.vb: ResolveDataRoot(String, String)
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase(System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase(System.String,System.String,System.String)
+  id: ResolvePathFromConfigBase(System.String,System.String,System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: ResolvePathFromConfigBase(string?, string?, string)
+  nameWithType: MeridianPathDefaults.ResolvePathFromConfigBase(string?, string?, string)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase(string?, string?, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvePathFromConfigBase
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string ResolvePathFromConfigBase(string? configPath, string? configuredPath, string defaultRelativePath)
+    parameters:
+    - id: configPath
+      type: System.String
+    - id: configuredPath
+      type: System.String
+    - id: defaultRelativePath
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function ResolvePathFromConfigBase(configPath As String, configuredPath As String, defaultRelativePath As String) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase*
+  nameWithType.vb: MeridianPathDefaults.ResolvePathFromConfigBase(String, String, String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase(String, String, String)
+  name.vb: ResolvePathFromConfigBase(String, String, String)
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson(System.String,System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson(System.String,System.String)
+  id: ResolveConfiguredDataRootFromJson(System.String,System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: ResolveConfiguredDataRootFromJson(string, string?)
+  nameWithType: MeridianPathDefaults.ResolveConfiguredDataRootFromJson(string, string?)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveConfiguredDataRootFromJson
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string ResolveConfiguredDataRootFromJson(string json, string? currentDataRoot = null)
+    parameters:
+    - id: json
+      type: System.String
+    - id: currentDataRoot
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function ResolveConfiguredDataRootFromJson(json As String, currentDataRoot As String = Nothing) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson*
+  nameWithType.vb: MeridianPathDefaults.ResolveConfiguredDataRootFromJson(String, String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson(String, String)
+  name.vb: ResolveConfiguredDataRootFromJson(String, String)
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot(System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot(System.String)
+  id: TryReadDataRoot(System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: TryReadDataRoot(string)
+  nameWithType: MeridianPathDefaults.TryReadDataRoot(string)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadDataRoot
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string? TryReadDataRoot(string json)
+    parameters:
+    - id: json
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function TryReadDataRoot(json As String) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot*
+  nameWithType.vb: MeridianPathDefaults.TryReadDataRoot(String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot(String)
+  name.vb: TryReadDataRoot(String)
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(System.String)
+  commentId: M:Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(System.String)
+  id: TryReadLegacyStorageBaseDirectory(System.String)
+  parent: Meridian.Contracts.Configuration.MeridianPathDefaults
+  langs:
+  - csharp
+  - vb
+  name: TryReadLegacyStorageBaseDirectory(string)
+  nameWithType: MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(string)
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadLegacyStorageBaseDirectory
+    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public static string? TryReadLegacyStorageBaseDirectory(string json)
+    parameters:
+    - id: json
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function TryReadLegacyStorageBaseDirectory(json As String) As String
+  overload: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory*
+  nameWithType.vb: MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(String)
+  fullName.vb: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory(String)
+  name.vb: TryReadLegacyStorageBaseDirectory(String)
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_GetLocalApplicationDataRoot
+  name: GetLocalApplicationDataRoot
+  nameWithType: MeridianPathDefaults.GetLocalApplicationDataRoot
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetLocalApplicationDataRoot
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_GetDesktopConfigPath
+  name: GetDesktopConfigPath
+  nameWithType: MeridianPathDefaults.GetDesktopConfigPath
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_GetFirstRunMarkerPath
+  name: GetFirstRunMarkerPath
+  nameWithType: MeridianPathDefaults.GetFirstRunMarkerPath
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetFirstRunMarkerPath
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_GetCatalogRoot_System_String_
+  name: GetCatalogRoot
+  nameWithType: MeridianPathDefaults.GetCatalogRoot
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetCatalogRoot
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_GetConfigBaseDirectory_System_String_
+  name: GetConfigBaseDirectory
+  nameWithType: MeridianPathDefaults.GetConfigBaseDirectory
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.GetConfigBaseDirectory
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_ResolveDataRoot_System_String_System_String_
+  name: ResolveDataRoot
+  nameWithType: MeridianPathDefaults.ResolveDataRoot
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveDataRoot
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_ResolvePathFromConfigBase_System_String_System_String_System_String_
+  name: ResolvePathFromConfigBase
+  nameWithType: MeridianPathDefaults.ResolvePathFromConfigBase
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolvePathFromConfigBase
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_ResolveConfiguredDataRootFromJson_System_String_System_String_
+  name: ResolveConfiguredDataRootFromJson
+  nameWithType: MeridianPathDefaults.ResolveConfiguredDataRootFromJson
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.ResolveConfiguredDataRootFromJson
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_TryReadDataRoot_System_String_
+  name: TryReadDataRoot
+  nameWithType: MeridianPathDefaults.TryReadDataRoot
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadDataRoot
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory*
+  commentId: Overload:Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html#Meridian_Contracts_Configuration_MeridianPathDefaults_TryReadLegacyStorageBaseDirectory_System_String_
+  name: TryReadLegacyStorageBaseDirectory
+  nameWithType: MeridianPathDefaults.TryReadLegacyStorageBaseDirectory
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults.TryReadLegacyStorageBaseDirectory

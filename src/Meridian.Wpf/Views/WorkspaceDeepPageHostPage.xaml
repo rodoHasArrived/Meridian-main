@@ -91,6 +91,7 @@
 
                     <TextBlock x:Name="ShellHintText"
                                Margin="0,14,0,0"
+                               Visibility="Collapsed"
                                FontSize="12"
                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                TextWrapping="Wrap"

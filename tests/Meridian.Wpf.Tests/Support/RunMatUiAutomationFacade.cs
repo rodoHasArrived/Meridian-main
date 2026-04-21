@@ -7,7 +7,11 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Contracts;
@@ -21,6 +25,7 @@ namespace Meridian.Wpf.Tests.Support;
 
 internal sealed class RunMatUiAutomationFacade : IDisposable
 {
+    internal const string RepoRootEnvironmentVariableName = "MERIDIAN_REPO_ROOT";
     private static readonly object ResourceSync = new();
     private static bool _resourcesInitialized;
     private readonly string _rootDirectory;
@@ -120,7 +125,29 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
 
     public static string GetRepoFilePath(string relativePath)
     {
-        return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", relativePath));
+        var repoRoot = ResolveRepoRoot(Environment.GetEnvironmentVariable(RepoRootEnvironmentVariableName));
+        return Path.GetFullPath(Path.Combine(repoRoot, relativePath));
+    }
+
+    internal static string ResolveRepoRoot(string? explicitRepoRoot = null, string? baseDirectory = null)
+    {
+        if (!string.IsNullOrWhiteSpace(explicitRepoRoot))
+        {
+            return Path.GetFullPath(explicitRepoRoot);
+        }
+
+        var current = new DirectoryInfo(baseDirectory ?? AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "Meridian.sln")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        return Path.GetFullPath(Path.Combine(baseDirectory ?? AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
     }
 
     public static void EnsureApplicationResources()
@@ -227,6 +254,11 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         FundContextService? fundContextService = null)
     {
         var services = new ServiceCollection();
+        var configureServices = typeof(Meridian.Wpf.App)
+            .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
+        configureServices.Should().NotBeNull();
+        configureServices!.Invoke(null, [services]);
+
         var serviceRoot = Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}");
         Directory.CreateDirectory(serviceRoot);
         var fundContext = fundContextService ?? new FundContextService(Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}.json"));
@@ -242,13 +274,18 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddSingleton<MessagingService>(_ => MessagingService.Instance);
         services.AddSingleton<Meridian.Wpf.Services.NotificationService>(_ => Meridian.Wpf.Services.NotificationService.Instance);
         services.AddSingleton(fundContext);
+        services.AddSingleton<IFundProfileCatalog>(sp => sp.GetRequiredService<FundContextService>());
         services.AddSingleton<FixtureModeDetector>(_ => FixtureModeDetector.Instance);
+        services.AddSingleton<Meridian.Wpf.Services.WatchlistService>(_ => Meridian.Wpf.Services.WatchlistService.Instance);
+        services.AddSingleton<IWatchlistReader>(sp => sp.GetRequiredService<Meridian.Wpf.Services.WatchlistService>());
         services.AddSingleton<StrategyRunWorkspaceService>(_ =>
         {
             var service = new StrategyRunWorkspaceService();
             StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });
+        services.AddSingleton<IWorkstationResearchBriefingApiClient, FakeWorkstationResearchBriefingApiClient>();
+        services.AddSingleton<IResearchBriefingWorkspaceService, ResearchBriefingWorkspaceService>();
         services.AddSingleton<InMemoryFundAccountService>(_ => new InMemoryFundAccountService(Path.Combine(serviceRoot, "fund-accounts.json")));
         services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
         services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
@@ -265,11 +302,24 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<FundLedgerReadService>();
         services.AddSingleton<ReconciliationReadService>();
+        services.AddSingleton<NullSecurityMasterQueryService>();
+        services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp =>
+            sp.GetRequiredService<NullSecurityMasterQueryService>());
+        services.AddSingleton<ISecurityMasterRuntimeStatus>(sp =>
+            sp.GetRequiredService<NullSecurityMasterQueryService>());
+        services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+        services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+            (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
+        services.AddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
+        services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
+        services.AddSingleton<ISecurityMasterOperatorWorkflowClient, TestSecurityMasterOperatorWorkflowClient>();
         services.AddTransient<DashboardPage>();
         var resolvedRunMatService = runMatService ?? RunMatService.Instance;
         services.AddSingleton(resolvedRunMatService);
         services.AddTransient(_ => CreateViewModel(resolvedRunMatService));
         services.AddTransient<RunMatPage>();
+        services.AddTransient<SecurityMasterViewModel>();
+        services.AddTransient<SecurityMasterPage>();
         services.AddTransient<MainPageViewModel>();
         services.AddTransient<MainPage>();
         return services.BuildServiceProvider();
@@ -326,5 +376,25 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
     {
         button.Command.Should().BeAssignableTo<IAsyncRelayCommand>();
         return (IAsyncRelayCommand)button.Command;
+    }
+
+    private sealed class TestSecurityMasterOperatorWorkflowClient : ISecurityMasterOperatorWorkflowClient
+    {
+        public Task<SecurityMasterIngestStatusResponse?> GetIngestStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<SecurityMasterIngestStatusResponse?>(new SecurityMasterIngestStatusResponse
+            {
+                RetrievedAtUtc = DateTimeOffset.UtcNow
+            });
+
+        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterConflict>>([]);
+
+        public Task<SecurityMasterConflict?> ResolveConflictAsync(
+            Guid conflictId,
+            string resolution,
+            string resolvedBy,
+            string? reason,
+            CancellationToken ct = default)
+            => Task.FromResult<SecurityMasterConflict?>(null);
     }
 }

@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderOrderGateway
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamOrderUpdatesAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs

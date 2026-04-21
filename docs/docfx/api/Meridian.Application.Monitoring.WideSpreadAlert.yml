@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WideSpreadAlert
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadBps
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadPercent
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageSpreadBps
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -407,7 +407,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveWideCount
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs

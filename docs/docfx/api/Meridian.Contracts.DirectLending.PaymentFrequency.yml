@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaymentFrequency
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Monthly
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quarterly
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SemiAnnual
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Annual
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bullet
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs

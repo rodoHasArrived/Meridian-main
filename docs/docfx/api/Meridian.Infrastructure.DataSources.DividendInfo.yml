@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendInfo
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExDate
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaymentDate
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordDate
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Amount
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -284,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
