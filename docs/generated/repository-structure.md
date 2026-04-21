@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-21 19:49:10 UTC. Do not edit manually.
+> Auto-generated on 2026-04-21 20:52:11 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4734,6 +4734,7 @@ Meridian-main
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
+│   │   ├── PROGRAM_STATE.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
@@ -4821,6 +4822,7 @@ Meridian-main
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
 │   ├── check_contract_compatibility_gate.py
+│   ├── check_program_state_consistency.py
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs

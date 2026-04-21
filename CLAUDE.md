@@ -4860,6 +4860,7 @@ Meridian-main
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
+│   │   ├── PROGRAM_STATE.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
@@ -4947,6 +4948,7 @@ Meridian-main
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
 │   ├── check_contract_compatibility_gate.py
+│   ├── check_program_state_consistency.py
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
