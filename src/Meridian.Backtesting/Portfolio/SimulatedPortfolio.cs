@@ -840,9 +840,9 @@ internal sealed class SimulatedPortfolio
     /// Realizes P&amp;L for a long position close using the account's configured lot selection method.
     /// Emits <see cref="ClosedLot"/> records into <paramref name="account"/>'s closed-lot ledger.
     /// <para>
-    /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>,
-    /// which re-implements the same FIFO logic for attribution. If you change this method,
-    /// update the metrics counterpart in parallel.
+    /// NOTE: Realized-P&amp;L attribution outside the portfolio must remain consistent with the
+    /// configured lot-selection behavior, including explicit <paramref name="targetLotId"/> closes.
+    /// The emitted <see cref="ClosedLot"/> ledger is the source of truth for downstream metrics.
     /// </para>
     /// </summary>
     private static decimal RealiseFifo(
