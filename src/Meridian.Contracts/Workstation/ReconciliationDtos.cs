@@ -42,6 +42,19 @@ public enum ReconciliationBreakCategory : byte
 }
 
 /// <summary>
+/// Materiality level for a reconciliation break.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakSeverity>))]
+public enum ReconciliationBreakSeverity : byte
+{
+    Info = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4
+}
+
+/// <summary>
 /// Request to create a reconciliation run for a recorded strategy run.
 /// </summary>
 public sealed record ReconciliationRunRequest(
@@ -103,7 +116,8 @@ public sealed record ReconciliationBreakDto(
     decimal Variance,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Info);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
