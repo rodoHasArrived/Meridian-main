@@ -269,11 +269,13 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x += 1; var y = x + 1; Print(y);", first.Checkpoint!, NoParams);
 
         first.Checkpoint.Should().NotBeNull();
         second.Success.Should().BeTrue();
-        second.ConsoleOutput.Should().Contain("42");
+        second.CompilationErrors.Should().BeEmpty();
+        second.CompileTime.Should().BeGreaterThanOrEqualTo(TimeSpan.Zero);
+        second.ConsoleOutput.Should().Contain("43");
     }
 
     [Fact]
@@ -282,10 +284,15 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x = ;", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x = \"wrong\";", first.Checkpoint!, NoParams);
 
         second.Success.Should().BeFalse();
         second.CompilationErrors.Should().NotBeEmpty();
+        second.RuntimeError.Should().BeNull();
         second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+
+        var third = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        third.Success.Should().BeTrue();
+        third.ConsoleOutput.Should().Contain("42");
     }
 }
