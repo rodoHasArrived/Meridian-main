@@ -4933,6 +4933,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
+│   │   ├── contract-compatibility-matrix.md
 │   │   ├── coverage-report.md
 │   │   ├── dk1-baseline-trust-thresholds.md
 │   │   ├── dk1-pilot-parity-runbook.md
@@ -5004,6 +5005,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── route-maintenance.sh
 │   │   ├── setup-ai-agent.sh
 │   │   └── setup.sh
+│   ├── check_contract_compatibility_gate.py
 │   ├── compare_benchmarks.py
 │   ├── dev
 │   │   ├── SharedBuild.ps1
@@ -7701,6 +7703,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-604 directories, 6957 files
+604 directories, 6959 files
 ```
 <!-- readme-tree end -->
