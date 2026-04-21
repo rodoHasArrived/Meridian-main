@@ -124,12 +124,18 @@ module ReconciliationRules =
             | FullMatch _ | PartialMatch _ -> None
             | NoMatch classification ->
                 let sev = LedgerBreakClassification.severity c.ExpectedAmount classification
+                let canonical = ReconciliationClassification.classifyLegacy classification
                 Some {
                     BreakId        = Guid.NewGuid()
                     RunId          = runId
                     SecurityId     = c.SecurityId
                     FlowId         = c.CandidateId
                     Classification = LedgerBreakClassification.asString classification
+                    TaxonomyVersion = BreakTaxonomyVersion.asString canonical.TaxonomyVersion
+                    CanonicalClass = CanonicalBreakClass.asString canonical.BreakClass
+                    PrimaryReasonCode = BreakReasonCode.asString canonical.PrimaryReasonCode
+                    ReasonCodes = canonical.ReasonCodes |> List.map BreakReasonCode.asString |> List.toArray
+                    IsFallbackClassification = canonical.IsFallback
                     Severity       = BreakSeverity.asString sev
                     ExpectedAmount = c.ExpectedAmount
                     ActualAmount   = c.ActualAmount

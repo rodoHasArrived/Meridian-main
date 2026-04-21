@@ -17,6 +17,7 @@
     <!-- Break and run metadata types — no dependencies on Reconciliation.fs -->
     <Compile Include="ReconciliationTypes.fs" />
     <Compile Include="Reconciliation.fs" />
+    <Compile Include="ReconciliationClassification.fs" />
     <!-- Configurable matching rules — depends on ReconciliationTypes.fs -->
     <Compile Include="ReconciliationRules.fs" />
     <Compile Include="LedgerReadModels.fs" />

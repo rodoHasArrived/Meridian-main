@@ -532,6 +532,8 @@ let ``ReconciliationRules classifyBreaks emits BreakRecord for non-matching cand
     breaks[0].RunId |> should equal runId
     breaks[0].ExpectedAmount |> should equal 200m
     breaks[0].ActualAmount |> should equal 100m
+    breaks[0].TaxonomyVersion |> should equal "reconciliation-break-taxonomy/v1"
+    breaks[0].CanonicalClass |> should equal "CashFlow"
     breaks[0].IsResolved |> should equal false
 
 [<Fact>]
@@ -570,3 +572,184 @@ let ``BreakSeverity round-trips through string conversion`` () =
     let severities = [ Critical; High; Medium; Low; Info ]
     for sev in severities do
         BreakSeverity.fromString (BreakSeverity.asString sev) |> should equal sev
+
+let private rawFacts breakType =
+    {
+        BreakType = breakType
+        ExpectedQuantity = None
+        ActualQuantity = None
+        ExpectedPrice = None
+        ActualPrice = None
+        ExpectedInstrumentId = None
+        ActualInstrumentId = None
+        ExpectedCashAmount = None
+        ActualCashAmount = None
+        ExpectedCurrency = None
+        ActualCurrency = None
+        ExpectedSettlementDate = None
+        ActualSettlementDate = None
+        TimingToleranceDays = 0
+        ExpectedCorporateActionType = None
+        ActualCorporateActionType = None
+        ExpectedCorporateActionFactor = None
+        ActualCorporateActionFactor = None
+        MappingKey = None
+        MappingResolved = None
+    }
+
+[<Theory>]
+[<InlineData("timing", "Timing", "TimingOutsideTolerance")>]
+[<InlineData("quantity", "Quantity", "QuantityMismatch")>]
+[<InlineData("price", "Price", "PriceMismatch")>]
+[<InlineData("instrument", "Instrument", "InstrumentIdentifierMismatch")>]
+[<InlineData("cash-flow", "CashFlow", "CashAmountMismatch")>]
+[<InlineData("corporate-action", "CorporateAction", "CorporateActionFactorMismatch")>]
+[<InlineData("mapping-error", "MappingError", "MappingKeyNotFound")>]
+let ``ReconciliationClassification maps each break class into canonical taxonomy`` breakType expectedClass expectedReason =
+    let facts =
+        match breakType with
+        | "timing" ->
+            { rawFacts (Some breakType) with
+                ExpectedSettlementDate = Some DateTimeOffset.UnixEpoch
+                ActualSettlementDate = Some (DateTimeOffset.UnixEpoch.AddDays(3))
+                TimingToleranceDays = 0 }
+        | "quantity" ->
+            { rawFacts (Some breakType) with
+                ExpectedQuantity = Some 100m
+                ActualQuantity = Some 95m
+                ExpectedInstrumentId = Some "AAPL"
+                ActualInstrumentId = Some "AAPL" }
+        | "price" ->
+            { rawFacts (Some breakType) with
+                ExpectedPrice = Some 100m
+                ActualPrice = Some 99m
+                ExpectedInstrumentId = Some "AAPL"
+                ActualInstrumentId = Some "AAPL" }
+        | "instrument" ->
+            { rawFacts (Some breakType) with
+                ExpectedInstrumentId = Some "AAPL"
+                ActualInstrumentId = Some "MSFT" }
+        | "cash-flow" ->
+            { rawFacts (Some breakType) with
+                ExpectedCashAmount = Some 1000m
+                ActualCashAmount = Some 900m
+                ExpectedInstrumentId = Some "AAPL"
+                ActualInstrumentId = Some "AAPL" }
+        | "corporate-action" ->
+            { rawFacts (Some breakType) with
+                ExpectedCorporateActionFactor = Some 2m
+                ActualCorporateActionFactor = Some 1m
+                ExpectedInstrumentId = Some "AAPL"
+                ActualInstrumentId = Some "AAPL" }
+        | _ ->
+            { rawFacts (Some breakType) with
+                MappingKey = Some "CUSIP:123"
+                MappingResolved = Some false }
+
+    let classification = ReconciliationClassification.classify facts
+
+    classification.TaxonomyVersion |> should equal BreakTaxonomyVersion.V1
+    CanonicalBreakClass.asString classification.BreakClass |> should equal expectedClass
+    BreakReasonCode.asString classification.PrimaryReasonCode |> should equal expectedReason
+    classification.IsFallback |> should equal false
+
+[<Fact>]
+let ``ReconciliationClassification preserves ambiguous multi-cause breaks with reason set`` () =
+    let facts =
+        { rawFacts (Some "cash-flow") with
+            ExpectedCashAmount = Some 1000m
+            ActualCashAmount = Some 900m
+            ExpectedCurrency = Some "USD"
+            ActualCurrency = Some "EUR"
+            ExpectedInstrumentId = Some "AAPL"
+            ActualInstrumentId = Some "MSFT"
+            ExpectedSettlementDate = Some DateTimeOffset.UnixEpoch
+            ActualSettlementDate = Some (DateTimeOffset.UnixEpoch.AddDays(5))
+            TimingToleranceDays = 0 }
+
+    let classification = ReconciliationClassification.classify facts
+    let reasons = classification.ReasonCodes |> List.map BreakReasonCode.asString
+
+    classification.IsFallback |> should equal false
+    reasons |> should contain "CashAmountMismatch"
+    reasons |> should contain "CashCurrencyMismatch"
+    reasons |> should contain "InstrumentIdentifierMismatch"
+    reasons |> should contain "TimingOutsideTolerance"
+
+[<Fact>]
+let ``ReconciliationClassification unknown break type uses safe fallback migration path`` () =
+    let classification = ReconciliationClassification.classify { rawFacts (Some "vendor-new-break") with MappingResolved = None }
+    let reasons = classification.ReasonCodes |> List.map BreakReasonCode.asString
+
+    CanonicalBreakClass.asString classification.BreakClass |> should equal "MappingError"
+    classification.IsFallback |> should equal true
+    reasons |> should contain "UnsupportedBreakTypeFallback"
+    reasons |> should not' (contain "InstrumentMissing")
+
+[<Fact>]
+let ``LedgerInterop ClassifyBreakFacts returns stable DTO values for governance consumers`` () =
+    let input = [|
+        {
+            BreakType = "price"
+            ExpectedQuantity = None
+            ActualQuantity = None
+            ExpectedPrice = Some 100m
+            ActualPrice = Some 97m
+            ExpectedInstrumentId = "AAPL"
+            ActualInstrumentId = "AAPL"
+            ExpectedCashAmount = None
+            ActualCashAmount = None
+            ExpectedCurrency = "USD"
+            ActualCurrency = "USD"
+            ExpectedSettlementDate = None
+            ActualSettlementDate = None
+            TimingToleranceDays = 0
+            ExpectedCorporateActionType = ""
+            ActualCorporateActionType = ""
+            ExpectedCorporateActionFactor = None
+            ActualCorporateActionFactor = None
+            MappingKey = ""
+            MappingResolved = None
+        }
+    |]
+
+    let classifications = LedgerInterop.ClassifyBreakFacts input
+
+    classifications.Length |> should equal 1
+    classifications[0].TaxonomyVersion |> should equal "reconciliation-break-taxonomy/v1"
+    classifications[0].BreakClass |> should equal "Price"
+    classifications[0].PrimaryReasonCode |> should equal "PriceMismatch"
+    classifications[0].IsFallback |> should equal false
+
+[<Fact>]
+let ``LedgerInterop ToBreakRecordClassificationDtos preserves canonical classification metadata`` () =
+    let record = {
+        BreakId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+        RunId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+        SecurityId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc")
+        FlowId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd")
+        Classification = "AmountBreak"
+        TaxonomyVersion = "reconciliation-break-taxonomy/v1"
+        CanonicalClass = "CashFlow"
+        PrimaryReasonCode = "CashAmountMismatch"
+        ReasonCodes = [| "CashAmountMismatch" |]
+        IsFallbackClassification = false
+        Severity = "High"
+        ExpectedAmount = 1000m
+        ActualAmount = 900m
+        Currency = "USD"
+        ExpectedDate = DateTimeOffset.UnixEpoch
+        ActualDate = Some DateTimeOffset.UnixEpoch
+        Notes = "test"
+        CreatedAt = DateTimeOffset.UnixEpoch
+        ResolvedAt = None
+        IsResolved = false
+    }
+
+    let dtos = LedgerInterop.ToBreakRecordClassificationDtos [| record |]
+
+    dtos.Length |> should equal 1
+    dtos[0].BreakId |> should equal record.BreakId
+    dtos[0].CanonicalClass |> should equal "CashFlow"
+    dtos[0].PrimaryReasonCode |> should equal "CashAmountMismatch"
+    dtos[0].IsFallbackClassification |> should equal false
