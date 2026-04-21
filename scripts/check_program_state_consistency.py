@@ -57,12 +57,15 @@ def parse_file(path: Path):
 
 def main() -> int:
     all_statuses: dict[str, list[tuple[Path, str]]] = {}
-    for file in FILES:
-        parsed = parse_file(file)
-        for milestone, status in parsed.items():
-            all_statuses.setdefault(milestone, []).append((file, status))
-
     errors = []
+    for file in FILES:
+        try:
+            parsed = parse_file(file)
+            for milestone, status in parsed.items():
+                all_statuses.setdefault(milestone, []).append((file, status))
+        except ValueError as e:
+            errors.append(str(e))
+
     for milestone, entries in sorted(all_statuses.items()):
         normalized = {status.lower() for _, status in entries}
         if len(normalized) > 1:
