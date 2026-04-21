@@ -62,6 +62,18 @@ The current working tree reinforces that direction rather than changing it. WPF 
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
 
+#### Cockpit hardened acceptance gate (objective pass/fail)
+
+“Cockpit hardened” is **Pass** only when all three scenario acceptance criteria below are green in CI and locally reproducible. It is **Fail** if any criterion is red.
+
+| Scenario acceptance criterion | Pass evidence | Fail condition |
+| --- | --- | --- |
+| `/api/execution/*` to `/api/promotion/*` continuity | `Scenario_SessionCloseReplayAndPromotionReview_BacktestToPaperFlowRemainsContinuousAndAuditable` proves one operator flow can create/close/replay a paper session, evaluate promotion eligibility, approve promotion, and see both execution and promotion evidence in returned contracts. | Any break in endpoint contract continuity, missing promotion-history visibility, or missing audit linkage (`PromotionId`/actor/correlation) in the same scenario run. |
+| Session persistence + replay verification | The same continuity scenario asserts `/api/execution/sessions/{sessionId}/replay` returns `ReplaySource=DurableFillLog`, `IsConsistent=true`, empty mismatches, and deterministic replayed cash after persisted fills. | Replay endpoint unavailable, inconsistent replay state, mismatch reasons present for the deterministic baseline, or missing durable-fill-log provenance fields. |
+| Promotion decision visibility + audit rationale | `Scenario_RiskTriggeredPromotionRejection_DecisionRemainsVisibleWithBlockingRationale` verifies blocked promotion evaluations expose policy reasons (`BlockingReasons`) and rejected decisions keep explicit operator rationale in the decision payload. | Evaluation omits blocking rationale for an ineligible run, or rejection response does not carry an explicit reason suitable for operator audit/review. |
+
+Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
+
 ### Wave 3: Shared run / portfolio / ledger continuity
 
 - the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
