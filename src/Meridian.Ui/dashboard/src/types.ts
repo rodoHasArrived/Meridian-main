@@ -155,6 +155,43 @@ export interface ExecutionAuditEntry {
   metadata: Record<string, string> | null;
 }
 
+export interface ExecutionCircuitBreakerState {
+  isOpen: boolean;
+  reason: string | null;
+  changedBy: string | null;
+  changedAt: string | null;
+}
+
+export interface ExecutionManualOverride {
+  overrideId: string;
+  kind: string;
+  reason: string;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string | null;
+  symbol: string | null;
+  strategyId: string | null;
+  runId: string | null;
+}
+
+export interface ExecutionControlSnapshot {
+  circuitBreaker: ExecutionCircuitBreakerState;
+  defaultMaxPositionSize: number | null;
+  symbolPositionLimits: Record<string, number>;
+  manualOverrides: ExecutionManualOverride[];
+  asOf: string;
+}
+
+export interface CreateExecutionManualOverrideRequest {
+  kind: string;
+  reason: string;
+  createdBy?: string | null;
+  symbol?: string | null;
+  strategyId?: string | null;
+  runId?: string | null;
+  expiresAt?: string | null;
+}
+
 export interface ReplayFileRecord {
   path: string;
   name: string;

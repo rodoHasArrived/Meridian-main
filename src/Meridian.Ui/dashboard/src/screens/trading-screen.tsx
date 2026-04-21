@@ -11,9 +11,9 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -135,6 +135,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
           occurredAt: new Date().toISOString()
         };
       }
+      await refreshExecutionControls();
       setConfirm((prev) => ({ ...prev, busy: false, result }));
     } catch (err) {
       setConfirm((prev) => ({
@@ -159,6 +160,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [selectedSessionDetail, setSelectedSessionDetail] = useState<PaperSessionDetail | null>(null);
   const [sessionReplayVerification, setSessionReplayVerification] = useState<PaperSessionReplayVerification | null>(null);
   const [executionAudit, setExecutionAudit] = useState<ExecutionAuditEntry[]>([]);
+  const [executionControls, setExecutionControls] = useState<ExecutionControlSnapshot | null>(null);
 
   const [replayFiles, setReplayFiles] = useState<ReplayFileRecord[]>([]);
   const [selectedReplayFile, setSelectedReplayFile] = useState("");
@@ -183,6 +185,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
     }
   }
 
+  async function refreshExecutionControls() {
+    try {
+      const snapshot = await getExecutionControls();
+      setExecutionControls(snapshot);
+    } catch {
+      setExecutionControls(null);
+    }
+  }
+
   useEffect(() => {
     getExecutionSessions()
       .then(setSessions)
@@ -199,6 +210,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       .then(setPromotionHistory)
       .catch(() => { /* history unavailable */ });
     void refreshExecutionAudit();
+    void refreshExecutionControls();
   }, []);
 
   async function handleSubmitOrder(e: React.FormEvent) {
@@ -210,6 +222,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
         setShowOrderForm(false);
         setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
+        await refreshExecutionControls();
       } else {
         setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
       }
@@ -265,6 +278,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         };
       });
       await refreshExecutionAudit();
+      await refreshExecutionControls();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
     }
@@ -293,6 +307,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSelectedSessionDetail(detail);
       setSessionReplayVerification(verification);
       await refreshExecutionAudit();
+      await refreshExecutionControls();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
@@ -457,6 +472,40 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <li key={guardrail}>{guardrail}</li>
                 ))}
               </ul>
+            </div>
+            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Execution controls snapshot</p>
+                <span className={cn("text-xs font-semibold uppercase tracking-[0.14em]", executionControls?.circuitBreaker.isOpen ? "text-danger" : "text-success")}>
+                  Breaker {executionControls?.circuitBreaker.isOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+              {executionControls ? (
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <p>
+                    Default limit: <span className="font-mono text-foreground">{executionControls.defaultMaxPositionSize ?? "Not set"}</span>
+                  </p>
+                  <p>
+                    Symbol limits:{" "}
+                    <span className="font-mono text-foreground">
+                      {Object.keys(executionControls.symbolPositionLimits).length === 0
+                        ? "None"
+                        : Object.entries(executionControls.symbolPositionLimits).map(([symbol, limit]) => `${symbol}=${limit}`).join(", ")}
+                    </span>
+                  </p>
+                  <p>
+                    Active overrides:{" "}
+                    <span className="font-mono text-foreground">
+                      {executionControls.manualOverrides.length === 0
+                        ? "None"
+                        : executionControls.manualOverrides.map((entry) => `${entry.kind}${entry.symbol ? ` (${entry.symbol})` : ""}`).join(", ")}
+                    </span>
+                  </p>
+                  <p className="font-mono">As of {executionControls.asOf}</p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Execution controls snapshot unavailable.</p>
+              )}
             </div>
           </CardContent>
         </Card>
