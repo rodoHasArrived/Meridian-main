@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitEventArgs
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 335
   assemblies:
   - Meridian.Infrastructure
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 335
   assemblies:
   - Meridian.Infrastructure
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 336
   assemblies:
   - Meridian.Infrastructure
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryAfter
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 337
   assemblies:
   - Meridian.Infrastructure
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsMade
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 338
   assemblies:
   - Meridian.Infrastructure
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequests
-    path: ../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
+    path: src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs
     startLine: 339
   assemblies:
   - Meridian.Infrastructure

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResourceLimits
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 605
   assemblies:
   - Meridian.Storage
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 605
   assemblies:
   - Meridian.Storage
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxCpuPct
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 606
   assemblies:
   - Meridian.Storage
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMemoryPct
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 607
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDiskIoMbps
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 608
   assemblies:
   - Meridian.Storage

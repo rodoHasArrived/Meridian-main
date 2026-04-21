@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRouteExplainabilityService
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 258
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 262
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 267
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 273
   assemblies:
   - Meridian.Application

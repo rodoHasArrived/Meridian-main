@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatedConfig
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Config
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 26
   assemblies:
   - Meridian.Core
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourcePath
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationErrors
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppliedFixes
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 41
   assemblies:
   - Meridian.Core
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BlockedFixes
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 48
   assemblies:
   - Meridian.Core
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 53
   assemblies:
   - Meridian.Core
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentName
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 58
   assemblies:
   - Meridian.Core
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 63
   assemblies:
   - Meridian.Core
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 68
   assemblies:
   - Meridian.Core
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromConfig
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 73
   assemblies:
   - Meridian.Core
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 102
   assemblies:
   - Meridian.Core
@@ -486,7 +486,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 122
   assemblies:
   - Meridian.Core
@@ -516,7 +516,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
-    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    path: src/Meridian.Core/Config/ValidatedConfig.cs
     startLine: 133
   assemblies:
   - Meridian.Core

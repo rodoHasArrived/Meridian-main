@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProportionalAllocationEngine
-    path: ../../src/Meridian.Execution/Allocation/ProportionalAllocationEngine.cs
+    path: src/Meridian.Execution/Allocation/ProportionalAllocationEngine.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Allocate
-    path: ../../src/Meridian.Execution/Allocation/ProportionalAllocationEngine.cs
+    path: src/Meridian.Execution/Allocation/ProportionalAllocationEngine.cs
     startLine: 19
   assemblies:
   - Meridian.Execution

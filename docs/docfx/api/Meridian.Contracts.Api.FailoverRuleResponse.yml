@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverRuleResponse
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 132
   assemblies:
   - Meridian.Contracts
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 132
   assemblies:
   - Meridian.Contracts
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 133
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryProviderId
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 134
   assemblies:
   - Meridian.Contracts
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupProviderIds
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 135
   assemblies:
   - Meridian.Contracts
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverThreshold
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 136
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoveryThreshold
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 137
   assemblies:
   - Meridian.Contracts
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityThreshold
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 138
   assemblies:
   - Meridian.Contracts
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyMs
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 139
   assemblies:
   - Meridian.Contracts
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInFailoverState
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 140
   assemblies:
   - Meridian.Contracts
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentActiveProviderId
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 141
   assemblies:
   - Meridian.Contracts

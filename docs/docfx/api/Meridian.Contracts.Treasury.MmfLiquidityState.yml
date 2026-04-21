@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MmfLiquidityState
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Liquid
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Restricted
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Suspended
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Inactive
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts

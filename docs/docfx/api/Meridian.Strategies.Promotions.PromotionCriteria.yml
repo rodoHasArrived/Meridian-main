@@ -23,8 +23,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionCriteria
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 69
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 90
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -61,8 +61,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 69
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 90
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -99,8 +99,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSharpeRatio
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 70
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 91
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -128,8 +128,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxAllowedDrawdownPercent
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 71
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 92
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -157,8 +157,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinTotalReturn
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 72
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 93
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions
@@ -186,8 +186,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
-    startLine: 75
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 96
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Promotions

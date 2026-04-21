@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceConfigurationExtensions
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 812
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsForSource
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 817
   assemblies:
   - Meridian.Infrastructure
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseType
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 835
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseCategory
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 849
   assemblies:
   - Meridian.Infrastructure
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnabledSourceIds
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 865
   assemblies:
   - Meridian.Infrastructure

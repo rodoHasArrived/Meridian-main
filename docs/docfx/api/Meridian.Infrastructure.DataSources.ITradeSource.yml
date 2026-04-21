@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITradeSource
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 108
   assemblies:
   - Meridian.ProviderSdk
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 113
   assemblies:
   - Meridian.ProviderSdk
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 118
   assemblies:
   - Meridian.ProviderSdk
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 123
   assemblies:
   - Meridian.ProviderSdk

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingParametersBackfillService
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTickerAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/TradingParametersBackfillService.cs
     startLine: 115
   assemblies:
   - Meridian.Infrastructure

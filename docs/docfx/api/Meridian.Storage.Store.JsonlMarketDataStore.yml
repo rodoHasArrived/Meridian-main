@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlMarketDataStore
-    path: ../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+    path: src/Meridian.Storage/Store/JsonlMarketDataStore.cs
     startLine: 17
   assemblies:
   - Meridian.Storage
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+    path: src/Meridian.Storage/Store/JsonlMarketDataStore.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAsync
-    path: ../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+    path: src/Meridian.Storage/Store/JsonlMarketDataStore.cs
     startLine: 28
   assemblies:
   - Meridian.Storage

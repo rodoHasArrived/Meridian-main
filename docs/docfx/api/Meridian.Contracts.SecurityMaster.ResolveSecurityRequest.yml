@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSecurityRequest
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifierKind
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 3
   assemblies:
   - Meridian.Contracts
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifierValue
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOfUtc
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveOnly
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts

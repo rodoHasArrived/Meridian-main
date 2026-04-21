@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackpressureStatusDto
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Level
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DroppedEvents
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DropRate
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 36
   assemblies:
   - Meridian.Contracts
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationSeconds
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 42
   assemblies:
   - Meridian.Contracts
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueDepthWarning
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 54
   assemblies:
   - Meridian.Contracts

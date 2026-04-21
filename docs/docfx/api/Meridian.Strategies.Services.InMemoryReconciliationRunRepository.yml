@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InMemoryReconciliationRunRepository
-    path: ../../src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
     startLine: 4
   assemblies:
   - Meridian.Strategies
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
-    path: ../../src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
     startLine: 30
   assemblies:
   - Meridian.Strategies
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestForRunAsync
-    path: ../../src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
     startLine: 42
   assemblies:
   - Meridian.Strategies
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryForRunAsync
-    path: ../../src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
+    path: src/Meridian.Strategies/Services/InMemoryReconciliationRunRepository.cs
     startLine: 57
   assemblies:
   - Meridian.Strategies

@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderAvailabilitySummary
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 170
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 172
   assemblies:
   - Meridian.Infrastructure
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailableProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 173
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingAvailable
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 174
   assemblies:
   - Meridian.Infrastructure
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillAvailable
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 175
   assemblies:
   - Meridian.Infrastructure
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchAvailable
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 176
   assemblies:
   - Meridian.Infrastructure
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 177
   assemblies:
   - Meridian.Infrastructure
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasStreamingCapability
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 179
   assemblies:
   - Meridian.Infrastructure
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasBackfillCapability
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 180
   assemblies:
   - Meridian.Infrastructure
@@ -298,7 +298,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasSymbolSearchCapability
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 181
   assemblies:
   - Meridian.Infrastructure
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailabilityRate
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     startLine: 182
   assemblies:
   - Meridian.Infrastructure

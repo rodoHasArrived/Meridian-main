@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityProviderComparisonEntryResponse
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 89
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 91
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 92
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 93
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastDataAge
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 94
   assemblies:
   - Meridian.Ui.Services

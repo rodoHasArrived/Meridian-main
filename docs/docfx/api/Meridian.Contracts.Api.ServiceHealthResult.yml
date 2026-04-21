@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceHealthResult
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsReachable
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 92
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 98
   assemblies:
   - Meridian.Contracts
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 104
   assemblies:
   - Meridian.Contracts
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 110
   assemblies:
   - Meridian.Contracts
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unhealthy
-    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    path: src/Meridian.Contracts/Api/ClientModels.cs
     startLine: 121
   assemblies:
   - Meridian.Contracts

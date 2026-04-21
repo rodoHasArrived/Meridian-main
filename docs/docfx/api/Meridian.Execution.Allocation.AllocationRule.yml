@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocationRule
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleId
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SliceWeights
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EqualWeight
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 36
   assemblies:
   - Meridian.Execution
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizedWeights
-    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    path: src/Meridian.Execution/Allocation/AllocationRule.cs
     startLine: 51
   assemblies:
   - Meridian.Execution

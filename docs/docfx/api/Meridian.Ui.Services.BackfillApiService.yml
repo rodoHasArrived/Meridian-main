@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillApiService
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastStatusAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Services
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfillAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderHealthAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 78
   assemblies:
   - Meridian.Ui.Services
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunGapFillAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 86
   assemblies:
   - Meridian.Ui.Services
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 111
   assemblies:
   - Meridian.Ui.Services
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionHistoryAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 120
   assemblies:
   - Meridian.Ui.Services
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatisticsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 130
   assemblies:
   - Meridian.Ui.Services
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolGapAnalysisAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
     startLine: 143
   assemblies:
   - Meridian.Ui.Services

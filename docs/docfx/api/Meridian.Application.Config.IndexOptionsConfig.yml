@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOptionsConfig
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 22
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Indices
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 23
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeWeeklies
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeAmSettled
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 25
   assemblies:
   - Meridian.Core
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludePmSettled
-    path: ../../src/Meridian.Core/Config/DerivativesConfig.cs
+    path: src/Meridian.Core/Config/DerivativesConfig.cs
     startLine: 26
   assemblies:
   - Meridian.Core

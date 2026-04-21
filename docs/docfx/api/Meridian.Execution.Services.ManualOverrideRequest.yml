@@ -5,7 +5,8 @@ items:
   id: ManualOverrideRequest
   parent: Meridian.Execution.Services
   children:
-  - Meridian.Execution.Services.ManualOverrideRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  - Meridian.Execution.Services.ManualOverrideRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Execution.Services.ManualOverrideRequest.CorrelationId
   - Meridian.Execution.Services.ManualOverrideRequest.CreatedBy
   - Meridian.Execution.Services.ManualOverrideRequest.ExpiresAt
   - Meridian.Execution.Services.ManualOverrideRequest.Kind
@@ -26,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverrideRequest
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 71
   assemblies:
   - Meridian.Execution
@@ -47,16 +48,16 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.Services.ManualOverrideRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
-  commentId: M:Meridian.Execution.Services.ManualOverrideRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
-  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})'
+- uid: Meridian.Execution.Services.ManualOverrideRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Execution.Services.ManualOverrideRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset},System.String)'
   parent: Meridian.Execution.Services.ManualOverrideRequest
   langs:
   - csharp
   - vb
-  name: ManualOverrideRequest(string, string, string?, string?, string?, string?, DateTimeOffset?)
-  nameWithType: ManualOverrideRequest.ManualOverrideRequest(string, string, string?, string?, string?, string?, DateTimeOffset?)
-  fullName: Meridian.Execution.Services.ManualOverrideRequest.ManualOverrideRequest(string, string, string?, string?, string?, string?, System.DateTimeOffset?)
+  name: ManualOverrideRequest(string, string, string?, string?, string?, string?, DateTimeOffset?, string?)
+  nameWithType: ManualOverrideRequest.ManualOverrideRequest(string, string, string?, string?, string?, string?, DateTimeOffset?, string?)
+  fullName: Meridian.Execution.Services.ManualOverrideRequest.ManualOverrideRequest(string, string, string?, string?, string?, string?, System.DateTimeOffset?, string?)
   type: Constructor
   source:
     remote:
@@ -64,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 71
   assemblies:
   - Meridian.Execution
@@ -72,7 +73,7 @@ items:
   summary: Manual override creation request.
   example: []
   syntax:
-    content: public ManualOverrideRequest(string Kind, string Reason, string? CreatedBy = null, string? Symbol = null, string? StrategyId = null, string? RunId = null, DateTimeOffset? ExpiresAt = null)
+    content: public ManualOverrideRequest(string Kind, string Reason, string? CreatedBy = null, string? Symbol = null, string? StrategyId = null, string? RunId = null, DateTimeOffset? ExpiresAt = null, string? CorrelationId = null)
     parameters:
     - id: Kind
       type: System.String
@@ -88,11 +89,13 @@ items:
       type: System.String
     - id: ExpiresAt
       type: System.Nullable{System.DateTimeOffset}
-    content.vb: Public Sub New(Kind As String, Reason As String, CreatedBy As String = Nothing, Symbol As String = Nothing, StrategyId As String = Nothing, RunId As String = Nothing, ExpiresAt As DateTimeOffset? = Nothing)
+    - id: CorrelationId
+      type: System.String
+    content.vb: Public Sub New(Kind As String, Reason As String, CreatedBy As String = Nothing, Symbol As String = Nothing, StrategyId As String = Nothing, RunId As String = Nothing, ExpiresAt As DateTimeOffset? = Nothing, CorrelationId As String = Nothing)
   overload: Meridian.Execution.Services.ManualOverrideRequest.#ctor*
-  nameWithType.vb: ManualOverrideRequest.New(String, String, String, String, String, String, DateTimeOffset?)
-  fullName.vb: Meridian.Execution.Services.ManualOverrideRequest.New(String, String, String, String, String, String, System.DateTimeOffset?)
-  name.vb: New(String, String, String, String, String, String, DateTimeOffset?)
+  nameWithType.vb: ManualOverrideRequest.New(String, String, String, String, String, String, DateTimeOffset?, String)
+  fullName.vb: Meridian.Execution.Services.ManualOverrideRequest.New(String, String, String, String, String, String, System.DateTimeOffset?, String)
+  name.vb: New(String, String, String, String, String, String, DateTimeOffset?, String)
 - uid: Meridian.Execution.Services.ManualOverrideRequest.Kind
   commentId: P:Meridian.Execution.Services.ManualOverrideRequest.Kind
   id: Kind
@@ -110,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 72
   assemblies:
   - Meridian.Execution
@@ -139,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 73
   assemblies:
   - Meridian.Execution
@@ -168,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 74
   assemblies:
   - Meridian.Execution
@@ -197,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 75
   assemblies:
   - Meridian.Execution
@@ -226,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 76
   assemblies:
   - Meridian.Execution
@@ -255,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 77
   assemblies:
   - Meridian.Execution
@@ -284,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiresAt
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
     startLine: 78
   assemblies:
   - Meridian.Execution
@@ -296,6 +299,35 @@ items:
       type: System.Nullable{System.DateTimeOffset}
     content.vb: Public Property ExpiresAt As DateTimeOffset?
   overload: Meridian.Execution.Services.ManualOverrideRequest.ExpiresAt*
+- uid: Meridian.Execution.Services.ManualOverrideRequest.CorrelationId
+  commentId: P:Meridian.Execution.Services.ManualOverrideRequest.CorrelationId
+  id: CorrelationId
+  parent: Meridian.Execution.Services.ManualOverrideRequest
+  langs:
+  - csharp
+  - vb
+  name: CorrelationId
+  nameWithType: ManualOverrideRequest.CorrelationId
+  fullName: Meridian.Execution.Services.ManualOverrideRequest.CorrelationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrelationId
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? CorrelationId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CorrelationId As String
+  overload: Meridian.Execution.Services.ManualOverrideRequest.CorrelationId*
 references:
 - uid: Meridian.Execution.Services
   commentId: N:Meridian.Execution.Services
@@ -603,7 +635,7 @@ references:
   - name: )
 - uid: Meridian.Execution.Services.ManualOverrideRequest.#ctor*
   commentId: Overload:Meridian.Execution.Services.ManualOverrideRequest.#ctor
-  href: Meridian.Execution.Services.ManualOverrideRequest.html#Meridian_Execution_Services_ManualOverrideRequest__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_DateTimeOffset__
+  href: Meridian.Execution.Services.ManualOverrideRequest.html#Meridian_Execution_Services_ManualOverrideRequest__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_DateTimeOffset__System_String_
   name: ManualOverrideRequest
   nameWithType: ManualOverrideRequest.ManualOverrideRequest
   fullName: Meridian.Execution.Services.ManualOverrideRequest.ManualOverrideRequest
@@ -711,3 +743,9 @@ references:
   name: ExpiresAt
   nameWithType: ManualOverrideRequest.ExpiresAt
   fullName: Meridian.Execution.Services.ManualOverrideRequest.ExpiresAt
+- uid: Meridian.Execution.Services.ManualOverrideRequest.CorrelationId*
+  commentId: Overload:Meridian.Execution.Services.ManualOverrideRequest.CorrelationId
+  href: Meridian.Execution.Services.ManualOverrideRequest.html#Meridian_Execution_Services_ManualOverrideRequest_CorrelationId
+  name: CorrelationId
+  nameWithType: ManualOverrideRequest.CorrelationId
+  fullName: Meridian.Execution.Services.ManualOverrideRequest.CorrelationId

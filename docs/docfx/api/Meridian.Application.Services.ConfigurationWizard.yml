@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationWizard
-    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    path: src/Meridian.Application/Services/ConfigurationWizard.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    path: src/Meridian.Application/Services/ConfigurationWizard.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    path: src/Meridian.Application/Services/ConfigurationWizard.cs
     startLine: 44
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQuickSetup
-    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    path: src/Meridian.Application/Services/ConfigurationWizard.cs
     startLine: 76
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQuickstartAsync
-    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    path: src/Meridian.Application/Services/ConfigurationWizard.cs
     startLine: 131
   assemblies:
   - Meridian.Application

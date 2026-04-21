@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapReplayEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Shared

@@ -40,7 +40,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 141
   assemblies:
   - Meridian.Ui.Services
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 155
   assemblies:
   - Meridian.Ui.Services
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStatus
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 161
   assemblies:
   - Meridian.Ui.Services
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSuccessfulUpdate
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 170
   assemblies:
   - Meridian.Ui.Services
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBackendReachable
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 171
   assemblies:
   - Meridian.Ui.Services
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecondsSinceLastUpdate
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 173
   assemblies:
   - Meridian.Ui.Services
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDataStale
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 178
   assemblies:
   - Meridian.Ui.Services
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMonitoring
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 181
   assemblies:
   - Meridian.Ui.Services
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusChanged
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 183
   assemblies:
   - Meridian.Ui.Services
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveStatusReceived
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 184
   assemblies:
   - Meridian.Ui.Services
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackendReachabilityChanged
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 185
   assemblies:
   - Meridian.Ui.Services
@@ -368,7 +368,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHttpClient
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 190
   assemblies:
   - Meridian.Ui.Services
@@ -398,7 +398,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogInfo
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 195
   assemblies:
   - Meridian.Ui.Services
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartLiveMonitoring
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 197
   assemblies:
   - Meridian.Ui.Services
@@ -466,7 +466,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopLiveMonitoring
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 204
   assemblies:
   - Meridian.Ui.Services
@@ -492,7 +492,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 262
   assemblies:
   - Meridian.Ui.Services
@@ -523,7 +523,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderStatusAsync
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 314
   assemblies:
   - Meridian.Ui.Services
@@ -554,7 +554,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableProvidersAsync
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 347
   assemblies:
   - Meridian.Ui.Services
@@ -585,7 +585,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateStatus
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 367
   assemblies:
   - Meridian.Ui.Services
@@ -617,7 +617,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetBusy
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 385
   assemblies:
   - Meridian.Ui.Services
@@ -649,7 +649,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetReady
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 386
   assemblies:
   - Meridian.Ui.Services
@@ -675,7 +675,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetError
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 387
   assemblies:
   - Meridian.Ui.Services
@@ -707,7 +707,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetConnectionStatus
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 389
   assemblies:
   - Meridian.Ui.Services

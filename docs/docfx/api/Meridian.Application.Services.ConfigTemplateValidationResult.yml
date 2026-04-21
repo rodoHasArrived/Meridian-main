@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigTemplateValidationResult
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 461
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 463
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 464
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 465
   assemblies:
   - Meridian.Application

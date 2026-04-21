@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoggingService
-    path: ../../src/Meridian.Ui.Services/Services/LoggingService.cs
+    path: src/Meridian.Ui.Services/Services/LoggingService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/LoggingService.cs
+    path: src/Meridian.Ui.Services/Services/LoggingService.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogError
-    path: ../../src/Meridian.Ui.Services/Services/LoggingService.cs
+    path: src/Meridian.Ui.Services/Services/LoggingService.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogWarning
-    path: ../../src/Meridian.Ui.Services/Services/LoggingService.cs
+    path: src/Meridian.Ui.Services/Services/LoggingService.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogInfo
-    path: ../../src/Meridian.Ui.Services/Services/LoggingService.cs
+    path: src/Meridian.Ui.Services/Services/LoggingService.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Services

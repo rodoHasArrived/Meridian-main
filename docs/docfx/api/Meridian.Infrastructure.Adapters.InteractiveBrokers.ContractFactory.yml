@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractFactory
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
     startLine: 136
   assemblies:
   - Meridian.Infrastructure

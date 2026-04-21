@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleDecision
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 56
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 56
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanExecute
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 58
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuggestedDelay
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 59
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 60
   assemblies:
   - Meridian.Application
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Allowed
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Denied
-    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
     startLine: 70
   assemblies:
   - Meridian.Application

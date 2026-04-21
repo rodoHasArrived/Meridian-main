@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestProjectionRunRequest
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectionAsOf
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 81
   assemblies:
   - Meridian.Contracts
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDataAsOf
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 82
   assemblies:
   - Meridian.Contracts
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TriggerType
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 83
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineVersion
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts

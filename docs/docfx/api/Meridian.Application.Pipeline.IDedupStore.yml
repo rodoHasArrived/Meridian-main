@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDedupStore
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalChecked
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuplicates
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDuplicateAsync
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompactAsync
-    path: ../../src/Meridian.Application/Pipeline/IDedupStore.cs
+    path: src/Meridian.Application/Pipeline/IDedupStore.cs
     startLine: 28
   assemblies:
   - Meridian.Application

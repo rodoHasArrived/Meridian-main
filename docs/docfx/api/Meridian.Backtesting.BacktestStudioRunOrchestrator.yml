@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestStudioRunOrchestrator
-    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
     startLine: 21
   assemblies:
   - Meridian.Backtesting
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
     startLine: 36
   assemblies:
   - Meridian.Backtesting
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
-    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
     startLine: 78
   assemblies:
   - Meridian.Backtesting
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCanonicalResultAsync
-    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
     startLine: 90
   assemblies:
   - Meridian.Backtesting
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
     startLine: 99
   assemblies:
   - Meridian.Backtesting

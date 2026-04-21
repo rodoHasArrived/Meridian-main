@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoginSessionMiddleware
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionCookieName
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Shared
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentUserKey
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Shared
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentUserRoleKey
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Shared
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentUserPermissionsKey
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 37
   assemblies:
   - Meridian.Ui.Shared
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 48
   assemblies:
   - Meridian.Ui.Shared
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvokeAsync
-    path: ../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs
     startLine: 50
   assemblies:
   - Meridian.Ui.Shared

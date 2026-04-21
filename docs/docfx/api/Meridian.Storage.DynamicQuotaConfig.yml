@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DynamicQuotaConfig
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 421
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 424
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluationPeriod
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 427
   assemblies:
   - Meridian.Storage
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinReservePct
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 430
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverprovisionFactor
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 433
   assemblies:
   - Meridian.Storage
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StealFromInactive
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 436
   assemblies:
   - Meridian.Storage

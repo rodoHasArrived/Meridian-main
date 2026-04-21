@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VenueCode
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Explicit
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nyse
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nasdaq
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cboe
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NyseArca
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 46
   assemblies:
   - Meridian.Contracts
@@ -399,7 +399,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 50
   assemblies:
   - Meridian.Contracts
@@ -438,7 +438,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHashCode
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 53
   assemblies:
   - Meridian.Contracts
@@ -470,7 +470,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareTo
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 57
   assemblies:
   - Meridian.Contracts
@@ -510,7 +510,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -542,7 +542,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Equality
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 64
   assemblies:
   - Meridian.Contracts
@@ -581,7 +581,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Inequality
-    path: ../../src/Meridian.Contracts/Domain/VenueCode.cs
+    path: src/Meridian.Contracts/Domain/VenueCode.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateRequest
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 373
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 373
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagePath
-    path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
     startLine: 374
   assemblies:
   - Meridian.Application

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileStatistics
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 477
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 477
   assemblies:
   - Meridian.Storage
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 478
   assemblies:
   - Meridian.Storage
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 479
   assemblies:
   - Meridian.Storage
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressedFiles
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 480
   assemblies:
   - Meridian.Storage
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UncompressedFiles
-    path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
+    path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
     startLine: 481
   assemblies:
   - Meridian.Storage

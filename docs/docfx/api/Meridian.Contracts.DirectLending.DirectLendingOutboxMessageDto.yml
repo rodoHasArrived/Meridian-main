@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOutboxMessageDto
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 287
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 287
   assemblies:
   - Meridian.Contracts
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxMessageId
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 288
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Topic
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 289
   assemblies:
   - Meridian.Contracts
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageKey
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 290
   assemblies:
   - Meridian.Contracts
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PayloadJson
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 291
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 292
   assemblies:
   - Meridian.Contracts
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VisibleAfter
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 293
   assemblies:
   - Meridian.Contracts
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessedAt
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 294
   assemblies:
   - Meridian.Contracts
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCount
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 295
   assemblies:
   - Meridian.Contracts
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 296
   assemblies:
   - Meridian.Contracts

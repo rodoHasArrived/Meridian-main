@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeResponse
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 198
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 200
   assemblies:
   - Meridian.Ui.Services

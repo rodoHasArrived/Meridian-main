@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BadTickFilterConfig
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 507
   assemblies:
   - Meridian.Application
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDeviationPercent
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 514
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinValidPrice
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 519
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxValidPrice
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 524
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSpreadPercent
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 529
   assemblies:
   - Meridian.Application
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequirePositiveSize
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 534
   assemblies:
   - Meridian.Application
@@ -227,7 +227,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnforceLuldBands
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 541
   assemblies:
   - Meridian.Application
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnforceTradingHalts
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 547
   assemblies:
   - Meridian.Application
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownMs
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 552
   assemblies:
   - Meridian.Application
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 554
   assemblies:
   - Meridian.Application
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strict
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 559
   assemblies:
   - Meridian.Application
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lenient
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 571
   assemblies:
   - Meridian.Application

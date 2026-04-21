@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestEngineMetadata
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 39
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 39
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EngineId
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
     startLine: 39
   assemblies:
   - Meridian.Backtesting.Sdk

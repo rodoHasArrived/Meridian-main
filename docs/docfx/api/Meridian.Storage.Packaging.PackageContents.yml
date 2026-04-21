@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageContents
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 395
   assemblies:
   - Meridian.Storage
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageId
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 397
   assemblies:
   - Meridian.Storage
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 398
   assemblies:
   - Meridian.Storage
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 399
   assemblies:
   - Meridian.Storage
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 400
   assemblies:
   - Meridian.Storage
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 401
   assemblies:
   - Meridian.Storage
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 402
   assemblies:
   - Meridian.Storage
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageSizeBytes
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 403
   assemblies:
   - Meridian.Storage
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UncompressedSizeBytes
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 404
   assemblies:
   - Meridian.Storage
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 405
   assemblies:
   - Meridian.Storage
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 406
   assemblies:
   - Meridian.Storage
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 407
   assemblies:
   - Meridian.Storage
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Files
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 408
   assemblies:
   - Meridian.Storage
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quality
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 409
   assemblies:
   - Meridian.Storage

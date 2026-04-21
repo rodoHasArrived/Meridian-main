@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSymbolSearchProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 26
   assemblies:
   - Meridian.Infrastructure
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 30
   assemblies:
   - Meridian.Infrastructure
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 35
   assemblies:
   - Meridian.Infrastructure
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 74
   assemblies:
   - Meridian.Infrastructure
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 93
   assemblies:
   - Meridian.Infrastructure
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 101
   assemblies:
   - Meridian.Infrastructure
@@ -403,7 +403,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 172
   assemblies:
   - Meridian.Infrastructure
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
     startLine: 266
   assemblies:
   - Meridian.Infrastructure

@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationDiagnosticsSnapshot
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 214
   assemblies:
   - Meridian.Core
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 214
   assemblies:
   - Meridian.Core
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFactoryHits
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 215
   assemblies:
   - Meridian.Core
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillFactoryHits
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 216
   assemblies:
   - Meridian.Core
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchFactoryHits
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 217
   assemblies:
   - Meridian.Core
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFactoryHitsByKind
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 218
   assemblies:
   - Meridian.Core
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectAttempts
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 219
   assemblies:
   - Meridian.Core
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectSuccesses
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 220
   assemblies:
   - Meridian.Core
@@ -306,7 +306,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectFailures
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 221
   assemblies:
   - Meridian.Core
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectAttemptsByProvider
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 222
   assemblies:
   - Meridian.Core
@@ -364,7 +364,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectSuccessesByProvider
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 223
   assemblies:
   - Meridian.Core
@@ -393,7 +393,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAttempts
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 224
   assemblies:
   - Meridian.Core
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeSuccesses
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 225
   assemblies:
   - Meridian.Core
@@ -451,7 +451,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeFailures
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 226
   assemblies:
   - Meridian.Core
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProvidersRegistered
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 227
   assemblies:
   - Meridian.Core
@@ -509,7 +509,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFactoriesRegistered
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 228
   assemblies:
   - Meridian.Core
@@ -538,7 +538,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
+    path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
     startLine: 229
   assemblies:
   - Meridian.Core

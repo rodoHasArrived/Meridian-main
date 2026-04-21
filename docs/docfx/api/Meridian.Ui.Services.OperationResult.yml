@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationResult
-    path: ../../src/Meridian.Ui.Services/Services/OperationResult.cs
+    path: src/Meridian.Ui.Services/Services/OperationResult.cs
     startLine: 5
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/OperationResult.cs
+    path: src/Meridian.Ui.Services/Services/OperationResult.cs
     startLine: 7
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/OperationResult.cs
+    path: src/Meridian.Ui.Services/Services/OperationResult.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/OperationResult.cs
+    path: src/Meridian.Ui.Services/Services/OperationResult.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services

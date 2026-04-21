@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSyncStatus
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 453
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSyncing
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 455
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 456
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentSymbol
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 457
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsCompleted
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 458
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbols
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 459
   assemblies:
   - Meridian.Ui.Services

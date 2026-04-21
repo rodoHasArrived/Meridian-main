@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ColorPalette
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 7
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Inactive
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Services
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningEvent
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Services
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChartPrimary
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Services
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChartSecondary
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 42
   assemblies:
   - Meridian.Ui.Services
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChartTertiary
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChartPositive
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 48
   assemblies:
   - Meridian.Ui.Services
@@ -407,7 +407,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChartNegative
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 51
   assemblies:
   - Meridian.Ui.Services
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityExcellent
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 56
   assemblies:
   - Meridian.Ui.Services
@@ -465,7 +465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityFair
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 59
   assemblies:
   - Meridian.Ui.Services
@@ -494,7 +494,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accent
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 64
   assemblies:
   - Meridian.Ui.Services
@@ -523,7 +523,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubtleBackground
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 67
   assemblies:
   - Meridian.Ui.Services
@@ -552,7 +552,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CardBackground
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 70
   assemblies:
   - Meridian.Ui.Services
@@ -581,7 +581,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MutedText
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 73
   assemblies:
   - Meridian.Ui.Services
@@ -610,7 +610,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LightText
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Services
@@ -639,7 +639,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessBackground
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 81
   assemblies:
   - Meridian.Ui.Services
@@ -668,7 +668,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningBackground
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 84
   assemblies:
   - Meridian.Ui.Services
@@ -697,7 +697,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorBackground
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 87
   assemblies:
   - Meridian.Ui.Services
@@ -726,7 +726,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoBackground
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 90
   assemblies:
   - Meridian.Ui.Services
@@ -755,7 +755,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNotificationColor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -788,7 +788,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSeverityColor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 104
   assemblies:
   - Meridian.Ui.Services
@@ -821,7 +821,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProgressColor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 112
   assemblies:
   - Meridian.Ui.Services
@@ -857,7 +857,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyColor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 121
   assemblies:
   - Meridian.Ui.Services
@@ -893,7 +893,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamStatusColor
-    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    path: src/Meridian.Ui.Services/Services/ColorPalette.cs
     startLine: 129
   assemblies:
   - Meridian.Ui.Services

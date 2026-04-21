@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspacePage
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 59
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PageTag
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 61
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 62
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDefault
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 63
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScrollPosition
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 64
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PageState
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services

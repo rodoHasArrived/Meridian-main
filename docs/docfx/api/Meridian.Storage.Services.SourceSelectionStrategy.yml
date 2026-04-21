@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceSelectionStrategy
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 652
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighestQualityScore
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 654
   assemblies:
   - Meridian.Storage
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostComplete
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 655
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowestLatency
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 656
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostConsistent
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 657
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Merge
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 658
   assemblies:
   - Meridian.Storage

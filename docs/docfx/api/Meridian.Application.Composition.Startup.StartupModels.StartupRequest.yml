@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupRequest
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliArgs
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DashboardServerFactory
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancellationToken
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
     startLine: 16
   assemblies:
   - Meridian.Application

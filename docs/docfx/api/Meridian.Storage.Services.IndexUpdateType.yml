@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexUpdateType
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 724
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCreated
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 726
   assemblies:
   - Meridian.Storage
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileAppended
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 727
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileDeleted
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 728
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileMoved
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 729
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetadataChanged
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 730
   assemblies:
   - Meridian.Storage

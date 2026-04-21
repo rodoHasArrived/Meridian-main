@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OwnershipRelationshipTypeDto
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Owns
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Advises
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 64
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operates
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 65
   assemblies:
   - Meridian.Contracts
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearsFor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodiesFor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocatesTo
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts

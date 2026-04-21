@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigEnvironmentOverride
-    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvPrefix
-    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyOverrides
-    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
     startLine: 80
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecognizedVariables
-    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
     startLine: 143
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDocumentation
-    path: ../../src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
+    path: src/Meridian.Application/Services/ConfigEnvironmentOverride.cs
     startLine: 168
   assemblies:
   - Meridian.Application

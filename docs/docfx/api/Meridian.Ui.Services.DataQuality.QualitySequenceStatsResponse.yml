@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualitySequenceStatsResponse
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalErrors
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services

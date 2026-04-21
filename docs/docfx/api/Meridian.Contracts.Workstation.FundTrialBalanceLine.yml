@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundTrialBalanceLine
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountName
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 26
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountType
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountId
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balance
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryCount
-    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts

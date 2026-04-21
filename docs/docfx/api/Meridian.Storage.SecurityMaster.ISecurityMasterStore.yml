@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterStore
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 4
   assemblies:
   - Meridian.Storage
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertProjectionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 6
   assemblies:
   - Meridian.Storage
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistProjectionBatchAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 7
   assemblies:
   - Meridian.Storage
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAliasAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 12
   assemblies:
   - Meridian.Storage
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateProjectionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProjectionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdentifierAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 17
   assemblies:
   - Meridian.Storage
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAllAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 18
   assemblies:
   - Meridian.Storage
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCheckpointAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 19
   assemblies:
   - Meridian.Storage
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCheckpointAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
     startLine: 20
   assemblies:
   - Meridian.Storage

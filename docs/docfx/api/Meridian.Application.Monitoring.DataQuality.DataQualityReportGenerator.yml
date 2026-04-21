@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityReportGenerator
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateDailyReportAsync
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateWeeklyReportAsync
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
     startLine: 168
   assemblies:
   - Meridian.Application
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportReportAsync
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
     startLine: 256
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportWeeklyReportAsync
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityReportGenerator.cs
     startLine: 282
   assemblies:
   - Meridian.Application

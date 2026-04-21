@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchedulingService
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSchedules
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSchedule
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 58
   assemblies:
   - Meridian.Application
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionStatus
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 66
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllExecutionStatuses
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 74
   assemblies:
   - Meridian.Application
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateScheduleAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 82
   assemblies:
   - Meridian.Application
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateScheduleAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 105
   assemblies:
   - Meridian.Application
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetScheduleEnabledAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 132
   assemblies:
   - Meridian.Application
@@ -384,7 +384,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteScheduleAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 151
   assemblies:
   - Meridian.Application
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteNowAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 166
   assemblies:
   - Meridian.Application
@@ -460,7 +460,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SchedulingService.cs
     startLine: 432
   assemblies:
   - Meridian.Application

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPresetService
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetsAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyAsync
-    path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
+    path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
     startLine: 27
   assemblies:
   - Meridian.Application

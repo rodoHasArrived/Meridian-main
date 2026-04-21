@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventFilter
-    path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
+    path: src/Meridian.Application/Filters/MarketEventFilter.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
+    path: src/Meridian.Application/Filters/MarketEventFilter.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
+    path: src/Meridian.Application/Filters/MarketEventFilter.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tier
-    path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
+    path: src/Meridian.Application/Filters/MarketEventFilter.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Matches
-    path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
+    path: src/Meridian.Application/Filters/MarketEventFilter.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
-    path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
+    path: src/Meridian.Application/Filters/MarketEventFilter.cs
     startLine: 24
   assemblies:
   - Meridian.Application

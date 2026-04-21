@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianPathDefaults
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplicationName
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigFileName
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultDataRoot
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLocalApplicationDataRoot
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDesktopConfigPath
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFirstRunMarkerPath
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCatalogRoot
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConfigBaseDirectory
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveDataRoot
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvePathFromConfigBase
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveConfiguredDataRootFromJson
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 77
   assemblies:
   - Meridian.Contracts
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadDataRoot
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadLegacyStorageBaseDirectory
-    path: ../../src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
+    path: src/Meridian.Contracts/Configuration/MeridianPathDefaults.cs
     startLine: 99
   assemblies:
   - Meridian.Contracts

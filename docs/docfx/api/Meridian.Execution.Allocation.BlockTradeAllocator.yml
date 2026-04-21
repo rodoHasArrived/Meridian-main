@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BlockTradeAllocator
-    path: ../../src/Meridian.Execution/Allocation/BlockTradeAllocator.cs
+    path: src/Meridian.Execution/Allocation/BlockTradeAllocator.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostToSleeveLedgers
-    path: ../../src/Meridian.Execution/Allocation/BlockTradeAllocator.cs
+    path: src/Meridian.Execution/Allocation/BlockTradeAllocator.cs
     startLine: 38
   assemblies:
   - Meridian.Execution
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostToEntityLedgers
-    path: ../../src/Meridian.Execution/Allocation/BlockTradeAllocator.cs
+    path: src/Meridian.Execution/Allocation/BlockTradeAllocator.cs
     startLine: 86
   assemblies:
   - Meridian.Execution

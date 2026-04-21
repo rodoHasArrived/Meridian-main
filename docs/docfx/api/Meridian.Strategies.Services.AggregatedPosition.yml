@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregatedPosition
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 16
   assemblies:
   - Meridian.Strategies
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalQuantity
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 17
   assemblies:
   - Meridian.Strategies
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongQuantity
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 18
   assemblies:
   - Meridian.Strategies
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortQuantity
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 19
   assemblies:
   - Meridian.Strategies
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WeightedAverageCost
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 20
   assemblies:
   - Meridian.Strategies
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalUnrealisedPnl
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 21
   assemblies:
   - Meridian.Strategies
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contributions
-    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
     startLine: 22
   assemblies:
   - Meridian.Strategies

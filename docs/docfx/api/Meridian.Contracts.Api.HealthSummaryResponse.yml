@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthSummaryResponse
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 149
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 151
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 154
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageHealthy
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 160
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineActive
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 163
   assemblies:
   - Meridian.Contracts

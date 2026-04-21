@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IConnectivityProbeService
-    path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+    path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOnline
-    path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+    path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityChanged
-    path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+    path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts

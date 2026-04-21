@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuickAction
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 573
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 575
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 576
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 577
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 578
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActionType
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 579
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 580
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 581
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedTime
-    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
     startLine: 582
   assemblies:
   - Meridian.Ui.Services

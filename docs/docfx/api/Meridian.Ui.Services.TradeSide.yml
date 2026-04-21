@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeSide
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 491
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 493
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Buy
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 494
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sell
-    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
     startLine: 495
   assemblies:
   - Meridian.Ui.Services

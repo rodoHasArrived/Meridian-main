@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IProviderConnectionHealthSource
-    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
     startLine: 35
   assemblies:
   - Meridian.ProviderSdk
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthAsync
-    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
     startLine: 37
   assemblies:
   - Meridian.ProviderSdk

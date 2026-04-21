@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceCategory
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Setup
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validation
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Diagnostics
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lifecycle
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Data
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Calendar
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reporting
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 31
   assemblies:
   - Meridian.Application

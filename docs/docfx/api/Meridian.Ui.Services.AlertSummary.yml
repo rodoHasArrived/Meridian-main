@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertSummary
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 589
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalCount
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 591
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCount
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 592
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningCount
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 593
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoCount
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 594
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnoozedCount
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 595
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuppressedCount
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 596
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalActive
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 597
   assemblies:
   - Meridian.Ui.Services

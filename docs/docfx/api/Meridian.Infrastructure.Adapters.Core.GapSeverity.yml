@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapSeverity
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 40
   assemblies:
   - Meridian.Infrastructure
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure

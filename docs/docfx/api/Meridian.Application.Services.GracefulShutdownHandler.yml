@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GracefulShutdownHandler
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnShutdownStarted
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnShutdownCompleted
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnProgress
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterFlushable
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterDisposable
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterShutdownCallback
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 80
   assemblies:
   - Meridian.Application
@@ -292,7 +292,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownToken
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 90
   assemblies:
   - Meridian.Application
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownRequestedTask
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 95
   assemblies:
   - Meridian.Application
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsShuttingDown
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 100
   assemblies:
   - Meridian.Application
@@ -385,7 +385,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitiateShutdownAsync
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 105
   assemblies:
   - Meridian.Application
@@ -425,7 +425,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WaitForShutdownAsync
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 227
   assemblies:
   - Meridian.Application
@@ -461,7 +461,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 419
   assemblies:
   - Meridian.Application

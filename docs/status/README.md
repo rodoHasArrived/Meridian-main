@@ -17,7 +17,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 ## Hand-Authored Source Of Truth
 
 | Document | Description |
-|----------|-------------|
+| --- | --- |
 | [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md) | Short stakeholder-facing snapshot that combines roadmap, opportunities, and target-state direction |
 | [ROADMAP.md](ROADMAP.md) | Primary wave-structured delivery roadmap |
 | [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md) | Prioritized repo-grounded opportunities that sit alongside the roadmap |
@@ -33,7 +33,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 ## Generated Status Reports
 
 | Document | Description |
-|----------|-------------|
+| --- | --- |
 | [CHANGELOG.md](CHANGELOG.md) | Generated repository/doc snapshot summary |
 | [TODO.md](TODO.md) | Informational TODO/FIXME aggregation from source comments |
 | [health-dashboard.md](health-dashboard.md) | Documentation health report |
@@ -54,8 +54,8 @@ Machine-readable sidecars that remain active in this folder:
 
 These dated snapshots remain useful for history, but they no longer act as active status guidance:
 
-- [Documentation triage (2026-03-21)](../../archive/docs/summaries/DOCUMENTATION_TRIAGE_2026_03_21.md)
-- [Now / Next / Later roadmap snapshot (2026-03-25)](../../archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
+- [Documentation triage (2026-03-21)](DOCUMENTATION_TRIAGE_2026_03_21.md)
+- [Now / Next / Later roadmap snapshot (2026-03-25)](ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
 
 ## Recommended Reading Order
 

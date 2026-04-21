@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationReport
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 17
   assemblies:
   - Meridian.Execution
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MatchedSymbols
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 19
   assemblies:
   - Meridian.Execution
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DivergentSymbols
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 20
   assemblies:
   - Meridian.Execution
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingInPortfolio
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 21
   assemblies:
   - Meridian.Execution
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingInBrokerage
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 22
   assemblies:
   - Meridian.Execution
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciledAt
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 23
   assemblies:
   - Meridian.Execution
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsClean
-    path: ../../src/Meridian.Execution/Services/PositionReconciliationService.cs
+    path: src/Meridian.Execution/Services/PositionReconciliationService.cs
     startLine: 26
   assemblies:
   - Meridian.Execution

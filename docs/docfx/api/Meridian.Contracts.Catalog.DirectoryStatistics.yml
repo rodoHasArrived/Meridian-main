@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryStatistics
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 91
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 97
   assemblies:
   - Meridian.Contracts
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesCompressed
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 103
   assemblies:
   - Meridian.Contracts
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesRaw
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 109
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubdirectoryCount
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 115
   assemblies:
   - Meridian.Contracts
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCountsByType
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 121
   assemblies:
   - Meridian.Contracts
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCountsBySymbol
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 127
   assemblies:
   - Meridian.Contracts

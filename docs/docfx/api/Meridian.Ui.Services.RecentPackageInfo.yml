@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentPackageInfo
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 839
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 841
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 842
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 843
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 844
   assemblies:
   - Meridian.Ui.Services

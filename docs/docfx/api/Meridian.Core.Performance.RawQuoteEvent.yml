@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawQuoteEvent
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 15
   assemblies:
   - Meridian.Core
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampTicks
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 24
   assemblies:
   - Meridian.Core
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolHash
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 30
   assemblies:
   - Meridian.Core
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 39
   assemblies:
   - Meridian.Core
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 42
   assemblies:
   - Meridian.Core
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sequence
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 45
   assemblies:
   - Meridian.Core
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
+    path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
     startLine: 57
   assemblies:
   - Meridian.Core

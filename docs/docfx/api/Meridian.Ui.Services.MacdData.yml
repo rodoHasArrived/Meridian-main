@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdData
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 586
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 588
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdLine
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 589
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignalLine
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 590
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Histogram
-    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    path: src/Meridian.Ui.Services/Services/ChartingService.cs
     startLine: 591
   assemblies:
   - Meridian.Ui.Services

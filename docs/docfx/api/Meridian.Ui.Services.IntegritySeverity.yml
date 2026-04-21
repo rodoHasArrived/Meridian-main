@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegritySeverity
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 388
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 390
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 391
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
     startLine: 392
   assemblies:
   - Meridian.Ui.Services

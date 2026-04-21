@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefragOptions
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 655
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 655
   assemblies:
   - Meridian.Storage
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinFileSizeBytes
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 656
   assemblies:
   - Meridian.Storage
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFilesPerMerge
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 657
   assemblies:
   - Meridian.Storage
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreserveOriginals
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 658
   assemblies:
   - Meridian.Storage
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetCompression
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 659
   assemblies:
   - Meridian.Storage
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFileAge
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 660
   assemblies:
   - Meridian.Storage
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 663
   assemblies:
   - Meridian.Storage

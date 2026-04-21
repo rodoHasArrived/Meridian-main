@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceAttributeExtensions
-    path: ../../src/Meridian.ProviderSdk/DataSourceAttribute.cs
+    path: src/Meridian.ProviderSdk/DataSourceAttribute.cs
     startLine: 135
   assemblies:
   - Meridian.ProviderSdk
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourceAttribute
-    path: ../../src/Meridian.ProviderSdk/DataSourceAttribute.cs
+    path: src/Meridian.ProviderSdk/DataSourceAttribute.cs
     startLine: 140
   assemblies:
   - Meridian.ProviderSdk
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourceMetadata
-    path: ../../src/Meridian.ProviderSdk/DataSourceAttribute.cs
+    path: src/Meridian.ProviderSdk/DataSourceAttribute.cs
     startLine: 148
   assemblies:
   - Meridian.ProviderSdk
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDataSource
-    path: ../../src/Meridian.ProviderSdk/DataSourceAttribute.cs
+    path: src/Meridian.ProviderSdk/DataSourceAttribute.cs
     startLine: 159
   assemblies:
   - Meridian.ProviderSdk

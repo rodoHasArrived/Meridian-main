@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapabilityInfo
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 766
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 771
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarketDepth
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 777
   assemblies:
   - Meridian.Contracts
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 783
   assemblies:
   - Meridian.Contracts
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 789
   assemblies:
   - Meridian.Contracts
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 795
   assemblies:
   - Meridian.Contracts
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 801
   assemblies:
   - Meridian.Contracts
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 807
   assemblies:
   - Meridian.Contracts
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsTrades
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 813
   assemblies:
   - Meridian.Contracts
@@ -414,7 +414,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsQuotes
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 819
   assemblies:
   - Meridian.Contracts
@@ -457,7 +457,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOptionsChain
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 825
   assemblies:
   - Meridian.Contracts
@@ -500,7 +500,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsBrokerage
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 831
   assemblies:
   - Meridian.Contracts
@@ -543,7 +543,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAuctions
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 837
   assemblies:
   - Meridian.Contracts
@@ -586,7 +586,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDictionary
-    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    path: src/Meridian.Contracts/Api/ProviderCatalog.cs
     startLine: 843
   assemblies:
   - Meridian.Contracts

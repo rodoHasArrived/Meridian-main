@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FredHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 32
   assemblies:
   - Meridian.Infrastructure
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 33
   assemblies:
   - Meridian.Infrastructure
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 34
   assemblies:
   - Meridian.Infrastructure
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 36
   assemblies:
   - Meridian.Infrastructure
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 38
   assemblies:
   - Meridian.Infrastructure
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -430,7 +430,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -509,7 +509,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -546,7 +546,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 69
   assemblies:
   - Meridian.Infrastructure
@@ -592,7 +592,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs
     startLine: 119
   assemblies:
   - Meridian.Infrastructure

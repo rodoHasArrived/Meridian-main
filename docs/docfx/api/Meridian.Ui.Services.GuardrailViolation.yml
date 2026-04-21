@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GuardrailViolation
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 62
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rule
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 64
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 65
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 66
   assemblies:
   - Meridian.Ui.Services

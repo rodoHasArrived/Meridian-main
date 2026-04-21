@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorEntry
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 237
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 237
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 238
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 239
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Level
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 240
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 241
   assemblies:
   - Meridian.Application
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 242
   assemblies:
   - Meridian.Application
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExceptionType
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 243
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StackTrace
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 244
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 245
   assemblies:
   - Meridian.Application
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 246
   assemblies:
   - Meridian.Application
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
     startLine: 247
   assemblies:
   - Meridian.Application

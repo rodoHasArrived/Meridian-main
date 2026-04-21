@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConnectivityResult
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 734
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 736
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 737
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 738
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 739
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 740
   assemblies:
   - Meridian.Ui.Services

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountKind
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brokerage
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bank
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk

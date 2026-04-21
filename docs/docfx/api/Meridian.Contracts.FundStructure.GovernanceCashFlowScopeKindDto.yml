@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceCashFlowScopeKindDto
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 347
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Organization
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 350
   assemblies:
   - Meridian.Contracts
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Business
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 351
   assemblies:
   - Meridian.Contracts
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Client
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 352
   assemblies:
   - Meridian.Contracts
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fund
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 353
   assemblies:
   - Meridian.Contracts
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sleeve
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 354
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vehicle
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 355
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvestmentPortfolio
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 356
   assemblies:
   - Meridian.Contracts
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Account
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 357
   assemblies:
   - Meridian.Contracts
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerGroup
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 358
   assemblies:
   - Meridian.Contracts

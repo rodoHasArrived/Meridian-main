@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViolationSeverity
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 72
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 75
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Services

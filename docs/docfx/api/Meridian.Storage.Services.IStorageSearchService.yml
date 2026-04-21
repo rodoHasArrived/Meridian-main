@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStorageSearchService
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 596
   assemblies:
   - Meridian.Storage
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchFilesAsync
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 598
   assemblies:
   - Meridian.Storage
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchEventsAsync
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 599
   assemblies:
   - Meridian.Storage
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscoverAsync
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 600
   assemblies:
   - Meridian.Storage
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchWithFacetsAsync
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 601
   assemblies:
   - Meridian.Storage
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseNaturalLanguageQuery
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 602
   assemblies:
   - Meridian.Storage
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateIndexAsync
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 603
   assemblies:
   - Meridian.Storage
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildIndexAsync
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 604
   assemblies:
   - Meridian.Storage

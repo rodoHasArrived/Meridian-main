@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonBenchmarkUtilities
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 371
   assemblies:
   - Meridian.Core
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSampleTradeEvent
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 376
   assemblies:
   - Meridian.Core
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSampleEvents
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 396
   assemblies:
   - Meridian.Core

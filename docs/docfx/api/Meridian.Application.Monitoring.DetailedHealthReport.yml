@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetailedHealthReport
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 482
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 482
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 483
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 484
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 485
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checks
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 486
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 487
   assemblies:
   - Meridian.Application

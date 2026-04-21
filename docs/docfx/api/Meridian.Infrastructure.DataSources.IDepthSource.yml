@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDepthSource
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 150
   assemblies:
   - Meridian.ProviderSdk
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 155
   assemblies:
   - Meridian.ProviderSdk
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 160
   assemblies:
   - Meridian.ProviderSdk
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdates
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 165
   assemblies:
   - Meridian.ProviderSdk
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 170
   assemblies:
   - Meridian.ProviderSdk

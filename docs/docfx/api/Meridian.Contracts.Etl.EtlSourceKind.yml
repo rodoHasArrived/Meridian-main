@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlSourceKind
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Local
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sftp
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts

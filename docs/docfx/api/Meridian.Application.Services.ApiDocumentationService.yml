@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiDocumentationService
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateOpenApiSpec
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSwaggerHtml
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 56
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateMarkdownDocs
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 118
   assemblies:
   - Meridian.Application

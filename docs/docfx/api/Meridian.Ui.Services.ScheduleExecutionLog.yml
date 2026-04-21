@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleExecutionLog
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 278
   assemblies:
   - Meridian.Ui.Services
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 280
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleId
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 281
   assemblies:
   - Meridian.Ui.Services
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleName
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 282
   assemblies:
   - Meridian.Ui.Services
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 283
   assemblies:
   - Meridian.Ui.Services
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 284
   assemblies:
   - Meridian.Ui.Services
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 285
   assemblies:
   - Meridian.Ui.Services
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 286
   assemblies:
   - Meridian.Ui.Services
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsFailed
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 287
   assemblies:
   - Meridian.Ui.Services
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 288
   assemblies:
   - Meridian.Ui.Services
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 289
   assemblies:
   - Meridian.Ui.Services
@@ -353,7 +353,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
-    path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
+    path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
     startLine: 290
   assemblies:
   - Meridian.Ui.Services

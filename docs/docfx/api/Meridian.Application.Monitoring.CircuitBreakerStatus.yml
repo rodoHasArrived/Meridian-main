@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerStatus
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 174
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 174
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 175
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 176
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastStateChange
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 177
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TripCount
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 178
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 179
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSinceLastChange
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 180
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CooldownRemaining
-    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
     startLine: 181
   assemblies:
   - Meridian.Application

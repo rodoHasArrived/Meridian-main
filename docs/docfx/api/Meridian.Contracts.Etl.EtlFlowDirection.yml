@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlFlowDirection
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Import
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Export
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RoundTrip
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts

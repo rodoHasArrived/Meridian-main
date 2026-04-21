@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccount
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 25
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 25
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 26
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 27
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 28
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Institution
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 29
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 30
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rules
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 31
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normalize
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 33
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDefaultBrokerage
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 50
   assemblies:
   - Meridian.Backtesting.Sdk

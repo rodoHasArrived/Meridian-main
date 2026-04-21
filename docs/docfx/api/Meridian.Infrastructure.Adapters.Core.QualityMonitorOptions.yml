@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityMonitorOptions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 161
   assemblies:
   - Meridian.Infrastructure
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertThreshold
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 164
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDailyPriceChangePercent
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 167
   assemblies:
   - Meridian.Infrastructure
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDataAge
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 170
   assemblies:
   - Meridian.Infrastructure
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceDiscrepancyThresholdPercent
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 173
   assemblies:
   - Meridian.Infrastructure
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TopIssuesInAlert
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 176
   assemblies:
   - Meridian.Infrastructure

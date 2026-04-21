@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IHealthCheckProvider
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 80
   assemblies:
   - Meridian.Core
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComponentName
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 86
   assemblies:
   - Meridian.Core
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 93
   assemblies:
   - Meridian.Core

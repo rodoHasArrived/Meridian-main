@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealtimeDepthUpdate
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 208
   assemblies:
   - Meridian.ProviderSdk
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 208
   assemblies:
   - Meridian.ProviderSdk
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 209
   assemblies:
   - Meridian.ProviderSdk
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 210
   assemblies:
   - Meridian.ProviderSdk
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 211
   assemblies:
   - Meridian.ProviderSdk
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Level
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 212
   assemblies:
   - Meridian.ProviderSdk
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 213
   assemblies:
   - Meridian.ProviderSdk
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 214
   assemblies:
   - Meridian.ProviderSdk
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 215
   assemblies:
   - Meridian.ProviderSdk
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceId
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 216
   assemblies:
   - Meridian.ProviderSdk
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketMaker
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 217
   assemblies:
   - Meridian.ProviderSdk
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
     startLine: 218
   assemblies:
   - Meridian.ProviderSdk

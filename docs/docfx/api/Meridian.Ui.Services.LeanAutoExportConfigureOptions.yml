@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanAutoExportConfigureOptions
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 609
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 611
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanDataPath
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 612
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntervalSeconds
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 613
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 614
   assemblies:
   - Meridian.Ui.Services

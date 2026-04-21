@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceCategory
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 127
   assemblies:
   - Meridian.ProviderSdk
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 130
   assemblies:
   - Meridian.ProviderSdk
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Broker
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 133
   assemblies:
   - Meridian.ProviderSdk
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aggregator
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 136
   assemblies:
   - Meridian.ProviderSdk
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Free
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 139
   assemblies:
   - Meridian.ProviderSdk
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Premium
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 142
   assemblies:
   - Meridian.ProviderSdk

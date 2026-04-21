@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMonotonicityStats
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 459
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 459
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 460
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 461
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 462
   assemblies:
   - Meridian.Application
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalViolations
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 463
   assemblies:
   - Meridian.Application
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGaps
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 464
   assemblies:
   - Meridian.Application
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastViolationTime
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 465
   assemblies:
   - Meridian.Application
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastEventTimestamp
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 466
   assemblies:
   - Meridian.Application

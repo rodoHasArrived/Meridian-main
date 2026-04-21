@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceOperation
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 90
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 92
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 93
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 94
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ItemsProcessed
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 96
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesProcessed
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 97
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 98
   assemblies:
   - Meridian.Ui.Services

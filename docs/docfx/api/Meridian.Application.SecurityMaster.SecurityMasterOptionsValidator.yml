@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterOptionsValidator
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterOptionsValidator.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterOptionsValidator.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterOptionsValidator.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterOptionsValidator.cs
     startLine: 11
   assemblies:
   - Meridian.Application

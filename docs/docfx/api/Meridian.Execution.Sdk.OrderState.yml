@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderState
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 118
   assemblies:
   - Meridian.Execution.Sdk
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 120
   assemblies:
   - Meridian.Execution.Sdk
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 121
   assemblies:
   - Meridian.Execution.Sdk
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 122
   assemblies:
   - Meridian.Execution.Sdk
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 123
   assemblies:
   - Meridian.Execution.Sdk
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 124
   assemblies:
   - Meridian.Execution.Sdk
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 125
   assemblies:
   - Meridian.Execution.Sdk
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 126
   assemblies:
   - Meridian.Execution.Sdk
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 127
   assemblies:
   - Meridian.Execution.Sdk
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 128
   assemblies:
   - Meridian.Execution.Sdk
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageFillPrice
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 129
   assemblies:
   - Meridian.Execution.Sdk
@@ -359,7 +359,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 130
   assemblies:
   - Meridian.Execution.Sdk
@@ -388,7 +388,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdatedAt
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 131
   assemblies:
   - Meridian.Execution.Sdk
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 132
   assemblies:
   - Meridian.Execution.Sdk

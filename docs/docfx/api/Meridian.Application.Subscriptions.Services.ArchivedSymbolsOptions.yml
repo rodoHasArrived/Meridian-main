@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivedSymbolsOptions
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 749
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 749
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilterSymbols
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 750
   assemblies:
   - Meridian.Application
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeCompressed
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 751
   assemblies:
   - Meridian.Application

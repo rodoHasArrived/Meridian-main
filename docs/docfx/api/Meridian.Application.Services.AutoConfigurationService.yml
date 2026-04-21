@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoConfigurationService
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectAvailableProviders
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoConfigure
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 73
   assemblies:
   - Meridian.Application
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateFirstTimeConfig
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 140
   assemblies:
   - Meridian.Application
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPreset
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 755
   assemblies:
   - Meridian.Application
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetDescriptions
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 773
   assemblies:
   - Meridian.Application

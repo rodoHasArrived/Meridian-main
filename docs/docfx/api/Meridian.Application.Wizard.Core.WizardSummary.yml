@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardSummary
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Config
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfiguredItems
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextSteps
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Empty
-    path: ../../src/Meridian.Application/Wizard/Core/WizardSummary.cs
+    path: src/Meridian.Application/Wizard/Core/WizardSummary.cs
     startLine: 20
   assemblies:
   - Meridian.Application

@@ -1,9 +1,10 @@
 // Workstation Delivery Diagram
 // Meridian v1.8.x
-// Last Updated: 2026-04-09
+// Last Updated: 2026-04-21
 //
 // This diagram shows how the WPF workstation and the retained desktop-local API
-// seams converge on shared run, portfolio, ledger, and security-reference services.
+// seams converge on shared run, portfolio, ledger, cash-flow, reconciliation,
+// and security-review services.
 
 digraph WorkstationDelivery {
   rankdir=LR;
@@ -12,7 +13,7 @@ digraph WorkstationDelivery {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Workstation Delivery\nShared read models across WPF and desktop-local API surfaces | v1.8.x";
+  label="Meridian - Workstation Delivery\nShared read models, governance handoffs, and security review across WPF and desktop-local API surfaces | v1.8.x";
 
   subgraph cluster_surfaces {
     label="Operator Surfaces";
@@ -21,11 +22,11 @@ digraph WorkstationDelivery {
     bgcolor="#faf5ff";
 
     WPF_SURFACES [fillcolor="#805ad5", fontcolor="white",
-                  label="Meridian.Wpf\nResearchWorkspaceShellPage\nTradingWorkspaceShellPage\nGovernanceWorkspaceShellPage"];
+                  label="Meridian.Wpf\nResearchWorkspaceShellPage\nTradingWorkspaceShellPage\nGovernanceWorkspaceShellPage\nSecurityMasterPage\n(queue + action inspector)"];
     WEB_SHELL [fillcolor="#805ad5", fontcolor="white",
                label="Desktop-local API host\nlocalhost-only /api/*\nSwagger + retained workstation routes"];
     API_SURFACE [fillcolor="#c4b5fd",
-                 label="Retained workstation + portfolio routes\n/api/workstation/*\n/api/portfolio/*\n/api/strategies/*"];
+                 label="Retained workstation + portfolio routes\n/api/workstation/*\n/api/portfolio/*\n/api/strategies/*\n/api/security-master/*"];
   }
 
   subgraph cluster_delivery {
@@ -35,9 +36,9 @@ digraph WorkstationDelivery {
     bgcolor="#dbeafe";
 
     WPF_WORKSPACE [fillcolor="#bfdbfe",
-                   label="StrategyRunWorkspaceService\nactive run context\nrun browser + promotion handoff"];
+                   label="StrategyRunWorkspaceService\nactive run context\nrun browser + governance handoff"];
     WORKSTATION_ENDPOINTS [fillcolor="#93c5fd",
-                           label="WorkstationEndpoints\nruns / ledger / cash-flow\nsecurity master / reconciliation\nretained workstation APIs"];
+                           label="WorkstationEndpoints\nruns / ledger / cash-flow\nsecurity master / reconciliation\nbreak queue + retained APIs"];
     RUN_READ [fillcolor="#bfdbfe",
               label="StrategyRunReadService\nsummary, detail, equity curve,\nfills, attribution"];
     PORTFOLIO_READ [fillcolor="#dbeafe",
@@ -49,9 +50,9 @@ digraph WorkstationDelivery {
     SECURITY_LOOKUP [fillcolor="#dbeafe",
                      label="SecurityMasterSecurityReferenceLookup\nenrich symbols with authoritative\nasset-class + identifier data"];
     SECURITY_QUERY [fillcolor="#d1fae5",
-                    label="ISecurityMasterQueryService\nsecurity detail / history / identity"];
+                    label="ISecurityMasterQueryService\nsecurity detail / history / identity\neconomic definition"];
     RECONCILIATION_NOTE [shape=note, fillcolor="#feebc8",
-                         label="Reconciliation endpoints use\nIReconciliationRunService\n(see fund-ops-reconciliation.dot)"];
+                         label="Reconciliation + break-queue review\nlive under /api/workstation/reconciliation/*\n(see fund-ops-reconciliation.dot)"];
   }
 
   subgraph cluster_state {
@@ -69,6 +70,8 @@ digraph WorkstationDelivery {
   WPF_SURFACES -> WPF_WORKSPACE [label="desktop pages"];
   WEB_SHELL -> API_SURFACE [label="localhost requests"];
   API_SURFACE -> WORKSTATION_ENDPOINTS [label="route groups"];
+  WPF_SURFACES -> SECURITY_QUERY [style=dashed, color="#2b6cb0",
+                                  label="security assurance cards"];
 
   WPF_WORKSPACE -> RUN_READ [label="desktop drill-ins"];
   WPF_WORKSPACE -> CASH_FLOW [label="cash flow panels"];

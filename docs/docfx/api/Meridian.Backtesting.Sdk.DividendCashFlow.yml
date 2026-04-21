@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendCashFlow
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 48
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 48
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 51
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Shares
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 52
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendPerShare
-    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
     startLine: 53
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoPathService
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 6
   assemblies:
   - mdc-mcp
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Root
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 11
   assemblies:
   - mdc-mcp
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocsPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 12
   assemblies:
   - mdc-mcp
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 13
   assemblies:
   - mdc-mcp
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AiDocsPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 14
   assemblies:
   - mdc-mcp
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GithubPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 15
   assemblies:
   - mdc-mcp
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstructionsPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 16
   assemblies:
   - mdc-mcp
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AgentsPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 17
   assemblies:
   - mdc-mcp
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AiClaudePath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 18
   assemblies:
   - mdc-mcp
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplatesPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 19
   assemblies:
   - mdc-mcp
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdaptersPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 20
   assemblies:
   - mdc-mcp
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditScriptPath
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 21
   assemblies:
   - mdc-mcp
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 23
   assemblies:
   - mdc-mcp
@@ -424,7 +424,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KnownErrorsFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 53
   assemblies:
   - mdc-mcp
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CSharpInstructionsFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 54
   assemblies:
   - mdc-mcp
@@ -482,7 +482,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CodeReviewAgentFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 55
   assemblies:
   - mdc-mcp
@@ -511,7 +511,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProvidersGuideFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 56
   assemblies:
   - mdc-mcp
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestingGuideFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 57
   assemblies:
   - mdc-mcp
@@ -569,7 +569,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageGuideFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 58
   assemblies:
   - mdc-mcp
@@ -598,7 +598,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FSharpGuideFile
-    path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
+    path: src/Meridian.Mcp/Services/RepoPathService.cs
     startLine: 59
   assemblies:
   - mdc-mcp

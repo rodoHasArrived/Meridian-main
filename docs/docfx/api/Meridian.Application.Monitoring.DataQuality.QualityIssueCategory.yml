@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityIssueCategory
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gaps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sequence
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueAnomaly
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Latency
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consistency
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 49
   assemblies:
   - Meridian.Application
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeliness
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 52
   assemblies:
   - Meridian.Application

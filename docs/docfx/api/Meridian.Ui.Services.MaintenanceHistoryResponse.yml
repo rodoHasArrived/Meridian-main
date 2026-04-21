@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceHistoryResponse
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 116
   assemblies:
   - Meridian.Ui.Services
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Runs
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 118
   assemblies:
   - Meridian.Ui.Services

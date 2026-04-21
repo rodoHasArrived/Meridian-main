@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishResult
-    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    path: src/Meridian.Domain/Events/PublishResult.cs
     startLine: 12
   assemblies:
   - Meridian.Domain
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accepted
-    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    path: src/Meridian.Domain/Events/PublishResult.cs
     startLine: 17
   assemblies:
   - Meridian.Domain
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcceptedUnderPressure
-    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    path: src/Meridian.Domain/Events/PublishResult.cs
     startLine: 23
   assemblies:
   - Meridian.Domain
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
-    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    path: src/Meridian.Domain/Events/PublishResult.cs
     startLine: 33
   assemblies:
   - Meridian.Domain

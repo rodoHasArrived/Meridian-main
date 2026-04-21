@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SwitchProviderResponse
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 618
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 620
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousProvider
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 621
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewProvider
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 622
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 623
   assemblies:
   - Meridian.Ui.Services

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntermediateMetrics
-    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RollingSharpe
-    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentDrawdownPct
-    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
-    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingDaysSoFar
-    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityProviderComparisonItem
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 187
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 189
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessText
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 190
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyText
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 191
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreshnessText
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 192
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 193
   assemblies:
   - Meridian.Ui.Services

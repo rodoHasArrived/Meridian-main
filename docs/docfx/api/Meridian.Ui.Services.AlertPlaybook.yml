@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertPlaybook
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 526
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 528
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WhatHappened
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 529
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Categories
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 530
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PossibleCauses
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 531
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemediationSteps
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 532
   assemblies:
   - Meridian.Ui.Services
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WhatHappensIfIgnored
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 533
   assemblies:
   - Meridian.Ui.Services

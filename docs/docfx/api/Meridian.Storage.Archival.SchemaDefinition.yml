@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaDefinition
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 542
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 544
   assemblies:
   - Meridian.Storage
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 547
   assemblies:
   - Meridian.Storage
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 550
   assemblies:
   - Meridian.Storage
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntroducedAt
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 553
   assemblies:
   - Meridian.Storage
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeprecatedAt
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 556
   assemblies:
   - Meridian.Storage
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fields
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 559
   assemblies:
   - Meridian.Storage

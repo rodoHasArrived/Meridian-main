@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackpressureResolvedEvent
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 357
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 357
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvedAt
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 358
   assemblies:
   - Meridian.Application
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 359
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDropped
-    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
     startLine: 360
   assemblies:
   - Meridian.Application

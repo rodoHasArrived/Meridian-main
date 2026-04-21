@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefragmentationApiResult
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1515
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1517
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1518
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesReclaimed
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1519
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1520
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1521
   assemblies:
   - Meridian.Ui.Services

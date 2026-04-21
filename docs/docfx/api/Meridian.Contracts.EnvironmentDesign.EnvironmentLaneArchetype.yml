@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentLaneArchetype
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndividualInvestor
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdvisoryPractice
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FamilyOffice
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundPlatform
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 26
   assemblies:
   - Meridian.Contracts
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
-    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts

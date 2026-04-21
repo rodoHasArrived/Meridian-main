@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityRefreshCoordinator
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsStarted
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RefreshAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 41
   assemblies:
   - Meridian.Ui.Services
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stop
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityRefreshCoordinator.cs
     startLine: 55
   assemblies:
   - Meridian.Ui.Services

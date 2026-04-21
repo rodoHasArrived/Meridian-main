@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorTracker
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordError
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordError
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 47
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastErrors
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 62
   assemblies:
   - Meridian.Application
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 90
   assemblies:
   - Meridian.Application
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 127
   assemblies:
   - Meridian.Application
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseErrorsFromLogsAsync
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 137
   assemblies:
   - Meridian.Application

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IHealthCheckAggregator
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 137
   assemblies:
   - Meridian.Core
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 144
   assemblies:
   - Meridian.Core
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unregister
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 150
   assemblies:
   - Meridian.Core
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAllAsync
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 157
   assemblies:
   - Meridian.Core
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAsync
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 165
   assemblies:
   - Meridian.Core

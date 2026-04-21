@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IIntradayBarSource
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 113
   assemblies:
   - Meridian.ProviderSdk
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedBarIntervals
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 118
   assemblies:
   - Meridian.ProviderSdk
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIntradayBarsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 123
   assemblies:
   - Meridian.ProviderSdk

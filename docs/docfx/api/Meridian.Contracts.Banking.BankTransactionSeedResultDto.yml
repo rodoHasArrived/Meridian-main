@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankTransactionSeedResultDto
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 85
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 85
   assemblies:
   - Meridian.Contracts
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntitiesProcessed
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransactionsSeeded
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessedEntityIds
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 88
   assemblies:
   - Meridian.Contracts

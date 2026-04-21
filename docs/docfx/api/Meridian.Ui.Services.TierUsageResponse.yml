@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierUsageResponse
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 221
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierUsage
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 223
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 224
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 225
   assemblies:
   - Meridian.Ui.Services

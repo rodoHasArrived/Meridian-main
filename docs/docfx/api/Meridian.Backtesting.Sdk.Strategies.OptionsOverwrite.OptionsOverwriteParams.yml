@@ -38,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsOverwriteParams
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 23
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinStrike
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 34
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverwriteRatio
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 45
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDelta
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 56
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDte
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 63
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDte
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 70
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -321,7 +321,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinIvPercentile
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 77
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -369,7 +369,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinOpenInterest
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 88
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinVolume
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 95
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -465,7 +465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSpreadPct
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 103
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -515,7 +515,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeProfitCapture
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 114
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -563,7 +563,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RollDelta
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 121
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -611,7 +611,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExDivWindowDays
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 128
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -659,7 +659,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoringMode
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 140
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -709,7 +709,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthBonusWeight
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 147
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -757,7 +757,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskFreeRate
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 158
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -805,7 +805,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMinStrike
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 166
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -841,7 +841,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithOverwriteRatio
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 169
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -877,7 +877,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMaxDelta
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 172
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -913,7 +913,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMinIvPercentile
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 175
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -949,7 +949,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMaxDte
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 178
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TechnicalIndicatorService
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessTrade
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessQuote
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 58
   assemblies:
   - Meridian.Application
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSnapshots
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateHistorical
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 83
   assemblies:
   - Meridian.Application
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 269
   assemblies:
   - Meridian.Application

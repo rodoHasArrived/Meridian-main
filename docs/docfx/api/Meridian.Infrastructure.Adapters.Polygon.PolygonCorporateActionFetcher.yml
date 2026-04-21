@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonCorporateActionFetcher
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 35
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 69
   assemblies:
   - Meridian.Infrastructure
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAndPersistAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 125
   assemblies:
   - Meridian.Infrastructure
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAndPersistAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 154
   assemblies:
   - Meridian.Infrastructure

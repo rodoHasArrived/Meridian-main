@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeMarketDataStore
-    path: ../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs
+    path: src/Meridian.Storage/Store/CompositeMarketDataStore.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs
+    path: src/Meridian.Storage/Store/CompositeMarketDataStore.cs
     startLine: 33
   assemblies:
   - Meridian.Storage
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs
+    path: src/Meridian.Storage/Store/CompositeMarketDataStore.cs
     startLine: 42
   assemblies:
   - Meridian.Storage
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAsync
-    path: ../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs
+    path: src/Meridian.Storage/Store/CompositeMarketDataStore.cs
     startLine: 46
   assemblies:
   - Meridian.Storage

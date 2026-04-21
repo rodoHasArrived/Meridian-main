@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthSummary
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 504
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 504
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalChecks
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 505
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyChecks
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 506
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DegradedChecks
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 507
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyChecks
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 508
   assemblies:
   - Meridian.Application

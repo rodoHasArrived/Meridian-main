@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentageCommissionModel
-    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
     startLine: 28
   assemblies:
   - Meridian.Backtesting
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
     startLine: 28
   assemblies:
   - Meridian.Backtesting
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Calculate
-    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
     startLine: 32
   assemblies:
   - Meridian.Backtesting

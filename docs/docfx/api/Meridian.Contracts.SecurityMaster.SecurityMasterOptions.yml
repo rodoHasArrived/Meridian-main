@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterOptions
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionString
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schema
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotIntervalVersions
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectionReplayBatchSize
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreloadProjectionCache
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveInactiveByDefault
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts

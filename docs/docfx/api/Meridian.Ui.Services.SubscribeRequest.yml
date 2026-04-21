@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeRequest
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 182
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 184
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 185
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 186
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeQuotes
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 187
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    path: src/Meridian.Ui.Services/Services/LiveDataService.cs
     startLine: 188
   assemblies:
   - Meridian.Ui.Services

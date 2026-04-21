@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveStats
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 101
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalArchives
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 103
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 104
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressedFiles
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 105
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionRatio
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 106
   assemblies:
   - Meridian.Ui.Services
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldestArchive
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 107
   assemblies:
   - Meridian.Ui.Services
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewestArchive
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 108
   assemblies:
   - Meridian.Ui.Services

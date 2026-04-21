@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigStore
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Shared
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Shared
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfig
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Shared
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Load
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Shared
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Shared
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadProviderMetrics
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Shared
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadStatusJson
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Shared
@@ -309,7 +309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataRoot
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 37
   assemblies:
   - Meridian.Ui.Shared
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusPath
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 40
   assemblies:
   - Meridian.Ui.Shared
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillStatusPath
-    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Shared

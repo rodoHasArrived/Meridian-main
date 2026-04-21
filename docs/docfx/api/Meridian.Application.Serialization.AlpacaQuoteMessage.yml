@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaQuoteMessage
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 221
   assemblies:
   - Meridian.Core
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 223
   assemblies:
   - Meridian.Core
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 226
   assemblies:
   - Meridian.Core
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 229
   assemblies:
   - Meridian.Core
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 232
   assemblies:
   - Meridian.Core
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 235
   assemblies:
   - Meridian.Core
@@ -272,7 +272,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 238
   assemblies:
   - Meridian.Core
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 241
   assemblies:
   - Meridian.Core
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidExchange
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 244
   assemblies:
   - Meridian.Core
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskExchange
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 247
   assemblies:
   - Meridian.Core
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tape
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 250
   assemblies:
   - Meridian.Core
@@ -477,7 +477,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Conditions
-    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
     startLine: 253
   assemblies:
   - Meridian.Core

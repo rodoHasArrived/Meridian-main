@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartnerSchemaRegistry
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 75
   assemblies:
   - Meridian.Application
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCsvSchema
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 98
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSupported
-    path: ../../src/Meridian.Application/Etl/EtlServices.cs
+    path: src/Meridian.Application/Etl/EtlServices.cs
     startLine: 103
   assemblies:
   - Meridian.Application

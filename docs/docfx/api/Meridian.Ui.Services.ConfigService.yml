@@ -43,7 +43,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigService
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPathResolver
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 42
   assemblies:
   - Meridian.Ui.Services
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 60
   assemblies:
   - Meridian.Ui.Services
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveDataRoot
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 74
   assemblies:
   - Meridian.Ui.Services
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveDataSourceAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 77
   assemblies:
   - Meridian.Ui.Services
@@ -353,7 +353,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAlpacaOptionsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 84
   assemblies:
   - Meridian.Ui.Services
@@ -390,7 +390,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveStorageConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 91
   assemblies:
   - Meridian.Ui.Services
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOrUpdateSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 100
   assemblies:
   - Meridian.Ui.Services
@@ -471,7 +471,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 114
   assemblies:
   - Meridian.Ui.Services
@@ -508,7 +508,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSymbolAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 117
   assemblies:
   - Meridian.Ui.Services
@@ -548,7 +548,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourcesAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 126
   assemblies:
   - Meridian.Ui.Services
@@ -583,7 +583,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourcesConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 132
   assemblies:
   - Meridian.Ui.Services
@@ -618,7 +618,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOrUpdateDataSourceAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 138
   assemblies:
   - Meridian.Ui.Services
@@ -655,7 +655,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteDataSourceAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 154
   assemblies:
   - Meridian.Ui.Services
@@ -695,7 +695,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetDefaultDataSourceAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 165
   assemblies:
   - Meridian.Ui.Services
@@ -737,7 +737,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleDataSourceAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 177
   assemblies:
   - Meridian.Ui.Services
@@ -779,7 +779,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFailoverSettingsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 190
   assemblies:
   - Meridian.Ui.Services
@@ -821,7 +821,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAppSettingsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 200
   assemblies:
   - Meridian.Ui.Services
@@ -856,7 +856,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAppSettingsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 203
   assemblies:
   - Meridian.Ui.Services
@@ -893,7 +893,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateServiceUrlAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 206
   assemblies:
   - Meridian.Ui.Services
@@ -937,7 +937,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 212
   assemblies:
   - Meridian.Ui.Services
@@ -975,7 +975,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    path: src/Meridian.Ui.Services/Services/ConfigService.cs
     startLine: 215
   assemblies:
   - Meridian.Ui.Services

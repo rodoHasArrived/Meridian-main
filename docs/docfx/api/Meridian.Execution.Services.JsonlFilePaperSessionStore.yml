@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlFilePaperSessionStore
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseDirectory
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 33
   assemblies:
   - Meridian.Execution
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 35
   assemblies:
   - Meridian.Execution
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSessionMetadataAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 49
   assemblies:
   - Meridian.Execution
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendFillAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 58
   assemblies:
   - Meridian.Execution
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendOrderUpdateAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 66
   assemblies:
   - Meridian.Execution
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAllSessionsAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 78
   assemblies:
   - Meridian.Execution
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFillsAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 100
   assemblies:
   - Meridian.Execution
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadOrderHistoryAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 111
   assemblies:
   - Meridian.Execution
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveLedgerJournalAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 122
   assemblies:
   - Meridian.Execution
@@ -428,7 +428,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadLedgerJournalAsync
-    path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
+    path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
     startLine: 144
   assemblies:
   - Meridian.Execution

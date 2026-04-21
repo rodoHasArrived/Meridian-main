@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProviderConfigService
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderMetadataAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderStatusesAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 164
   assemblies:
   - Meridian.Ui.Services
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFallbackChainAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 220
   assemblies:
   - Meridian.Ui.Services
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateDryRunPlanAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 231
   assemblies:
   - Meridian.Ui.Services
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderFeatureFlagsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 297
   assemblies:
   - Meridian.Ui.Services
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsProviderFeatureEnabledAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 312
   assemblies:
   - Meridian.Ui.Services
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDefaultOptionsAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 324
   assemblies:
   - Meridian.Ui.Services
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAuditEntry
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 349
   assemblies:
   - Meridian.Ui.Services
@@ -416,7 +416,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAuditLog
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 380
   assemblies:
   - Meridian.Ui.Services
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputeAuditDeltaSummary
-    path: ../../src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs
     startLine: 450
   assemblies:
   - Meridian.Ui.Services

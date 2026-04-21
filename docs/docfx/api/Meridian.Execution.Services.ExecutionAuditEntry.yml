@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionAuditEntry
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 24
   assemblies:
   - Meridian.Execution
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditId
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 26
   assemblies:
   - Meridian.Execution
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Action
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 27
   assemblies:
   - Meridian.Execution
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Outcome
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 28
   assemblies:
   - Meridian.Execution
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 29
   assemblies:
   - Meridian.Execution
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Actor
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 30
   assemblies:
   - Meridian.Execution
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 31
   assemblies:
   - Meridian.Execution
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 32
   assemblies:
   - Meridian.Execution
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 33
   assemblies:
   - Meridian.Execution
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 34
   assemblies:
   - Meridian.Execution
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrelationId
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 35
   assemblies:
   - Meridian.Execution
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 36
   assemblies:
   - Meridian.Execution
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 37
   assemblies:
   - Meridian.Execution

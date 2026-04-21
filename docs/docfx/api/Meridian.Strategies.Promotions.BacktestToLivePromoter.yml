@@ -5,7 +5,7 @@ items:
   id: BacktestToLivePromoter
   parent: Meridian.Strategies.Promotions
   children:
-  - Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String)
+  - Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
   - Meridian.Strategies.Promotions.BacktestToLivePromoter.EvaluatePromotionThresholds(Meridian.Backtesting.Sdk.BacktestResult,Meridian.Strategies.Promotions.PromotionCriteria)
   - Meridian.Strategies.Promotions.BacktestToLivePromoter.MeetsPromotionThresholds(Meridian.Backtesting.Sdk.BacktestResult,Meridian.Strategies.Promotions.PromotionCriteria)
   langs:
@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestToLivePromoter
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
     startLine: 10
   assemblies:
   - Meridian.Strategies
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeetsPromotionThresholds
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
     startLine: 16
   assemblies:
   - Meridian.Strategies
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluatePromotionThresholds
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
     startLine: 25
   assemblies:
   - Meridian.Strategies
@@ -116,16 +116,16 @@ items:
       type: Meridian.FSharp.Interop.PromotionDecisionDto
     content.vb: Public Function EvaluatePromotionThresholds(result As BacktestResult, criteria As PromotionCriteria) As Interop.PromotionDecisionDto
   overload: Meridian.Strategies.Promotions.BacktestToLivePromoter.EvaluatePromotionThresholds*
-- uid: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String)
-  commentId: M:Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String)
-  id: CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String)
+- uid: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,Meridian.Strategies.Models.RunType,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
   parent: Meridian.Strategies.Promotions.BacktestToLivePromoter
   langs:
   - csharp
   - vb
-  name: CreatePromotionRecord(BacktestResult, string, string, RunType, string?, string?)
-  nameWithType: BacktestToLivePromoter.CreatePromotionRecord(BacktestResult, string, string, RunType, string?, string?)
-  fullName: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult, string, string, Meridian.Strategies.Models.RunType, string?, string?)
+  name: CreatePromotionRecord(BacktestResult, string, string, RunType, RunType, string, string?, string, string?, string?, string?, string?, string?, string?)
+  nameWithType: BacktestToLivePromoter.CreatePromotionRecord(BacktestResult, string, string, RunType, RunType, string, string?, string, string?, string?, string?, string?, string?, string?)
+  fullName: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult, string, string, Meridian.Strategies.Models.RunType, Meridian.Strategies.Models.RunType, string, string?, string, string?, string?, string?, string?, string?, string?)
   type: Method
   source:
     remote:
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePromotionRecord
-    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
     startLine: 41
   assemblies:
   - Meridian.Strategies
@@ -144,7 +144,7 @@ items:
     qualifying metrics for audit trail purposes.
   example: []
   syntax:
-    content: public StrategyPromotionRecord CreatePromotionRecord(BacktestResult result, string strategyId, string strategyName, RunType targetRunType, string? approvedBy = null, string? manualOverrideId = null)
+    content: public StrategyPromotionRecord CreatePromotionRecord(BacktestResult result, string strategyId, string strategyName, RunType sourceRunType, RunType targetRunType, string sourceRunId, string? targetRunId, string decision, string? approvedBy = null, string? approvalReason = null, string? reviewNotes = null, string? manualOverrideId = null, string? auditReference = null, string? promotionId = null)
     parameters:
     - id: result
       type: Meridian.Backtesting.Sdk.BacktestResult
@@ -152,19 +152,35 @@ items:
       type: System.String
     - id: strategyName
       type: System.String
+    - id: sourceRunType
+      type: Meridian.Strategies.Models.RunType
     - id: targetRunType
       type: Meridian.Strategies.Models.RunType
+    - id: sourceRunId
+      type: System.String
+    - id: targetRunId
+      type: System.String
+    - id: decision
+      type: System.String
     - id: approvedBy
+      type: System.String
+    - id: approvalReason
+      type: System.String
+    - id: reviewNotes
       type: System.String
     - id: manualOverrideId
       type: System.String
+    - id: auditReference
+      type: System.String
+    - id: promotionId
+      type: System.String
     return:
       type: Meridian.Strategies.Promotions.StrategyPromotionRecord
-    content.vb: Public Function CreatePromotionRecord(result As BacktestResult, strategyId As String, strategyName As String, targetRunType As RunType, approvedBy As String = Nothing, manualOverrideId As String = Nothing) As StrategyPromotionRecord
+    content.vb: Public Function CreatePromotionRecord(result As BacktestResult, strategyId As String, strategyName As String, sourceRunType As RunType, targetRunType As RunType, sourceRunId As String, targetRunId As String, decision As String, approvedBy As String = Nothing, approvalReason As String = Nothing, reviewNotes As String = Nothing, manualOverrideId As String = Nothing, auditReference As String = Nothing, promotionId As String = Nothing) As StrategyPromotionRecord
   overload: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord*
-  nameWithType.vb: BacktestToLivePromoter.CreatePromotionRecord(BacktestResult, String, String, RunType, String, String)
-  fullName.vb: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult, String, String, Meridian.Strategies.Models.RunType, String, String)
-  name.vb: CreatePromotionRecord(BacktestResult, String, String, RunType, String, String)
+  nameWithType.vb: BacktestToLivePromoter.CreatePromotionRecord(BacktestResult, String, String, RunType, RunType, String, String, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord(Meridian.Backtesting.Sdk.BacktestResult, String, String, Meridian.Strategies.Models.RunType, Meridian.Strategies.Models.RunType, String, String, String, String, String, String, String, String, String)
+  name.vb: CreatePromotionRecord(BacktestResult, String, String, RunType, RunType, String, String, String, String, String, String, String, String, String)
 references:
 - uid: Meridian.Strategies.Promotions
   commentId: N:Meridian.Strategies.Promotions
@@ -523,7 +539,7 @@ references:
     isExternal: true
 - uid: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord*
   commentId: Overload:Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord
-  href: Meridian.Strategies.Promotions.BacktestToLivePromoter.html#Meridian_Strategies_Promotions_BacktestToLivePromoter_CreatePromotionRecord_Meridian_Backtesting_Sdk_BacktestResult_System_String_System_String_Meridian_Strategies_Models_RunType_System_String_System_String_
+  href: Meridian.Strategies.Promotions.BacktestToLivePromoter.html#Meridian_Strategies_Promotions_BacktestToLivePromoter_CreatePromotionRecord_Meridian_Backtesting_Sdk_BacktestResult_System_String_System_String_Meridian_Strategies_Models_RunType_Meridian_Strategies_Models_RunType_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
   name: CreatePromotionRecord
   nameWithType: BacktestToLivePromoter.CreatePromotionRecord
   fullName: Meridian.Strategies.Promotions.BacktestToLivePromoter.CreatePromotionRecord

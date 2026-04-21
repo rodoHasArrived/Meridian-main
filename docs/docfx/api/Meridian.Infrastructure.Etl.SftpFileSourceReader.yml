@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SftpFileSourceReader
-    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListFilesAsync
-    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StageFileAsync
-    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure

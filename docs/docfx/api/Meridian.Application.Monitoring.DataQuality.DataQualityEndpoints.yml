@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/DataQualityEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/DataQualityEndpoints.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapDataQualityEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/DataQualityEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/DataQualityEndpoints.cs
     startLine: 63
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSlaEndpoints
-    path: ../../src/Meridian.Application/Http/Endpoints/DataQualityEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/DataQualityEndpoints.cs
     startLine: 523
   assemblies:
   - Meridian.Application

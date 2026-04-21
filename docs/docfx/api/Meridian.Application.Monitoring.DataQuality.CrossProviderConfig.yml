@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossProviderConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 557
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceDiscrepancyThresholdPercent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 559
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteDiscrepancyThresholdPercent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 560
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeDiscrepancyThresholdPercent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 561
   assemblies:
   - Meridian.Application
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComparisonWindowSeconds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 562
   assemblies:
   - Meridian.Application
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 563
   assemblies:
   - Meridian.Application
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 565
   assemblies:
   - Meridian.Application

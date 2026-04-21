@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBacktestStudioEngine
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 51
   assemblies:
   - Meridian.Application
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCanonicalResultAsync
-    path: ../../src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
+    path: src/Meridian.Application/Backtesting/BacktestStudioContracts.cs
     startLine: 57
   assemblies:
   - Meridian.Application

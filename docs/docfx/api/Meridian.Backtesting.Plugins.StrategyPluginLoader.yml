@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyPluginLoader
-    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadStrategyTypes
-    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instantiate
-    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
     startLine: 28
   assemblies:
   - Meridian.Backtesting
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetParameters
-    path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
+    path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
     startLine: 36
   assemblies:
   - Meridian.Backtesting

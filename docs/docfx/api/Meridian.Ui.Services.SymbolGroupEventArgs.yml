@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGroupEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 313
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Group
-    path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
     startLine: 315
   assemblies:
   - Meridian.Ui.Services

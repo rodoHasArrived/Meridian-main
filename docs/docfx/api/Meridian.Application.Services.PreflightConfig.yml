@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightConfig
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 743
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDiskSpaceGb
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 746
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarnDiskSpaceGb
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 749
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinMemoryMb
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 752
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarnMemoryMb
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 755
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetworkTimeoutMs
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 758
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckNetworkConnectivity
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 761
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderConnectivity
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 764
   assemblies:
   - Meridian.Application
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 766
   assemblies:
   - Meridian.Application

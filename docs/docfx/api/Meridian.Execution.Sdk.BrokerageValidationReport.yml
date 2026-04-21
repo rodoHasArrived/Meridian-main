@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageValidationReport
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 111
   assemblies:
   - Meridian.Execution.Sdk
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 111
   assemblies:
   - Meridian.Execution.Sdk
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 112
   assemblies:
   - Meridian.Execution.Sdk
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 113
   assemblies:
   - Meridian.Execution.Sdk
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayDisplayName
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 114
   assemblies:
   - Meridian.Execution.Sdk
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 115
   assemblies:
   - Meridian.Execution.Sdk
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Findings
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 116
   assemblies:
   - Meridian.Execution.Sdk
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasBlockingGap
-    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
     startLine: 118
   assemblies:
   - Meridian.Execution.Sdk

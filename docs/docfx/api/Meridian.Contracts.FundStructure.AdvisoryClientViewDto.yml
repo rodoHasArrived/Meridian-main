@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdvisoryClientViewDto
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 282
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 282
   assemblies:
   - Meridian.Contracts
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Client
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 283
   assemblies:
   - Meridian.Contracts
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvestmentPortfolios
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 284
   assemblies:
   - Meridian.Contracts
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 285
   assemblies:
   - Meridian.Contracts

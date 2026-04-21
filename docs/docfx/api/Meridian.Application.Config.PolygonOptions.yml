@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonOptions
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 95
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 95
   assemblies:
   - Meridian.Core
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKey
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 99
   assemblies:
   - Meridian.Core
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseDelayed
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 104
   assemblies:
   - Meridian.Core
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 109
   assemblies:
   - Meridian.Core
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 114
   assemblies:
   - Meridian.Core
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeQuotes
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 119
   assemblies:
   - Meridian.Core
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeAggregates
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 124
   assemblies:
   - Meridian.Core

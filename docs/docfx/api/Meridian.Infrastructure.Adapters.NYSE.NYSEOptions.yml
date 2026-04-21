@@ -40,7 +40,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSEOptions
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 5
   assemblies:
   - Meridian.Infrastructure
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKey
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 11
   assemblies:
   - Meridian.Infrastructure
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiSecret
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientId
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 34
   assemblies:
   - Meridian.Infrastructure
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseSandbox
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SandboxBaseUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SandboxWebSocketUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionTimeoutSeconds
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -369,7 +369,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectDelaySeconds
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -400,7 +400,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectAttempts
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableLevel2
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 70
   assemblies:
   - Meridian.Infrastructure
@@ -465,7 +465,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableIntegratedFeed
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -496,7 +496,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludePreMarket
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -527,7 +527,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeAfterHours
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 85
   assemblies:
   - Meridian.Infrastructure
@@ -558,7 +558,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeedTier
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 90
   assemblies:
   - Meridian.Infrastructure
@@ -589,7 +589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSubscriptions
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 95
   assemblies:
   - Meridian.Infrastructure
@@ -620,7 +620,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveBaseUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -651,7 +651,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveWebSocketUrl
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 105
   assemblies:
   - Meridian.Infrastructure
@@ -682,7 +682,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveApiKey
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 110
   assemblies:
   - Meridian.Infrastructure
@@ -712,7 +712,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveApiSecret
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 116
   assemblies:
   - Meridian.Infrastructure
@@ -742,7 +742,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveClientId
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
     startLine: 122
   assemblies:
   - Meridian.Infrastructure

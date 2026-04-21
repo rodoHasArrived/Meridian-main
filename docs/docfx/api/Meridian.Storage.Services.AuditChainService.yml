@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditChainService
-    path: ../../src/Meridian.Storage/Services/AuditChainService.cs
+    path: src/Meridian.Storage/Services/AuditChainService.cs
     startLine: 60
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/AuditChainService.cs
+    path: src/Meridian.Storage/Services/AuditChainService.cs
     startLine: 64
   assemblies:
   - Meridian.Storage
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendEntryAsync
-    path: ../../src/Meridian.Storage/Services/AuditChainService.cs
+    path: src/Meridian.Storage/Services/AuditChainService.cs
     startLine: 73
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChainAsync
-    path: ../../src/Meridian.Storage/Services/AuditChainService.cs
+    path: src/Meridian.Storage/Services/AuditChainService.cs
     startLine: 144
   assemblies:
   - Meridian.Storage

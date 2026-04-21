@@ -38,7 +38,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 ### Repository And Contribution Foundations
 
 | Document | Use it when you need to... |
-|----------|-----------------------------|
+| --- | --- |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |
@@ -48,7 +48,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 ### Providers, Extension Points, And Refactors
 
 | Document | Use it when you need to... |
-|----------|-----------------------------|
+| --- | --- |
 | [Provider Implementation Guide](provider-implementation.md) | add or extend streaming, historical, or symbol-search providers |
 | [Rule Evaluation Contract Layer](rule-evaluation-contracts.md) | align kernel outputs to the shared `Score + Reasons + Trace` envelope |
 | [Refactor Map](refactor-map.md) | understand the current dependency-safe refactor opportunities |
@@ -57,7 +57,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 ### Desktop And WPF Development
 
 | Document | Use it when you need to... |
-|----------|-----------------------------|
+| --- | --- |
 | [WPF Implementation Notes](wpf-implementation-notes.md) | understand the current desktop shell, workspace model, and implementation shape |
 | [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
@@ -67,7 +67,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 ### CI, Build, And Observability
 
 | Document | Use it when you need to... |
-|----------|-----------------------------|
+| --- | --- |
 | [GitHub Actions Summary](github-actions-summary.md) | get the short reference for the repo's core workflows |
 | [GitHub Actions Testing Checklist](github-actions-testing.md) | validate workflow changes before or after editing GitHub Actions |
 | [Build Observability System](build-observability.md) | capture structured build telemetry, metrics, and diagnostics |
@@ -77,7 +77,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 ### Documentation Tooling And Automation
 
 | Document | Use it when you need to... |
-|----------|-----------------------------|
+| --- | --- |
 | [Documentation Automation Guide](documentation-automation.md) | run or understand the documentation workflow and generated outputs |
 | [Expanding Documentation Scripts](expanding-scripts.md) | add new scripts under `build/scripts/docs/` using existing conventions |
 | [Adding Custom Documentation Rules](adding-custom-rules.md) | extend `build/rules/doc-rules.yaml` and the rules engine safely |
@@ -86,9 +86,9 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 Some topics in this folder have deeper source material outside `docs/development/`:
 
-- [`.github/workflows/README.md`](../../.github/workflows/README.md) is the authoritative workflow inventory referenced by the GitHub Actions summary.
-- [`build/scripts/docs/README.md`](../../build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
-- [`scripts/dev/`](../../scripts/dev/) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
+- [`.github/workflows/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/README.md) is the authoritative workflow inventory referenced by the GitHub Actions summary.
+- [`build/scripts/docs/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
+- [`scripts/dev/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/scripts/dev) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
 
 ## Maintenance Notes
 

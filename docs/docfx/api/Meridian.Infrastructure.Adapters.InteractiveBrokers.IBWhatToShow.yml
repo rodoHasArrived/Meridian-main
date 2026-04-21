@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBWhatToShow
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 345
   assemblies:
   - Meridian.Infrastructure
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 348
   assemblies:
   - Meridian.Infrastructure
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Midpoint
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 351
   assemblies:
   - Meridian.Infrastructure
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bid
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 354
   assemblies:
   - Meridian.Infrastructure
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ask
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 357
   assemblies:
   - Meridian.Infrastructure
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidAsk
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 360
   assemblies:
   - Meridian.Infrastructure
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustedLast
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 363
   assemblies:
   - Meridian.Infrastructure
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalVolatility
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 366
   assemblies:
   - Meridian.Infrastructure
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionImpliedVolatility
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 369
   assemblies:
   - Meridian.Infrastructure
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schedule
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 372
   assemblies:
   - Meridian.Infrastructure

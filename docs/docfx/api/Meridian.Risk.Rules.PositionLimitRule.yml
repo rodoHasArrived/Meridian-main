@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionLimitRule
-    path: ../../src/Meridian.Risk/Rules/PositionLimitRule.cs
+    path: src/Meridian.Risk/Rules/PositionLimitRule.cs
     startLine: 10
   assemblies:
   - Meridian.Risk
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Risk/Rules/PositionLimitRule.cs
+    path: src/Meridian.Risk/Rules/PositionLimitRule.cs
     startLine: 16
   assemblies:
   - Meridian.Risk
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleName
-    path: ../../src/Meridian.Risk/Rules/PositionLimitRule.cs
+    path: src/Meridian.Risk/Rules/PositionLimitRule.cs
     startLine: 27
   assemblies:
   - Meridian.Risk
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateAsync
-    path: ../../src/Meridian.Risk/Rules/PositionLimitRule.cs
+    path: src/Meridian.Risk/Rules/PositionLimitRule.cs
     startLine: 30
   assemblies:
   - Meridian.Risk

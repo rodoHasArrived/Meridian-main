@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppConfigJsonOptions
-    path: ../../src/Meridian.Application/Config/AppConfigJsonOptions.cs
+    path: src/Meridian.Application/Config/AppConfigJsonOptions.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Read
-    path: ../../src/Meridian.Application/Config/AppConfigJsonOptions.cs
+    path: src/Meridian.Application/Config/AppConfigJsonOptions.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Write
-    path: ../../src/Meridian.Application/Config/AppConfigJsonOptions.cs
+    path: src/Meridian.Application/Config/AppConfigJsonOptions.cs
     startLine: 21
   assemblies:
   - Meridian.Application

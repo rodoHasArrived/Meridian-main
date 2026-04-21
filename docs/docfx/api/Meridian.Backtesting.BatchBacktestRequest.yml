@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchBacktestRequest
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 66
   assemblies:
   - Meridian.Backtesting
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseRequest
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 69
   assemblies:
   - Meridian.Backtesting
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterGrid
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 72
   assemblies:
   - Meridian.Backtesting
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrency
-    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    path: src/Meridian.Backtesting/BatchBacktestService.cs
     startLine: 75
   assemblies:
   - Meridian.Backtesting

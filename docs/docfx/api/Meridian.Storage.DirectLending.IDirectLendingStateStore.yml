@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDirectLendingStateStore
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 12
   assemblies:
   - Meridian.Storage
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadContractProjectionAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadTermsVersionProjectionsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadServicingProjectionAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 18
   assemblies:
   - Meridian.Storage
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadDrawdownLotProjectionsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadServicingRevisionProjectionsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 22
   assemblies:
   - Meridian.Storage
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAccrualEntryProjectionsAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 24
   assemblies:
   - Meridian.Storage
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 26
   assemblies:
   - Meridian.Storage
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 28
   assemblies:
   - Meridian.Storage
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveStateAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
     startLine: 37
   assemblies:
   - Meridian.Storage

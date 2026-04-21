@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderSessionClient
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionKind
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 10
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 18
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
     startLine: 20
   assemblies:
   - Meridian.Infrastructure.CppTrader

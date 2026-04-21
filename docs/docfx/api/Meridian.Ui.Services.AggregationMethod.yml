@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregationMethod
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 513
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 515
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 516
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 517
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fields
-    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
     startLine: 518
   assemblies:
   - Meridian.Ui.Services

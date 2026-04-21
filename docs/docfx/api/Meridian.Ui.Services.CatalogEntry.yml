@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogEntry
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1541
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1543
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1544
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataType
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1545
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tier
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1546
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1547
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastModified
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1548
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompressed
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1549
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checksum
-    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
     startLine: 1550
   assemblies:
   - Meridian.Ui.Services

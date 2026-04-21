@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationPipeline
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromFile
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Process
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 83
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromWizardResult
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 94
   assemblies:
   - Meridian.Application
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromAutoConfigResult
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 113
   assemblies:
   - Meridian.Application
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromHotReload
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 137
   assemblies:
   - Meridian.Application
@@ -306,7 +306,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartHotReload
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 151
   assemblies:
   - Meridian.Application
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopHotReload
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 181
   assemblies:
   - Meridian.Application
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
+    path: src/Meridian.Application/Config/ConfigurationPipeline.cs
     startLine: 854
   assemblies:
   - Meridian.Application

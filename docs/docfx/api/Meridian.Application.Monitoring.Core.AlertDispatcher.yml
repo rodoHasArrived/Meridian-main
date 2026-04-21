@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertDispatcher
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Publish
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishAsync
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 77
   assemblies:
   - Meridian.Application
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 131
   assemblies:
   - Meridian.Application
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 148
   assemblies:
   - Meridian.Application
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentAlerts
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 165
   assemblies:
   - Meridian.Application
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 179
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
     startLine: 233
   assemblies:
   - Meridian.Application

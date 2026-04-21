@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanStatus
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 375
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInstalled
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 377
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConfigured
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 378
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSyncEnabled
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 379
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 380
   assemblies:
   - Meridian.Ui.Services
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSync
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 381
   assemblies:
   - Meridian.Ui.Services
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsSynced
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 382
   assemblies:
   - Meridian.Ui.Services

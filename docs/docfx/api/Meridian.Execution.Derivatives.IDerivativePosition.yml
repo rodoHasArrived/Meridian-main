@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDerivativePosition
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 22
   assemblies:
   - Meridian.Execution
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 25
   assemblies:
   - Meridian.Execution
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contracts
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 28
   assemblies:
   - Meridian.Execution
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 31
   assemblies:
   - Meridian.Execution
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkPrice
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 34
   assemblies:
   - Meridian.Execution
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 37
   assemblies:
   - Meridian.Execution
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 40
   assemblies:
   - Meridian.Execution
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
     startLine: 43
   assemblies:
   - Meridian.Execution

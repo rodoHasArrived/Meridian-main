@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackendInstallationInfo
-    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutablePath
-    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstalledAtUtc
-    path: ../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
+    path: src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Services

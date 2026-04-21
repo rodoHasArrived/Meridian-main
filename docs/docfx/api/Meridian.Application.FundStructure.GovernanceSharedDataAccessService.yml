@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceSharedDataAccessService
-    path: ../../src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+    path: src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+    path: src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSharedDataAccessAsync
-    path: ../../src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+    path: src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
     startLine: 32
   assemblies:
   - Meridian.Application

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderStatus
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 3
   assemblies:
   - Meridian.Execution
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accepted
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 6
   assemblies:
   - Meridian.Execution
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Working
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filled
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartiallyFilled
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 18
   assemblies:
   - Meridian.Execution
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
-    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    path: src/Meridian.Execution/Models/OrderStatus.cs
     startLine: 21
   assemblies:
   - Meridian.Execution

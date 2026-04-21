@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityResolver
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityResolver.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityResolver.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityResolver.cs
     startLine: 14
   assemblies:
   - Meridian.Application

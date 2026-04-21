@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BadTickFilterStats
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 616
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 616
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalTicksProcessed
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 617
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBadTicksDetected
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 618
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilterRate
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 619
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStats
-    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    path: src/Meridian.Application/Monitoring/BadTickFilter.cs
     startLine: 620
   assemblies:
   - Meridian.Application

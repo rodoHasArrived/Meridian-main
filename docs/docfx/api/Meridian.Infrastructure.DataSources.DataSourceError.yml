@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceError
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 348
   assemblies:
   - Meridian.ProviderSdk
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 348
   assemblies:
   - Meridian.ProviderSdk
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 349
   assemblies:
   - Meridian.ProviderSdk
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 350
   assemblies:
   - Meridian.ProviderSdk
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 351
   assemblies:
   - Meridian.ProviderSdk
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExceptionType
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 352
   assemblies:
   - Meridian.ProviderSdk
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StackTrace
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 353
   assemblies:
   - Meridian.ProviderSdk

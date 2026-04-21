@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionType
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 216
   assemblies:
   - Meridian.Contracts
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 218
   assemblies:
   - Meridian.Contracts
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gzip
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 219
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LZ4
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 220
   assemblies:
   - Meridian.Contracts
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snappy
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 221
   assemblies:
   - Meridian.Contracts
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ZSTD
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 222
   assemblies:
   - Meridian.Contracts

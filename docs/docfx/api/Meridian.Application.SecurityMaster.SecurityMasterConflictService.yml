@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterConflictService
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 34
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenConflictsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConflictAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 64
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 70
   assemblies:
   - Meridian.Application
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordConflictsForProjectionAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 89
   assemblies:
   - Meridian.Application

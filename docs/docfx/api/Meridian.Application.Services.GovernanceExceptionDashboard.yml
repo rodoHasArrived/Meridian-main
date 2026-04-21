@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceExceptionDashboard
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 203
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 203
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalOpen
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 204
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalResolved
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 205
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 206
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 207
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Medium
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 208
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 209
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 210
   assemblies:
   - Meridian.Application

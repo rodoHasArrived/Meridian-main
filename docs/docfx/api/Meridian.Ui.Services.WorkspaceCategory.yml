@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspaceCategory
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Research
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Services
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trading
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataOperations
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Governance
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 37
   assemblies:
   - Meridian.Ui.Services
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 38
   assemblies:
   - Meridian.Ui.Services

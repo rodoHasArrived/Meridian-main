@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterCanonicalSymbolSeedService
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetSecurityId
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
     startLine: 49
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SeedAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterCanonicalSymbolSeedService.cs
     startLine: 62
   assemblies:
   - Meridian.Application

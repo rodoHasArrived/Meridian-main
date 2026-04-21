@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistry
-    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
+    path: src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
-    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
+    path: src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
-    path: ../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
+    path: src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
     startLine: 13
   assemblies:
   - Meridian.Application

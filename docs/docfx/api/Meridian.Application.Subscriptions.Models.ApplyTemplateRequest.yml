@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyTemplateRequest
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 49
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 49
   assemblies:
   - Meridian.Core
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplateId
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 50
   assemblies:
   - Meridian.Core
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceExisting
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 51
   assemblies:
   - Meridian.Core
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverrideDefaults
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
     startLine: 52
   assemblies:
   - Meridian.Core

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderLatencyData
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 172
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 174
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Buckets
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 175
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P50Ms
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 176
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P95Ms
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 177
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P99Ms
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 178
   assemblies:
   - Meridian.Ui.Services

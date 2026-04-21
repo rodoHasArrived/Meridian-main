@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsRefreshRequest
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 184
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 184
   assemblies:
   - Meridian.Contracts
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 185
   assemblies:
   - Meridian.Contracts
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiration
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 186
   assemblies:
   - Meridian.Contracts
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrikeRange
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillResultDto
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 215
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 217
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 220
   assemblies:
   - Meridian.Contracts
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 223
   assemblies:
   - Meridian.Contracts
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsWritten
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 226
   assemblies:
   - Meridian.Contracts
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedUtc
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 229
   assemblies:
   - Meridian.Contracts
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedUtc
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 232
   assemblies:
   - Meridian.Contracts
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 235
   assemblies:
   - Meridian.Contracts
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolResults
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 238
   assemblies:
   - Meridian.Contracts

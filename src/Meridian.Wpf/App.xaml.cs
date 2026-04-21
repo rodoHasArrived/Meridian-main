@@ -308,6 +308,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ReconciliationReadService>();
         services.AddSingleton<WpfServices.CashFinancingReadService>();
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationSecurityMasterApiClient, WpfServices.WorkstationSecurityMasterApiClient>();
         services.AddSingleton<WpfServices.IWorkstationResearchBriefingApiClient, WpfServices.WorkstationResearchBriefingApiClient>();
         services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
@@ -496,9 +497,13 @@ public partial class App : System.Windows.Application
         });
 
         services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.AddSingleton(PromotionRecordStoreOptions.Default);
+        services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
+        services.AddSingleton<PromotionService>();
         services.AddSingleton<NavAttributionService>();
         services.AddSingleton<ReportGenerationService>();
         services.AddSingleton<FundOperationsWorkspaceReadService>();

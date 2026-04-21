@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionPolicy
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 37
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 39
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 40
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 41
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 42
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeletedFilesPerRun
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressBeforeDelete
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 44
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveToCloud
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 45
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloudArchiveDestination
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Services

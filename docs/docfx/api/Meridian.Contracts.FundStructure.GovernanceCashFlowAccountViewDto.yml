@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceCashFlowAccountViewDto
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 376
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 376
   assemblies:
   - Meridian.Contracts
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 377
   assemblies:
   - Meridian.Contracts
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountCode
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 378
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 379
   assemblies:
   - Meridian.Contracts
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 380
   assemblies:
   - Meridian.Contracts
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReference
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 381
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentCashBalance
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 382
   assemblies:
   - Meridian.Contracts
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedNetFlow
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 383
   assemblies:
   - Meridian.Contracts
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectedNetFlow
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 384
   assemblies:
   - Meridian.Contracts
@@ -362,7 +362,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedEntryCount
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 385
   assemblies:
   - Meridian.Contracts
@@ -391,7 +391,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectedEntryCount
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 386
   assemblies:
   - Meridian.Contracts
@@ -420,7 +420,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatestSnapshotDate
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 387
   assemblies:
   - Meridian.Contracts
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsedTrendFallback
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 388
   assemblies:
   - Meridian.Contracts
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityProjectedEntryCount
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 389
   assemblies:
   - Meridian.Contracts
@@ -507,7 +507,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsedSecurityMasterRules
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 390
   assemblies:
   - Meridian.Contracts
@@ -536,7 +536,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedDataAccess
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
     startLine: 391
   assemblies:
   - Meridian.Contracts

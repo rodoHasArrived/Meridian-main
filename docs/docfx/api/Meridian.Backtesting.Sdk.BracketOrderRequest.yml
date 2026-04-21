@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BracketOrderRequest
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 52
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 52
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 53
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 54
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryType
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 55
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeProfitPrice
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 56
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopLossPrice
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 57
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 58
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 59
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -334,7 +334,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeInForce
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 60
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -363,7 +363,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionModel
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 61
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowPartialFills
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 62
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -421,7 +421,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderParameters
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 63
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 64
   assemblies:
   - Meridian.Backtesting.Sdk

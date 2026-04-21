@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ILifecyclePolicyEngine
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 356
   assemblies:
   - Meridian.Storage
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateAsync
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 358
   assemblies:
   - Meridian.Storage
@@ -82,7 +82,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 359
   assemblies:
   - Meridian.Storage
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvePolicy
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 360
   assemblies:
   - Meridian.Storage
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTierStatistics
-    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
     startLine: 361
   assemblies:
   - Meridian.Storage

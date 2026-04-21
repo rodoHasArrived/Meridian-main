@@ -66,13 +66,13 @@ public static class PromotionEndpoints
         .Produces<PromotionDecisionResult>(200)
         .Produces(501);
 
-        group.MapGet("/history", (HttpContext context) =>
+        group.MapGet("/history", async (HttpContext context) =>
         {
             var service = context.RequestServices.GetService<PromotionService>();
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var history = service.GetPromotionHistory();
+            var history = await service.GetPromotionHistoryAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Json(history, jsonOptions);
         })
         .WithName("GetPromotionHistory")

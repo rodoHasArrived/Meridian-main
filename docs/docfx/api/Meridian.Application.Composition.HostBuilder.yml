@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostBuilder
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 200
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 215
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForStreaming
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 224
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForBackfill
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 240
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAdapter
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 252
   assemblies:
   - Meridian.Application
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsConsole
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 261
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsDesktop
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 270
   assemblies:
   - Meridian.Application
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsStreaming
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 279
   assemblies:
   - Meridian.Application
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsBackfill
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 288
   assemblies:
   - Meridian.Application
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Build
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 297
   assemblies:
   - Meridian.Application

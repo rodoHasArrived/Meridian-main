@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageTools
-    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    path: src/Meridian.McpServer/Tools/StorageTools.cs
     startLine: 9
   assemblies:
   - Meridian.McpServer
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    path: src/Meridian.McpServer/Tools/StorageTools.cs
     startLine: 28
   assemblies:
   - Meridian.McpServer
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageStats
-    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    path: src/Meridian.McpServer/Tools/StorageTools.cs
     startLine: 41
   assemblies:
   - Meridian.McpServer
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListStoredSymbols
-    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    path: src/Meridian.McpServer/Tools/StorageTools.cs
     startLine: 54
   assemblies:
   - Meridian.McpServer
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryStoredData
-    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    path: src/Meridian.McpServer/Tools/StorageTools.cs
     startLine: 83
   assemblies:
   - Meridian.McpServer

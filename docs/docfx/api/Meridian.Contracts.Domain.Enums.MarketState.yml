@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketState
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Closed
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Halted
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreMarket
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AfterHours
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Auction
-    path: ../../src/Meridian.Contracts/Domain/Enums/MarketState.cs
+    path: src/Meridian.Contracts/Domain/Enums/MarketState.cs
     startLine: 40
   assemblies:
   - Meridian.Contracts

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISchemaUpcaster
-    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromSchemaVersion
-    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToSchemaVersion
-    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
     startLine: 29
   assemblies:
   - Meridian.Contracts
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upcast
-    path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
+    path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts

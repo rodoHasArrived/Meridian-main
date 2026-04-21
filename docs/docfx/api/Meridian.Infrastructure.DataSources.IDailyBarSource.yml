@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDailyBarSource
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 98
   assemblies:
   - Meridian.ProviderSdk
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
     startLine: 103
   assemblies:
   - Meridian.ProviderSdk

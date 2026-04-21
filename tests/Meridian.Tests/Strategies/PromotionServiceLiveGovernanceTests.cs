@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -197,11 +198,15 @@ public sealed class PromotionServiceLiveGovernanceTests
         result.AuditReference.Should().NotBeNullOrWhiteSpace();
         result.ApprovedBy.Should().Be("ops");
 
-        var history = service.GetPromotionHistory();
+        var history = await service.GetPromotionHistoryAsync();
         history.Should().ContainSingle();
         history[0].ApprovedBy.Should().Be("ops");
         history[0].ManualOverrideId.Should().Be(manualOverride.OverrideId);
         history[0].AuditReference.Should().NotBeNullOrWhiteSpace();
+        history[0].SourceRunId.Should().Be(run.RunId);
+        history[0].TargetRunId.Should().Be(result.NewRunId);
+        history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
+        history[0].ApprovalReason.Should().Be("Ready for live capital");
 
         var recordedRuns = new List<StrategyRunEntry>();
         await foreach (var entry in store.GetAllRunsAsync())
@@ -242,14 +247,88 @@ public sealed class PromotionServiceLiveGovernanceTests
         var result = await service.ApproveAsync(new PromotionApprovalRequest(run.RunId, ApprovedBy: "ops"));
 
         result.Success.Should().BeFalse();
-        result.Reason.Should().Contain("requires an active AllowLivePromotion", StringComparison.OrdinalIgnoreCase);
+        result.Reason.Should().NotBeNull();
+        result.Reason!.Contains("requires an active AllowLivePromotion", StringComparison.OrdinalIgnoreCase).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetPromotionHistoryAsync_WithDurableStore_RetainsLiveApprovalAcrossRestart()
+    {
+        var tempRoot = CreateTempRoot();
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance,
+            auditTrail);
+
+        var durableStore = new JsonlPromotionRecordStore(
+            new PromotionRecordStoreOptions(Path.Combine(tempRoot, "promotion-history")),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail,
+            new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            },
+            durableStore);
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Ready for live capital",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+
+        await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital",
+            ReviewNotes: "All controls green",
+            ManualOverrideId: manualOverride.OverrideId));
+
+        var restarted = BuildService(
+            out _,
+            controls,
+            auditTrail,
+            new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            },
+            durableStore);
+
+        var history = await restarted.GetPromotionHistoryAsync();
+
+        history.Should().ContainSingle();
+        history[0].SourceRunId.Should().Be(run.RunId);
+        history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
+        history[0].AuditReference.Should().NotBeNullOrWhiteSpace();
+        history[0].ManualOverrideId.Should().Be(manualOverride.OverrideId);
+        history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
+        history[0].ApprovedBy.Should().Be("ops");
+        history[0].ReviewNotes.Should().Be("All controls green");
     }
 
     private static PromotionService BuildService(
         out StrategyRunStore store,
         ExecutionOperatorControlService? controls = null,
         ExecutionAuditTrailService? auditTrail = null,
-        BrokerageConfiguration? brokerageConfiguration = null)
+        BrokerageConfiguration? brokerageConfiguration = null,
+        IPromotionRecordStore? promotionRecordStore = null)
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
@@ -259,7 +338,8 @@ public sealed class PromotionServiceLiveGovernanceTests
             NullLogger<PromotionService>.Instance,
             controls,
             auditTrail,
-            brokerageConfiguration);
+            brokerageConfiguration,
+            promotionRecordStore);
     }
 
     public static IEnumerable<object[]> LivePolicyScenarios()

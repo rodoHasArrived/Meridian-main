@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCodesResponse
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 646
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCodes
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 648
   assemblies:
   - Meridian.Ui.Services

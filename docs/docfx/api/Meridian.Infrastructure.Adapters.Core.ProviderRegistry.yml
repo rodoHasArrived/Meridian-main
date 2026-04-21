@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistry
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 77
   assemblies:
   - Meridian.Infrastructure
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStreamingFactory
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 105
   assemblies:
   - Meridian.Infrastructure
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStreamingFactory
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 130
   assemblies:
   - Meridian.Infrastructure
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateStreamingClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 140
   assemblies:
   - Meridian.Infrastructure
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateStreamingClient
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 168
   assemblies:
   - Meridian.Infrastructure
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedStreamingSources
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 174
   assemblies:
   - Meridian.Infrastructure
@@ -402,7 +402,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProviderMetadata
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 182
   assemblies:
   - Meridian.Infrastructure
@@ -432,7 +432,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 194
   assemblies:
   - Meridian.Infrastructure
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersByCapability
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 205
   assemblies:
   - Meridian.Infrastructure
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 222
   assemblies:
   - Meridian.Infrastructure
@@ -545,7 +545,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 237
   assemblies:
   - Meridian.Infrastructure
@@ -586,7 +586,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestAvailableProviderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 253
   assemblies:
   - Meridian.Infrastructure
@@ -630,7 +630,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAnyProviderAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 299
   assemblies:
   - Meridian.Infrastructure
@@ -671,7 +671,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderAvailabilityAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 311
   assemblies:
   - Meridian.Infrastructure
@@ -712,7 +712,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStreaming
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 340
   assemblies:
   - Meridian.Infrastructure
@@ -751,7 +751,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamingProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 350
   assemblies:
   - Meridian.Infrastructure
@@ -788,7 +788,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamingProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 356
   assemblies:
   - Meridian.Infrastructure
@@ -819,7 +819,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterBackfill
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 362
   assemblies:
   - Meridian.Infrastructure
@@ -858,7 +858,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 372
   assemblies:
   - Meridian.Infrastructure
@@ -895,7 +895,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 378
   assemblies:
   - Meridian.Infrastructure
@@ -926,7 +926,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestBackfillProviderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 384
   assemblies:
   - Meridian.Infrastructure
@@ -960,7 +960,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolSearch
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 391
   assemblies:
   - Meridian.Infrastructure
@@ -999,7 +999,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolSearchProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 401
   assemblies:
   - Meridian.Infrastructure
@@ -1036,7 +1036,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolSearchProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 407
   assemblies:
   - Meridian.Infrastructure
@@ -1067,7 +1067,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestSymbolSearchProviderAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 413
   assemblies:
   - Meridian.Infrastructure
@@ -1101,7 +1101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enable
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 421
   assemblies:
   - Meridian.Infrastructure
@@ -1135,7 +1135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disable
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 438
   assemblies:
   - Meridian.Infrastructure
@@ -1169,7 +1169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 469
   assemblies:
   - Meridian.Infrastructure
@@ -1205,7 +1205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalog
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 481
   assemblies:
   - Meridian.Infrastructure
@@ -1239,7 +1239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalogByType
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 493
   assemblies:
   - Meridian.Infrastructure
@@ -1274,7 +1274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalogEntry
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 508
   assemblies:
   - Meridian.Infrastructure
@@ -1312,7 +1312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 518
   assemblies:
   - Meridian.Infrastructure
@@ -1342,7 +1342,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
     startLine: 535
   assemblies:
   - Meridian.Infrastructure

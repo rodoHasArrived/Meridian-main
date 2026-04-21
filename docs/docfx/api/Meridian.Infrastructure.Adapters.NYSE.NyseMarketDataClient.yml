@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NyseMarketDataClient
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 30
   assemblies:
   - Meridian.Infrastructure
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 52
   assemblies:
   - Meridian.Infrastructure
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 60
   assemblies:
   - Meridian.Infrastructure
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 68
   assemblies:
   - Meridian.Infrastructure
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 81
   assemblies:
   - Meridian.Infrastructure
@@ -442,7 +442,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 86
   assemblies:
   - Meridian.Infrastructure
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -510,7 +510,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 92
   assemblies:
   - Meridian.Infrastructure
@@ -545,7 +545,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 95
   assemblies:
   - Meridian.Infrastructure
@@ -581,7 +581,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 98
   assemblies:
   - Meridian.Infrastructure
@@ -616,7 +616,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 106
   assemblies:
   - Meridian.Infrastructure
@@ -652,7 +652,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
     startLine: 116
   assemblies:
   - Meridian.Infrastructure

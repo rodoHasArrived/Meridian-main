@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyQualityReport
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 306
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 306
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 307
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 308
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAnalyzed
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 309
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 310
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 311
   assemblies:
   - Meridian.Application
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityScore
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 312
   assemblies:
   - Meridian.Application
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimelinessScore
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 313
   assemblies:
   - Meridian.Application
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSummaries
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 314
   assemblies:
   - Meridian.Application
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantGaps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 315
   assemblies:
   - Meridian.Application
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantErrors
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 316
   assemblies:
   - Meridian.Application
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Anomalies
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 317
   assemblies:
   - Meridian.Application
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recommendations
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 318
   assemblies:
   - Meridian.Application
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 319
   assemblies:
   - Meridian.Application

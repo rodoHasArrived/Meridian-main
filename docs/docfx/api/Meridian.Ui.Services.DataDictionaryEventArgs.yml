@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataDictionaryEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 379
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dictionary
-    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
     startLine: 381
   assemblies:
   - Meridian.Ui.Services

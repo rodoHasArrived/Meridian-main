@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderManagementService
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProvidersStatusAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderDetailAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 55
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFailoverConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 82
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFailoverConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 112
   assemblies:
   - Meridian.Ui.Services
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TriggerFailoverAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 141
   assemblies:
   - Meridian.Ui.Services
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetFailoverAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 169
   assemblies:
   - Meridian.Ui.Services
@@ -321,7 +321,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 189
   assemblies:
   - Meridian.Ui.Services
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitHistoryAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 214
   assemblies:
   - Meridian.Ui.Services
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCapabilitiesAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 244
   assemblies:
   - Meridian.Ui.Services
@@ -427,7 +427,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SwitchProviderAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 271
   assemblies:
   - Meridian.Ui.Services
@@ -467,7 +467,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestProviderAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 302
   assemblies:
   - Meridian.Ui.Services
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderConnectionsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 332
   assemblies:
   - Meridian.Ui.Services
@@ -538,7 +538,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderBindingsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 354
   assemblies:
   - Meridian.Ui.Services
@@ -571,7 +571,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderTrustSnapshotsAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 376
   assemblies:
   - Meridian.Ui.Services
@@ -604,7 +604,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewRouteAsync
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 398
   assemblies:
   - Meridian.Ui.Services

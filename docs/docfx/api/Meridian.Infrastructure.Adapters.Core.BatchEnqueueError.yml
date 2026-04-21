@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchEnqueueError
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 62
   assemblies:
   - Meridian.Infrastructure
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 62
   assemblies:
   - Meridian.Infrastructure
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure

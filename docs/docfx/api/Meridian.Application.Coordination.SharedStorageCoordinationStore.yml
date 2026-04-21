@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedStorageCoordinationStore
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 104
   assemblies:
   - Meridian.Application
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 128
   assemblies:
   - Meridian.Application
@@ -298,7 +298,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllLeasesAsync
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 137
   assemblies:
   - Meridian.Application
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCorruptedLeaseFilesAsync
-    path: ../../src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
+    path: src/Meridian.Application/Coordination/SharedStorageCoordinationStore.cs
     startLine: 154
   assemblies:
   - Meridian.Application

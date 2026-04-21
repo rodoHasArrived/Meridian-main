@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthConfig
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 607
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 612
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatTimeoutSeconds
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 617
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMissedHeartbeats
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 622
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighLatencyThresholdMs
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 627
   assemblies:
   - Meridian.Application
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
+    path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
     startLine: 629
   assemblies:
   - Meridian.Application

@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecklistDisplay
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 346
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartStep
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 367
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompleteStep
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 377
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailStep
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 386
   assemblies:
   - Meridian.Application
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipStep
-    path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
+    path: src/Meridian.Application/Services/ProgressDisplayService.cs
     startLine: 395
   assemblies:
   - Meridian.Application

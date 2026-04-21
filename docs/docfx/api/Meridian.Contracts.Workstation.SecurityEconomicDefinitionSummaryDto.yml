@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityEconomicDefinitionSummaryDto
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubType
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetFamily
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssuerType
-    path: ../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
+    path: src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts

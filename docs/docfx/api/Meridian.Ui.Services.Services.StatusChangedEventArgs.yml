@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusChangedEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 80
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousStatus
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 82
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewStatus
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 83
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 84
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/StatusServiceBase.cs
     startLine: 86
   assemblies:
   - Meridian.Ui.Services

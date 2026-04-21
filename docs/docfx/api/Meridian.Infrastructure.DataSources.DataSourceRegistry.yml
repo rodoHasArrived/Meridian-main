@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceRegistry
-    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
     startLine: 8
   assemblies:
   - Meridian.ProviderSdk
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
     startLine: 15
   assemblies:
   - Meridian.ProviderSdk
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscoverFromAssemblies
-    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
     startLine: 20
   assemblies:
   - Meridian.ProviderSdk
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterServices
-    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
     startLine: 49
   assemblies:
   - Meridian.ProviderSdk
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterModules
-    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
     startLine: 69
   assemblies:
   - Meridian.ProviderSdk

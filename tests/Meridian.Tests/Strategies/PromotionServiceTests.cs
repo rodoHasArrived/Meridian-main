@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -108,7 +109,11 @@ public sealed class PromotionServiceTests
         result.Success.Should().BeTrue();
         result.NewRunId.Should().NotBeNullOrWhiteSpace();
         result.PromotionId.Should().NotBeNullOrWhiteSpace();
-        service.GetPromotionHistory().Should().HaveCount(1);
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().HaveCount(1);
+        history[0].SourceRunId.Should().Be(run.RunId);
+        history[0].TargetRunId.Should().Be(result.NewRunId);
+        history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
     }
 
     [Fact]
@@ -127,12 +132,32 @@ public sealed class PromotionServiceTests
     [Fact]
     public async Task RejectAsync_AlwaysReturnsSuccess()
     {
-        var service = BuildService(out _);
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
 
-        var result = await service.RejectAsync(new PromotionRejectionRequest("any-run", "Not ready"));
+        var result = await service.RejectAsync(new PromotionRejectionRequest(
+            run.RunId,
+            "Not ready",
+            ReviewNotes: "Threshold drift",
+            RejectedBy: "ops",
+            ManualOverrideId: "ovr-1"));
 
         result.Success.Should().BeTrue();
         result.Reason.Should().Contain("Not ready");
+        result.AuditReference.Should().NotBeNullOrWhiteSpace();
+        result.ApprovedBy.Should().Be("ops");
+
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().ContainSingle();
+        history[0].Decision.Should().Be(PromotionDecisionKinds.Rejected);
+        history[0].ApprovalReason.Should().Be("Not ready");
+        history[0].ReviewNotes.Should().Be("Threshold drift");
+        history[0].ManualOverrideId.Should().Be("ovr-1");
     }
 
     // ---- GetPromotionHistory ----
@@ -149,20 +174,67 @@ public sealed class PromotionServiceTests
         await store.RecordRunAsync(run);
         await service.ApproveAsync(new PromotionApprovalRequest(run.RunId));
 
-        var history = service.GetPromotionHistory();
+        var history = await service.GetPromotionHistoryAsync();
 
         history.Should().HaveCount(1);
         history[0].StrategyId.Should().Be("s1");
         history[0].TargetRunType.Should().Be(RunType.Paper);
+        history[0].SourceRunId.Should().Be(run.RunId);
+        history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
+        history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
+    }
+
+    [Fact]
+    public async Task GetPromotionHistoryAsync_WithDurableStore_SurvivesRestart()
+    {
+        var tempRoot = CreateTempRoot();
+        var durableStore = new JsonlPromotionRecordStore(
+            new PromotionRecordStoreOptions(Path.Combine(tempRoot, "promotion-history")),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+
+        var service = BuildService(out var store, durableStore);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+        await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ReviewNotes: "Ready for paper",
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics cleared"));
+
+        var restarted = BuildService(out _, durableStore);
+        var history = await restarted.GetPromotionHistoryAsync();
+
+        history.Should().ContainSingle();
+        history[0].SourceRunId.Should().Be(run.RunId);
+        history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
+        history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
+        history[0].ApprovedBy.Should().Be("ops");
+        history[0].ApprovalReason.Should().Be("Metrics cleared");
+        history[0].ReviewNotes.Should().Be("Ready for paper");
     }
 
     // ---- Helpers ----
 
-    private static PromotionService BuildService(out StrategyRunStore store)
+    private static PromotionService BuildService(out StrategyRunStore store, IPromotionRecordStore? promotionRecordStore = null)
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
-        return new PromotionService(store, promoter, NullLogger<PromotionService>.Instance);
+        return new PromotionService(
+            store,
+            promoter,
+            NullLogger<PromotionService>.Instance,
+            promotionRecordStore: promotionRecordStore);
+    }
+
+    private static string CreateTempRoot()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
     }
 
     private static BacktestResult BuildPassingResult()

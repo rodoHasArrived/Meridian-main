@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TiingoHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 38
   assemblies:
   - Meridian.Infrastructure
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 40
   assemblies:
   - Meridian.Infrastructure
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 45
   assemblies:
   - Meridian.Infrastructure
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -468,7 +468,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -504,7 +504,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 74
   assemblies:
   - Meridian.Infrastructure
@@ -541,7 +541,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 79
   assemblies:
   - Meridian.Infrastructure
@@ -578,7 +578,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -624,7 +624,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs
     startLine: 110
   assemblies:
   - Meridian.Infrastructure

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionClosedEvent
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 106
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 106
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 107
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 108
   assemblies:
   - Meridian.Infrastructure.CppTrader

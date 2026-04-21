@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMarketEventPublisher
-    path: ../../src/Meridian.Domain/Events/IMarketEventPublisher.cs
+    path: src/Meridian.Domain/Events/IMarketEventPublisher.cs
     startLine: 6
   assemblies:
   - Meridian.Domain
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
-    path: ../../src/Meridian.Domain/Events/IMarketEventPublisher.cs
+    path: src/Meridian.Domain/Events/IMarketEventPublisher.cs
     startLine: 8
   assemblies:
   - Meridian.Domain

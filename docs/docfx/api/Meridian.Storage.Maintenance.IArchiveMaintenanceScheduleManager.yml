@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IArchiveMaintenanceScheduleManager
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 5
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSchedules
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSchedule
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateScheduleAsync
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromPresetAsync
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateScheduleAsync
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteScheduleAsync
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 35
   assemblies:
   - Meridian.Storage
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetScheduleEnabledAsync
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 40
   assemblies:
   - Meridian.Storage
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDueSchedules
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 45
   assemblies:
   - Meridian.Storage
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusSummary
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 50
   assemblies:
   - Meridian.Storage
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleCreated
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 55
   assemblies:
   - Meridian.Storage
@@ -405,7 +405,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleUpdated
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 60
   assemblies:
   - Meridian.Storage
@@ -434,7 +434,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleDeleted
-    path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
+    path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceScheduleManager.cs
     startLine: 65
   assemblies:
   - Meridian.Storage

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractViolation
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
     startLine: 185
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
     startLine: 185
   assemblies:
   - Meridian.Infrastructure
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrId
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
     startLine: 186
   assemblies:
   - Meridian.Infrastructure
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TypeName
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
     startLine: 187
   assemblies:
   - Meridian.Infrastructure
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
     startLine: 188
   assemblies:
   - Meridian.Infrastructure
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
     startLine: 190
   assemblies:
   - Meridian.Infrastructure

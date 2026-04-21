@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanBacktestResultsSummaryDto
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlgorithmName
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalReturn
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualizedReturn
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharpeRatio
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDrawdown
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalTrades
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WinRate
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProfitFactor
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 30
   assemblies:
   - Meridian.Contracts

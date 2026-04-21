@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BlackScholesCalculator
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ncdf
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 20
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Npdf
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 35
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallPrice
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 68
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallDelta
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 89
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CallVega
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 107
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImpliedVolatility
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 137
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkToClose
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 187
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkToCloseWithIv
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/BlackScholesCalculator.cs
     startLine: 215
   assemblies:
   - Meridian.Backtesting.Sdk

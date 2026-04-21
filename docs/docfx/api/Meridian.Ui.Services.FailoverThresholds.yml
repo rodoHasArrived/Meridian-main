@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverThresholds
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 504
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinHealthScore
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 506
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 507
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectsPerHour
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 508
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDataCompletenessPercent
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 509
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoFailoverEnabled
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 510
   assemblies:
   - Meridian.Ui.Services

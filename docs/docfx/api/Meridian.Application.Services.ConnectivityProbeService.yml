@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityProbeService
-    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    path: src/Meridian.Application/Services/ConnectivityProbeService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOnline
-    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    path: src/Meridian.Application/Services/ConnectivityProbeService.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityChanged
-    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    path: src/Meridian.Application/Services/ConnectivityProbeService.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    path: src/Meridian.Application/Services/ConnectivityProbeService.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    path: src/Meridian.Application/Services/ConnectivityProbeService.cs
     startLine: 62
   assemblies:
   - Meridian.Application
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    path: src/Meridian.Application/Services/ConnectivityProbeService.cs
     startLine: 142
   assemblies:
   - Meridian.Application

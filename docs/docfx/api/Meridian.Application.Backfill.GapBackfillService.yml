@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapBackfillService
-    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    path: src/Meridian.Application/Backfill/GapBackfillService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    path: src/Meridian.Application/Backfill/GapBackfillService.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapBackfillsTriggered
-    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    path: src/Meridian.Application/Backfill/GapBackfillService.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapBackfillsSucceeded
-    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    path: src/Meridian.Application/Backfill/GapBackfillService.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
-    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    path: src/Meridian.Application/Backfill/GapBackfillService.cs
     startLine: 54
   assemblies:
   - Meridian.Application
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unsubscribe
-    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    path: src/Meridian.Application/Backfill/GapBackfillService.cs
     startLine: 70
   assemblies:
   - Meridian.Application

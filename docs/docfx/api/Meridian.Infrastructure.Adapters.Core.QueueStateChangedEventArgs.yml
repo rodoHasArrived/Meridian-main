@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueStateChangedEventArgs
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 506
   assemblies:
   - Meridian.Infrastructure
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingCount
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 508
   assemblies:
   - Meridian.Infrastructure
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InFlightCount
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 509
   assemblies:
   - Meridian.Infrastructure
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
     startLine: 510
   assemblies:
   - Meridian.Infrastructure

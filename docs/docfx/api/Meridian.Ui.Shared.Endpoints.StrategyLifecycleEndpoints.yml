@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyLifecycleEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapStrategyLifecycleEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared

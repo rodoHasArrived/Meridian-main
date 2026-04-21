@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterProjectionWarmupService
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterProjectionWarmupService.cs
     startLine: 61
   assemblies:
   - Meridian.Application

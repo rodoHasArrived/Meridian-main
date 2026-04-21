@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocumentedContractAttribute
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 48
   assemblies:
   - Meridian.ProviderSdk
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractName
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 54
   assemblies:
   - Meridian.ProviderSdk
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Requirements
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 59
   assemblies:
   - Meridian.ProviderSdk
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
     startLine: 65
   assemblies:
   - Meridian.ProviderSdk

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradesResponse
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    path: src/Meridian.Contracts/Api/LiveDataModels.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts

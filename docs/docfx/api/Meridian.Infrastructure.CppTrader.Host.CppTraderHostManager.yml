@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderHostManager
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 5
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 5
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSessionAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 19
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthSnapshot
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 105
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordFault
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 117
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHeartbeat
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 123
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordExecutionUpdate
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 129
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSnapshot
-    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
     startLine: 137
   assemblies:
   - Meridian.Infrastructure.CppTrader

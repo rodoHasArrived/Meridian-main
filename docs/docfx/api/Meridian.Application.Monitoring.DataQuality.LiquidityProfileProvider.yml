@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidityProfileProvider
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetThresholds
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resolve
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClassifyGapSeverity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 97
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InferGapCause
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs
     startLine: 116
   assemblies:
   - Meridian.Application

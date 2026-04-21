@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgresSecurityMasterEventStore
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 23
   assemblies:
   - Meridian.Storage
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 87
   assemblies:
   - Meridian.Storage
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadSinceSequenceAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 112
   assemblies:
   - Meridian.Storage
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestSequenceAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 139
   assemblies:
   - Meridian.Storage
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendCorporateActionAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 201
   assemblies:
   - Meridian.Storage
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadCorporateActionsAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
+    path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
     startLine: 259
   assemblies:
   - Meridian.Storage

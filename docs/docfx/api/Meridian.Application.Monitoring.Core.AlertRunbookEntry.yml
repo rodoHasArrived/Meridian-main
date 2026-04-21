@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertRunbookEntry
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 376
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertName
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 379
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 382
   assemblies:
   - Meridian.Application
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncidentPriority
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 385
   assemblies:
   - Meridian.Application
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 388
   assemblies:
   - Meridian.Application
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunbookUrl
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 391
   assemblies:
   - Meridian.Application
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SloId
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 394
   assemblies:
   - Meridian.Application
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProbableCauses
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 397
   assemblies:
   - Meridian.Application
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImmediateActions
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 400
   assemblies:
   - Meridian.Application
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RollbackCriteria
-    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
     startLine: 403
   assemblies:
   - Meridian.Application

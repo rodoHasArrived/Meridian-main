@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOutboxMessageWrite
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 29
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 29
   assemblies:
   - Meridian.Storage
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Topic
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageKey
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 31
   assemblies:
   - Meridian.Storage
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PayloadJson
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 32
   assemblies:
   - Meridian.Storage
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeadersJson
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 33
   assemblies:
   - Meridian.Storage
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 34
   assemblies:
   - Meridian.Storage
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VisibleAfter
-    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
     startLine: 35
   assemblies:
   - Meridian.Storage

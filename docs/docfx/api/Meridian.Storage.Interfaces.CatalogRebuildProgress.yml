@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogRebuildProgress
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 146
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Phase
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 151
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 156
   assemblies:
   - Meridian.Storage
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 161
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentFile
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 166
   assemblies:
   - Meridian.Storage
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
-    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
     startLine: 171
   assemblies:
   - Meridian.Storage

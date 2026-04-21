@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaRegistry
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 665
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 667
   assemblies:
   - Meridian.Storage
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 670
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schemas
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 673
   assemblies:
   - Meridian.Storage

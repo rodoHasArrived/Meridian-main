@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDataQualityApiClient
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDashboardAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatencyStatisticsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderComparisonAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgeAnomalyAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairGapAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -301,7 +301,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairAllGapsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQualityCheckAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services

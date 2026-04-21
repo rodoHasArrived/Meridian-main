@@ -87,15 +87,11 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
-        <!-- Marquee: uppercase muted section labels — light text on dark sidebar -->
-        <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
-            <Setter Property="FontSize" Value="10" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+        <!-- Dark-shell variant for the left rail and command palette surfaces. -->
+        <Style x:Key="SidebarShellSectionLabelStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource ShellSectionLabelStyle}">
             <Setter Property="Foreground" Value="{StaticResource NavSectionLabelBrush}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
         </Style>
 
         <!-- Marquee-style workspace tiles on dark sidebar background -->
@@ -166,7 +162,7 @@
                                Style="{StaticResource ShellNavSubtitleStyle}"
                                Margin="0,2,0,0" />
                     <TextBlock Text="{Binding MetaLine}"
-                               Style="{StaticResource ShellSectionLabelStyle}"
+                               Style="{StaticResource SidebarShellSectionLabelStyle}"
                                Margin="0,4,0,0" />
                 </StackPanel>
             </Grid>
@@ -268,14 +264,14 @@
                                             <TextBlock DockPanel.Dock="Right"
                                                        Margin="12,0,0,0"
                                                        Text="{Binding WorkspaceTitle}"
-                                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                                       Style="{StaticResource SidebarShellSectionLabelStyle}"
                                                        VerticalAlignment="Center" />
                                         </DockPanel>
                                         <TextBlock Text="{Binding Subtitle}"
                                                    Style="{StaticResource ShellNavSubtitleStyle}"
                                                    Margin="0,2,0,0" />
                                         <TextBlock Text="{Binding MetaLine}"
-                                                   Style="{StaticResource ShellSectionLabelStyle}"
+                                                   Style="{StaticResource SidebarShellSectionLabelStyle}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
@@ -447,7 +443,7 @@
                             BorderThickness="0,0,0,1">
                         <StackPanel>
                             <TextBlock Text="Workspaces"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                       Style="{StaticResource SidebarShellSectionLabelStyle}"
                                        Margin="4,0,0,4"/>
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -466,6 +462,33 @@
                                         Margin="0,0,4,4"
                                         AutomationProperties.AutomationId="WorkspaceResearchButton"
                                         AutomationProperties.Name="Research Workspace">
+                                    <Button.ToolTip>
+                                        <ToolTip Placement="Right"
+                                                 HasDropShadow="False">
+                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
+                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="12">
+                                                <StackPanel>
+                                                    <TextBlock Text="Shared workflow groups"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Home"
+                                                               Margin="0,8,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Active Work"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Review / Alerts"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Admin / Support"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </ToolTip>
+                                    </Button.ToolTip>
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -493,6 +516,33 @@
                                         Margin="4,0,0,4"
                                         AutomationProperties.AutomationId="WorkspaceTradingButton"
                                         AutomationProperties.Name="Trading Workspace">
+                                    <Button.ToolTip>
+                                        <ToolTip Placement="Right"
+                                                 HasDropShadow="False">
+                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
+                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="12">
+                                                <StackPanel>
+                                                    <TextBlock Text="Shared workflow groups"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Home"
+                                                               Margin="0,8,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Active Work"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Review / Alerts"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Admin / Support"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </ToolTip>
+                                    </Button.ToolTip>
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -520,6 +570,33 @@
                                         Margin="0,0,4,0"
                                         AutomationProperties.AutomationId="WorkspaceDataOperationsButton"
                                         AutomationProperties.Name="Data Operations Workspace">
+                                    <Button.ToolTip>
+                                        <ToolTip Placement="Right"
+                                                 HasDropShadow="False">
+                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
+                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="12">
+                                                <StackPanel>
+                                                    <TextBlock Text="Shared workflow groups"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Home"
+                                                               Margin="0,8,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Active Work"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Review / Alerts"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Admin / Support"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </ToolTip>
+                                    </Button.ToolTip>
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -547,6 +624,33 @@
                                         Margin="4,0,0,0"
                                         AutomationProperties.AutomationId="WorkspaceGovernanceButton"
                                         AutomationProperties.Name="Governance Workspace">
+                                    <Button.ToolTip>
+                                        <ToolTip Placement="Right"
+                                                 HasDropShadow="False">
+                                            <Border Background="{StaticResource SidebarBackgroundBrush}"
+                                                    BorderBrush="{StaticResource SidebarBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Padding="12">
+                                                <StackPanel>
+                                                    <TextBlock Text="Shared workflow groups"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Home"
+                                                               Margin="0,8,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Active Work"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Review / Alerts"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                    <TextBlock Text="Admin / Support"
+                                                               Margin="0,2,0,0"
+                                                               Style="{StaticResource SidebarShellSectionLabelStyle}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </ToolTip>
+                                    </Button.ToolTip>
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -577,7 +681,7 @@
                             BorderThickness="0,0,0,1">
                         <StackPanel>
                             <TextBlock Text="{Binding ActiveNavigationLabel}"
-                                       Style="{StaticResource ShellSectionLabelStyle}" />
+                                       Style="{StaticResource SidebarShellSectionLabelStyle}" />
                         </StackPanel>
                     </Border>
 
@@ -591,8 +695,8 @@
                                        Margin="16,0,16,10"
                                        TextWrapping="Wrap" />
 
-                            <TextBlock Text="Primary Flows"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
+                            <TextBlock Text="Home"
+                                       Style="{StaticResource SidebarShellSectionLabelStyle}"
                                        Margin="16,0,0,6" />
                             <ListBox x:Name="WorkspacePrimaryNavList"
                                      Background="Transparent"
@@ -604,12 +708,12 @@
                                      SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
                                      SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                      AutomationProperties.AutomationId="WorkspacePrimaryNavList"
-                                     AutomationProperties.Name="Primary Workspace Navigation" />
+                                     AutomationProperties.Name="Home Navigation" />
 
                             <StackPanel Visibility="{Binding HasSecondaryNavigation, Converter={StaticResource BoolToVisibility}}">
                                 <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
-                                <TextBlock Text="Secondary Flows"
-                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                <TextBlock Text="Active Work"
+                                           Style="{StaticResource SidebarShellSectionLabelStyle}"
                                            Margin="16,0,0,6" />
                                 <ListBox x:Name="WorkspaceSecondaryNavList"
                                          Background="Transparent"
@@ -621,13 +725,13 @@
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
                                          SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="WorkspaceSecondaryNavList"
-                                         AutomationProperties.Name="Secondary Workspace Navigation" />
+                                         AutomationProperties.Name="Active Work Navigation" />
                             </StackPanel>
 
                             <StackPanel Visibility="{Binding HasOverflowNavigation, Converter={StaticResource BoolToVisibility}}">
                                 <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
-                                <TextBlock Text="Workspace Overflow"
-                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                <TextBlock Text="Review / Alerts"
+                                           Style="{StaticResource SidebarShellSectionLabelStyle}"
                                            Margin="16,0,0,6" />
                                 <ListBox x:Name="WorkspaceOverflowNavList"
                                          Background="Transparent"
@@ -639,13 +743,13 @@
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
                                          SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="WorkspaceOverflowNavList"
-                                         AutomationProperties.Name="Workspace Overflow Navigation" />
+                                         AutomationProperties.Name="Review and Alerts Navigation" />
                             </StackPanel>
 
                             <StackPanel Visibility="{Binding HasRelatedWorkflows, Converter={StaticResource BoolToVisibility}}">
                                 <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
-                                <TextBlock Text="Related Workflows"
-                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                <TextBlock Text="Admin / Support"
+                                           Style="{StaticResource SidebarShellSectionLabelStyle}"
                                            Margin="16,0,0,6" />
                                 <ListBox x:Name="RelatedWorkflowNavList"
                                          Background="Transparent"
@@ -657,14 +761,14 @@
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
                                          SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="RelatedWorkflowNavList"
-                                         AutomationProperties.Name="Related Workflow Navigation" />
+                                         AutomationProperties.Name="Admin and Support Navigation" />
                             </StackPanel>
 
                             <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
 
                             <DockPanel Margin="16,0,16,6" LastChildFill="False">
                                 <TextBlock Text="Recent"
-                                           Style="{StaticResource ShellSectionLabelStyle}" />
+                                           Style="{StaticResource SidebarShellSectionLabelStyle}" />
                                 <Border DockPanel.Dock="Right"
                                         Style="{StaticResource NeutralBadgeStyle}">
                                     <TextBlock x:Name="RecentPagesSummaryText"

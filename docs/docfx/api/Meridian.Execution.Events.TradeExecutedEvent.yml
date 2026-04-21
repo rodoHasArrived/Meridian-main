@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeExecutedEvent
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 27
   assemblies:
   - Meridian.Execution
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 27
   assemblies:
   - Meridian.Execution
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillId
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 28
   assemblies:
   - Meridian.Execution
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 29
   assemblies:
   - Meridian.Execution
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 30
   assemblies:
   - Meridian.Execution
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 31
   assemblies:
   - Meridian.Execution
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 32
   assemblies:
   - Meridian.Execution
@@ -309,7 +309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillPrice
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 33
   assemblies:
   - Meridian.Execution
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commission
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 34
   assemblies:
   - Meridian.Execution
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 35
   assemblies:
   - Meridian.Execution
@@ -405,7 +405,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewCash
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 36
   assemblies:
   - Meridian.Execution
@@ -436,7 +436,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 37
   assemblies:
   - Meridian.Execution
@@ -467,7 +467,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountId
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 38
   assemblies:
   - Meridian.Execution
@@ -501,7 +501,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GrossValue
-    path: ../../src/Meridian.Execution/Events/TradeExecutedEvent.cs
+    path: src/Meridian.Execution/Events/TradeExecutedEvent.cs
     startLine: 41
   assemblies:
   - Meridian.Execution

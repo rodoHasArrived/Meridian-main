@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EdgarSecurityMasterIngestProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
     startLine: 21
   assemblies:
   - Meridian.Infrastructure
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
     startLine: 75
   assemblies:
   - Meridian.Infrastructure
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
     startLine: 306
   assemblies:
   - Meridian.Infrastructure

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionStyle
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 17
   assemblies:
   - Meridian.Execution.Sdk
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: European
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 20
   assemblies:
   - Meridian.Execution.Sdk
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: American
-    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
+    path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
     startLine: 23
   assemblies:
   - Meridian.Execution.Sdk

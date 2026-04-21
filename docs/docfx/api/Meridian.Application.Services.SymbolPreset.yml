@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPreset
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 998
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 1000
   assemblies:
   - Meridian.Application
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: USMajorIndices
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 1001
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TechGiants
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 1002
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SP500Top20
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 1003
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Crypto
-    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    path: src/Meridian.Application/Services/AutoConfigurationService.cs
     startLine: 1004
   assemblies:
   - Meridian.Application

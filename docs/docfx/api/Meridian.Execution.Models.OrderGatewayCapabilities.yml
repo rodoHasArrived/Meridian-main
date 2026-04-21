@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderGatewayCapabilities
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedOrderTypes
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedTimeInForce
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExecutionModes
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOrderModification
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsPartialFills
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderExtensions
-    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
     startLine: 17
   assemblies:
   - Meridian.Execution

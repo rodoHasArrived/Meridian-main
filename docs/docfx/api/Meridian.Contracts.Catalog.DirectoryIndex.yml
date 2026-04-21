@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryIndex
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -69,7 +69,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexVersion
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdatedAt
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Files
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subdirectories
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -456,7 +456,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts
@@ -499,7 +499,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 73
   assemblies:
   - Meridian.Contracts
@@ -542,7 +542,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexChecksum
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 79
   assemblies:
   - Meridian.Contracts

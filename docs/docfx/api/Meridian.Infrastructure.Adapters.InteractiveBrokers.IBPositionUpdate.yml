@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBPositionUpdate
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 83
   assemblies:
   - Meridian.Infrastructure
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 83
   assemblies:
   - Meridian.Infrastructure
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Account
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 84
   assemblies:
   - Meridian.Infrastructure
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 85
   assemblies:
   - Meridian.Infrastructure
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 86
   assemblies:
   - Meridian.Infrastructure
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 87
   assemblies:
   - Meridian.Infrastructure
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCost
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 88
   assemblies:
   - Meridian.Infrastructure
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 90
   assemblies:
   - Meridian.Infrastructure
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 91
   assemblies:
   - Meridian.Infrastructure
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReceivedAt
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
     startLine: 92
   assemblies:
   - Meridian.Infrastructure

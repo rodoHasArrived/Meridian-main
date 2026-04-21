@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapStorageEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared

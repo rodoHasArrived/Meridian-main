@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyTemplateResult
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 299
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAdded
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 300
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsSkipped
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 301
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
     startLine: 302
   assemblies:
   - Meridian.Application

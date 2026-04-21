@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderSnapshotTranslator
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Translate
-    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
+    path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure.CppTrader

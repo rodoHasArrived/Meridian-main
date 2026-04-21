@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndicatorDataPoint
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 566
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 566
   assemblies:
   - Meridian.Application
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 567
   assemblies:
   - Meridian.Application
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndicatorName
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 568
   assemblies:
   - Meridian.Application
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 569
   assemblies:
   - Meridian.Application

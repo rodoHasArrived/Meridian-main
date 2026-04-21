@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestDefaults
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 71
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultBrokerageAccountId
-    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
     startLine: 73
   assemblies:
   - Meridian.Backtesting.Sdk

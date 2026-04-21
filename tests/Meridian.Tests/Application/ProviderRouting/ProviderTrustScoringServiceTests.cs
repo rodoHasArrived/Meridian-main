@@ -48,7 +48,7 @@ public sealed class ProviderTrustScoringServiceTests : IDisposable
         snapshot.Decision.Trace.KernelVersion.Should().Be(ProviderTrustScoringService.KernelVersion);
         snapshot.Decision.Reasons.Should().Contain(r => r.RuleId == "provider-trust.connection-enabled");
         snapshot.Decision.Reasons.Should().Contain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY");
-        snapshot.Decision.Reasons.Should().OnlyContain(r => r.EvidenceRefs is { Count: > 0 });
+        snapshot.Decision.Reasons.Should().AllSatisfy(r => r.EvidenceRefs.Should().NotBeNullOrEmpty());
         snapshot.Decision.Reasons.Select(r => r.HumanExplanation).Should().BeEquivalentTo(snapshot.Signals);
     }
 

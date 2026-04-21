@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCompletedEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 837
   assemblies:
   - Meridian.Ui.Services
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 839
   assemblies:
   - Meridian.Ui.Services
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 840
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WasCancelled
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 841
   assemblies:
   - Meridian.Ui.Services
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/BackfillService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillService.cs
     startLine: 842
   assemblies:
   - Meridian.Ui.Services

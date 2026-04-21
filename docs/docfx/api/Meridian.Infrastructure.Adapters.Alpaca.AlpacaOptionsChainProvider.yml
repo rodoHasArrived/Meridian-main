@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaOptionsChainProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 26
   assemblies:
   - Meridian.Infrastructure
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 54
   assemblies:
   - Meridian.Infrastructure
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 55
   assemblies:
   - Meridian.Infrastructure
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -346,7 +346,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 61
   assemblies:
   - Meridian.Infrastructure
@@ -379,7 +379,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 84
   assemblies:
   - Meridian.Infrastructure
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 113
   assemblies:
   - Meridian.Infrastructure
@@ -474,7 +474,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 164
   assemblies:
   - Meridian.Infrastructure
@@ -520,7 +520,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainSnapshotAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 218
   assemblies:
   - Meridian.Infrastructure
@@ -572,7 +572,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionQuoteAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 269
   assemblies:
   - Meridian.Infrastructure
@@ -612,7 +612,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCredentialsConfigured
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs
     startLine: 321
   assemblies:
   - Meridian.Infrastructure

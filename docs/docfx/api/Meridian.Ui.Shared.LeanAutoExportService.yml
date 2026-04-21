@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanAutoExportService
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Shared
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 46
   assemblies:
   - Meridian.Ui.Shared
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanDataPath
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 52
   assemblies:
   - Meridian.Ui.Shared
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 58
   assemblies:
   - Meridian.Ui.Shared
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastExportAt
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 64
   assemblies:
   - Meridian.Ui.Shared
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastExportError
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 70
   assemblies:
   - Meridian.Ui.Shared
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastErrorMessage
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Shared
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFilesExported
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 82
   assemblies:
   - Meridian.Ui.Shared
@@ -313,7 +313,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesExported
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 85
   assemblies:
   - Meridian.Ui.Shared
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 87
   assemblies:
   - Meridian.Ui.Shared
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Configure
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 109
   assemblies:
   - Meridian.Ui.Shared
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
+    path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
     startLine: 136
   assemblies:
   - Meridian.Ui.Shared

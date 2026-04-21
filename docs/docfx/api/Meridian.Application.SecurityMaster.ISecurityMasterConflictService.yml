@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterConflictService
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenConflictsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConflictAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordConflictsForProjectionAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
     startLine: 26
   assemblies:
   - Meridian.Application

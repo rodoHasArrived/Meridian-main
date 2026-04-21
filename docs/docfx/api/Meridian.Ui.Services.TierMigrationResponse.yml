@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierMigrationResponse
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 198
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 200
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesMigrated
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 201
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpaceSavedBytes
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 202
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 203
   assemblies:
   - Meridian.Ui.Services

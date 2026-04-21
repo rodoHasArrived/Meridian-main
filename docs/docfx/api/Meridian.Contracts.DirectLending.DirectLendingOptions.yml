@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOptions
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionString
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schema
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotIntervalVersions
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentEventSchemaVersion
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectionEngineVersion
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxBatchSize
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxPollIntervalSeconds
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayBatchSize
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts

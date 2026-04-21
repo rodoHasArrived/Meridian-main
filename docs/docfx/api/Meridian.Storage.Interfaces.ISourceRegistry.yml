@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISourceRegistry
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 5
   assemblies:
   - Meridian.Storage
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourceInfo
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolInfo
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSources
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbols
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSource
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 30
   assemblies:
   - Meridian.Storage
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbol
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 35
   assemblies:
   - Meridian.Storage
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAlias
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 40
   assemblies:
   - Meridian.Storage
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourcePriorityOrder
-    path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
+    path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
     startLine: 45
   assemblies:
   - Meridian.Storage

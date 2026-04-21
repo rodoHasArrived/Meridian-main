@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingHostAdapter
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 125
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureServices
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 131
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureApplication
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
+    path: src/Meridian.Application/Composition/HostAdapters.cs
     startLine: 137
   assemblies:
   - Meridian.Application

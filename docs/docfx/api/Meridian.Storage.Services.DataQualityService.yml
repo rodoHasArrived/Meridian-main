@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityService
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 21
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 28
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateReportAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 69
   assemblies:
   - Meridian.Storage
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalScoresAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 145
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RankSourcesAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 155
   assemblies:
   - Meridian.Storage
@@ -259,7 +259,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateGoldenRecordAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 209
   assemblies:
   - Meridian.Storage
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrendAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 270
   assemblies:
   - Meridian.Storage
@@ -343,7 +343,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityAlertsAsync
-    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    path: src/Meridian.Storage/Services/DataQualityService.cs
     startLine: 293
   assemblies:
   - Meridian.Storage

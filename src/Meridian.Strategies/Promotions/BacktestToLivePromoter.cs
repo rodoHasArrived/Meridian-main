@@ -43,27 +43,48 @@ public sealed class BacktestToLivePromoter
         BacktestResult result,
         string strategyId,
         string strategyName,
+        RunType sourceRunType,
         RunType targetRunType,
+        string sourceRunId,
+        string? targetRunId,
+        string decision,
         string? approvedBy = null,
-        string? manualOverrideId = null)
+        string? approvalReason = null,
+        string? reviewNotes = null,
+        string? manualOverrideId = null,
+        string? auditReference = null,
+        string? promotionId = null)
     {
         ArgumentNullException.ThrowIfNull(result);
 
-        var auditReference = Guid.NewGuid().ToString("N");
         return new StrategyPromotionRecord(
-            PromotionId: Guid.NewGuid().ToString("N"),
+            PromotionId: promotionId ?? Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
             StrategyName: strategyName,
-            SourceRunType: targetRunType == RunType.Paper ? RunType.Backtest : RunType.Paper,
+            SourceRunType: sourceRunType,
             TargetRunType: targetRunType,
+            SourceRunId: sourceRunId,
+            TargetRunId: targetRunId,
             QualifyingSharpe: result.Metrics.SharpeRatio,
             QualifyingMaxDrawdownPercent: result.Metrics.MaxDrawdownPercent,
             QualifyingTotalReturn: result.Metrics.TotalReturn,
+            Decision: decision,
             PromotedAt: DateTimeOffset.UtcNow,
             AuditReference: auditReference,
             ApprovedBy: approvedBy,
+            ApprovalReason: approvalReason,
+            ReviewNotes: reviewNotes,
             ManualOverrideId: manualOverrideId);
     }
+}
+
+/// <summary>
+/// Stable decision labels persisted into durable promotion history.
+/// </summary>
+public static class PromotionDecisionKinds
+{
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
 }
 
 /// <summary>Minimum thresholds that a strategy must meet to be eligible for promotion.</summary>
@@ -89,10 +110,15 @@ public sealed record StrategyPromotionRecord(
     string StrategyName,
     RunType SourceRunType,
     RunType TargetRunType,
+    string SourceRunId,
+    string? TargetRunId,
     double QualifyingSharpe,
     decimal QualifyingMaxDrawdownPercent,
     decimal QualifyingTotalReturn,
+    string Decision,
     DateTimeOffset PromotedAt,
     string? AuditReference = null,
     string? ApprovedBy = null,
+    string? ApprovalReason = null,
+    string? ReviewNotes = null,
     string? ManualOverrideId = null);

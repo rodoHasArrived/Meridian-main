@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationResult
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 523
   assemblies:
   - Meridian.Ui.Services
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Valid
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 525
   assemblies:
   - Meridian.Ui.Services
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 526
   assemblies:
   - Meridian.Ui.Services
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Suggestion
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 527
   assemblies:
   - Meridian.Ui.Services

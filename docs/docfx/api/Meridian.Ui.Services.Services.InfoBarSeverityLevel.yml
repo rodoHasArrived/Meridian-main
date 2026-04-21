@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoBarSeverityLevel
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 6
   assemblies:
   - Meridian.Ui.Services
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Informational
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services

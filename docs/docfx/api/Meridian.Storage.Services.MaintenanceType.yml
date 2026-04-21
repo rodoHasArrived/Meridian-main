@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceType
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 611
   assemblies:
   - Meridian.Storage
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 613
   assemblies:
   - Meridian.Storage
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheck
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 614
   assemblies:
   - Meridian.Storage
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityValidation
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 615
   assemblies:
   - Meridian.Storage
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 616
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compaction
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 617
   assemblies:
   - Meridian.Storage
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierMigration
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 618
   assemblies:
   - Meridian.Storage
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexRebuild
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 619
   assemblies:
   - Meridian.Storage
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Archival
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 620
   assemblies:
   - Meridian.Storage
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backup
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 621
   assemblies:
   - Meridian.Storage
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconciliation
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 622
   assemblies:
   - Meridian.Storage
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityScoring
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 623
   assemblies:
   - Meridian.Storage

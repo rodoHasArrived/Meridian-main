@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceContinuityStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 467
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 467
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalChecks
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 468
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDiscontinuities
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 469
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGapUps
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 470
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGapDowns
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 471
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsTracked
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 472
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 473
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 474
   assemblies:
   - Meridian.Application

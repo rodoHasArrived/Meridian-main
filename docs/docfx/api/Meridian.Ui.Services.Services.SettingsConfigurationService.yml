@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SettingsConfigurationService
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateStoragePreview
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 36
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalog
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 73
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCredentialStatuses
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 83
   assemblies:
   - Meridian.Ui.Services
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProfiles
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 182
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateProfile
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 185
   assemblies:
   - Meridian.Ui.Services
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveProfile
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 194
   assemblies:
   - Meridian.Ui.Services
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimateDailyStorageSize
-    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
     startLine: 205
   assemblies:
   - Meridian.Ui.Services

@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 705
   assemblies:
   - Meridian.Storage
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 705
   assemblies:
   - Meridian.Storage
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 705
   assemblies:
   - Meridian.Storage
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: End
-    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    path: src/Meridian.Storage/Services/StorageSearchService.cs
     startLine: 705
   assemblies:
   - Meridian.Storage

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TiingoConfig
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 205
   assemblies:
   - Meridian.Core
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 205
   assemblies:
   - Meridian.Core
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 206
   assemblies:
   - Meridian.Core
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiToken
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 207
   assemblies:
   - Meridian.Core
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 208
   assemblies:
   - Meridian.Core
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitPerHour
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 209
   assemblies:
   - Meridian.Core

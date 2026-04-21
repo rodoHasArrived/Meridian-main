@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonHistoricalDataProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 25
   assemblies:
   - Meridian.Infrastructure
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 41
   assemblies:
   - Meridian.Infrastructure
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 42
   assemblies:
   - Meridian.Infrastructure
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 43
   assemblies:
   - Meridian.Infrastructure
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Infrastructure
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 49
   assemblies:
   - Meridian.Infrastructure
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 50
   assemblies:
   - Meridian.Infrastructure
@@ -410,7 +410,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -477,7 +477,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 62
   assemblies:
   - Meridian.Infrastructure
@@ -513,7 +513,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 71
   assemblies:
   - Meridian.Infrastructure
@@ -550,7 +550,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -596,7 +596,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -642,7 +642,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIntradayBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 193
   assemblies:
   - Meridian.Infrastructure
@@ -686,7 +686,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSplitsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 280
   assemblies:
   - Meridian.Infrastructure
@@ -724,7 +724,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDividendsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 324
   assemblies:
   - Meridian.Infrastructure
@@ -762,7 +762,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs
     startLine: 369
   assemblies:
   - Meridian.Infrastructure

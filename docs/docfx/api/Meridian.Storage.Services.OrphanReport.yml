@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanReport
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 676
   assemblies:
   - Meridian.Storage
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 676
   assemblies:
   - Meridian.Storage
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 677
   assemblies:
   - Meridian.Storage
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedFiles
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 678
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalOrphanedBytes
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 679
   assemblies:
   - Meridian.Storage

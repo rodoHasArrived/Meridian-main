@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOutboxDispatcher
-    path: ../../src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs
+    path: src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs
+    path: src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs
+    path: src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs
     startLine: 30
   assemblies:
   - Meridian.Application

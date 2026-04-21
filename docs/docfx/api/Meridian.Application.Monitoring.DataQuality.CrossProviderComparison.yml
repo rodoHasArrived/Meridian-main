@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossProviderComparison
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 147
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 147
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 148
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 149
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 150
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 151
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Discrepancies
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 152
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecommendedProvider
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 153
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComparedAt
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 154
   assemblies:
   - Meridian.Application

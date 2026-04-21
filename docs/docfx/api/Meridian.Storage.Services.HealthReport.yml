@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthReport
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 568
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 568
   assemblies:
   - Meridian.Storage
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportId
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 569
   assemblies:
   - Meridian.Storage
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 570
   assemblies:
   - Meridian.Storage
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScanDurationMs
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 571
   assemblies:
   - Meridian.Storage
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 572
   assemblies:
   - Meridian.Storage
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 573
   assemblies:
   - Meridian.Storage
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 574
   assemblies:
   - Meridian.Storage

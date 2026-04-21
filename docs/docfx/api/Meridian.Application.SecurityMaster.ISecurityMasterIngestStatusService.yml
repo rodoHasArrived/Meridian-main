@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterIngestStatusService
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs
     startLine: 45
   assemblies:
   - Meridian.Application

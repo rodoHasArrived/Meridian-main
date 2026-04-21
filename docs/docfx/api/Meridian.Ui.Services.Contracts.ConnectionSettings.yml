@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionSettings
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoReconnectEnabled
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectAttempts
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialReconnectDelayMs
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectDelayMs
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 23
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckIntervalSeconds
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceTimeoutSeconds
-    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Services

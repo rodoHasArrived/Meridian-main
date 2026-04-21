@@ -1,6 +1,12 @@
 # Meridian UI Screenshots
 
-Screenshots of the Meridian WPF desktop application. Desktop screenshots run on `windows-latest` in fixture mode.
+Screenshots of Meridian operator surfaces. The authoritative current catalog is the WPF desktop set under [`desktop/`](desktop/); the older web/API captures in this file are retained as historical reference.
+
+## Current Desktop Highlight
+
+The current Governance assurance workflow centers the desktop **Security Master** page, which now carries the workstation context strip, trust/freshness posture, and grouped assurance entry point.
+
+![WPF Security Master](desktop/wpf-security-master.png)
 
 ## How to run (WPF desktop)
 
@@ -10,10 +16,11 @@ $env:MDC_FIXTURE_MODE = '1'
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
 ```
 
-Desktop screenshots are stored under [`desktop/`](desktop/) and are captured using Windows UI Automation and the built-in Command
-Palette to navigate between pages.
+Desktop screenshots are stored under [`desktop/`](desktop/) and are captured using Windows UI Automation against the desktop shell.
 
 ---
+
+## Legacy Web And API Captures
 
 ## 01 – Main Dashboard
 
@@ -199,10 +206,12 @@ The **Security master coverage** deep-link within the Governance workspace, show
 
 ---
 
-## WPF Desktop Application
+## WPF Desktop Catalog
 
 The following screenshots are captured from the WPF desktop application running in
 fixture mode (`MDC_FIXTURE_MODE=1`). They live under the [`desktop/`](desktop/) subdirectory.
+
+`D13` reflects the current governance assurance-oriented Security Master workstation surface.
 
 | # | Page | File |
 |---|------|------|

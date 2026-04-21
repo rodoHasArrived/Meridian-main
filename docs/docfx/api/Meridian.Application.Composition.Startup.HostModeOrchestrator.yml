@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostModeOrchestrator
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 342
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 347
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 353
   assemblies:
   - Meridian.Application

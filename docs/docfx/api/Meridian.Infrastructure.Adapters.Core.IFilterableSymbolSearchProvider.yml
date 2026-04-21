@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IFilterableSymbolSearchProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 94
   assemblies:
   - Meridian.Infrastructure
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs
     startLine: 99
   assemblies:
   - Meridian.Infrastructure

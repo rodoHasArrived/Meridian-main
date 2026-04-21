@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionCandidateInfo
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 33
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 33
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 35
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 37
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiration
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 39
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Style
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 41
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Multiplier
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 43
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bid
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 45
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ask
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 47
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DaysToExpiration
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 49
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterest
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 51
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -406,7 +406,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 53
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -435,7 +435,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delta
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 55
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImpliedVolatility
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 57
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -493,7 +493,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vega
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 59
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -522,7 +522,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IvPercentile
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 61
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -551,7 +551,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DaysToNextExDiv
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 63
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -580,7 +580,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextDividendAmount
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 65
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -609,7 +609,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mid
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 68
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -640,7 +640,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadPct
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
     startLine: 71
   assemblies:
   - Meridian.Backtesting.Sdk

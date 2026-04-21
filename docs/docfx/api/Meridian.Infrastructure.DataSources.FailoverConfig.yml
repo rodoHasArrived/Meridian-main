@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverConfig
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 739
   assemblies:
   - Meridian.Infrastructure
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 744
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strategy
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 749
   assemblies:
   - Meridian.Infrastructure
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFailoverAttempts
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 754
   assemblies:
   - Meridian.Infrastructure
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CooldownSeconds
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 759
   assemblies:
   - Meridian.Infrastructure
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToOptions
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 764
   assemblies:
   - Meridian.Infrastructure

@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobsConfig
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 54
   assemblies:
   - Meridian.Core
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 54
   assemblies:
   - Meridian.Core
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistJobs
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 55
   assemblies:
   - Meridian.Core
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobsDirectory
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 56
   assemblies:
   - Meridian.Core
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentRequests
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 57
   assemblies:
   - Meridian.Core
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentPerProvider
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 58
   assemblies:
   - Meridian.Core
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 59
   assemblies:
   - Meridian.Core
@@ -288,7 +288,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryDelaySeconds
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 60
   assemblies:
   - Meridian.Core
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSizeDays
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 61
   assemblies:
   - Meridian.Core
@@ -350,7 +350,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoPauseOnRateLimit
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 62
   assemblies:
   - Meridian.Core
@@ -381,7 +381,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoResumeAfterRateLimit
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 63
   assemblies:
   - Meridian.Core
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRateLimitWaitMinutes
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 64
   assemblies:
   - Meridian.Core
@@ -443,7 +443,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scheduling
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 65
   assemblies:
   - Meridian.Core

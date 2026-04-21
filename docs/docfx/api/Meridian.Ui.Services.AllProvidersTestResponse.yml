@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllProvidersTestResponse
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 728
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllConnected
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 730
   assemblies:
   - Meridian.Ui.Services
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
-    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
     startLine: 731
   assemblies:
   - Meridian.Ui.Services

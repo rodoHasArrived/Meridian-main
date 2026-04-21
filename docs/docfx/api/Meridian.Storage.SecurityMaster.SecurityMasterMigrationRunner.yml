@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterMigrationRunner
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
     startLine: 5
   assemblies:
   - Meridian.Storage
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
     startLine: 9
   assemblies:
   - Meridian.Storage
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnsureMigratedAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSchemaAsync
-    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
+    path: src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs
     startLine: 29
   assemblies:
   - Meridian.Storage

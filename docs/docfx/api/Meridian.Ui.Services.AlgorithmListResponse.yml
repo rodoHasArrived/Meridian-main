@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlgorithmListResponse
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 570
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Algorithms
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
     startLine: 572
   assemblies:
   - Meridian.Ui.Services

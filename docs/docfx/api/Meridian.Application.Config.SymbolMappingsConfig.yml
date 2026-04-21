@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMappingsConfig
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 281
   assemblies:
   - Meridian.Core
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 281
   assemblies:
   - Meridian.Core
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistencePath
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 285
   assemblies:
   - Meridian.Core
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mappings
-    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    path: src/Meridian.Core/Config/DataSourceConfig.cs
     startLine: 290
   assemblies:
   - Meridian.Core

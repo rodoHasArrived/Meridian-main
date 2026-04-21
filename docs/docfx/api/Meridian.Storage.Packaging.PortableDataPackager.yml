@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortableDataPackager
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressChanged
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 36
   assemblies:
   - Meridian.Storage
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 38
   assemblies:
   - Meridian.Storage
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePackageAsync
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 47
   assemblies:
   - Meridian.Storage
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportPackageAsync
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 134
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatePackageAsync
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 234
   assemblies:
   - Meridian.Storage
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListPackageContentsAsync
-    path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
+    path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
     startLine: 311
   assemblies:
   - Meridian.Storage

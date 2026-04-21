@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderScoreReasonResponse
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 155
   assemblies:
   - Meridian.Contracts
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 155
   assemblies:
   - Meridian.Contracts
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 156
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contribution
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 157
   assemblies:
   - Meridian.Contracts

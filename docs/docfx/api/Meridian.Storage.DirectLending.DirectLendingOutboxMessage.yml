@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOutboxMessage
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 4
   assemblies:
   - Meridian.Storage
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 4
   assemblies:
   - Meridian.Storage
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxMessageId
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 5
   assemblies:
   - Meridian.Storage
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Topic
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 6
   assemblies:
   - Meridian.Storage
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageKey
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 7
   assemblies:
   - Meridian.Storage
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PayloadJson
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 8
   assemblies:
   - Meridian.Storage
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeadersJson
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 9
   assemblies:
   - Meridian.Storage
@@ -260,7 +260,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -289,7 +289,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VisibleAfter
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessedAt
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 12
   assemblies:
   - Meridian.Storage
@@ -347,7 +347,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCount
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 13
   assemblies:
   - Meridian.Storage
@@ -376,7 +376,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
-    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
     startLine: 14
   assemblies:
   - Meridian.Storage

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderAcknowledgement
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 6
   assemblies:
   - Meridian.Execution
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 6
   assemblies:
   - Meridian.Execution
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 8
   assemblies:
   - Meridian.Execution
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgedAt
-    path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
+    path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
     startLine: 11
   assemblies:
   - Meridian.Execution

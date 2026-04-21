@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitHistoryResponse
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 566
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: History
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 568
   assemblies:
   - Meridian.Ui.Services

@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderMetrics
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradesReceived
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdatesReceived
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuotesReceived
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionAttempts
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionFailures
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -369,7 +369,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessagesDropped
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -398,7 +398,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSubscriptions
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -427,7 +427,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyMs
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -456,7 +456,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinLatencyMs
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyMs
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -514,7 +514,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityScore
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -543,7 +543,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionSuccessRate
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -572,7 +572,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
+    path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
     startLine: 31
   assemblies:
   - Meridian.Application

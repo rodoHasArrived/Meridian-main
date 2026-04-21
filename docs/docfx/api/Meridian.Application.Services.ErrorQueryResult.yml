@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorQueryResult
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 300
   assemblies:
   - Meridian.Application
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalErrors
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 301
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueuedErrors
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 302
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryTime
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 303
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    path: src/Meridian.Application/Services/ErrorTracker.cs
     startLine: 304
   assemblies:
   - Meridian.Application

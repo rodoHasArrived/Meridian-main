@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiringSymbolStateStore
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 284
   assemblies:
   - Meridian.Infrastructure
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 298
   assemblies:
   - Meridian.Infrastructure
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 317
   assemblies:
   - Meridian.Infrastructure
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrAdd
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 320
   assemblies:
   - Meridian.Infrastructure
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 328
   assemblies:
   - Meridian.Infrastructure
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Set
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 346
   assemblies:
   - Meridian.Infrastructure
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOrUpdate
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 352
   assemblies:
   - Meridian.Infrastructure
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remove
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 366
   assemblies:
   - Meridian.Infrastructure
@@ -381,7 +381,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRemove
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 369
   assemblies:
   - Meridian.Infrastructure
@@ -424,7 +424,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contains
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 381
   assemblies:
   - Meridian.Infrastructure
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbols
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 391
   assemblies:
   - Meridian.Infrastructure
@@ -499,7 +499,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 394
   assemblies:
   - Meridian.Infrastructure
@@ -534,7 +534,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 402
   assemblies:
   - Meridian.Infrastructure
@@ -566,7 +566,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForEach
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 405
   assemblies:
   - Meridian.Infrastructure
@@ -603,7 +603,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveStale
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 417
   assemblies:
   - Meridian.Infrastructure
@@ -643,7 +643,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveExpired
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 427
   assemblies:
   - Meridian.Infrastructure
@@ -676,7 +676,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
+    path: src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs
     startLine: 437
   assemblies:
   - Meridian.Infrastructure

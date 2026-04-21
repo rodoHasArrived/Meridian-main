@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianDataProvider
-    path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
+    path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
     startLine: 12
   assemblies:
   - Meridian
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewDataRequest
-    path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
+    path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
     startLine: 19
   assemblies:
   - Meridian
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
+    path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
     startLine: 25
   assemblies:
   - Meridian
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fetch
-    path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
+    path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
     startLine: 36
   assemblies:
   - Meridian
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
+    path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
     startLine: 107
   assemblies:
   - Meridian

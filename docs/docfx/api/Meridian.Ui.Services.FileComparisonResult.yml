@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileComparisonResult
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 700
   assemblies:
   - Meridian.Ui.Services
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File1
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 702
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File2
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 703
   assemblies:
   - Meridian.Ui.Services
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File1Size
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 704
   assemblies:
   - Meridian.Ui.Services
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File2Size
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 705
   assemblies:
   - Meridian.Ui.Services
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeDifference
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 706
   assemblies:
   - Meridian.Ui.Services
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File1Checksum
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 707
   assemblies:
   - Meridian.Ui.Services
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File2Checksum
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 708
   assemblies:
   - Meridian.Ui.Services
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AreIdentical
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 709
   assemblies:
   - Meridian.Ui.Services
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File1EventCount
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 710
   assemblies:
   - Meridian.Ui.Services
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: File2EventCount
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 711
   assemblies:
   - Meridian.Ui.Services
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCountDifference
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 712
   assemblies:
   - Meridian.Ui.Services
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommonEvents
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 713
   assemblies:
   - Meridian.Ui.Services
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UniqueToFile1
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 714
   assemblies:
   - Meridian.Ui.Services
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UniqueToFile2
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 715
   assemblies:
   - Meridian.Ui.Services
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverlapPercentage
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 716
   assemblies:
   - Meridian.Ui.Services
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPossibleDuplicate
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 717
   assemblies:
   - Meridian.Ui.Services

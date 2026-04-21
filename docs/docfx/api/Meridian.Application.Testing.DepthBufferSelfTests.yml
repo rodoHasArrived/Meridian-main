@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthBufferSelfTests
-    path: ../../src/Meridian.Application/Testing/DepthBufferSelfTests.cs
+    path: src/Meridian.Application/Testing/DepthBufferSelfTests.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Run
-    path: ../../src/Meridian.Application/Testing/DepthBufferSelfTests.cs
+    path: src/Meridian.Application/Testing/DepthBufferSelfTests.cs
     startLine: 8
   assemblies:
   - Meridian.Application

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageConfigExtensions
-    path: ../../src/Meridian.Application/Config/StorageConfigExtensions.cs
+    path: src/Meridian.Application/Config/StorageConfigExtensions.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToStorageOptions
-    path: ../../src/Meridian.Application/Config/StorageConfigExtensions.cs
+    path: src/Meridian.Application/Config/StorageConfigExtensions.cs
     startLine: 13
   assemblies:
   - Meridian.Application

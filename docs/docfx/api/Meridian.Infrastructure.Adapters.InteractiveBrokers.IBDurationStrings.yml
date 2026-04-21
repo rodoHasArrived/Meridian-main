@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBDurationStrings
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 299
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seconds60
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 301
   assemblies:
   - Meridian.Infrastructure
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seconds1800
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 302
   assemblies:
   - Meridian.Infrastructure
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seconds3600
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 303
   assemblies:
   - Meridian.Infrastructure
@@ -147,7 +147,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Day1
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 304
   assemblies:
   - Meridian.Infrastructure
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Days5
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 305
   assemblies:
   - Meridian.Infrastructure
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Week1
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 306
   assemblies:
   - Meridian.Infrastructure
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weeks2
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 307
   assemblies:
   - Meridian.Infrastructure
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Month1
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 308
   assemblies:
   - Meridian.Infrastructure
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Months3
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 309
   assemblies:
   - Meridian.Infrastructure
@@ -309,7 +309,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Months6
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 310
   assemblies:
   - Meridian.Infrastructure
@@ -336,7 +336,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Year1
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 311
   assemblies:
   - Meridian.Infrastructure

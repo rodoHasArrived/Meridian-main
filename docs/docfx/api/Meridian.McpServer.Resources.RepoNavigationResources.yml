@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoNavigationResources
-    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
     startLine: 9
   assemblies:
   - Meridian.McpServer
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
     startLine: 22
   assemblies:
   - Meridian.McpServer
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRepoNavigationCatalog
-    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
     startLine: 27
   assemblies:
   - Meridian.McpServer
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRepoNavigationQuickStart
-    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
     startLine: 34
   assemblies:
   - Meridian.McpServer

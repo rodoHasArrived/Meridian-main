@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlCheckpointToken
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 167
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentFileName
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 169
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentFileChecksum
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 172
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentRecordIndex
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 175
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSymbol
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 178
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestampUtc
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 181
   assemblies:
   - Meridian.Contracts
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRecordHash
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 184
   assemblies:
   - Meridian.Contracts
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapturedAtUtc
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts

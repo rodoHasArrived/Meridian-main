@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyHistogramConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 402
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BucketBoundaries
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 407
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSamples
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 415
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 420
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
     startLine: 422
   assemblies:
   - Meridian.Application

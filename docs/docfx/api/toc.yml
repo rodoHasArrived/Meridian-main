@@ -8218,6 +8218,9 @@ items:
   - uid: Meridian.Strategies.Interfaces.ILiveStrategy
     name: ILiveStrategy
     type: Interface
+  - uid: Meridian.Strategies.Interfaces.IPromotionRecordStore
+    name: IPromotionRecordStore
+    type: Interface
   - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle
     name: IStrategyLifecycle
     type: Interface
@@ -8246,6 +8249,9 @@ items:
     type: Class
   - uid: Meridian.Strategies.Promotions.PromotionCriteria
     name: PromotionCriteria
+    type: Class
+  - uid: Meridian.Strategies.Promotions.PromotionDecisionKinds
+    name: PromotionDecisionKinds
     type: Class
   - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
     name: StrategyPromotionRecord
@@ -8327,6 +8333,12 @@ items:
   name: Meridian.Strategies.Storage
   type: Namespace
   items:
+  - uid: Meridian.Strategies.Storage.JsonlPromotionRecordStore
+    name: JsonlPromotionRecordStore
+    type: Class
+  - uid: Meridian.Strategies.Storage.PromotionRecordStoreOptions
+    name: PromotionRecordStoreOptions
+    type: Class
   - uid: Meridian.Strategies.Storage.StrategyRunStore
     name: StrategyRunStore
     type: Class
@@ -10654,11 +10666,17 @@ items:
   - uid: Meridian.Ui.Shared.Endpoints.CheckpointEndpoints
     name: CheckpointEndpoints
     type: Class
+  - uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
+    name: ClearManualOverrideCommandRequest
+    type: Class
   - uid: Meridian.Ui.Shared.Endpoints.ConfigEndpoints
     name: ConfigEndpoints
     type: Class
   - uid: Meridian.Ui.Shared.Endpoints.CppTraderEndpoints
     name: CppTraderEndpoints
+    type: Class
+  - uid: Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest
+    name: CreateManualOverrideCommandRequest
     type: Class
   - uid: Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest
     name: CreatePaperSessionRequest

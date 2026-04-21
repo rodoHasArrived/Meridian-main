@@ -131,6 +131,7 @@ credentials.json
 artifacts/*
 !artifacts/provider-validation/
 !artifacts/provider-validation/**
+.artifacts/validation/
 output/
 data/
 logs/

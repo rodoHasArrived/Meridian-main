@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthAlertType
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 445
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowOverallScore
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 447
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighLatency
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 448
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowCompleteness
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 449
   assemblies:
   - Meridian.Ui.Services
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FrequentReconnects
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 450
   assemblies:
   - Meridian.Ui.Services
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionLost
-    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
     startLine: 451
   assemblies:
   - Meridian.Ui.Services

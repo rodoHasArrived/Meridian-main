@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataValidator
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 14
   assemblies:
   - Meridian
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateFileAsync
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 52
   assemblies:
   - Meridian
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateDirectoryAsync
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 217
   assemblies:
   - Meridian
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSummary
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 259
   assemblies:
   - Meridian
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrintResults
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 289
   assemblies:
   - Meridian

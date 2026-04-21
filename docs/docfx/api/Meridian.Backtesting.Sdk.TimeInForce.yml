@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeInForce
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Day
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GoodTilCancelled
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImmediateOrCancel
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillOrKill
-    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    path: src/Meridian.Backtesting.Sdk/Order.cs
     startLine: 17
   assemblies:
   - Meridian.Backtesting.Sdk

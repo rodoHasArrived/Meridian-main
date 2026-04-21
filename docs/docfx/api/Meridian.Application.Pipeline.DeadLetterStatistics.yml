@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeadLetterStatistics
-    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
     startLine: 218
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
     startLine: 218
   assemblies:
   - Meridian.Application
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRejected
-    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
     startLine: 219
   assemblies:
   - Meridian.Application
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedBySymbol
-    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
     startLine: 220
   assemblies:
   - Meridian.Application
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeadLetterFilePath
-    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
     startLine: 221
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
+    path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
     startLine: 222
   assemblies:
   - Meridian.Application

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGranularityExtensions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 395
   assemblies:
   - Meridian.Infrastructure
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryParseValue
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 397
   assemblies:
   - Meridian.Infrastructure
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseValueOrDefault
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 435
   assemblies:
   - Meridian.Infrastructure
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsIntraday
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 438
   assemblies:
   - Meridian.Infrastructure
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAlpacaTimeframe
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 449
   assemblies:
   - Meridian.Infrastructure
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToTimeSpan
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 463
   assemblies:
   - Meridian.Infrastructure
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToUiValue
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 477
   assemblies:
   - Meridian.Infrastructure
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToConfigValue
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 491
   assemblies:
   - Meridian.Infrastructure
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToStorageFilePrefix
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 505
   assemblies:
   - Meridian.Infrastructure
@@ -329,7 +329,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
     startLine: 516
   assemblies:
   - Meridian.Infrastructure

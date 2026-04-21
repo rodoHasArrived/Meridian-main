@@ -27,8 +27,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunGovernanceSummary
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 85
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 91
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -65,8 +65,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 85
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 91
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -113,8 +113,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdatedAt
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 86
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 92
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -142,8 +142,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasParameters
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 87
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 93
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -171,8 +171,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasPortfolio
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 88
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 94
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -200,8 +200,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasLedger
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 89
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 95
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -229,8 +229,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasAuditTrail
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 90
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 96
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -258,8 +258,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditReference
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 91
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 97
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -287,8 +287,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatasetReference
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 92
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 98
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -316,8 +316,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeedReference
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 93
+    path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 99
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderLiveFeedAdapter
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 7
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedSymbols
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastTrade
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastQuote
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 18
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastOrderBook
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 20
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyTrade
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplySnapshot
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure.CppTrader

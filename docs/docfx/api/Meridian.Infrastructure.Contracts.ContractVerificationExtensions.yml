@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractVerificationExtensions
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 9
   assemblies:
   - Meridian.Infrastructure
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddContractVerification
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 14
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyContracts
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 24
   assemblies:
   - Meridian.Infrastructure

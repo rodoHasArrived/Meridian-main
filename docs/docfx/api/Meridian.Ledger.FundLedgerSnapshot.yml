@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerSnapshot
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 104
   assemblies:
   - Meridian.Ledger
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 104
   assemblies:
   - Meridian.Ledger
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 105
   assemblies:
   - Meridian.Ledger
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 106
   assemblies:
   - Meridian.Ledger
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consolidated
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 107
   assemblies:
   - Meridian.Ledger
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entities
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 108
   assemblies:
   - Meridian.Ledger
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sleeves
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 109
   assemblies:
   - Meridian.Ledger
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vehicles
-    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    path: src/Meridian.Ledger/FundLedgerBook.cs
     startLine: 110
   assemblies:
   - Meridian.Ledger

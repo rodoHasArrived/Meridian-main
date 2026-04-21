@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilityOutput
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 326
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 328
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarketDepth
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 331
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 334
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 337
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 340
   assemblies:
   - Meridian.Contracts
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 343
   assemblies:
   - Meridian.Contracts
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 346
   assemblies:
   - Meridian.Contracts
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsTrades
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 349
   assemblies:
   - Meridian.Contracts
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsQuotes
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 352
   assemblies:
   - Meridian.Contracts
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAuctions
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 355
   assemblies:
   - Meridian.Contracts

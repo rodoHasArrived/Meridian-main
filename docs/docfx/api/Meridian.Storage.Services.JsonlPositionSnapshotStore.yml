@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlPositionSnapshotStore
-    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
     startLine: 21
   assemblies:
   - Meridian.Storage
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
     startLine: 33
   assemblies:
   - Meridian.Storage
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSnapshotAsync
-    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
     startLine: 43
   assemblies:
   - Meridian.Storage
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestSnapshotAsync
-    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
     startLine: 68
   assemblies:
   - Meridian.Storage
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotHistoryAsync
-    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
     startLine: 97
   assemblies:
   - Meridian.Storage

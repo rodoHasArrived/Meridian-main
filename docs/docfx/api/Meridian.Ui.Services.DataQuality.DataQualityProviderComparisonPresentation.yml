@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityProviderComparisonPresentation
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 181
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 183
   assemblies:
   - Meridian.Ui.Services
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 184
   assemblies:
   - Meridian.Ui.Services

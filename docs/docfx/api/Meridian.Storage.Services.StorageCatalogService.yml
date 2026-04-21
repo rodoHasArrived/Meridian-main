@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageCatalogService
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 18
   assemblies:
   - Meridian.Storage
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 34
   assemblies:
   - Meridian.Storage
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCatalog
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 42
   assemblies:
   - Meridian.Storage
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 44
   assemblies:
   - Meridian.Storage
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildCatalogAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 96
   assemblies:
   - Meridian.Storage
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFileEntryAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 245
   assemblies:
   - Meridian.Storage
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveFileEntryAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 288
   assemblies:
   - Meridian.Storage
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDirectoryIndexAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 316
   assemblies:
   - Meridian.Storage
@@ -336,7 +336,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateDirectoryIndexAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 345
   assemblies:
   - Meridian.Storage
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScanDirectoryAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 352
   assemblies:
   - Meridian.Storage
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 451
   assemblies:
   - Meridian.Storage
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyIntegrityAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 453
   assemblies:
   - Meridian.Storage
@@ -489,7 +489,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilesForSymbol
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 567
   assemblies:
   - Meridian.Storage
@@ -527,7 +527,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilesForDateRange
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 573
   assemblies:
   - Meridian.Storage
@@ -567,7 +567,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilesForEventType
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 579
   assemblies:
   - Meridian.Storage
@@ -605,7 +605,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchFiles
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 585
   assemblies:
   - Meridian.Storage
@@ -640,7 +640,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCatalogAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 635
   assemblies:
   - Meridian.Storage
@@ -675,7 +675,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportCatalogAsync
-    path: ../../src/Meridian.Storage/Services/StorageCatalogService.cs
+    path: src/Meridian.Storage/Services/StorageCatalogService.cs
     startLine: 652
   assemblies:
   - Meridian.Storage

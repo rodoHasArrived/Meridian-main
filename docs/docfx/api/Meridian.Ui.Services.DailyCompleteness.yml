@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyCompleteness
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 690
   assemblies:
   - Meridian.Ui.Services
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 692
   assemblies:
   - Meridian.Ui.Services
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWeekend
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 693
   assemblies:
   - Meridian.Ui.Services
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHoliday
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 694
   assemblies:
   - Meridian.Ui.Services
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 695
   assemblies:
   - Meridian.Ui.Services
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsWithData
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 696
   assemblies:
   - Meridian.Ui.Services
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsMissingData
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 697
   assemblies:
   - Meridian.Ui.Services
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 698
   assemblies:
   - Meridian.Ui.Services
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 699
   assemblies:
   - Meridian.Ui.Services
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 702
   assemblies:
   - Meridian.Ui.Services
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 705
   assemblies:
   - Meridian.Ui.Services
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 710
   assemblies:
   - Meridian.Ui.Services
@@ -392,7 +392,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 713
   assemblies:
   - Meridian.Ui.Services
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapCount
-    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
     startLine: 718
   assemblies:
   - Meridian.Ui.Services

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilitiesResponse
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 586
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
-    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
     startLine: 588
   assemblies:
   - Meridian.Ui.Services

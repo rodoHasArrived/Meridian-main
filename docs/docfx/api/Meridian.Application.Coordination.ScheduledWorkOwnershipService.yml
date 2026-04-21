@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledWorkOwnershipService
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 2
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireDispatcherLeadershipAsync
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireScheduleAsync
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseScheduleAsync
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireJobAsync
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -243,7 +243,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseJobAsync
-    path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
+    path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
     startLine: 24
   assemblies:
   - Meridian.Application

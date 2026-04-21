@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigDtoMapper
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
-    path: ../../src/Meridian.Application/Config/ConfigDtoMapper.cs
+    path: src/Meridian.Application/Config/ConfigDtoMapper.cs
     startLine: 65
   assemblies:
   - Meridian.Application

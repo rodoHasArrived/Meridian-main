@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizationOutcome
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disposition
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Event
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectCode
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectMessage
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHash
-    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    path: src/Meridian.Application/Etl/EtlAbstractions.cs
     startLine: 33
   assemblies:
   - Meridian.Application

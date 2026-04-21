@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverTriggeredEvent
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 477
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 477
   assemblies:
   - Meridian.Infrastructure
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 478
   assemblies:
   - Meridian.Infrastructure
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 479
   assemblies:
   - Meridian.Infrastructure
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 480
   assemblies:
   - Meridian.Infrastructure
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 481
   assemblies:
   - Meridian.Infrastructure
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
     startLine: 482
   assemblies:
   - Meridian.Infrastructure

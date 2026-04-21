@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBApiError
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 447
   assemblies:
   - Meridian.Infrastructure
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 447
   assemblies:
   - Meridian.Infrastructure
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestId
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 448
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCode
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 449
   assemblies:
   - Meridian.Infrastructure
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 450
   assemblies:
   - Meridian.Infrastructure
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdvancedOrderRejectJson
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 451
   assemblies:
   - Meridian.Infrastructure
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPacingViolation
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 454
   assemblies:
   - Meridian.Infrastructure
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMarketDataError
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 458
   assemblies:
   - Meridian.Infrastructure
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSecurityNotFound
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 462
   assemblies:
   - Meridian.Infrastructure

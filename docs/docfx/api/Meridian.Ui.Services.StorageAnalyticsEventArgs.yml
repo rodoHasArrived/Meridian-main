@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageAnalyticsEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
     startLine: 434
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Analytics
-    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
     startLine: 436
   assemblies:
   - Meridian.Ui.Services

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileVerificationResult
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 744
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 746
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifiedAt
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 747
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 748
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedChecksum
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 749
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualChecksum
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 750
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumMatch
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 751
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 752
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 753
   assemblies:
   - Meridian.Ui.Services

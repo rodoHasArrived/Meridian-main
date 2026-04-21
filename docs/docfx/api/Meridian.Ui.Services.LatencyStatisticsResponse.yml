@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyStatisticsResponse
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 196
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
-    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
     startLine: 198
   assemblies:
   - Meridian.Ui.Services

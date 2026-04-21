@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualitySummary
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyFiles
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningFiles
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalFiles
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveAlerts
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnacknowledgedAlerts
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastChecked
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSummaries
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 18
   assemblies:
   - Meridian.Ui.Services

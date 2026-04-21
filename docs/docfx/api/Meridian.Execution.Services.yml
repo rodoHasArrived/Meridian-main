@@ -181,6 +181,7 @@ references:
   fullName: Meridian.Execution.Services.PaperSessionOptions
 - uid: Meridian.Execution.Services.PaperSessionPersistenceService
   commentId: T:Meridian.Execution.Services.PaperSessionPersistenceService
+  parent: Meridian.Execution.Services
   href: Meridian.Execution.Services.PaperSessionPersistenceService.html
   name: PaperSessionPersistenceService
   nameWithType: PaperSessionPersistenceService

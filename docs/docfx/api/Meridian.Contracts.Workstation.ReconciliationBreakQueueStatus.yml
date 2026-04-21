@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationBreakQueueStatus
-    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
     startLine: 134
   assemblies:
   - Meridian.Contracts
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
-    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
     startLine: 136
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InReview
-    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
     startLine: 137
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resolved
-    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
     startLine: 138
   assemblies:
   - Meridian.Contracts
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dismissed
-    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
     startLine: 139
   assemblies:
   - Meridian.Contracts

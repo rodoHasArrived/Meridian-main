@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCodeExtensions
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 203
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCategory
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 208
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTransient
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 227
   assemblies:
   - Meridian.Application
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToExitCode
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 247
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromException
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 268
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToHttpStatusCode
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 300
   assemblies:
   - Meridian.Application

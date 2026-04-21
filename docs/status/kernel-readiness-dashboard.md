@@ -94,6 +94,15 @@
 
 ---
 
+## Kernel Observability Controls
+
+- **Dashboard surfaces:** Data Operations and Governance now expose per-domain kernel latency `p50/p95/p99`, throughput per minute, reason-code coverage, determinism mismatches, score drift, severity drift, and active versus historical critical-jump alerts.
+- **Determinism evidence:** non-production and diagnostic paths compare stable input/output hashes so the same routed request can be checked for unexpected output divergence without impacting production execution paths.
+- **Drift methodology:** score and severity drift are calculated as total variation distance between recent and trailing windows so operators can see real distribution shift, not only average movement.
+- **Critical-jump alert thresholds:** headline cards show active alerts while payloads retain total alert count; the current activation policy requires at least 20 samples in both windows, a short-window critical rate of at least 25%, a zero-baseline trigger of 35%, or a 2.0x relative jump with at least a 0.15 absolute increase.
+
+---
+
 ## Alignment Notes (Waves 2-4)
 
 - **Wave 2 (cockpit hardening):** execution tracked through DK1 trust and explainability gates.

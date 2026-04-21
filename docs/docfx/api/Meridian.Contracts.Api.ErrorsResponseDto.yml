@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorsResponseDto
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 259
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 261
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stats
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 264
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 267
   assemblies:
   - Meridian.Contracts

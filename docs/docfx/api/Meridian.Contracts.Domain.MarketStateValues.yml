@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketStateValues
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 359
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 364
   assemblies:
   - Meridian.Contracts
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreMarket
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 368
   assemblies:
   - Meridian.Contracts
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AfterHours
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 372
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Closed
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 376
   assemblies:
   - Meridian.Contracts
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Halted
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 380
   assemblies:
   - Meridian.Contracts
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Auction
-    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    path: src/Meridian.Contracts/Domain/MarketDataModels.cs
     startLine: 384
   assemblies:
   - Meridian.Contracts

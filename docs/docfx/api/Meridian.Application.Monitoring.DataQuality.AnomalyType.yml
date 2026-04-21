@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyType
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 252
   assemblies:
   - Meridian.Application
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceSpike
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 254
   assemblies:
   - Meridian.Application
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceDrop
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 255
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeSpike
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 256
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeDrop
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 257
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadWide
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 258
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleData
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 259
   assemblies:
   - Meridian.Application
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RapidPriceChange
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 260
   assemblies:
   - Meridian.Application
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AbnormalVolatility
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 261
   assemblies:
   - Meridian.Application
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingData
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 262
   assemblies:
   - Meridian.Application
@@ -292,7 +292,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicateData
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 263
   assemblies:
   - Meridian.Application
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossedMarket
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 264
   assemblies:
   - Meridian.Application
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidPrice
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 265
   assemblies:
   - Meridian.Application
@@ -370,7 +370,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidVolume
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
     startLine: 266
   assemblies:
   - Meridian.Application

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveBrowserService
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Services
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetArchiveTreeAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Services
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFileMetadataAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 124
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilePreviewAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 156
   assemblies:
   - Meridian.Ui.Services
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchInFileAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 195
   assemblies:
   - Meridian.Ui.Services
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareFilesAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 229
   assemblies:
   - Meridian.Ui.Services
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportFilesAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 290
   assemblies:
   - Meridian.Ui.Services
@@ -339,7 +339,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyFileAsync
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 343
   assemblies:
   - Meridian.Ui.Services

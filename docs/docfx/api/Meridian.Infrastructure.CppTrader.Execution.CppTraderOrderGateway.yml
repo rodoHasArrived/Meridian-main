@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderOrderGateway
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 20
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 61
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 91
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 136
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -294,7 +294,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 181
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamOrderUpdatesAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 188
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
+    path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderOrderGateway.cs
     startLine: 354
   assemblies:
   - Meridian.Infrastructure.CppTrader

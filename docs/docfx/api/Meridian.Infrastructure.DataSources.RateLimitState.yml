@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitState
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 373
   assemblies:
   - Meridian.ProviderSdk
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 373
   assemblies:
   - Meridian.ProviderSdk
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanMakeRequest
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 374
   assemblies:
   - Meridian.ProviderSdk
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingRequests
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 375
   assemblies:
   - Meridian.ProviderSdk
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequests
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 376
   assemblies:
   - Meridian.ProviderSdk
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetIn
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 377
   assemblies:
   - Meridian.ProviderSdk
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAt
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 378
   assemblies:
   - Meridian.ProviderSdk
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Available
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 382
   assemblies:
   - Meridian.ProviderSdk
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Throttled
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 385
   assemblies:
   - Meridian.ProviderSdk
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Limited
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 389
   assemblies:
   - Meridian.ProviderSdk

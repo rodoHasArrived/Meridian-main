@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivePolicyConfig
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 469
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 472
   assemblies:
   - Meridian.Storage
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 475
   assemblies:
   - Meridian.Storage
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Immutable
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 478
   assemblies:
   - Meridian.Storage
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresEncryption
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 481
   assemblies:
   - Meridian.Storage
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinRetention
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 484
   assemblies:
   - Meridian.Storage
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApproversForDelete
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 487
   assemblies:
   - Meridian.Storage

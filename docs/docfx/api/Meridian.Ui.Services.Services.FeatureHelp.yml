@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureHelp
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 6
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tips
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LearnMoreUrl
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KeyboardShortcuts
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services

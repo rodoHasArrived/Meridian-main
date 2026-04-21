@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataAggregation
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 202
   assemblies:
   - Meridian.Contracts
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tick
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 204
   assemblies:
   - Meridian.Contracts
@@ -79,7 +79,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Second
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 205
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minute
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 206
   assemblies:
   - Meridian.Contracts
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FiveMinute
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 207
   assemblies:
   - Meridian.Contracts
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FifteenMinute
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 208
   assemblies:
   - Meridian.Contracts
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThirtyMinute
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 209
   assemblies:
   - Meridian.Contracts
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hour
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 210
   assemblies:
   - Meridian.Contracts
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Daily
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 211
   assemblies:
   - Meridian.Contracts
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weekly
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 212
   assemblies:
   - Meridian.Contracts
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Monthly
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 213
   assemblies:
   - Meridian.Contracts

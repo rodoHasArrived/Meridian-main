@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatusWebhookConfig
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 290
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinAlertIntervalSeconds
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 295
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnConnectionLost
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 300
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnConnectionRecovered
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 305
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnHeartbeatMissed
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 310
   assemblies:
   - Meridian.Application
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyOnHighLatency
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 315
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatMissedThreshold
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighLatencyThresholdMs
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 325
   assemblies:
   - Meridian.Application
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 327
   assemblies:
   - Meridian.Application

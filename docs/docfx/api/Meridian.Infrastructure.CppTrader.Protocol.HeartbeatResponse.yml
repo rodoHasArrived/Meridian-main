@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatResponse
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 97
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 97
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostId
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 98
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 99
   assemblies:
   - Meridian.Infrastructure.CppTrader

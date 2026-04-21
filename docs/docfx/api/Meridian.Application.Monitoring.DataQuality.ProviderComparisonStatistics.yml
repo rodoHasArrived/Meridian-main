@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderComparisonStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 571
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 571
   assemblies:
   - Meridian.Application
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsTracked
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 572
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProvidersActive
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 573
   assemblies:
   - Meridian.Application
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDiscrepancies
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 574
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscrepanciesBySeverity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 575
   assemblies:
   - Meridian.Application
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscrepanciesByType
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 576
   assemblies:
   - Meridian.Application
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostDiscrepantProviderPairs
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 577
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
     startLine: 578
   assemblies:
   - Meridian.Application

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICliCommand
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanHandle
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
-    path: ../../src/Meridian.Application/Commands/ICliCommand.cs
+    path: src/Meridian.Application/Commands/ICliCommand.cs
     startLine: 18
   assemblies:
   - Meridian.Application

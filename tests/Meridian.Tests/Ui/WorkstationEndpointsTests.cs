@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
@@ -14,6 +15,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.ProviderSdk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -131,6 +133,72 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_KernelObservability_ShouldSurfaceActiveAndHistoricalAlertMetrics()
+    {
+        var observability = CreateRecoveredKernelObservability();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(observability);
+        });
+
+        var client = app.GetTestClient();
+
+        using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
+        dataOperations.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric =>
+                metric.GetProperty("id").GetString() == "kernel-critical-jumps" &&
+                metric.GetProperty("value").GetString() == "0" &&
+                metric.GetProperty("delta").GetString() == "1 total" &&
+                metric.GetProperty("tone").GetString() == "success");
+
+        var dataOpsKernel = dataOperations.RootElement.GetProperty("kernelObservability");
+        dataOpsKernel.GetProperty("activeAlerts").GetInt32().Should().Be(0);
+        dataOpsKernel.GetProperty("totalAlerts").GetInt32().Should().Be(1);
+        dataOpsKernel.GetProperty("alerts").GetInt32().Should().Be(1);
+        dataOpsKernel.GetProperty("determinismChecksEnabled").GetBoolean().Should().BeTrue();
+        dataOpsKernel.GetProperty("domains").GetArrayLength().Should().Be(1);
+
+        var domain = dataOpsKernel.GetProperty("domains")[0];
+        domain.GetProperty("domain").GetString().Should().Be(nameof(ProviderCapabilityKind.HistoricalBars));
+        domain.GetProperty("throughputPerMinute").GetDouble().Should().BeGreaterThan(0);
+        domain.GetProperty("latencyMs").GetProperty("p95").GetDouble()
+            .Should()
+            .BeGreaterThanOrEqualTo(domain.GetProperty("latencyMs").GetProperty("p50").GetDouble());
+        domain.GetProperty("drift").GetProperty("methodology").GetString().Should().Be("totalVariationDistance");
+        domain.GetProperty("lastUpdatedUtc").ValueKind.Should().Be(JsonValueKind.String);
+
+        var criticalSeverityRate = domain.GetProperty("criticalSeverityRate");
+        criticalSeverityRate.GetProperty("jumpAlertActive").GetBoolean().Should().BeFalse();
+        criticalSeverityRate.GetProperty("jumpAlertCount").GetInt32().Should().Be(1);
+        criticalSeverityRate.GetProperty("shortWindowSamples").GetInt32().Should().Be(30);
+        criticalSeverityRate.GetProperty("longWindowSamples").GetInt32().Should().Be(90);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("minimumSampleCount").GetInt32().Should().Be(20);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("minimumShortRate").GetDouble().Should().Be(0.25);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("zeroBaselineShortRate").GetDouble().Should().Be(0.35);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("relativeMultiplier").GetDouble().Should().Be(2.0);
+        criticalSeverityRate.GetProperty("alertThresholds").GetProperty("absoluteIncrease").GetDouble().Should().Be(0.15);
+
+        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
+        governance.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric =>
+                metric.GetProperty("id").GetString() == "kernel-critical-jumps" &&
+                metric.GetProperty("value").GetString() == "0" &&
+                metric.GetProperty("tone").GetString() == "success");
+
+        var governanceKernel = governance.RootElement.GetProperty("kernelObservability");
+        governanceKernel.GetProperty("activeAlerts").GetInt32().Should().Be(0);
+        governanceKernel.GetProperty("totalAlerts").GetInt32().Should().Be(1);
+        governanceKernel.GetProperty("domains")[0]
+            .GetProperty("criticalSeverityRate")
+            .GetProperty("jumpAlertCount")
+            .GetInt32()
+            .Should()
+            .Be(1);
     }
 
     [Fact]
@@ -1001,6 +1069,122 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
+    }
+
+    private static KernelObservabilityService CreateRecoveredKernelObservability()
+    {
+        var observability = new KernelObservabilityService();
+
+        for (var index = 0; index < 30; index++)
+        {
+            var context = new ProviderRouteContext(
+                ProviderCapabilityKind.HistoricalBars,
+                Workspace: "data-ops",
+                Symbol: $"baseline-{index}");
+            RecordKernelObservation(
+                observability,
+                context,
+                BuildKernelSuccessResult(context, "route-steady", ["healthy-route"]),
+                score: 96);
+        }
+
+        for (var index = 0; index < 30; index++)
+        {
+            var context = new ProviderRouteContext(
+                ProviderCapabilityKind.HistoricalBars,
+                Workspace: "data-ops",
+                Symbol: $"critical-{index}");
+            RecordKernelObservation(
+                observability,
+                context,
+                BuildKernelCriticalResult(context, "route-review", ["manual-review"]),
+                score: 12);
+        }
+
+        for (var index = 0; index < 30; index++)
+        {
+            var context = new ProviderRouteContext(
+                ProviderCapabilityKind.HistoricalBars,
+                Workspace: "data-ops",
+                Symbol: $"recovery-{index}");
+            RecordKernelObservation(
+                observability,
+                context,
+                BuildKernelSuccessResult(context, "route-steady", ["healthy-route"]),
+                score: 97);
+        }
+
+        return observability;
+    }
+
+    private static void RecordKernelObservation(
+        KernelObservabilityService observability,
+        ProviderRouteContext context,
+        ProviderRouteResult result,
+        double score)
+    {
+        var scope = observability.BeginExecution(context);
+        var healthByConnection = result.SelectedDecision is null
+            ? new Dictionary<string, ProviderConnectionHealthSnapshot>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, ProviderConnectionHealthSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [result.SelectedDecision.ConnectionId] = new(
+                    result.SelectedDecision.ConnectionId,
+                    result.SelectedDecision.ProviderFamilyId,
+                    result.SelectedDecision.IsHealthy,
+                    result.SelectedDecision.IsHealthy ? "healthy" : "degraded",
+                    score,
+                    DateTimeOffset.UtcNow)
+            };
+
+        observability.RecordResult(context, result, healthByConnection, scope);
+    }
+
+    private static ProviderRouteResult BuildKernelSuccessResult(
+        ProviderRouteContext context,
+        string connectionId,
+        IReadOnlyList<string>? reasonCodes = null)
+    {
+        var selected = new ProviderRouteDecision(
+            connectionId,
+            "alpha",
+            context.Capability,
+            ProviderSafetyMode.HealthAwareFailover,
+            ScopeRank: 0,
+            Priority: 0,
+            IsHealthy: true,
+            ReasonCodes: reasonCodes ?? [],
+            FallbackConnectionIds: []);
+
+        return new ProviderRouteResult(
+            context,
+            selected,
+            Candidates: [selected],
+            SkippedCandidates: []);
+    }
+
+    private static ProviderRouteResult BuildKernelCriticalResult(
+        ProviderRouteContext context,
+        string connectionId,
+        IReadOnlyList<string>? reasonCodes = null)
+    {
+        var selected = new ProviderRouteDecision(
+            connectionId,
+            "beta",
+            context.Capability,
+            ProviderSafetyMode.ManualApprovalRequired,
+            ScopeRank: 0,
+            Priority: 0,
+            IsHealthy: true,
+            ReasonCodes: reasonCodes ?? [],
+            FallbackConnectionIds: []);
+
+        return new ProviderRouteResult(
+            context,
+            selected,
+            Candidates: [selected],
+            SkippedCandidates: [],
+            RequiresManualApproval: true);
     }
 
     private static string CamelCase(string propertyName) => JsonNamingPolicy.CamelCase.ConvertName(propertyName);

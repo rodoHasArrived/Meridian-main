@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventPreviewResponse
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 391
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Events
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 393
   assemblies:
   - Meridian.Ui.Services
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
-    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    path: src/Meridian.Ui.Services/Services/EventReplayService.cs
     startLine: 394
   assemblies:
   - Meridian.Ui.Services

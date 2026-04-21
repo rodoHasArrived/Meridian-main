@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
@@ -31,6 +32,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ISecurityMasterImportService _importService;
     private readonly ISecurityMasterRuntimeStatus _securityMasterRuntimeStatus;
     private readonly WpfServices.ISecurityMasterOperatorWorkflowClient _workflowClient;
+    private readonly WpfServices.IWorkstationSecurityMasterApiClient _workstationSecurityMasterApiClient;
+    private readonly WpfServices.FundContextService _fundContextService;
     private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
@@ -44,6 +47,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
     public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
     public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups { get; } = new();
+    public ObservableCollection<SecurityMasterSourceCandidateDto> ProvenanceCandidates { get; } = new();
+    public ObservableCollection<SecurityMasterConflict> FilteredConflicts { get; } = new();
+    public ObservableCollection<SecurityMasterRecommendedActionDto> RecommendedActions { get; } = new();
+    public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks { get; } = new();
 
     /// <summary>
     /// Static list of corporate action types available for recording.
@@ -450,8 +457,169 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private TradingParametersDto? _selectedTradingParameters;
     private SecurityMasterEventEnvelope? _latestHistoryEvent;
     private readonly Dictionary<Guid, SecurityConflictSecurityContext> _conflictSecurityContextCache = new();
+    private readonly Dictionary<Guid, SecurityMasterConflictAssessmentDto> _conflictAssessmentById = new();
     private bool _suppressConflictLaneSelectionSync;
     private bool _suppressConflictDrivenSelectionLoad;
+
+    private SecurityMasterTrustSnapshotDto? _selectedTrustSnapshot;
+    public SecurityMasterTrustSnapshotDto? SelectedTrustSnapshot
+    {
+        get => _selectedTrustSnapshot;
+        private set => SetProperty(ref _selectedTrustSnapshot, value);
+    }
+
+    private bool _isTrustSnapshotLoading;
+    public bool IsTrustSnapshotLoading
+    {
+        get => _isTrustSnapshotLoading;
+        private set => SetProperty(ref _isTrustSnapshotLoading, value);
+    }
+
+    private bool _showOnlySelectedSecurityConflicts = true;
+    public bool ShowOnlySelectedSecurityConflicts
+    {
+        get => _showOnlySelectedSecurityConflicts;
+        set
+        {
+            if (SetProperty(ref _showOnlySelectedSecurityConflicts, value))
+            {
+                RebuildFilteredConflicts();
+            }
+        }
+    }
+
+    private bool _showHighImpactConflictsOnly;
+    public bool ShowHighImpactConflictsOnly
+    {
+        get => _showHighImpactConflictsOnly;
+        set
+        {
+            if (SetProperty(ref _showHighImpactConflictsOnly, value))
+            {
+                RebuildFilteredConflicts();
+            }
+        }
+    }
+
+    private bool _showBulkEligibleConflictsOnly;
+    public bool ShowBulkEligibleConflictsOnly
+    {
+        get => _showBulkEligibleConflictsOnly;
+        set
+        {
+            if (SetProperty(ref _showBulkEligibleConflictsOnly, value))
+            {
+                RebuildFilteredConflicts();
+            }
+        }
+    }
+
+    private string _trustScoreText = "Trust score unavailable.";
+    public string TrustScoreText
+    {
+        get => _trustScoreText;
+        private set => SetProperty(ref _trustScoreText, value);
+    }
+
+    private string _trustSummaryText = "Select a security to review trust posture.";
+    public string TrustSummaryText
+    {
+        get => _trustSummaryText;
+        private set => SetProperty(ref _trustSummaryText, value);
+    }
+
+    private string _goldenCopySourceText = "No golden copy selected.";
+    public string GoldenCopySourceText
+    {
+        get => _goldenCopySourceText;
+        private set => SetProperty(ref _goldenCopySourceText, value);
+    }
+
+    private string _goldenCopyRuleText = "Preserve winner unless the current winner is blank or equivalent.";
+    public string GoldenCopyRuleText
+    {
+        get => _goldenCopyRuleText;
+        private set => SetProperty(ref _goldenCopyRuleText, value);
+    }
+
+    private string _tradingParametersStatusText = "Trading parameter posture appears after selection.";
+    public string TradingParametersStatusText
+    {
+        get => _tradingParametersStatusText;
+        private set => SetProperty(ref _tradingParametersStatusText, value);
+    }
+
+    private string _provenanceSummaryText = "Winning-source provenance appears after selection.";
+    public string ProvenanceSummaryText
+    {
+        get => _provenanceSummaryText;
+        private set => SetProperty(ref _provenanceSummaryText, value);
+    }
+
+    private string _downstreamImpactSummaryText = "Downstream impact appears after selection.";
+    public string DownstreamImpactSummaryText
+    {
+        get => _downstreamImpactSummaryText;
+        private set => SetProperty(ref _downstreamImpactSummaryText, value);
+    }
+
+    private string _conflictFilterSummaryText = "Conflict filter summary unavailable.";
+    public string ConflictFilterSummaryText
+    {
+        get => _conflictFilterSummaryText;
+        private set => SetProperty(ref _conflictFilterSummaryText, value);
+    }
+
+    private string _selectedConflictRecommendedActionText = "Select a conflict to see the recommended action.";
+    public string SelectedConflictRecommendedActionText
+    {
+        get => _selectedConflictRecommendedActionText;
+        private set => SetProperty(ref _selectedConflictRecommendedActionText, value);
+    }
+
+    private string _selectedConflictWinnerText = "Select a conflict to compare the current winner.";
+    public string SelectedConflictWinnerText
+    {
+        get => _selectedConflictWinnerText;
+        private set => SetProperty(ref _selectedConflictWinnerText, value);
+    }
+
+    private string _selectedConflictImpactText = "Select a conflict to review downstream impact.";
+
+    private string _corporateActionReadinessText = "Corporate-action readiness appears after selection.";
+    public string CorporateActionReadinessText
+    {
+        get => _corporateActionReadinessText;
+        private set => SetProperty(ref _corporateActionReadinessText, value);
+    }
+
+    private string _corporateActionImpactSummaryText = "Corporate-action impact appears after selection.";
+    public string CorporateActionImpactSummaryText
+    {
+        get => _corporateActionImpactSummaryText;
+        private set => SetProperty(ref _corporateActionImpactSummaryText, value);
+    }
+
+    private string _bulkPreviewSummaryText = "Preview low-risk bulk resolutions to inspect scope.";
+    public string BulkPreviewSummaryText
+    {
+        get => _bulkPreviewSummaryText;
+        private set => SetProperty(ref _bulkPreviewSummaryText, value);
+    }
+
+    private bool _canApplyRecommendedConflictResolution;
+    public bool CanApplyRecommendedConflictResolution
+    {
+        get => _canApplyRecommendedConflictResolution;
+        private set => SetProperty(ref _canApplyRecommendedConflictResolution, value);
+    }
+
+    private bool _canApplyBulkRecommendedResolutions;
+    public bool CanApplyBulkRecommendedResolutions
+    {
+        get => _canApplyBulkRecommendedResolutions;
+        private set => SetProperty(ref _canApplyBulkRecommendedResolutions, value);
+    }
 
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
@@ -515,6 +683,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
+            if (SelectedTrustSnapshot is not null)
+            {
+                return TrustSummaryText;
+            }
+
             if (SelectedSecurity is null)
             {
                 return "Select a security to determine whether the definition is ready for downstream use.";
@@ -542,6 +715,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
+            if (SelectedTrustSnapshot is not null)
+            {
+                return ProvenanceSummaryText;
+            }
+
             if (SelectedSecurity is null)
             {
                 return "Identifier provenance appears after a security is selected.";
@@ -577,6 +755,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
+            if (SelectedTrustSnapshot is not null)
+            {
+                return TradingParametersStatusText;
+            }
+
             if (SelectedSecurity is null)
             {
                 return "Trading readiness appears after a security is selected.";
@@ -594,11 +777,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    public string CorporateActionSummaryText => SelectedSecurity is null
-        ? "Corporate action timeline appears after a security is selected."
-        : CorporateActions.Count == 0
-            ? "No corporate actions recorded for the selected security."
-            : $"{CorporateActions.Count} corporate action(s) loaded for the selected security.";
+    public string CorporateActionSummaryText => SelectedTrustSnapshot is not null
+        ? CorporateActionImpactSummaryText
+        : SelectedSecurity is null
+            ? "Corporate action timeline appears after a security is selected."
+            : CorporateActions.Count == 0
+                ? "No corporate actions recorded for the selected security."
+                : $"{CorporateActions.Count} corporate action(s) loaded for the selected security.";
 
     public string LatestHistoryEventText
     {
@@ -641,7 +826,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectedConflictConfidenceText => SelectedConflictEntry?.ConfidenceLabel ?? "Confidence hints appear after a conflict is selected.";
 
-    public string SelectedConflictImpactText => SelectedConflictEntry?.ImpactDetail ?? "Downstream impact appears after a conflict is selected.";
+    public string SelectedConflictImpactText
+        => !string.IsNullOrWhiteSpace(_selectedConflictImpactText)
+            ? _selectedConflictImpactText
+            : SelectedConflictEntry?.ImpactDetail ?? "Downstream impact appears after a conflict is selected.";
 
     public string SelectedConflictAutoResolveText => SelectedConflictEntry?.AutoResolveHint ?? "Auto-resolve guidance appears after a conflict is selected.";
 
@@ -701,7 +889,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public bool ShowReportPackAction => GetActiveConflictContextEntry()?.RoutesToReportPack == true;
 
-    public bool ShowBackfillTradingParamsAction => GetMissingTradingParameterFields().Count > 0;
+    public bool ShowBackfillTradingParamsAction =>
+        GetMissingTradingParameterFields().Count > 0 ||
+        GetActiveConflictContextEntry()?.RequiresTradingBackfill == true;
 
     public bool ShowAnyDownstreamAction =>
         ShowFundReviewActions ||
@@ -709,6 +899,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ShowCashFlowAction ||
         ShowReportPackAction ||
         ShowBackfillTradingParamsAction;
+
+    public bool HasPortfolioImpactLink => HasActiveImpactLink("portfolio");
+
+    public bool HasLedgerImpactLink => HasActiveImpactLink("ledger");
+
+    public bool HasReconciliationImpactLink => HasActiveImpactLink("reconciliation");
+
+    public bool HasReportPackImpactLink => HasActiveImpactLink("reportPack");
 
     // ── Commands ────────────────────────────────────────────────────────────
     public IRelayCommand CreateNewCommand { get; }
@@ -723,14 +921,24 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IRelayCommand CloseImportResultCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
     public IAsyncRelayCommand RefreshWorkflowCommand { get; }
+    public IAsyncRelayCommand RefreshSelectedTrustSnapshotCommand { get; }
     public IAsyncRelayCommand AcceptPrimaryConflictCommand { get; }
     public IAsyncRelayCommand AcceptSecondaryConflictCommand { get; }
     public IAsyncRelayCommand DismissConflictCommand { get; }
+    public IAsyncRelayCommand ApplyRecommendedConflictResolutionCommand { get; }
+    public IRelayCommand ResetConflictFiltersCommand { get; }
+    public IRelayCommand PreviewBulkRecommendedResolutionsCommand { get; }
+    public IAsyncRelayCommand ApplyBulkRecommendedResolutionsCommand { get; }
     public IRelayCommand OpenFundPortfolioCommand { get; }
     public IRelayCommand OpenFundLedgerCommand { get; }
     public IRelayCommand OpenFundReconciliationCommand { get; }
     public IRelayCommand OpenFundCashFlowCommand { get; }
     public IRelayCommand OpenFundReportPackCommand { get; }
+    public IRelayCommand OpenSelectedSecurityPortfolioImpactCommand { get; }
+    public IRelayCommand OpenSelectedSecurityLedgerImpactCommand { get; }
+    public IRelayCommand OpenSelectedSecurityReconciliationImpactCommand { get; }
+    public IRelayCommand OpenSelectedSecurityReportPackImpactCommand { get; }
+    public IRelayCommand CopySelectedIdentifierCommand { get; }
 
     // ── Conflict badge ───────────────────────────────────────────────────────
     private int _openConflictCount;
@@ -763,6 +971,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ISecurityMasterImportService importService,
         ISecurityMasterRuntimeStatus securityMasterRuntimeStatus,
         WpfServices.ISecurityMasterOperatorWorkflowClient workflowClient,
+        WpfServices.IWorkstationSecurityMasterApiClient workstationSecurityMasterApiClient,
+        WpfServices.FundContextService fundContextService,
         WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
         ISmService service)
@@ -773,6 +983,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _importService = importService;
         _securityMasterRuntimeStatus = securityMasterRuntimeStatus ?? throw new ArgumentNullException(nameof(securityMasterRuntimeStatus));
         _workflowClient = workflowClient ?? throw new ArgumentNullException(nameof(workflowClient));
+        _workstationSecurityMasterApiClient = workstationSecurityMasterApiClient ?? throw new ArgumentNullException(nameof(workstationSecurityMasterApiClient));
+        _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
@@ -790,19 +1002,49 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
         RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
+        RefreshSelectedTrustSnapshotCommand = new AsyncRelayCommand(
+            ct => HasSelectedSecurity && SelectedSecurity is not null
+                ? LoadSelectedTrustSnapshotAsync(SelectedSecurity.SecurityId, ct)
+                : Task.CompletedTask,
+            () => HasSelectedSecurity && !IsTrustSnapshotLoading);
         AcceptPrimaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptA", ct), () => CanResolveSelectedConflict);
         AcceptSecondaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptB", ct), () => CanResolveSelectedConflict);
         DismissConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("Dismiss", ct), () => CanResolveSelectedConflict);
+        ApplyRecommendedConflictResolutionCommand = new AsyncRelayCommand(
+            ApplyRecommendedConflictResolutionAsync,
+            () => CanApplyRecommendedConflictResolution);
+        ResetConflictFiltersCommand = new RelayCommand(ResetConflictFilters);
+        PreviewBulkRecommendedResolutionsCommand = new RelayCommand(PreviewBulkRecommendedResolutions);
+        ApplyBulkRecommendedResolutionsCommand = new AsyncRelayCommand(
+            ApplyBulkRecommendedResolutionsAsync,
+            () => CanApplyBulkRecommendedResolutions);
         OpenFundPortfolioCommand = new RelayCommand(() => _navigationService.NavigateTo("FundPortfolio"));
         OpenFundLedgerCommand = new RelayCommand(() => _navigationService.NavigateTo("FundLedger"));
         OpenFundReconciliationCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReconciliation"));
         OpenFundCashFlowCommand = new RelayCommand(() => _navigationService.NavigateTo("FundCashFinancing"));
         OpenFundReportPackCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReportPack"));
+        OpenSelectedSecurityPortfolioImpactCommand = new RelayCommand(
+            () => NavigateToFundOperations("FundPortfolio", FundOperationsTab.Portfolio),
+            () => HasActiveImpactLink("portfolio"));
+        OpenSelectedSecurityLedgerImpactCommand = new RelayCommand(
+            () => NavigateToFundOperations("FundLedger", FundOperationsTab.Journal),
+            () => HasActiveImpactLink("ledger"));
+        OpenSelectedSecurityReconciliationImpactCommand = new RelayCommand(
+            () => NavigateToFundOperations("FundReconciliation", FundOperationsTab.Reconciliation),
+            () => HasActiveImpactLink("reconciliation"));
+        OpenSelectedSecurityReportPackImpactCommand = new RelayCommand(
+            () => NavigateToFundOperations("FundReportPack", FundOperationsTab.ReportPack),
+            () => HasActiveImpactLink("reportPack"));
+        CopySelectedIdentifierCommand = new RelayCommand(CopySelectedIdentifier, () => !string.IsNullOrWhiteSpace(SelectedIdentifier));
 
         Results.CollectionChanged += (_, _) => RaiseSearchDerivedStateChanged();
         CorporateActions.CollectionChanged += (_, _) => RaiseSelectionDerivedStateChanged();
         OpenConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
         ConflictGroups.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
+        ProvenanceCandidates.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ProvenanceSummaryText));
+        FilteredConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
+        RecommendedActions.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(RecommendedActions));
+        DownstreamImpactLinks.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DownstreamImpactLinks));
 
         StartWorkflowPolling();
     }
@@ -893,11 +1135,24 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
         RaisePropertyChanged(nameof(CorporateActionSummaryText));
         RaisePropertyChanged(nameof(LatestHistoryEventText));
+        RaisePropertyChanged(nameof(TrustScoreText));
+        RaisePropertyChanged(nameof(TrustSummaryText));
+        RaisePropertyChanged(nameof(GoldenCopySourceText));
+        RaisePropertyChanged(nameof(GoldenCopyRuleText));
+        RaisePropertyChanged(nameof(TradingParametersStatusText));
+        RaisePropertyChanged(nameof(ProvenanceSummaryText));
+        RaisePropertyChanged(nameof(DownstreamImpactSummaryText));
+        RaisePropertyChanged(nameof(CorporateActionReadinessText));
+        RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
         RaisePropertyChanged(nameof(ActionInspectorLeadText));
         RaisePropertyChanged(nameof(ActionInspectorDetailText));
         RaisePropertyChanged(nameof(ActionInspectorNoActionText));
         RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
         RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+        RaisePropertyChanged(nameof(HasPortfolioImpactLink));
+        RaisePropertyChanged(nameof(HasLedgerImpactLink));
+        RaisePropertyChanged(nameof(HasReconciliationImpactLink));
+        RaisePropertyChanged(nameof(HasReportPackImpactLink));
         AlignConflictLaneToSelectedSecurity();
         NotifySelectionCommandsChanged();
     }
@@ -908,6 +1163,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         DeactivateSelectedCommand.NotifyCanExecuteChanged();
         LoadCorporateActionsCommand.NotifyCanExecuteChanged();
         ShowRecordCorpActionCommand.NotifyCanExecuteChanged();
+        RefreshSelectedTrustSnapshotCommand.NotifyCanExecuteChanged();
+        CopySelectedIdentifierCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityPortfolioImpactCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityLedgerImpactCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityReconciliationImpactCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityReportPackImpactCommand.NotifyCanExecuteChanged();
     }
 
     private void NotifyConflictWorkflowCommandsChanged()
@@ -918,6 +1179,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         AcceptPrimaryConflictCommand.NotifyCanExecuteChanged();
         AcceptSecondaryConflictCommand.NotifyCanExecuteChanged();
         DismissConflictCommand.NotifyCanExecuteChanged();
+        ApplyRecommendedConflictResolutionCommand.NotifyCanExecuteChanged();
+        ApplyBulkRecommendedResolutionsCommand.NotifyCanExecuteChanged();
     }
 
     private void RaiseConflictDerivedStateChanged()
@@ -934,6 +1197,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(SelectedConflictImpactText));
         RaisePropertyChanged(nameof(SelectedConflictAutoResolveText));
         RaisePropertyChanged(nameof(SelectedConflictDetectedText));
+        RaisePropertyChanged(nameof(ConflictFilterSummaryText));
+        RaisePropertyChanged(nameof(SelectedConflictRecommendedActionText));
+        RaisePropertyChanged(nameof(SelectedConflictWinnerText));
+        RaisePropertyChanged(nameof(BulkPreviewSummaryText));
+        RaisePropertyChanged(nameof(CanApplyRecommendedConflictResolution));
+        RaisePropertyChanged(nameof(CanApplyBulkRecommendedResolutions));
         RaisePropertyChanged(nameof(AcceptPrimaryConflictLabel));
         RaisePropertyChanged(nameof(AcceptSecondaryConflictLabel));
         RaisePropertyChanged(nameof(SelectedSecurityConflictSummaryText));
@@ -945,23 +1214,68 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(ShowReconciliationAction));
         RaisePropertyChanged(nameof(ShowCashFlowAction));
         RaisePropertyChanged(nameof(ShowReportPackAction));
+        RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
         RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+        RaisePropertyChanged(nameof(HasPortfolioImpactLink));
+        RaisePropertyChanged(nameof(HasLedgerImpactLink));
+        RaisePropertyChanged(nameof(HasReconciliationImpactLink));
+        RaisePropertyChanged(nameof(HasReportPackImpactLink));
     }
 
     private void ClearSelectedSecurityAssuranceState()
     {
+        SelectedTrustSnapshot = null;
         _selectedEconomicDefinition = null;
         _selectedTradingParameters = null;
         _latestHistoryEvent = null;
+        _conflictAssessmentById.Clear();
+        ProvenanceCandidates.Clear();
+        FilteredConflicts.Clear();
+        RecommendedActions.Clear();
+        DownstreamImpactLinks.Clear();
+        TrustScoreText = "Trust score unavailable.";
+        TrustSummaryText = "Select a security to review trust posture.";
+        GoldenCopySourceText = "No golden copy selected.";
+        GoldenCopyRuleText = "Preserve winner unless the current winner is blank or equivalent.";
+        TradingParametersStatusText = "Trading parameter posture appears after selection.";
+        ProvenanceSummaryText = "Winning-source provenance appears after selection.";
+        DownstreamImpactSummaryText = "Downstream impact appears after selection.";
+        ConflictFilterSummaryText = "Conflict filter summary unavailable.";
+        SelectedConflictRecommendedActionText = "Select a conflict to see the recommended action.";
+        SelectedConflictWinnerText = "Select a conflict to compare the current winner.";
+        _selectedConflictImpactText = "Select a conflict to review downstream impact.";
+        CorporateActionReadinessText = "Corporate-action readiness appears after selection.";
+        CorporateActionImpactSummaryText = "Corporate-action impact appears after selection.";
+        BulkPreviewSummaryText = "Preview low-risk bulk resolutions to inspect scope.";
+        CanApplyRecommendedConflictResolution = false;
+        CanApplyBulkRecommendedResolutions = false;
 
         RaisePropertyChanged(nameof(SelectedTrustPostureText));
         RaisePropertyChanged(nameof(SelectedProvenanceText));
         RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
         RaisePropertyChanged(nameof(LatestHistoryEventText));
+        RaisePropertyChanged(nameof(TrustScoreText));
+        RaisePropertyChanged(nameof(TrustSummaryText));
+        RaisePropertyChanged(nameof(GoldenCopySourceText));
+        RaisePropertyChanged(nameof(GoldenCopyRuleText));
+        RaisePropertyChanged(nameof(TradingParametersStatusText));
+        RaisePropertyChanged(nameof(ProvenanceSummaryText));
+        RaisePropertyChanged(nameof(DownstreamImpactSummaryText));
+        RaisePropertyChanged(nameof(ConflictFilterSummaryText));
+        RaisePropertyChanged(nameof(SelectedConflictRecommendedActionText));
+        RaisePropertyChanged(nameof(SelectedConflictWinnerText));
+        RaisePropertyChanged(nameof(SelectedConflictImpactText));
+        RaisePropertyChanged(nameof(CorporateActionReadinessText));
+        RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
+        RaisePropertyChanged(nameof(BulkPreviewSummaryText));
         RaisePropertyChanged(nameof(ActionInspectorLeadText));
         RaisePropertyChanged(nameof(ActionInspectorDetailText));
         RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
         RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+        RaisePropertyChanged(nameof(HasPortfolioImpactLink));
+        RaisePropertyChanged(nameof(HasLedgerImpactLink));
+        RaisePropertyChanged(nameof(HasReconciliationImpactLink));
+        RaisePropertyChanged(nameof(HasReportPackImpactLink));
     }
 
     private void AlignConflictLaneToSelectedSecurity()
@@ -1201,13 +1515,17 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 .GetAsync<SecurityMasterWorkstationDto>($"/api/workstation/security-master/securities/{securityId}", ct);
             var historyTask = ApiClientService.Instance
                 .GetAsync<SecurityMasterEventEnvelope[]>($"/api/workstation/security-master/securities/{securityId}/history?take=20", ct);
-            var economicDefinitionTask = _queryService.GetEconomicDefinitionByIdAsync(securityId, ct);
-            var tradingParametersTask = _queryService.GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct);
+            var economicDefinitionTask = _queryService.GetEconomicDefinitionByIdAsync(securityId, ct)
+                ?? Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+            var tradingParametersTask = _queryService.GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct)
+                ?? Task.FromResult<TradingParametersDto?>(null);
 
             await Task.WhenAll(detailTask, historyTask, economicDefinitionTask, tradingParametersTask).ConfigureAwait(false);
 
             var detail = await detailTask;
-            var history = (await historyTask).OrderByDescending(item => item.EventTimestamp).ToArray();
+            var history = ((await historyTask) ?? [])
+                .OrderByDescending(item => item.EventTimestamp)
+                .ToArray();
             var economicDefinition = await economicDefinitionTask;
             var tradingParameters = await tradingParametersTask;
 
@@ -1298,7 +1616,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var actions = await _queryService.GetCorporateActionsAsync(id, ct)
+            var actions = await (_queryService.GetCorporateActionsAsync(id, ct)
+                    ?? Task.FromResult<IReadOnlyList<CorporateActionDto>>([]))
                 .ConfigureAwait(false);
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
@@ -1462,29 +1781,34 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 _suppressConflictLaneSelectionSync = true;
                 _suppressConflictDrivenSelectionLoad = true;
 
-                OpenConflictCount = conflicts.Length;
-                OpenConflicts.Clear();
-                foreach (var conflict in conflicts)
+                try
                 {
-                    OpenConflicts.Add(conflict);
+                    OpenConflictCount = conflicts.Length;
+                    OpenConflicts.Clear();
+                    foreach (var conflict in conflicts)
+                    {
+                        OpenConflicts.Add(conflict);
+                    }
+
+                    RebuildConflictLaneGroups();
+
+                    var selectedGroup = ConflictGroups.FirstOrDefault(group =>
+                            previousSelectedGroupSecurityId.HasValue && group.SecurityId == previousSelectedGroupSecurityId.Value)
+                        ?? ConflictGroups.FirstOrDefault(group =>
+                            preferredSecurityId.HasValue && group.SecurityId == preferredSecurityId.Value)
+                        ?? ConflictGroups.FirstOrDefault();
+
+                    SelectedConflictGroup = selectedGroup;
+                    SelectedConflictEntry = selectedGroup?.Conflicts.FirstOrDefault(entry =>
+                            previousSelectedConflictId.HasValue && entry.Conflict.ConflictId == previousSelectedConflictId.Value)
+                        ?? selectedGroup?.Conflicts.FirstOrDefault();
+                    SelectedConflict = SelectedConflictEntry?.Conflict;
                 }
-
-                RebuildConflictLaneGroups();
-
-                var selectedGroup = ConflictGroups.FirstOrDefault(group =>
-                        previousSelectedGroupSecurityId.HasValue && group.SecurityId == previousSelectedGroupSecurityId.Value)
-                    ?? ConflictGroups.FirstOrDefault(group =>
-                        preferredSecurityId.HasValue && group.SecurityId == preferredSecurityId.Value)
-                    ?? ConflictGroups.FirstOrDefault();
-
-                SelectedConflictGroup = selectedGroup;
-                SelectedConflictEntry = selectedGroup?.Conflicts.FirstOrDefault(entry =>
-                        previousSelectedConflictId.HasValue && entry.Conflict.ConflictId == previousSelectedConflictId.Value)
-                    ?? selectedGroup?.Conflicts.FirstOrDefault();
-                SelectedConflict = SelectedConflictEntry?.Conflict;
-
-                _suppressConflictLaneSelectionSync = false;
-                _suppressConflictDrivenSelectionLoad = false;
+                finally
+                {
+                    _suppressConflictLaneSelectionSync = false;
+                    _suppressConflictDrivenSelectionLoad = false;
+                }
 
                 if (SelectedSecurity is not null)
                 {
@@ -1539,6 +1863,495 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         WorkflowStatusText = "No ingest activity has been recorded yet.";
         ImportSessionSummary = "No Security Master ingest has completed yet.";
+    }
+
+    private async Task PrimeConflictSecurityContextCacheAsync(IReadOnlyList<SecurityMasterConflict> conflicts, CancellationToken ct)
+    {
+        if (SelectedSecurity is not null)
+        {
+            _conflictSecurityContextCache[SelectedSecurity.SecurityId] = ToSecurityContext(SelectedSecurity);
+        }
+
+        var missingSecurityIds = conflicts
+            .Select(conflict => conflict.SecurityId)
+            .Distinct()
+            .Where(securityId => !_conflictSecurityContextCache.ContainsKey(securityId))
+            .ToArray();
+        if (missingSecurityIds.Length == 0)
+        {
+            return;
+        }
+
+        var lookupTasks = new List<Task<KeyValuePair<Guid, SecurityConflictSecurityContext>?>>(missingSecurityIds.Length);
+        foreach (var securityId in missingSecurityIds)
+        {
+            lookupTasks.Add(LoadConflictSecurityContextAsync(securityId, ct));
+        }
+
+        var lookups = await Task.WhenAll(lookupTasks).ConfigureAwait(false);
+        foreach (var lookup in lookups)
+        {
+            if (lookup.HasValue)
+            {
+                _conflictSecurityContextCache[lookup.Value.Key] = lookup.Value.Value;
+            }
+        }
+    }
+
+    private async Task<KeyValuePair<Guid, SecurityConflictSecurityContext>?> LoadConflictSecurityContextAsync(
+        Guid securityId,
+        CancellationToken ct)
+    {
+        try
+        {
+            var detailTask = _queryService.GetByIdAsync(securityId, ct);
+            if (detailTask is null)
+            {
+                return null;
+            }
+
+            var detail = await detailTask.ConfigureAwait(false);
+            return detail is null
+                ? null
+                : new KeyValuePair<Guid, SecurityConflictSecurityContext>(securityId, ToSecurityContext(detail));
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void RebuildConflictLaneGroups()
+    {
+        var groups = OpenConflicts
+            .GroupBy(conflict => conflict.SecurityId)
+            .Select(group =>
+            {
+                var context = GetConflictSecurityContext(group.Key);
+                var entries = group
+                    .Select(conflict => BuildConflictLaneEntry(conflict, context))
+                    .OrderByDescending(entry => entry.SeverityRank)
+                    .ThenBy(entry => entry.Conflict.DetectedAt)
+                    .ToArray();
+                var highestSeverity = entries.FirstOrDefault();
+                var groupSummary = BuildConflictGroupSummary(entries);
+
+                return new SecurityConflictLaneGroup(
+                    SecurityId: group.Key,
+                    SecurityLabel: context.DisplayName,
+                    SecurityIdentifier: context.PrimaryIdentifier,
+                    GroupSummary: groupSummary,
+                    HighestSeverityLabel: highestSeverity?.SeverityLabel ?? "Review",
+                    HighestSeverityTone: highestSeverity?.SeverityTone ?? "Info",
+                    SafeAutoResolveCount: entries.Count(entry => entry.IsAutoResolveSafe),
+                    Conflicts: entries);
+            })
+            .OrderByDescending(group => group.Conflicts.FirstOrDefault()?.SeverityRank ?? 0)
+            .ThenByDescending(group => group.ConflictCount)
+            .ThenBy(group => group.SecurityLabel, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        ConflictGroups.Clear();
+        foreach (var group in groups)
+        {
+            ConflictGroups.Add(group);
+        }
+    }
+
+    private SecurityConflictLaneEntry BuildConflictLaneEntry(
+        SecurityMasterConflict conflict,
+        SecurityConflictSecurityContext context)
+    {
+        var assessment = AssessConflict(conflict);
+
+        return new SecurityConflictLaneEntry(
+            Conflict: conflict,
+            SecurityLabel: context.DisplayName,
+            SecurityIdentifier: context.PrimaryIdentifier,
+            FieldLabel: FormatFieldLabel(conflict.FieldPath),
+            SeverityLabel: assessment.SeverityLabel,
+            SeverityTone: assessment.SeverityTone,
+            SeverityRank: assessment.SeverityRank,
+            ConfidenceLabel: assessment.ConfidenceLabel,
+            AutoResolveHint: assessment.AutoResolveHint,
+            ImpactSummary: assessment.ImpactSummary,
+            ImpactDetail: assessment.ImpactDetail,
+            NextStepSummary: assessment.NextStepSummary,
+            RoutesToFundReview: assessment.RoutesToFundReview,
+            RoutesToReconciliation: assessment.RoutesToReconciliation,
+            RoutesToCashFlow: assessment.RoutesToCashFlow,
+            RoutesToReportPack: assessment.RoutesToReportPack,
+            RequiresTradingBackfill: assessment.RequiresTradingBackfill,
+            IsAutoResolveSafe: assessment.IsAutoResolveSafe);
+    }
+
+    private SecurityConflictSecurityContext GetConflictSecurityContext(Guid securityId)
+    {
+        if (_conflictSecurityContextCache.TryGetValue(securityId, out var cachedContext))
+        {
+            return cachedContext;
+        }
+
+        if (SelectedSecurity?.SecurityId == securityId)
+        {
+            return ToSecurityContext(SelectedSecurity);
+        }
+
+        var shortId = securityId.ToString("N")[..8].ToUpperInvariant();
+        return new SecurityConflictSecurityContext(
+            DisplayName: $"Security {shortId}",
+            PrimaryIdentifier: $"SecurityId {shortId}",
+            AssetClass: "Unknown");
+    }
+
+    private SecurityConflictLaneEntry? GetActiveConflictContextEntry()
+    {
+        if (SelectedConflictEntry is not null)
+        {
+            return SelectedConflictEntry;
+        }
+
+        if (SelectedSecurity is not null)
+        {
+            return ConflictGroups
+                .FirstOrDefault(group => group.SecurityId == SelectedSecurity.SecurityId)?
+                .Conflicts
+                .FirstOrDefault();
+        }
+
+        return SelectedConflictGroup?.Conflicts.FirstOrDefault();
+    }
+
+    private int GetSelectedSecurityConflictCount()
+        => SelectedSecurity is null
+            ? 0
+            : OpenConflicts.Count(conflict => conflict.SecurityId == SelectedSecurity.SecurityId);
+
+    private IReadOnlyList<string> GetMissingTradingParameterFields()
+    {
+        if (SelectedSecurity is null)
+        {
+            return [];
+        }
+
+        var missingFields = new List<string>();
+        if (_selectedTradingParameters?.LotSize is null or <= 0)
+        {
+            missingFields.Add("lot size");
+        }
+
+        if (_selectedTradingParameters?.TickSize is null or <= 0)
+        {
+            missingFields.Add("tick size");
+        }
+
+        if (string.IsNullOrWhiteSpace(_selectedTradingParameters?.TradingHoursUtc))
+        {
+            missingFields.Add("trading hours");
+        }
+
+        if (RequiresContractMultiplier(SelectedAssetClass) &&
+            _selectedTradingParameters?.ContractMultiplier is null or <= 0)
+        {
+            missingFields.Add("contract multiplier");
+        }
+
+        return missingFields;
+    }
+
+    private static SecurityConflictSecurityContext ToSecurityContext(SecurityMasterWorkstationDto detail)
+        => new(
+            DisplayName: detail.DisplayName,
+            PrimaryIdentifier: string.IsNullOrWhiteSpace(detail.Classification.PrimaryIdentifierValue)
+                ? detail.SecurityId.ToString("N")[..8].ToUpperInvariant()
+                : $"{detail.Classification.PrimaryIdentifierKind}: {detail.Classification.PrimaryIdentifierValue}",
+            AssetClass: detail.Classification.AssetClass);
+
+    private static SecurityConflictSecurityContext ToSecurityContext(SecurityDetailDto detail)
+    {
+        var primaryIdentifier = detail.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
+        return new SecurityConflictSecurityContext(
+            DisplayName: detail.DisplayName,
+            PrimaryIdentifier: primaryIdentifier is null
+                ? detail.SecurityId.ToString("N")[..8].ToUpperInvariant()
+                : $"{primaryIdentifier.Kind}: {primaryIdentifier.Value}",
+            AssetClass: detail.AssetClass);
+    }
+
+    private static SecurityConflictAssessment AssessConflict(SecurityMasterConflict conflict)
+    {
+        var fieldKey = $"{conflict.FieldPath} {conflict.ConflictKind}".ToLowerInvariant();
+        var touchesIdentifier = fieldKey.Contains("identifier") || fieldKey.Contains("isin") || fieldKey.Contains("cusip") || fieldKey.Contains("figi") || fieldKey.Contains("ticker") || fieldKey.Contains("ric") || fieldKey.Contains("bbgid");
+        var touchesLifecycle = fieldKey.Contains("status") || fieldKey.Contains("effective") || fieldKey.Contains("lifecycle");
+        var touchesTradingParameters = fieldKey.Contains("tick") || fieldKey.Contains("lot") || fieldKey.Contains("margin") || fieldKey.Contains("multiplier") || fieldKey.Contains("tradinghour");
+        var touchesCorporateAction = fieldKey.Contains("dividend") || fieldKey.Contains("split") || fieldKey.Contains("rights") || fieldKey.Contains("distribution") || fieldKey.Contains("exdate") || fieldKey.Contains("paydate");
+        var touchesClassification = fieldKey.Contains("assetclass") || fieldKey.Contains("classification") || fieldKey.Contains("currency") || fieldKey.Contains("subtype") || fieldKey.Contains("issuer") || fieldKey.Contains("type");
+        var touchesDisplay = fieldKey.Contains("displayname") || fieldKey.Contains("name") || fieldKey.Contains("alias");
+
+        var normalizedValueA = NormalizeConflictValue(conflict.ValueA);
+        var normalizedValueB = NormalizeConflictValue(conflict.ValueB);
+        var sameAfterNormalization =
+            normalizedValueA.Length > 0 &&
+            normalizedValueA == normalizedValueB;
+        var oneSideMissing = string.IsNullOrWhiteSpace(conflict.ValueA) ^ string.IsNullOrWhiteSpace(conflict.ValueB);
+        var looksLikeMinorTypo = LooksLikeMinorTypo(normalizedValueA, normalizedValueB);
+
+        var routesToFundReview = true;
+        var routesToReconciliation = false;
+        var routesToCashFlow = false;
+        var routesToReportPack = false;
+        var requiresTradingBackfill = false;
+        var severityRank = 1;
+        var severityLabel = "Review";
+        var severityTone = "Info";
+        var impactDetail = "Review this mismatch before publishing the selected security into downstream governance workflows.";
+
+        if (touchesIdentifier || touchesLifecycle || touchesTradingParameters || fieldKey.Contains("currency"))
+        {
+            severityRank = 3;
+            severityLabel = "Critical";
+            severityTone = "Error";
+            routesToReconciliation = true;
+            routesToReportPack = true;
+            routesToCashFlow = touchesCorporateAction;
+            requiresTradingBackfill = touchesTradingParameters;
+            impactDetail = touchesTradingParameters
+                ? "Order validation, fill-price rounding, and execution readiness can drift until the authoritative trading parameters are restored."
+                : "Portfolio and ledger joins can resolve to the wrong instrument, leaving reconciliation and report-pack coverage open.";
+        }
+        else if (touchesCorporateAction || touchesClassification)
+        {
+            severityRank = 2;
+            severityLabel = "Elevated";
+            severityTone = "Warning";
+            routesToReconciliation = touchesCorporateAction || fieldKey.Contains("currency");
+            routesToCashFlow = touchesCorporateAction;
+            routesToReportPack = true;
+            impactDetail = touchesCorporateAction
+                ? "Cash-flow timing, holdings continuity, and report-pack timelines can drift until the corporate action definition is confirmed."
+                : "Classification, valuation context, and reporting labels can drift across fund review and report-pack workflows.";
+        }
+        else if (touchesDisplay)
+        {
+            routesToReportPack = true;
+            impactDetail = "Display-name and alias differences usually do not break joins, but they can leak inconsistent labels into review and reporting workflows.";
+        }
+
+        var confidenceLabel = "Manual review required";
+        var autoResolveHint = "No safe auto-resolve signal detected. Compare provenance and downstream impact before choosing a provider value.";
+        var isAutoResolveSafe = false;
+        if (sameAfterNormalization)
+        {
+            confidenceLabel = "High-confidence normalization match";
+            autoResolveHint = "Safe to auto-resolve after confirming provider precedence. The values differ only by casing, whitespace, or punctuation.";
+            isAutoResolveSafe = true;
+        }
+        else if (oneSideMissing)
+        {
+            confidenceLabel = "Medium-confidence populated value";
+            autoResolveHint = "One provider is blank. Keeping the populated side is often safe if provenance confirms that source is authoritative.";
+        }
+        else if (looksLikeMinorTypo)
+        {
+            confidenceLabel = "Low-confidence near match";
+            autoResolveHint = "Values are close but not equivalent. Treat this as a likely typo and verify against provenance before resolving.";
+        }
+
+        var impactSummary = BuildImpactLaneSummary(routesToFundReview, routesToReconciliation, routesToCashFlow, routesToReportPack);
+        var nextStepSummary = severityRank >= 3
+            ? $"Resolve this before {impactSummary}."
+            : $"Review this before {impactSummary}.";
+
+        return new SecurityConflictAssessment(
+            SeverityLabel: severityLabel,
+            SeverityTone: severityTone,
+            SeverityRank: severityRank,
+            ConfidenceLabel: confidenceLabel,
+            AutoResolveHint: autoResolveHint,
+            ImpactSummary: impactSummary,
+            ImpactDetail: impactDetail,
+            NextStepSummary: nextStepSummary,
+            RoutesToFundReview: routesToFundReview,
+            RoutesToReconciliation: routesToReconciliation,
+            RoutesToCashFlow: routesToCashFlow,
+            RoutesToReportPack: routesToReportPack,
+            RequiresTradingBackfill: requiresTradingBackfill,
+            IsAutoResolveSafe: isAutoResolveSafe);
+    }
+
+    private static string BuildConflictGroupSummary(IReadOnlyList<SecurityConflictLaneEntry> entries)
+    {
+        if (entries.Count == 0)
+        {
+            return "No open mismatches remain.";
+        }
+
+        var routesToFundReview = entries.Any(entry => entry.RoutesToFundReview);
+        var routesToReconciliation = entries.Any(entry => entry.RoutesToReconciliation);
+        var routesToCashFlow = entries.Any(entry => entry.RoutesToCashFlow);
+        var routesToReportPack = entries.Any(entry => entry.RoutesToReportPack);
+        var safeHints = entries.Count(entry => entry.IsAutoResolveSafe);
+        var routeSummary = BuildImpactLaneSummary(routesToFundReview, routesToReconciliation, routesToCashFlow, routesToReportPack);
+        var safeHintText = safeHints > 0
+            ? $" • {safeHints} safe normalization hint{(safeHints == 1 ? string.Empty : "s")}"
+            : string.Empty;
+
+        return $"{entries.Count} open mismatch{(entries.Count == 1 ? string.Empty : "es")} • {routeSummary}{safeHintText}";
+    }
+
+    private static string BuildImpactLaneSummary(
+        bool routesToFundReview,
+        bool routesToReconciliation,
+        bool routesToCashFlow,
+        bool routesToReportPack)
+    {
+        var lanes = new List<string>();
+        if (routesToFundReview)
+        {
+            lanes.Add("fund review");
+        }
+
+        if (routesToReconciliation)
+        {
+            lanes.Add("reconciliation");
+        }
+
+        if (routesToCashFlow)
+        {
+            lanes.Add("cash-flow review");
+        }
+
+        if (routesToReportPack)
+        {
+            lanes.Add("report pack");
+        }
+
+        return lanes.Count switch
+        {
+            0 => "manual review",
+            1 => lanes[0],
+            2 => $"{lanes[0]} and {lanes[1]}",
+            _ => $"{string.Join(", ", lanes.Take(lanes.Count - 1))}, and {lanes[^1]}"
+        };
+    }
+
+    private static string FormatFieldLabel(string fieldPath)
+    {
+        if (string.IsNullOrWhiteSpace(fieldPath))
+        {
+            return "Unknown field";
+        }
+
+        var normalized = fieldPath.Trim();
+        if (normalized.Contains("Identifiers.Primary", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Primary identifier";
+        }
+
+        if (normalized.Contains("DisplayName", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Display name";
+        }
+
+        if (normalized.Contains("Currency", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Currency";
+        }
+
+        return normalized.Replace(".", " > ", StringComparison.Ordinal);
+    }
+
+    private static bool RequiresContractMultiplier(string assetClass)
+        => assetClass.Contains("Option", StringComparison.OrdinalIgnoreCase) ||
+           assetClass.Contains("Future", StringComparison.OrdinalIgnoreCase) ||
+           assetClass.Contains("Derivative", StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeConflictValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return new string(value
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToUpperInvariant)
+            .ToArray());
+    }
+
+    private static bool LooksLikeMinorTypo(string valueA, string valueB)
+    {
+        if (string.IsNullOrWhiteSpace(valueA) || string.IsNullOrWhiteSpace(valueB))
+        {
+            return false;
+        }
+
+        if (Math.Abs(valueA.Length - valueB.Length) > 1)
+        {
+            return false;
+        }
+
+        if (valueA.Length == valueB.Length)
+        {
+            var differences = 0;
+            for (var index = 0; index < valueA.Length; index++)
+            {
+                if (valueA[index] != valueB[index] && ++differences > 2)
+                {
+                    return false;
+                }
+            }
+
+            return differences > 0;
+        }
+
+        var shorter = valueA.Length < valueB.Length ? valueA : valueB;
+        var longer = valueA.Length < valueB.Length ? valueB : valueA;
+        var shortIndex = 0;
+        var longIndex = 0;
+        var edits = 0;
+
+        while (shortIndex < shorter.Length && longIndex < longer.Length)
+        {
+            if (shorter[shortIndex] == longer[longIndex])
+            {
+                shortIndex++;
+                longIndex++;
+                continue;
+            }
+
+            if (++edits > 1)
+            {
+                return false;
+            }
+
+            longIndex++;
+        }
+
+        return true;
+    }
+
+    private static string? TryGetJsonString(JsonElement json, string propertyName)
+        => json.ValueKind == JsonValueKind.Object &&
+           json.TryGetProperty(propertyName, out var property) &&
+           property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+
+    private static DateTimeOffset? TryGetJsonDateTimeOffset(JsonElement json, string propertyName)
+    {
+        if (json.ValueKind != JsonValueKind.Object ||
+            !json.TryGetProperty(propertyName, out var property) ||
+            property.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return DateTimeOffset.TryParse(property.GetString(), out var value) ? value : null;
     }
 
     private async Task ResolveSelectedConflictAsync(string resolution, CancellationToken ct = default)

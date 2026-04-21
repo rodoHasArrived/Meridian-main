@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisExportResponse
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 160
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 162
   assemblies:
   - Meridian.Contracts
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 163
   assemblies:
   - Meridian.Contracts
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesCreated
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 164
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RowsExported
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 165
   assemblies:
   - Meridian.Contracts
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesWritten
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 166
   assemblies:
   - Meridian.Contracts
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationSeconds
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 167
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 168
   assemblies:
   - Meridian.Contracts

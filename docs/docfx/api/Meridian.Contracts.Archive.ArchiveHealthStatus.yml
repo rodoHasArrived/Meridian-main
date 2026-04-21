@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveHealthStatus
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallHealthScore
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFullVerificationAt
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 69
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastVerificationDurationMinutes
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifiedFiles
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingFiles
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 81
   assemblies:
   - Meridian.Contracts
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedFiles
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -396,7 +396,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSizeBytes
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -437,7 +437,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifiedSizeBytes
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 93
   assemblies:
   - Meridian.Contracts
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recommendations
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 99
   assemblies:
   - Meridian.Contracts
@@ -601,7 +601,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageHealthInfo
-    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts

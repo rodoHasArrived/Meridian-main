@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICoordinationStore
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 2
   assemblies:
   - Meridian.Application
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLeaseAsync
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllLeasesAsync
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCorruptedLeaseFilesAsync
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 26
   assemblies:
   - Meridian.Application
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
-    path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
+    path: src/Meridian.Application/Coordination/ICoordinationStore.cs
     startLine: 28
   assemblies:
   - Meridian.Application

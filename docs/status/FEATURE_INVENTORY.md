@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-04-17
+**Date:** 2026-04-20
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -48,7 +48,7 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 | **Polygon** | ⚠️ | Real connection when API key present; committed replay fixtures close the parser path, while live reconnect/websocket throttling remain explicitly runtime-bounded |
 | **Robinhood** | 🔑 | Unofficial broker-backed quote polling plus brokerage reads/orders, options chains, and historical daily bars when `ROBINHOOD_ACCESS_TOKEN` is present; runtime bounds are tracked under `artifacts/provider-validation/robinhood/2026-04-09/` |
 | **NYSE** | 🔑 | Requires NYSE Connect credentials; L1/shared-lifecycle evidence is strong, with auth/rate-limit/depth bounds tracked under `artifacts/provider-validation/nyse/2026-04-09/` |
-| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Wave 1 validates `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers`; crypto connectors remain optional/example paths |
+| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Runtime evidence for the validated adapter set lives under `artifacts/provider-validation/stocksharp/2026-04-09/`, while the active Wave 1 gate keeps StockSharp outside the core provider set as future validation inventory; crypto connectors remain optional/example paths |
 | **Failover-Aware Client** | ✅ | `FailoverAwareMarketDataClient` with `ProviderDegradationScorer`, per-provider health |
 | **Streaming Failover Service** | ✅ | `StreamingFailoverService` + `StreamingFailoverRegistry`; runtime failover orchestration with configurable rules and health evaluation |
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleStatusSummary
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 412
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSchedules
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 414
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledSchedules
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 415
   assemblies:
   - Meridian.Application
@@ -123,7 +123,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisabledSchedules
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 416
   assemblies:
   - Meridian.Application
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchedulesDueNow
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 417
   assemblies:
   - Meridian.Application
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextScheduledExecution
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 418
   assemblies:
   - Meridian.Application
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExecutions
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 419
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSuccesses
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 420
   assemblies:
   - Meridian.Application
@@ -268,7 +268,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFailures
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 421
   assemblies:
   - Meridian.Application
@@ -297,7 +297,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallSuccessRate
-    path: ../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
+    path: src/Meridian.Application/Scheduling/BackfillScheduleManager.cs
     startLine: 422
   assemblies:
   - Meridian.Application

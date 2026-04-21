@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestEngineMode
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Managed
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTrader
-    path: ../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+    path: src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk

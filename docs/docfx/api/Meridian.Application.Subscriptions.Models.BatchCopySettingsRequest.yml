@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchCopySettingsRequest
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 115
   assemblies:
   - Meridian.Core
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 115
   assemblies:
   - Meridian.Core
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceSymbol
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 116
   assemblies:
   - Meridian.Core
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetSymbols
-    path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
+    path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
     startLine: 117
   assemblies:
   - Meridian.Core

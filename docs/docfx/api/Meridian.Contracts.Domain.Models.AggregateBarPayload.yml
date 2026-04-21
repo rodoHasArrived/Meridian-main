@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregateBarPayload
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vwap
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -402,7 +402,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeframe
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 20
   assemblies:
   - Meridian.Contracts
@@ -460,7 +460,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -489,7 +489,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
     startLine: 22
   assemblies:
   - Meridian.Contracts

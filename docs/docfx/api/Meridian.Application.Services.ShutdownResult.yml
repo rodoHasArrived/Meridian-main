@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownResult
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 487
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 487
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 488
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 489
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 490
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 491
   assemblies:
   - Meridian.Application
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationMs
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 492
   assemblies:
   - Meridian.Application
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsFlushed
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 493
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushTimeoutOccurred
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 494
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComponentsDisposed
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 495
   assemblies:
   - Meridian.Application
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 496
   assemblies:
   - Meridian.Application
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
     startLine: 497
   assemblies:
   - Meridian.Application

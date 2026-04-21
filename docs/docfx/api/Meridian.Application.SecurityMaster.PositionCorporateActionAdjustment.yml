@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionCorporateActionAdjustment
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ticker
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalQuantity
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustedQuantity
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 8
   assemblies:
   - Meridian.Application
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalCostBasis
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustedCostBasis
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActionCount
-    path: ../../src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
+    path: src/Meridian.Application/SecurityMaster/ILivePositionCorporateActionAdjuster.cs
     startLine: 11
   assemblies:
   - Meridian.Application

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceInfo
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 44
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceType
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAsync
-    path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
+    path: src/Meridian.Application/Services/ServiceRegistry.cs
     startLine: 47
   assemblies:
   - Meridian.Application

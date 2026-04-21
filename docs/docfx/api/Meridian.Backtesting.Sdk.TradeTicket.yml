@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeTicket
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TicketId
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivityType
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Narrative
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashImpact
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnitPrice
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillId
-    path: ../../src/Meridian.Backtesting.Sdk/TradeTicket.cs
+    path: src/Meridian.Backtesting.Sdk/TradeTicket.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk

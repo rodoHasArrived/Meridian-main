@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightChecker
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunChecksAsync
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 35
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunChecksAsync
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnsureReadyAsync
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 111
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateProviderCredentials
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 551
   assemblies:
   - Meridian.Application

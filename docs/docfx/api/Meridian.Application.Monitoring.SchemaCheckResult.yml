@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaCheckResult
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 298
   assemblies:
   - Meridian.Application
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 300
   assemblies:
   - Meridian.Application
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 301
   assemblies:
   - Meridian.Application

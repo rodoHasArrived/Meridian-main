@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigTemplate
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 436
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 438
   assemblies:
   - Meridian.Application
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 439
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Json
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 440
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 441
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentVariables
-    path: ../../src/Meridian.Application/Services/ConfigTemplateGenerator.cs
+    path: src/Meridian.Application/Services/ConfigTemplateGenerator.cs
     startLine: 442
   assemblies:
   - Meridian.Application

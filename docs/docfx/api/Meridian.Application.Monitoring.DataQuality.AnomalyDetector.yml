@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyDetector
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnAnomalyDetected
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolLiquidity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 48
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessTrade
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 59
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessQuote
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomalies
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 142
   assemblies:
   - Meridian.Application
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesForDate
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 159
   assemblies:
   - Meridian.Application
@@ -335,7 +335,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentAnomalies
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 175
   assemblies:
   - Meridian.Application
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesByType
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 191
   assemblies:
   - Meridian.Application
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesBySeverity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 208
   assemblies:
   - Meridian.Application
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgeAnomaly
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 225
   assemblies:
   - Meridian.Application
@@ -483,7 +483,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUnacknowledgedAnomalies
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 245
   assemblies:
   - Meridian.Application
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 262
   assemblies:
   - Meridian.Application
@@ -549,7 +549,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStaleSymbols
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 301
   assemblies:
   - Meridian.Application
@@ -579,7 +579,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbol
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 321
   assemblies:
   - Meridian.Application
@@ -613,7 +613,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAnomaliesDetected
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 331
   assemblies:
   - Meridian.Application
@@ -644,7 +644,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
     startLine: 494
   assemblies:
   - Meridian.Application

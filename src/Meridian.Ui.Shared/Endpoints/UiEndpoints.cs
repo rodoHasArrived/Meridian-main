@@ -7,6 +7,7 @@ using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -103,12 +105,20 @@ public static class UiEndpoints
     private static void RegisterStrategyWorkstationServices(IServiceCollection services)
     {
         services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton(PromotionRecordStoreOptions.Default);
+        services.TryAddSingleton<IPromotionRecordStore>(sp =>
+            new JsonlPromotionRecordStore(
+                sp.GetRequiredService<PromotionRecordStoreOptions>(),
+                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
+        services.TryAddSingleton<BacktestToLivePromoter>();
+        services.TryAddSingleton<PromotionService>();
+        services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();

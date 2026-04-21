@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthIssueResponse
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 160
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 160
   assemblies:
   - Meridian.Contracts
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 161
   assemblies:
   - Meridian.Contracts
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 162
   assemblies:
   - Meridian.Contracts
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    path: src/Meridian.Contracts/Api/UiDashboardModels.cs
     startLine: 163
   assemblies:
   - Meridian.Contracts

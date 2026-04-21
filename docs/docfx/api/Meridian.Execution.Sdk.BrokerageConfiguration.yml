@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageConfiguration
-    path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
+    path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
     startLine: 6
   assemblies:
   - Meridian.Execution.Sdk
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gateway
-    path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
+    path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
     startLine: 13
   assemblies:
   - Meridian.Execution.Sdk
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveExecutionEnabled
-    path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
+    path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
     startLine: 20
   assemblies:
   - Meridian.Execution.Sdk
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxPositionSize
-    path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
+    path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
     startLine: 26
   assemblies:
   - Meridian.Execution.Sdk
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxOrderNotional
-    path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
+    path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
     startLine: 32
   assemblies:
   - Meridian.Execution.Sdk
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxOpenOrders
-    path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
+    path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
     startLine: 37
   assemblies:
   - Meridian.Execution.Sdk

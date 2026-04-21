@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCode
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InternalError
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeout
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotSupported
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 28
   assemblies:
   - Meridian.Application
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidOperation
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 38
   assemblies:
   - Meridian.Application
@@ -330,7 +330,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiredFieldMissing
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -358,7 +358,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfRange
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 44
   assemblies:
   - Meridian.Application
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidFormat
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 47
   assemblies:
   - Meridian.Application
@@ -414,7 +414,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicateValue
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -442,7 +442,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConstraintViolation
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -470,7 +470,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationInvalid
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 60
   assemblies:
   - Meridian.Application
@@ -498,7 +498,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationMissing
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 63
   assemblies:
   - Meridian.Application
@@ -526,7 +526,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationOutOfRange
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 66
   assemblies:
   - Meridian.Application
@@ -554,7 +554,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialsMissing
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 69
   assemblies:
   - Meridian.Application
@@ -582,7 +582,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialsInvalid
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 72
   assemblies:
   - Meridian.Application
@@ -610,7 +610,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 79
   assemblies:
   - Meridian.Application
@@ -638,7 +638,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionLost
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 82
   assemblies:
   - Meridian.Application
@@ -666,7 +666,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionRefused
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 85
   assemblies:
   - Meridian.Application
@@ -694,7 +694,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionTimeout
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 88
   assemblies:
   - Meridian.Application
@@ -722,7 +722,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticationFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 91
   assemblies:
   - Meridian.Application
@@ -750,7 +750,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SslError
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 94
   assemblies:
   - Meridian.Application
@@ -778,7 +778,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DnsResolutionFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 97
   assemblies:
   - Meridian.Application
@@ -806,7 +806,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderError
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 104
   assemblies:
   - Meridian.Application
@@ -834,7 +834,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderUnavailable
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 107
   assemblies:
   - Meridian.Application
@@ -862,7 +862,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitExceeded
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 110
   assemblies:
   - Meridian.Application
@@ -890,7 +890,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionLimitExceeded
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 113
   assemblies:
   - Meridian.Application
@@ -918,7 +918,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolNotFound
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 116
   assemblies:
   - Meridian.Application
@@ -946,7 +946,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidProviderData
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 119
   assemblies:
   - Meridian.Application
@@ -974,7 +974,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoDataAvailable
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -1002,7 +1002,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerOpen
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 125
   assemblies:
   - Meridian.Application
@@ -1030,7 +1030,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceGap
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 132
   assemblies:
   - Meridian.Application
@@ -1058,7 +1058,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrderData
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 135
   assemblies:
   - Meridian.Application
@@ -1086,7 +1086,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicateData
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 138
   assemblies:
   - Meridian.Application
@@ -1114,7 +1114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataCorruption
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 141
   assemblies:
   - Meridian.Application
@@ -1142,7 +1142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumMismatch
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 144
   assemblies:
   - Meridian.Application
@@ -1170,7 +1170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaMismatch
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 147
   assemblies:
   - Meridian.Application
@@ -1198,7 +1198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageError
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 154
   assemblies:
   - Meridian.Application
@@ -1226,7 +1226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileNotFound
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 157
   assemblies:
   - Meridian.Application
@@ -1254,7 +1254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileAccessDenied
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 160
   assemblies:
   - Meridian.Application
@@ -1282,7 +1282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsufficientDiskSpace
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 163
   assemblies:
   - Meridian.Application
@@ -1310,7 +1310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 166
   assemblies:
   - Meridian.Application
@@ -1338,7 +1338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 169
   assemblies:
   - Meridian.Application
@@ -1366,7 +1366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 172
   assemblies:
   - Meridian.Application
@@ -1394,7 +1394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SerializationFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 175
   assemblies:
   - Meridian.Application
@@ -1422,7 +1422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 182
   assemblies:
   - Meridian.Application
@@ -1450,7 +1450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsumeFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 185
   assemblies:
   - Meridian.Application
@@ -1478,7 +1478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageDeserializationFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 188
   assemblies:
   - Meridian.Application
@@ -1506,7 +1506,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageValidationFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 191
   assemblies:
   - Meridian.Application
@@ -1534,7 +1534,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeadLetterFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 194
   assemblies:
   - Meridian.Application
@@ -1562,7 +1562,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerConnectionFailed
-    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    path: src/Meridian.Application/Results/ErrorCode.cs
     startLine: 197
   assemblies:
   - Meridian.Application

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -432,6 +433,51 @@ public static class WorkstationEndpoints
         .WithName("GetSecurityMasterWorkstationEconomicDefinition")
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
         .Produces(404);
+
+        group.MapGet(UiApiRoutes.WorkstationSecurityMasterTrustSnapshot, async (
+            Guid securityId,
+            string? fundProfileId,
+            HttpContext context) =>
+        {
+            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
+            if (workbenchService is null)
+            {
+                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var snapshot = await workbenchService
+                .GetTrustSnapshotAsync(securityId, fundProfileId, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return snapshot is null
+                ? Results.NotFound()
+                : Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("GetSecurityMasterWorkstationTrustSnapshot")
+        .Produces<SecurityMasterTrustSnapshotDto>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapPost(UiApiRoutes.WorkstationSecurityMasterBulkResolveConflicts, async (
+            BulkResolveSecurityMasterConflictsRequest request,
+            HttpContext context) =>
+        {
+            var workbenchService = context.RequestServices.GetService<ISecurityMasterWorkbenchQueryService>();
+            if (workbenchService is null)
+            {
+                return Results.Problem("Security Master workbench service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var result = await workbenchService
+                .BulkResolveConflictsAsync(request, context.RequestAborted)
+                .ConfigureAwait(false);
+
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("BulkResolveSecurityMasterWorkstationConflicts")
+        .Accepts<BulkResolveSecurityMasterConflictsRequest>("application/json")
+        .Produces<BulkResolveSecurityMasterConflictsResult>(200)
+        .Produces(501);
 
         // --- Multi-run comparison and diff ---
 
@@ -1473,7 +1519,7 @@ public static class WorkstationEndpoints
                 new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
                 new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
                 new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             providers,
             backfills,
@@ -1492,7 +1538,7 @@ public static class WorkstationEndpoints
                 new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
                 new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
                 new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), delta = FormatKernelJumpAlertDelta(kernelObservability), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             providers = new[]
             {
@@ -1535,7 +1581,7 @@ public static class WorkstationEndpoints
                     new { id = "timing-drift", label = "Timing Drift", value = "0", tone = "default" },
                     new { id = "security-gaps", label = "Security Gaps", value = "0", tone = "success" },
                     new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" },
-                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
                 },
                 reconciliationQueue = Array.Empty<object>(),
                 breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
@@ -1579,11 +1625,11 @@ public static class WorkstationEndpoints
                 new { id = "timing-drift", label = "Timing Drift", value = timingDriftRuns.ToString(CultureInfo.InvariantCulture), tone = timingDriftRuns == 0 ? "default" : "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), tone = runsWithSecurityIssues == 0 ? "success" : "warning" },
                 new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             reconciliationQueue = runs
                 .Zip(details, static (run, detail) => (run, detail))
-                .Zip(reconciliations, static (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation))
+                .Zip(reconciliations, (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
                 .ToArray(),
             breakQueue = GetBreakQueueItems(status: null),
             workspace = new
@@ -1610,7 +1656,7 @@ public static class WorkstationEndpoints
                 new { id = "timing-drift", label = "Timing Drift", value = "1", tone = "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = "2", tone = "warning" },
                 new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" },
-                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), tone = GetKernelJumpAlertTone(kernelObservability) }
             },
             reconciliationQueue = new[]
             {
@@ -1773,7 +1819,8 @@ public static class WorkstationEndpoints
                 tone = "warning",
                 summary = "Cash-flow coverage is available for 9 runs; 1 run needs variance review."
             },
-            reporting = BuildGovernanceReportingPayload()
+            reporting = BuildGovernanceReportingPayload(),
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
@@ -2166,7 +2213,8 @@ public static class WorkstationEndpoints
     private static object BuildGovernanceRunCard(
         StrategyRunSummary run,
         StrategyRunDetail? detail,
-        ReconciliationRunDetail? reconciliation)
+        ReconciliationRunDetail? reconciliation,
+        KernelObservabilitySnapshot? kernelObservability)
     {
         return new
         {
@@ -2209,6 +2257,18 @@ public static class WorkstationEndpoints
         };
     }
 
+    private static int GetKernelActiveAlertCount(KernelObservabilitySnapshot? snapshot)
+        => snapshot?.ActiveAlertCount ?? 0;
+
+    private static int GetKernelTotalAlertCount(KernelObservabilitySnapshot? snapshot)
+        => snapshot?.AlertCount ?? 0;
+
+    private static string GetKernelJumpAlertTone(KernelObservabilitySnapshot? snapshot)
+        => GetKernelActiveAlertCount(snapshot) == 0 ? "success" : "warning";
+
+    private static string FormatKernelJumpAlertDelta(KernelObservabilitySnapshot? snapshot)
+        => $"{GetKernelTotalAlertCount(snapshot).ToString(CultureInfo.InvariantCulture)} total";
+
     private static object BuildKernelObservabilityPayload(KernelObservabilitySnapshot? snapshot)
     {
         if (snapshot is null)
@@ -2217,6 +2277,8 @@ public static class WorkstationEndpoints
             {
                 updatedAtUtc = (DateTimeOffset?)null,
                 determinismChecksEnabled = false,
+                activeAlerts = 0,
+                totalAlerts = 0,
                 alerts = 0,
                 domains = Array.Empty<object>()
             };
@@ -2226,6 +2288,8 @@ public static class WorkstationEndpoints
         {
             updatedAtUtc = snapshot.UpdatedAtUtc,
             determinismChecksEnabled = snapshot.DeterminismChecksEnabled,
+            activeAlerts = snapshot.ActiveAlertCount,
+            totalAlerts = snapshot.AlertCount,
             alerts = snapshot.AlertCount,
             domains = snapshot.Domains.Select(static domain => new
             {
@@ -2242,16 +2306,28 @@ public static class WorkstationEndpoints
                 drift = new
                 {
                     score = domain.ScoreDrift,
-                    severity = domain.SeverityDrift
+                    severity = domain.SeverityDrift,
+                    methodology = "totalVariationDistance"
                 },
                 criticalSeverityRate = new
                 {
                     shortWindow = domain.CriticalRateShortWindow,
                     longWindow = domain.CriticalRateLongWindow,
+                    shortWindowSamples = domain.CriticalRateShortWindowSamples,
+                    longWindowSamples = domain.CriticalRateLongWindowSamples,
                     jumpAlertActive = domain.CriticalJumpActive,
-                    jumpAlertCount = domain.CriticalJumpAlertCount
+                    jumpAlertCount = domain.CriticalJumpAlertCount,
+                    alertThresholds = new
+                    {
+                        minimumSampleCount = domain.CriticalJumpThresholds.MinimumSampleCount,
+                        minimumShortRate = domain.CriticalJumpThresholds.MinimumShortRate,
+                        zeroBaselineShortRate = domain.CriticalJumpThresholds.ZeroBaselineShortRate,
+                        relativeMultiplier = domain.CriticalJumpThresholds.RelativeMultiplier,
+                        absoluteIncrease = domain.CriticalJumpThresholds.AbsoluteIncrease
+                    }
                 },
-                determinismMismatches = domain.DeterminismMismatches
+                determinismMismatches = domain.DeterminismMismatches,
+                lastUpdatedUtc = domain.LastUpdatedUtc
             })
         };
     }

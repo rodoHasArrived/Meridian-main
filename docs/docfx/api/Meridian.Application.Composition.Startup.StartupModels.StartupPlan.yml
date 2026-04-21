@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupPlan
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupPlan.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupPlan.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupPlan.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupPlan.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupPlan.cs
+    path: src/Meridian.Application/Composition/Startup/StartupModels/StartupPlan.cs
     startLine: 12
   assemblies:
   - Meridian.Application

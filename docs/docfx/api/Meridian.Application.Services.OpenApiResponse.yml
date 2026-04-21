@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenApiResponse
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 577
   assemblies:
   - Meridian.Application
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 579
   assemblies:
   - Meridian.Application
@@ -83,7 +83,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Content
-    path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
+    path: src/Meridian.Application/Services/ApiDocumentationService.cs
     startLine: 580
   assemblies:
   - Meridian.Application

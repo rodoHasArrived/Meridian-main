@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAllocationEngine
-    path: ../../src/Meridian.Execution/Allocation/IAllocationEngine.cs
+    path: src/Meridian.Execution/Allocation/IAllocationEngine.cs
     startLine: 6
   assemblies:
   - Meridian.Execution
@@ -51,7 +51,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Allocate
-    path: ../../src/Meridian.Execution/Allocation/IAllocationEngine.cs
+    path: src/Meridian.Execution/Allocation/IAllocationEngine.cs
     startLine: 23
   assemblies:
   - Meridian.Execution

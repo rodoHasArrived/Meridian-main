@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityMetrics
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 250
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 255
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityScore
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 261
   assemblies:
   - Meridian.Contracts
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 267
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 273
   assemblies:
   - Meridian.Contracts
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrors
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 279
   assemblies:
   - Meridian.Contracts
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicatesFound
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 285
   assemblies:
   - Meridian.Contracts
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 291
   assemblies:
   - Meridian.Contracts
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualEvents
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 297
   assemblies:
   - Meridian.Contracts
@@ -408,7 +408,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingTradingDays
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 303
   assemblies:
   - Meridian.Contracts
@@ -451,7 +451,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutliersDetected
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 309
   assemblies:
   - Meridian.Contracts

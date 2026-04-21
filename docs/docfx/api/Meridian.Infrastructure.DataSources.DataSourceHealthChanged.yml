@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceHealthChanged
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 359
   assemblies:
   - Meridian.ProviderSdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 359
   assemblies:
   - Meridian.ProviderSdk
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceId
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 360
   assemblies:
   - Meridian.ProviderSdk
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousHealth
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 361
   assemblies:
   - Meridian.ProviderSdk
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentHealth
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 362
   assemblies:
   - Meridian.ProviderSdk
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangedAt
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 363
   assemblies:
   - Meridian.ProviderSdk
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BecameHealthy
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 366
   assemblies:
   - Meridian.ProviderSdk
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BecameUnhealthy
-    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    path: src/Meridian.ProviderSdk/IDataSource.cs
     startLine: 367
   assemblies:
   - Meridian.ProviderSdk

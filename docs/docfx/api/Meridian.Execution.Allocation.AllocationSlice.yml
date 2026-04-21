@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocationSlice
-    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    path: src/Meridian.Execution/Allocation/AllocationResult.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    path: src/Meridian.Execution/Allocation/AllocationResult.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DestinationId
-    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    path: src/Meridian.Execution/Allocation/AllocationResult.cs
     startLine: 15
   assemblies:
   - Meridian.Execution
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocatedQuantity
-    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    path: src/Meridian.Execution/Allocation/AllocationResult.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocatedWeight
-    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    path: src/Meridian.Execution/Allocation/AllocationResult.cs
     startLine: 17
   assemblies:
   - Meridian.Execution
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProRataValue
-    path: ../../src/Meridian.Execution/Allocation/AllocationResult.cs
+    path: src/Meridian.Execution/Allocation/AllocationResult.cs
     startLine: 18
   assemblies:
   - Meridian.Execution

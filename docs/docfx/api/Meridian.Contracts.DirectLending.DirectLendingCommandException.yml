@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingCommandException
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 27
   assemblies:
   - Meridian.Contracts
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportFormatsResponse
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 171
   assemblies:
   - Meridian.Contracts
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Formats
-    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
     startLine: 173
   assemblies:
   - Meridian.Contracts

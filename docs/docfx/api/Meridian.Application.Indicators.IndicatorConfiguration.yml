@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndicatorConfiguration
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 485
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledIndicators
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 487
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SmaPeriods
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 499
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EmaPeriods
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 500
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RsiPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 503
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdFastPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 506
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdSlowPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 507
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MacdSignalPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 508
   assemblies:
   - Meridian.Application
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 511
   assemblies:
   - Meridian.Application
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerStdDev
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 512
   assemblies:
   - Meridian.Application
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AtrPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 515
   assemblies:
   - Meridian.Application
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StochKPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 518
   assemblies:
   - Meridian.Application
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StochDPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 519
   assemblies:
   - Meridian.Application
@@ -418,7 +418,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StochSmoothPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 520
   assemblies:
   - Meridian.Application
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdxPeriod
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 523
   assemblies:
   - Meridian.Application
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxQuotesHistory
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 526
   assemblies:
   - Meridian.Application
@@ -505,7 +505,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
     startLine: 528
   assemblies:
   - Meridian.Application

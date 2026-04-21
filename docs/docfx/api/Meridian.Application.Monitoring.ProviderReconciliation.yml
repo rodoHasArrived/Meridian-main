@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderReconciliation
-    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
     startLine: 211
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
     startLine: 211
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Received
-    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
     startLine: 212
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duplicates
-    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
     startLine: 213
   assemblies:
   - Meridian.Application

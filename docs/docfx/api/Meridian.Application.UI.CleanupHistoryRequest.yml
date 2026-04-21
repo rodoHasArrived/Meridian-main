@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CleanupHistoryRequest
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 549
   assemblies:
   - Meridian.Application
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 549
   assemblies:
   - Meridian.Application
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxAgeDays
-    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
     startLine: 550
   assemblies:
   - Meridian.Application

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillModeRunner
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
     startLine: 20
   assemblies:
   - Meridian.Application
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
     startLine: 29
   assemblies:
   - Meridian.Application

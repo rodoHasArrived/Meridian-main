@@ -24,8 +24,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionControlDecision
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 83
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 84
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -62,8 +62,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 83
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 84
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -100,8 +100,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsApproved
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 84
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 85
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -129,8 +129,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectReason
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 85
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 86
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -158,8 +158,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppliedManualOverrideId
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 86
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 87
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -187,8 +187,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Approved
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 88
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 89
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -221,8 +221,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
-    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-    startLine: 91
+    path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 92
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services

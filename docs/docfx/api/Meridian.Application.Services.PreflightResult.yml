@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreflightResult
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 772
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 772
   assemblies:
   - Meridian.Application
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllChecksPassed
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 773
   assemblies:
   - Meridian.Application
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasWarnings
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 774
   assemblies:
   - Meridian.Application
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checks
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 775
   assemblies:
   - Meridian.Application
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDurationMs
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 776
   assemblies:
   - Meridian.Application
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckedAt
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 777
   assemblies:
   - Meridian.Application
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
-    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    path: src/Meridian.Application/Services/PreflightChecker.cs
     startLine: 783
   assemblies:
   - Meridian.Application

@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderItchIngestionService
-    path: ../../src/Meridian.Infrastructure.CppTrader/Providers/ICppTraderItchIngestionService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Providers/ICppTraderItchIngestionService.cs
     startLine: 2
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFeedAsync
-    path: ../../src/Meridian.Infrastructure.CppTrader/Providers/ICppTraderItchIngestionService.cs
+    path: src/Meridian.Infrastructure.CppTrader/Providers/ICppTraderItchIngestionService.cs
     startLine: 4
   assemblies:
   - Meridian.Infrastructure.CppTrader

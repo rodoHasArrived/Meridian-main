@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionExtensions
-    path: ../../src/Meridian.Execution.Sdk/PositionExtensions.cs
+    path: src/Meridian.Execution.Sdk/PositionExtensions.cs
     startLine: 6
   assemblies:
   - Meridian.Execution.Sdk
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsIPositions
-    path: ../../src/Meridian.Execution.Sdk/PositionExtensions.cs
+    path: src/Meridian.Execution.Sdk/PositionExtensions.cs
     startLine: 15
   assemblies:
   - Meridian.Execution.Sdk
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToIPositionDictionary
-    path: ../../src/Meridian.Execution.Sdk/PositionExtensions.cs
+    path: src/Meridian.Execution.Sdk/PositionExtensions.cs
     startLine: 30
   assemblies:
   - Meridian.Execution.Sdk
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDisplayTuple
-    path: ../../src/Meridian.Execution.Sdk/PositionExtensions.cs
+    path: src/Meridian.Execution.Sdk/PositionExtensions.cs
     startLine: 49
   assemblies:
   - Meridian.Execution.Sdk

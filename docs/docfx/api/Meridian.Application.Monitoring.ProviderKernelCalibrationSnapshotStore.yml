@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderKernelCalibrationSnapshotStore
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 216
   assemblies:
   - Meridian.Application
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 220
   assemblies:
   - Meridian.Application
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 225
   assemblies:
   - Meridian.Application
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestAsync
-    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
     startLine: 236
   assemblies:
   - Meridian.Application

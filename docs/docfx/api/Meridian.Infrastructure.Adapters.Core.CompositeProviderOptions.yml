@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeProviderOptions
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 658
   assemblies:
   - Meridian.Infrastructure
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailureBackoffDuration
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 663
   assemblies:
   - Meridian.Infrastructure
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableCrossValidation
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 668
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetriesPerProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 673
   assemblies:
   - Meridian.Infrastructure
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreferAdjustedPrices
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 678
   assemblies:
   - Meridian.Infrastructure
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableRateLimitRotation
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 685
   assemblies:
   - Meridian.Infrastructure
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitRotationThreshold
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
     startLine: 692
   assemblies:
   - Meridian.Infrastructure

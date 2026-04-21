@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: INotificationService
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyErrorAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyWarningAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 14
   assemblies:
   - Meridian.Ui.Services
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyBackfillCompleteAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Services
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyScheduledJobAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotifyStorageWarningAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/INotificationService.cs
+    path: src/Meridian.Ui.Services/Contracts/INotificationService.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Services

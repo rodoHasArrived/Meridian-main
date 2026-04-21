@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCoordinator
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 61
   assemblies:
   - Meridian.Ui.Shared
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 76
   assemblies:
   - Meridian.Ui.Shared
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DescribeProviders
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 89
   assemblies:
   - Meridian.Ui.Shared
@@ -168,7 +168,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadLast
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 94
   assemblies:
   - Meridian.Ui.Shared
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolCheckpoints
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 99
   assemblies:
   - Meridian.Ui.Shared
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReadSymbolBarCounts
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 104
   assemblies:
   - Meridian.Ui.Shared
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 109
   assemblies:
   - Meridian.Ui.Shared
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateRequest
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 112
   assemblies:
   - Meridian.Ui.Shared
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderHealthAsync
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 117
   assemblies:
   - Meridian.Ui.Shared
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAsync
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 123
   assemblies:
   - Meridian.Ui.Shared
@@ -393,7 +393,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProgress
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 129
   assemblies:
   - Meridian.Ui.Shared
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 131
   assemblies:
   - Meridian.Ui.Shared
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewAsync
-    path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
+    path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
     startLine: 137
   assemblies:
   - Meridian.Ui.Shared

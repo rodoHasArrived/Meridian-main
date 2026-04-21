@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountReconciliationResultDto
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 121
   assemblies:
   - Meridian.Contracts
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 121
   assemblies:
   - Meridian.Contracts
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResultId
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 122
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationRunId
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 123
   assemblies:
   - Meridian.Contracts
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckLabel
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 124
   assemblies:
   - Meridian.Contracts
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMatch
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 125
   assemblies:
   - Meridian.Contracts
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 126
   assemblies:
   - Meridian.Contracts
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 127
   assemblies:
   - Meridian.Contracts
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedAmount
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 128
   assemblies:
   - Meridian.Contracts
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualAmount
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 129
   assemblies:
   - Meridian.Contracts
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Variance
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 130
   assemblies:
   - Meridian.Contracts
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 131
   assemblies:
   - Meridian.Contracts

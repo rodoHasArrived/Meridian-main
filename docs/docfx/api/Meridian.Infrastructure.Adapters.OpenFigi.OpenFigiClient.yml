@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFigiClient
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 16
   assemblies:
   - Meridian.Infrastructure
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 28
   assemblies:
   - Meridian.Infrastructure
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 29
   assemblies:
   - Meridian.Infrastructure
@@ -131,7 +131,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 37
   assemblies:
   - Meridian.Infrastructure
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 59
   assemblies:
   - Meridian.Infrastructure
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupByTickerAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupByIsinAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 101
   assemblies:
   - Meridian.Infrastructure
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupByCusipAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 120
   assemblies:
   - Meridian.Infrastructure
@@ -331,7 +331,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupBySedolAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 139
   assemblies:
   - Meridian.Infrastructure
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkLookupByTickersAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 158
   assemblies:
   - Meridian.Infrastructure
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 198
   assemblies:
   - Meridian.Infrastructure
@@ -459,7 +459,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnrichWithFigiAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 257
   assemblies:
   - Meridian.Infrastructure
@@ -497,7 +497,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
+    path: src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs
     startLine: 356
   assemblies:
   - Meridian.Infrastructure

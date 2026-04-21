@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerHealthStatus
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 259
   assemblies:
   - Meridian.Execution.Sdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 262
   assemblies:
   - Meridian.Execution.Sdk
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 265
   assemblies:
   - Meridian.Execution.Sdk
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMarketOpen
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 268
   assemblies:
   - Meridian.Execution.Sdk
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 271
   assemblies:
   - Meridian.Execution.Sdk
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckedAt
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 274
   assemblies:
   - Meridian.Execution.Sdk
@@ -218,7 +218,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 276
   assemblies:
   - Meridian.Execution.Sdk
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unhealthy
-    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
     startLine: 279
   assemblies:
   - Meridian.Execution.Sdk

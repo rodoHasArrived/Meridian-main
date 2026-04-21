@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionTradeDto
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 79
   assemblies:
   - Meridian.Contracts
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 79
   assemblies:
   - Meridian.Contracts
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 80
   assemblies:
   - Meridian.Contracts
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 81
   assemblies:
   - Meridian.Contracts
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 82
   assemblies:
   - Meridian.Contracts
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 83
   assemblies:
   - Meridian.Contracts
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiration
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 85
   assemblies:
   - Meridian.Contracts
@@ -311,7 +311,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -340,7 +340,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aggressor
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 87
   assemblies:
   - Meridian.Contracts
@@ -369,7 +369,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingPrice
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 88
   assemblies:
   - Meridian.Contracts
@@ -398,7 +398,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImpliedVolatility
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 89
   assemblies:
   - Meridian.Contracts
@@ -427,7 +427,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeExchange
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -456,7 +456,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 91
   assemblies:
   - Meridian.Contracts
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInTheMoney
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 92
   assemblies:
   - Meridian.Contracts
@@ -514,7 +514,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 93
   assemblies:
   - Meridian.Contracts
@@ -543,7 +543,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 94
   assemblies:
   - Meridian.Contracts
@@ -572,7 +572,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    path: src/Meridian.Contracts/Api/OptionsModels.cs
     startLine: 95
   assemblies:
   - Meridian.Contracts

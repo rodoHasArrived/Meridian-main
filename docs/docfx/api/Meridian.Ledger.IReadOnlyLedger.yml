@@ -35,7 +35,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IReadOnlyLedger
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 8
   assemblies:
   - Meridian.Ledger
@@ -71,7 +71,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Journal
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 11
   assemblies:
   - Meridian.Ledger
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 14
   assemblies:
   - Meridian.Ledger
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryCount
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 17
   assemblies:
   - Meridian.Ledger
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalLedgerEntryCount
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 20
   assemblies:
   - Meridian.Ledger
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEntries
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 23
   assemblies:
   - Meridian.Ledger
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEntries
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 26
   assemblies:
   - Meridian.Ledger
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalance
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 33
   assemblies:
   - Meridian.Ledger
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalanceAsOf
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 36
   assemblies:
   - Meridian.Ledger
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasAccount
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 39
   assemblies:
   - Meridian.Ledger
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalEntries
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 42
   assemblies:
   - Meridian.Ledger
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalEntries
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 45
   assemblies:
   - Meridian.Ledger
@@ -444,7 +444,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountSummary
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 48
   assemblies:
   - Meridian.Ledger
@@ -477,7 +477,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SummarizeAccounts
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 51
   assemblies:
   - Meridian.Ledger
@@ -515,7 +515,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 56
   assemblies:
   - Meridian.Ledger
@@ -551,7 +551,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalanceAsOf
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 59
   assemblies:
   - Meridian.Ledger
@@ -589,7 +589,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunningBalance
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 62
   assemblies:
   - Meridian.Ledger
@@ -626,7 +626,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotAsOf
-    path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
+    path: src/Meridian.Ledger/IReadOnlyLedger.cs
     startLine: 65
   assemblies:
   - Meridian.Ledger

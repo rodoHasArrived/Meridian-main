@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillEvent
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 3
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillId
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 4
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillPrice
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -261,7 +261,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Commission
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -290,7 +290,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledAt
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -348,7 +348,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetLotId
-    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    path: src/Meridian.Backtesting.Sdk/FillEvent.cs
     startLine: 17
   assemblies:
   - Meridian.Backtesting.Sdk

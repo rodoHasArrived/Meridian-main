@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitStatus
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 307
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 307
   assemblies:
   - Meridian.Infrastructure
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 308
   assemblies:
   - Meridian.Infrastructure
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsInWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 309
   assemblies:
   - Meridian.Infrastructure
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 310
   assemblies:
   - Meridian.Infrastructure
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Window
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 311
   assemblies:
   - Meridian.Infrastructure
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRateLimited
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 312
   assemblies:
   - Meridian.Infrastructure
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeUntilReset
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 313
   assemblies:
   - Meridian.Infrastructure
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsageRatio
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 314
   assemblies:
   - Meridian.Infrastructure
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingRequests
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 317
   assemblies:
   - Meridian.Infrastructure
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsagePercent
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs
     startLine: 318
   assemblies:
   - Meridian.Infrastructure

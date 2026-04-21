@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecuritySnapshotRecord
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 98
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 98
   assemblies:
   - Meridian.Contracts
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 99
   assemblies:
   - Meridian.Contracts
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 100
   assemblies:
   - Meridian.Contracts
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotTimestamp
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 101
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Payload
-    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts

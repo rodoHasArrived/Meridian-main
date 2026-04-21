@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionTestResult
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 178
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 180
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 181
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 182
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 183
   assemblies:
   - Meridian.Ui.Services

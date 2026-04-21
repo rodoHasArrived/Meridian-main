@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaOptions
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 16
   assemblies:
   - Meridian.Core
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KeyId
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 17
   assemblies:
   - Meridian.Core
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecretKey
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 18
   assemblies:
   - Meridian.Core
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 19
   assemblies:
   - Meridian.Core
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseSandbox
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 20
   assemblies:
   - Meridian.Core
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeQuotes
-    path: ../../src/Meridian.Core/Config/AlpacaOptions.cs
+    path: src/Meridian.Core/Config/AlpacaOptions.cs
     startLine: 21
   assemblies:
   - Meridian.Core

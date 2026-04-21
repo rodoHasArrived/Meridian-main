@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportDefaults
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 48
   assemblies:
   - Meridian.Core
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 48
   assemblies:
   - Meridian.Core
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 49
   assemblies:
   - Meridian.Core
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 50
   assemblies:
   - Meridian.Core
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 51
   assemblies:
   - Meridian.Core
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 52
   assemblies:
   - Meridian.Core
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 53
   assemblies:
   - Meridian.Core
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
+    path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
     startLine: 54
   assemblies:
   - Meridian.Core

@@ -97,6 +97,8 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<Meridian.Ui.Shared.UserProfileRegistry>();
         builder.Services.AddSingleton<LoginSessionService>();
         builder.Services.AddSingleton<IStrategyRepository, StrategyRunStore>();
+        builder.Services.AddSingleton(PromotionRecordStoreOptions.Default);
+        builder.Services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
         builder.Services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         builder.Services.AddSingleton<PortfolioReadService>();
         builder.Services.AddSingleton<LedgerReadService>();
@@ -108,6 +110,15 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<StrategyRunContinuityService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
+        builder.Services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService, Meridian.Application.SecurityMaster.SecurityMasterWorkbenchQueryService>();
+        builder.Services.AddSingleton(ExecutionAuditTrailOptions.Default);
+        builder.Services.AddSingleton<ExecutionAuditTrailService>();
+        builder.Services.AddSingleton(ExecutionOperatorControlOptions.Default);
+        builder.Services.AddSingleton<ExecutionOperatorControlService>();
+        builder.Services.AddSingleton<IPaperSessionStore>(sp =>
+            new JsonlFilePaperSessionStore(
+                Path.Combine(AppContext.BaseDirectory, "data", "execution", "sessions"),
+                sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
 
@@ -127,7 +138,10 @@ public sealed class UiServer : IAsyncDisposable
                 gateway,
                 logger,
                 riskValidator: risk,
-                portfolioState: portfolio);
+                operatorControls: sp.GetService<ExecutionOperatorControlService>(),
+                auditTrail: sp.GetService<ExecutionAuditTrailService>(),
+                portfolioState: portfolio,
+                sessionPersistence: sp.GetService<PaperSessionPersistenceService>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemediationStep
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 540
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 542
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 543
   assemblies:
   - Meridian.Ui.Services
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 544
   assemblies:
   - Meridian.Ui.Services
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActionId
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 550
   assemblies:
   - Meridian.Ui.Services
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigationTarget
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 556
   assemblies:
   - Meridian.Ui.Services
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 558
   assemblies:
   - Meridian.Ui.Services
@@ -255,7 +255,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    path: src/Meridian.Ui.Services/Services/AlertService.cs
     startLine: 565
   assemblies:
   - Meridian.Ui.Services

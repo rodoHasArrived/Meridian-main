@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaField
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 73
   assemblies:
   - Meridian.Contracts
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -108,7 +108,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 84
   assemblies:
   - Meridian.Contracts
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 90
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nullable
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultValue
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidRange
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 108
   assemblies:
   - Meridian.Contracts
@@ -323,7 +323,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnumValues
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 114
   assemblies:
   - Meridian.Contracts
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Format
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 120
   assemblies:
   - Meridian.Contracts
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Example
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 126
   assemblies:
   - Meridian.Contracts
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExchangeSpecific
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 132
   assemblies:
   - Meridian.Contracts
@@ -495,7 +495,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Contracts/Schema/EventSchema.cs
+    path: src/Meridian.Contracts/Schema/EventSchema.cs
     startLine: 138
   assemblies:
   - Meridian.Contracts

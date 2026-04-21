@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStatusReport
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 757
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 757
   assemblies:
   - Meridian.Application
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 758
   assemblies:
   - Meridian.Application
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMonitored
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 759
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasArchivedData
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 760
   assemblies:
   - Meridian.Application
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MonitoredConfig
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 761
   assemblies:
   - Meridian.Application
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivedInfo
-    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
     startLine: 762
   assemblies:
   - Meridian.Application

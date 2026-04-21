@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestFileEntry
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 148
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 153
   assemblies:
   - Meridian.Contracts
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 159
   assemblies:
   - Meridian.Contracts
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 165
   assemblies:
   - Meridian.Contracts
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 171
   assemblies:
   - Meridian.Contracts
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 177
   assemblies:
   - Meridian.Contracts
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumSha256
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 183
   assemblies:
   - Meridian.Contracts
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 189
   assemblies:
   - Meridian.Contracts
@@ -371,7 +371,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressedSizeBytes
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 195
   assemblies:
   - Meridian.Contracts
@@ -414,7 +414,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 201
   assemblies:
   - Meridian.Contracts
@@ -457,7 +457,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimestamp
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 207
   assemblies:
   - Meridian.Contracts
@@ -500,7 +500,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestamp
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 213
   assemblies:
   - Meridian.Contracts
@@ -543,7 +543,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaVersion
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 219
   assemblies:
   - Meridian.Contracts
@@ -586,7 +586,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompressed
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 225
   assemblies:
   - Meridian.Contracts
@@ -629,7 +629,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionType
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 231
   assemblies:
   - Meridian.Contracts
@@ -672,7 +672,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationStatus
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 237
   assemblies:
   - Meridian.Contracts
@@ -715,7 +715,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastVerifiedAt
-    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    path: src/Meridian.Contracts/Manifest/DataManifest.cs
     startLine: 243
   assemblies:
   - Meridian.Contracts

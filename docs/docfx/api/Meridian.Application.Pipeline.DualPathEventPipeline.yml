@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DualPathEventPipeline
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 101
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 163
   assemblies:
   - Meridian.Application
@@ -242,7 +242,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublishTrade
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 186
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublishQuote
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 207
   assemblies:
   - Meridian.Application
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsUnderPressure
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 225
   assemblies:
   - Meridian.Application
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 228
   assemblies:
   - Meridian.Application
@@ -402,7 +402,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotTradePublished
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 235
   assemblies:
   - Meridian.Application
@@ -433,7 +433,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotTradeDropped
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 238
   assemblies:
   - Meridian.Application
@@ -464,7 +464,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotTradeConsumed
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 241
   assemblies:
   - Meridian.Application
@@ -495,7 +495,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotQuotePublished
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 244
   assemblies:
   - Meridian.Application
@@ -526,7 +526,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotQuoteDropped
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 247
   assemblies:
   - Meridian.Application
@@ -557,7 +557,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotQuoteConsumed
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 250
   assemblies:
   - Meridian.Application
@@ -588,7 +588,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeBufferCount
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 253
   assemblies:
   - Meridian.Application
@@ -619,7 +619,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteBufferCount
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 256
   assemblies:
   - Meridian.Application
@@ -650,7 +650,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
+    path: src/Meridian.Application/Pipeline/DualPathEventPipeline.cs
     startLine: 263
   assemblies:
   - Meridian.Application

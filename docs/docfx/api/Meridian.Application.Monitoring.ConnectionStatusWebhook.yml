@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatusWebhook
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 24
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendStatusUpdateAsync
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 211
   assemblies:
   - Meridian.Application
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendConnectionSummaryAsync
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 229
   assemblies:
   - Meridian.Application
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
     startLine: 270
   assemblies:
   - Meridian.Application

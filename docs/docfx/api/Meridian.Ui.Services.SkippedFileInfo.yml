@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkippedFileInfo
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 139
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 141
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 142
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 143
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 144
   assemblies:
   - Meridian.Ui.Services

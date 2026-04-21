@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFactory
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 39
   assemblies:
   - Meridian.Infrastructure
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 46
   assemblies:
   - Meridian.Infrastructure
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAndRegisterAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBackfillProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 103
   assemblies:
   - Meridian.Infrastructure
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSymbolSearchProviders
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 319
   assemblies:
   - Meridian.Infrastructure
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCompositeBackfillProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     startLine: 418
   assemblies:
   - Meridian.Infrastructure

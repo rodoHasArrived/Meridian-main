@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualitySymbolHealthResponse
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Services
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastEvent
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveIssues
-    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Services

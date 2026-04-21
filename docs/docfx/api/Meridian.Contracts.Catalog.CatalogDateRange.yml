@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogDateRange
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 92
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Earliest
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 97
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Latest
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 103
   assemblies:
   - Meridian.Contracts
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalendarDays
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 109
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingDays
-    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
     startLine: 115
   assemblies:
   - Meridian.Contracts

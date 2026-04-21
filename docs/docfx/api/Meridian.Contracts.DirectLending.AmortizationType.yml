@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmortizationType
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bullet
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 69
   assemblies:
   - Meridian.Contracts
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InterestOnly
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 70
   assemblies:
   - Meridian.Contracts
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StraightLine
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 71
   assemblies:
   - Meridian.Contracts
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomSchedule
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 72
   assemblies:
   - Meridian.Contracts

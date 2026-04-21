@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CleanupResult
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 93
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesRemoved
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 96
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesFreed
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 97
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
-    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    path: src/Meridian.Ui.Services/Services/StorageModels.cs
     startLine: 98
   assemblies:
   - Meridian.Ui.Services

@@ -33,7 +33,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosedLot
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 6
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotId
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 7
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 8
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 9
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryPrice
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenedAt
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -274,7 +274,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFillId
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -303,7 +303,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosePrice
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -332,7 +332,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosedAt
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloseFillId
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -390,7 +390,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -419,7 +419,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 19
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HoldingPeriod
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 22
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -481,7 +481,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLongTerm
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 28
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -515,7 +515,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnlPerShare
-    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
     startLine: 31
   assemblies:
   - Meridian.Backtesting.Sdk

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageSymbolBreakdown
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 396
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 398
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 401
   assemblies:
   - Meridian.Contracts
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 404
   assemblies:
   - Meridian.Contracts
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentOfTotal
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 407
   assemblies:
   - Meridian.Contracts
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldestData
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 410
   assemblies:
   - Meridian.Contracts
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewestData
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 413
   assemblies:
   - Meridian.Contracts

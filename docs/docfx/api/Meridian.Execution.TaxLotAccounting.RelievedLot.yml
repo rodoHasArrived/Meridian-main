@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelievedLot
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lot
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelievedQuantity
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosePrice
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -203,7 +203,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 17
   assemblies:
   - Meridian.Execution
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Proceeds
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 21
   assemblies:
   - Meridian.Execution
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostRelieved
-    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
     startLine: 24
   assemblies:
   - Meridian.Execution

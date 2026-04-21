@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractVerificationHostedService
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 51
   assemblies:
   - Meridian.Infrastructure
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 56
   assemblies:
   - Meridian.Infrastructure
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 64
   assemblies:
   - Meridian.Infrastructure
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
+    path: src/Meridian.Infrastructure/Contracts/ContractVerificationExtensions.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure

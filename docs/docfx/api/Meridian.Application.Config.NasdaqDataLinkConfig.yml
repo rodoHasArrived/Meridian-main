@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NasdaqDataLinkConfig
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 145
   assemblies:
   - Meridian.Core
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 145
   assemblies:
   - Meridian.Core
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 146
   assemblies:
   - Meridian.Core
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKey
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 147
   assemblies:
   - Meridian.Core
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Database
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 148
   assemblies:
   - Meridian.Core
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    path: src/Meridian.Core/Config/BackfillConfig.cs
     startLine: 149
   assemblies:
   - Meridian.Core

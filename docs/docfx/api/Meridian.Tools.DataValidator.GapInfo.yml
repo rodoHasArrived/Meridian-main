@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapInfo
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 42
   assemblies:
   - Meridian
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 42
   assemblies:
   - Meridian
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 43
   assemblies:
   - Meridian
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Before
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 44
   assemblies:
   - Meridian
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: After
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 45
   assemblies:
   - Meridian
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian/Tools/DataValidator.cs
+    path: src/Meridian/Tools/DataValidator.cs
     startLine: 46
   assemblies:
   - Meridian

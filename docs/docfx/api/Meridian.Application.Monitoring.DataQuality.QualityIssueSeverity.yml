@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityIssueSeverity
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 7
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Moderate
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Significant
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 22
   assemblies:
   - Meridian.Application

@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostStartup
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 38
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForStreaming
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 72
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDefault
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 78
   assemblies:
   - Meridian.Application
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForBackfill
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 86
   assemblies:
   - Meridian.Application
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForUtility
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 94
   assemblies:
   - Meridian.Application
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRequiredService
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 100
   assemblies:
   - Meridian.Application
@@ -281,7 +281,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetService
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 106
   assemblies:
   - Meridian.Application
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceProvider
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 112
   assemblies:
   - Meridian.Application
@@ -347,7 +347,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigStore
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 117
   assemblies:
   - Meridian.Application
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationService
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 122
   assemblies:
   - Meridian.Application
@@ -409,7 +409,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFactory
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 127
   assemblies:
   - Meridian.Application
@@ -440,7 +440,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pipeline
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 132
   assemblies:
   - Meridian.Application
@@ -471,7 +471,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageOptions
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 137
   assemblies:
   - Meridian.Application
@@ -502,7 +502,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateStreamingClient
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 146
   assemblies:
   - Meridian.Application
@@ -542,7 +542,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSubscriptionOrchestrator
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 158
   assemblies:
   - Meridian.Application
@@ -583,7 +583,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBackfillProviders
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 182
   assemblies:
   - Meridian.Application
@@ -617,7 +617,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCompositeBackfillProvider
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 193
   assemblies:
   - Meridian.Application
@@ -655,7 +655,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateStatusWriter
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 206
   assemblies:
   - Meridian.Application
@@ -696,7 +696,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartHotReload
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 220
   assemblies:
   - Meridian.Application
@@ -740,7 +740,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    path: src/Meridian.Application/Composition/HostStartup.cs
     startLine: 252
   assemblies:
   - Meridian.Application

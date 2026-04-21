@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobStatus
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 688
   assemblies:
   - Meridian.Storage
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 690
   assemblies:
   - Meridian.Storage
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 691
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 692
   assemblies:
   - Meridian.Storage
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 693
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 694
   assemblies:
   - Meridian.Storage

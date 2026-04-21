@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionState
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 97
   assemblies:
   - Meridian.Ui.Services
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivePageTag
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 99
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenPages
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 100
   assemblies:
   - Meridian.Ui.Services
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentPages
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 101
   assemblies:
   - Meridian.Ui.Services
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WidgetLayout
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 102
   assemblies:
   - Meridian.Ui.Services
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveFilters
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 103
   assemblies:
   - Meridian.Ui.Services
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspaceContext
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 104
   assemblies:
   - Meridian.Ui.Services
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowBounds
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 105
   assemblies:
   - Meridian.Ui.Services
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedAt
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 106
   assemblies:
   - Meridian.Ui.Services
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveWorkspaceId
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 107
   assemblies:
   - Meridian.Ui.Services
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationLayout
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 108
   assemblies:
   - Meridian.Ui.Services

@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IHostDashboardServer
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 30
   assemblies:
   - Meridian.Application
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 32
   assemblies:
   - Meridian.Application
@@ -80,7 +80,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
+    path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
     startLine: 33
   assemblies:
   - Meridian.Application

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyActionResult
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 121
   assemblies:
   - Meridian.Ui.Shared
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 121
   assemblies:
   - Meridian.Ui.Shared
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 122
   assemblies:
   - Meridian.Ui.Shared
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Action
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 123
   assemblies:
   - Meridian.Ui.Shared
@@ -159,7 +159,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 124
   assemblies:
   - Meridian.Ui.Shared
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs
     startLine: 125
   assemblies:
   - Meridian.Ui.Shared

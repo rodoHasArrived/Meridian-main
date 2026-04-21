@@ -56,6 +56,10 @@ export interface PromotionEvaluationResult {
   reason: string;
   found: boolean;
   ready: boolean;
+  requiresHumanApproval: boolean;
+  requiresManualOverride: boolean;
+  requiredManualOverrideKind: string | null;
+  blockingReasons: string[] | null;
 }
 
 export interface PromotionDecisionResult {
@@ -63,6 +67,8 @@ export interface PromotionDecisionResult {
   promotionId: string | null;
   newRunId: string | null;
   reason: string;
+  auditReference: string | null;
+  approvedBy: string | null;
 }
 
 export interface PromotionRecord {
@@ -71,10 +77,18 @@ export interface PromotionRecord {
   strategyName: string;
   sourceRunType: string;
   targetRunType: string;
+  sourceRunId: string;
+  targetRunId: string | null;
   qualifyingSharpe: number;
   qualifyingMaxDrawdownPercent: number;
   qualifyingTotalReturn: number;
+  decision: string;
   promotedAt: string;
+  auditReference: string | null;
+  approvedBy: string | null;
+  approvalReason: string | null;
+  reviewNotes: string | null;
+  manualOverrideId: string | null;
 }
 
 // --- Execution / paper session types ---
@@ -136,7 +150,13 @@ export interface PaperSessionReplayVerification {
   mismatchReasons: string[];
   currentPortfolio: ExecutionPortfolioSnapshot | null;
   replayPortfolio: ExecutionPortfolioSnapshot;
+  comparedFillCount: number;
+  comparedOrderCount: number;
+  comparedLedgerEntryCount: number;
+  lastPersistedFillAt: string | null;
+  lastPersistedOrderUpdateAt: string | null;
   verifiedAt: string;
+  verificationAuditId: string | null;
 }
 
 export interface ExecutionAuditEntry {
@@ -182,12 +202,68 @@ export interface OrderSubmitRequest {
   type: "Market" | "Limit" | "Stop";
   quantity: number;
   limitPrice?: number | null;
+  timeInForce?: "Day" | "Gtc" | "Ioc" | "Fok";
+  strategyId?: string | null;
+  runId?: string | null;
+  sessionId?: string | null;
+  manualOverrideId?: string | null;
+  metadata?: Record<string, string> | null;
 }
 
 export interface OrderResult {
   success: boolean;
   orderId: string | null;
   reason: string | null;
+}
+
+export interface ExecutionCircuitBreakerState {
+  isOpen: boolean;
+  reason: string | null;
+  changedBy: string | null;
+  changedAt: string | null;
+}
+
+export interface ExecutionManualOverride {
+  overrideId: string;
+  kind: string;
+  reason: string;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string | null;
+  symbol: string | null;
+  strategyId: string | null;
+  runId: string | null;
+}
+
+export interface ExecutionControlSnapshot {
+  circuitBreaker: ExecutionCircuitBreakerState;
+  defaultMaxPositionSize: number | null;
+  symbolPositionLimits: Record<string, number>;
+  manualOverrides: ExecutionManualOverride[];
+  asOf: string;
+}
+
+export interface PromotionApprovalRequest {
+  runId: string;
+  reviewNotes?: string | null;
+  approvedBy?: string | null;
+  approvalReason?: string | null;
+  manualOverrideId?: string | null;
+}
+
+export interface CreateManualOverrideRequest {
+  kind: string;
+  reason: string;
+  symbol?: string | null;
+  strategyId?: string | null;
+  runId?: string | null;
+  expiresAt?: string | null;
+  correlationId?: string | null;
+}
+
+export interface ClearManualOverrideRequest {
+  reason?: string | null;
+  correlationId?: string | null;
 }
 
 export interface ResearchWorkspaceResponse {

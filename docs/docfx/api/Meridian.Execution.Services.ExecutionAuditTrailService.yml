@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionAuditTrailService
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 44
   assemblies:
   - Meridian.Execution
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 56
   assemblies:
   - Meridian.Execution
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 78
   assemblies:
   - Meridian.Execution
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 96
   assemblies:
   - Meridian.Execution
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 110
   assemblies:
   - Meridian.Execution
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 146
   assemblies:
   - Meridian.Execution
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
-    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
     startLine: 168
   assemblies:
   - Meridian.Execution

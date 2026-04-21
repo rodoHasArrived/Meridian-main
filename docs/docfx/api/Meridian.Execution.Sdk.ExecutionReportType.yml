@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionReportType
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 54
   assemblies:
   - Meridian.Execution.Sdk
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: New
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 56
   assemblies:
   - Meridian.Execution.Sdk
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fill
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 57
   assemblies:
   - Meridian.Execution.Sdk
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartialFill
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 58
   assemblies:
   - Meridian.Execution.Sdk
@@ -130,7 +130,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 59
   assemblies:
   - Meridian.Execution.Sdk
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 60
   assemblies:
   - Meridian.Execution.Sdk
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Modified
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 61
   assemblies:
   - Meridian.Execution.Sdk
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expired
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 62
   assemblies:
   - Meridian.Execution.Sdk

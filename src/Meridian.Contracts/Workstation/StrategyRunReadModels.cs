@@ -78,7 +78,13 @@ public sealed record StrategyRunPromotionSummary(
     StrategyRunPromotionState State,
     StrategyRunMode? SuggestedNextMode,
     bool RequiresReview,
-    string Reason);
+    string Reason,
+    string? SourceRunId = null,
+    string? TargetRunId = null,
+    string? AuditReference = null,
+    string? ApprovalStatus = null,
+    string? ManualOverrideId = null,
+    string? ApprovedBy = null);
 
 /// <summary>
 /// Shared governance summary used by audit and control surfaces.

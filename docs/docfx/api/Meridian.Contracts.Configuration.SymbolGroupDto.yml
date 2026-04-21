@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGroupDto
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 536
   assemblies:
   - Meridian.Contracts
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 538
   assemblies:
   - Meridian.Contracts
@@ -107,7 +107,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 541
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 544
   assemblies:
   - Meridian.Contracts
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Color
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 547
   assemblies:
   - Meridian.Contracts
@@ -230,7 +230,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 550
   assemblies:
   - Meridian.Contracts
@@ -271,7 +271,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 553
   assemblies:
   - Meridian.Contracts
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExpanded
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 556
   assemblies:
   - Meridian.Contracts
@@ -353,7 +353,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SortOrder
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 559
   assemblies:
   - Meridian.Contracts
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 562
   assemblies:
   - Meridian.Contracts
@@ -435,7 +435,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 565
   assemblies:
   - Meridian.Contracts
@@ -476,7 +476,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 568
   assemblies:
   - Meridian.Contracts
@@ -517,7 +517,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SmartCriteria
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 571
   assemblies:
   - Meridian.Contracts

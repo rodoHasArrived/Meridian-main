@@ -1,4 +1,5 @@
 #if WINDOWS
+using System.Text.Json;
 using System.Windows.Controls;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -62,6 +63,9 @@ public sealed class SecurityMasterViewModelTests
             queryService
                 .Setup(service => service.GetCorporateActionsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync([]);
+            queryService
+                .Setup(service => service.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid securityId, CancellationToken _) => CreateSecurityDetail(securityId));
 
             using var viewModel = new SecurityMasterViewModel(
                 LoggingService.Instance,
@@ -79,6 +83,13 @@ public sealed class SecurityMasterViewModelTests
                 viewModel.RuntimeStatusDetail.Contains("Last ingest completed", StringComparison.OrdinalIgnoreCase));
 
             viewModel.SelectedConflict.Should().NotBeNull();
+            viewModel.ConflictGroups.Should().ContainSingle();
+            viewModel.SelectedConflictSummaryText.Should().Contain("Primary identifier");
+            viewModel.SelectedConflictSeverityText.Should().Be("Critical");
+            viewModel.SelectedConflictConfidenceText.Should().Contain("Low-confidence");
+            viewModel.ShowFundReviewActions.Should().BeTrue();
+            viewModel.ShowReconciliationAction.Should().BeTrue();
+            viewModel.ShowReportPackAction.Should().BeTrue();
             viewModel.RuntimeStatusDetail.Should().Contain("Last ingest completed");
             viewModel.ImportSessionText.Should().Contain("Last ingest:");
 
@@ -92,6 +103,61 @@ public sealed class SecurityMasterViewModelTests
             workflowClient.LastResolution.Should().Be("AcceptB");
             workflowClient.LastResolvedBy.Should().Be("desktop-user");
             workflowClient.LastReason.Should().Be("Confirmed against downstream books.");
+            viewModel.ConflictGroups.Should().BeEmpty();
+        });
+    }
+
+    [Fact]
+    public void RefreshWorkflowCommand_TradingParameterConflict_SurfacesBackfillPath()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var workflowClient = new StubSecurityMasterOperatorWorkflowClient(
+                new SecurityMasterIngestStatusResponse
+                {
+                    RetrievedAtUtc = new DateTimeOffset(2026, 4, 16, 14, 15, 0, TimeSpan.Zero)
+                },
+                [
+                    new SecurityMasterConflict(
+                        ConflictId: Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                        SecurityId: Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                        ConflictKind: "FieldMismatch",
+                        FieldPath: "TradingParameters.TickSize",
+                        ProviderA: "provider-a",
+                        ValueA: "0.01",
+                        ProviderB: "provider-b",
+                        ValueB: "0.05",
+                        DetectedAt: new DateTimeOffset(2026, 4, 16, 14, 4, 0, TimeSpan.Zero),
+                        Status: "Open")
+                ]);
+
+            var queryService = new Mock<ISmQueryService>();
+            queryService
+                .Setup(service => service.GetCorporateActionsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([]);
+
+            using var viewModel = new SecurityMasterViewModel(
+                LoggingService.Instance,
+                NotificationService.Instance,
+                Mock.Of<ITradingParametersBackfillService>(),
+                Mock.Of<ISecurityMasterImportService>(),
+                new StubSecurityMasterRuntimeStatus(),
+                workflowClient,
+                navigation,
+                queryService.Object,
+                Mock.Of<ISmService>());
+
+            await WaitForConditionAsync(() => viewModel.OpenConflictCount == 1);
+
+            viewModel.SelectedConflictSeverityText.Should().Be("Critical");
+            viewModel.SelectedConflictAutoResolveText.Should().Contain("Compare provenance");
+            viewModel.ShowBackfillTradingParamsAction.Should().BeTrue();
+            viewModel.ShowReconciliationAction.Should().BeTrue();
+            viewModel.ShowCashFlowAction.Should().BeFalse();
         });
     }
 
@@ -233,6 +299,31 @@ public sealed class SecurityMasterViewModelTests
             _conflicts.Remove(existing);
             return Task.FromResult<SecurityMasterConflict?>(existing with { Status = resolution });
         }
+    }
+
+    private static SecurityDetailDto CreateSecurityDetail(Guid securityId)
+    {
+        var emptyJson = JsonDocument.Parse("{}").RootElement.Clone();
+        return new SecurityDetailDto(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "Apple Inc.",
+            Currency: "USD",
+            CommonTerms: emptyJson,
+            AssetSpecificTerms: emptyJson,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    Kind: SecurityIdentifierKind.Ticker,
+                    Value: "AAPL",
+                    IsPrimary: true,
+                    ValidFrom: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero))
+            ],
+            Aliases: [],
+            Version: 3,
+            EffectiveFrom: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null);
     }
 }
 #endif

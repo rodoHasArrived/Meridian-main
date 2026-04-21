@@ -34,7 +34,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolConfigDto
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 111
   assemblies:
   - Meridian.Contracts
@@ -73,7 +73,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 113
   assemblies:
   - Meridian.Contracts
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 116
   assemblies:
   - Meridian.Contracts
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 119
   assemblies:
   - Meridian.Contracts
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 122
   assemblies:
   - Meridian.Contracts
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 125
   assemblies:
   - Meridian.Contracts
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 128
   assemblies:
   - Meridian.Contracts
@@ -319,7 +319,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 131
   assemblies:
   - Meridian.Contracts
@@ -360,7 +360,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryExchange
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 134
   assemblies:
   - Meridian.Contracts
@@ -401,7 +401,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LocalSymbol
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 137
   assemblies:
   - Meridian.Contracts
@@ -442,7 +442,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 140
   assemblies:
   - Meridian.Contracts
@@ -483,7 +483,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 143
   assemblies:
   - Meridian.Contracts
@@ -524,7 +524,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 146
   assemblies:
   - Meridian.Contracts
@@ -565,7 +565,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTradeDateOrContractMonth
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 149
   assemblies:
   - Meridian.Contracts
@@ -606,7 +606,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionStyle
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 152
   assemblies:
   - Meridian.Contracts
@@ -647,7 +647,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Multiplier
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 155
   assemblies:
   - Meridian.Contracts
@@ -688,7 +688,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 158
   assemblies:
   - Meridian.Contracts

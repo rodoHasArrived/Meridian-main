@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IHistoricalAggregateBarProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
     startLine: 8
   assemblies:
   - Meridian.Infrastructure
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedGranularities
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
     startLine: 13
   assemblies:
   - Meridian.Infrastructure
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregateBarsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
     startLine: 18
   assemblies:
   - Meridian.Infrastructure

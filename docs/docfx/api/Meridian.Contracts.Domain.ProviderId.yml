@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 25
   assemblies:
   - Meridian.Contracts
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Explicit
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 35
   assemblies:
   - Meridian.Contracts
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 37
   assemblies:
   - Meridian.Contracts
@@ -278,7 +278,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InteractiveBrokers
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 39
   assemblies:
   - Meridian.Contracts
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nyse
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -336,7 +336,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stooq
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -365,7 +365,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tiingo
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -394,7 +394,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Finnhub
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 47
   assemblies:
   - Meridian.Contracts
@@ -423,7 +423,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlphaVantage
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 49
   assemblies:
   - Meridian.Contracts
@@ -452,7 +452,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 52
   assemblies:
   - Meridian.Contracts
@@ -489,7 +489,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 56
   assemblies:
   - Meridian.Contracts
@@ -528,7 +528,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHashCode
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 59
   assemblies:
   - Meridian.Contracts
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareTo
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -600,7 +600,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts
@@ -632,7 +632,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Equality
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 70
   assemblies:
   - Meridian.Contracts
@@ -671,7 +671,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Inequality
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
+    path: src/Meridian.Contracts/Domain/ProviderId.cs
     startLine: 73
   assemblies:
   - Meridian.Contracts

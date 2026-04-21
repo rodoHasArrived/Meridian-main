@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IExecutionGateway
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 8
   assemblies:
   - Meridian.Execution.Sdk
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 11
   assemblies:
   - Meridian.Execution.Sdk
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 14
   assemblies:
   - Meridian.Execution.Sdk
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 17
   assemblies:
   - Meridian.Execution.Sdk
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 20
   assemblies:
   - Meridian.Execution.Sdk
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 23
   assemblies:
   - Meridian.Execution.Sdk
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 26
   assemblies:
   - Meridian.Execution.Sdk
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 29
   assemblies:
   - Meridian.Execution.Sdk
@@ -304,7 +304,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
-    path: ../../src/Meridian.Execution.Sdk/IExecutionGateway.cs
+    path: src/Meridian.Execution.Sdk/IExecutionGateway.cs
     startLine: 32
   assemblies:
   - Meridian.Execution.Sdk

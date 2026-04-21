@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionCodec
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 208
   assemblies:
   - Meridian.Storage
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 211
   assemblies:
   - Meridian.Storage
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LZ4
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 213
   assemblies:
   - Meridian.Storage
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gzip
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 215
   assemblies:
   - Meridian.Storage
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Zstd
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 217
   assemblies:
   - Meridian.Storage
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brotli
-    path: ../../src/Meridian.Storage/StorageOptions.cs
+    path: src/Meridian.Storage/StorageOptions.cs
     startLine: 219
   assemblies:
   - Meridian.Storage

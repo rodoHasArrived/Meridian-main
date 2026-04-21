@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusResponse
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uptime
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -223,7 +223,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pipeline
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts

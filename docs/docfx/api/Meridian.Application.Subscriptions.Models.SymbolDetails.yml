@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolDetails
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -84,7 +84,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 31
   assemblies:
   - Meridian.Core
@@ -170,7 +170,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -199,7 +199,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 39
   assemblies:
   - Meridian.Core
@@ -257,7 +257,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 42
   assemblies:
   - Meridian.Core
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetType
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 45
   assemblies:
   - Meridian.Core
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sector
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 48
   assemblies:
   - Meridian.Core
@@ -344,7 +344,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Industry
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 51
   assemblies:
   - Meridian.Core
@@ -373,7 +373,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 54
   assemblies:
   - Meridian.Core
@@ -402,7 +402,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 57
   assemblies:
   - Meridian.Core
@@ -431,7 +431,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCap
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 60
   assemblies:
   - Meridian.Core
@@ -460,7 +460,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageVolume
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 63
   assemblies:
   - Meridian.Core
@@ -489,7 +489,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Week52High
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 66
   assemblies:
   - Meridian.Core
@@ -518,7 +518,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Week52Low
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -547,7 +547,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastPrice
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 72
   assemblies:
   - Meridian.Core
@@ -576,7 +576,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebUrl
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 75
   assemblies:
   - Meridian.Core
@@ -605,7 +605,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogoUrl
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 78
   assemblies:
   - Meridian.Core
@@ -634,7 +634,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IpoDate
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 81
   assemblies:
   - Meridian.Core
@@ -663,7 +663,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaysDividend
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 84
   assemblies:
   - Meridian.Core
@@ -692,7 +692,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendYield
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 87
   assemblies:
   - Meridian.Core
@@ -721,7 +721,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeRatio
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 90
   assemblies:
   - Meridian.Core
@@ -750,7 +750,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharesOutstanding
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 93
   assemblies:
   - Meridian.Core
@@ -779,7 +779,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 96
   assemblies:
   - Meridian.Core
@@ -808,7 +808,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeFigi
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 99
   assemblies:
   - Meridian.Core
@@ -837,7 +837,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Isin
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 102
   assemblies:
   - Meridian.Core
@@ -866,7 +866,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cusip
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 105
   assemblies:
   - Meridian.Core
@@ -895,7 +895,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 108
   assemblies:
   - Meridian.Core
@@ -924,7 +924,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
     startLine: 111
   assemblies:
   - Meridian.Core

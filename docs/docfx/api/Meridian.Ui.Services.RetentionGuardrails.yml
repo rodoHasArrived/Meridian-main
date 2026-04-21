@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionGuardrails
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinTickDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinBarDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 25
   assemblies:
   - Meridian.Ui.Services
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinQuoteDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 26
   assemblies:
   - Meridian.Ui.Services
@@ -149,7 +149,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDepthDataDays
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDailyDeletedFiles
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Services
@@ -207,7 +207,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireChecksumVerification
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Services
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireDryRunPreview
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 30
   assemblies:
   - Meridian.Ui.Services
@@ -265,7 +265,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowDeleteDuringTradingHours
-    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
     startLine: 31
   assemblies:
   - Meridian.Ui.Services

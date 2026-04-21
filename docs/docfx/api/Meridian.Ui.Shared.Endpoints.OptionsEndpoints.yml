@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapOptionsEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs
     startLine: 21
   assemblies:
   - Meridian.Ui.Shared

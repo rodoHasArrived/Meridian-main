@@ -41,7 +41,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UserPermission
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewMarketData
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -137,7 +137,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewHistoricalData
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -165,7 +165,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TriggerBackfill
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 21
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageProviders
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 24
   assemblies:
   - Meridian.Contracts
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewTrades
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -249,7 +249,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteTrades
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 31
   assemblies:
   - Meridian.Contracts
@@ -277,7 +277,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageOrders
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 34
   assemblies:
   - Meridian.Contracts
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewAnalytics
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 38
   assemblies:
   - Meridian.Contracts
@@ -333,7 +333,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportData
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 41
   assemblies:
   - Meridian.Contracts
@@ -361,7 +361,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewConfig
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 45
   assemblies:
   - Meridian.Contracts
@@ -389,7 +389,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyConfig
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -417,7 +417,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageCredentials
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 51
   assemblies:
   - Meridian.Contracts
@@ -445,7 +445,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewDiagnostics
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts
@@ -473,7 +473,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageStorage
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -501,7 +501,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdminMaintenance
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -529,7 +529,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageUsers
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 64
   assemblies:
   - Meridian.Contracts
@@ -557,7 +557,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewStrategies
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts
@@ -585,7 +585,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageStrategies
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 71
   assemblies:
   - Meridian.Contracts
@@ -613,7 +613,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewSecurityMaster
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 75
   assemblies:
   - Meridian.Contracts
@@ -641,7 +641,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifySecurityMaster
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 78
   assemblies:
   - Meridian.Contracts
@@ -669,7 +669,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewDirectLending
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 82
   assemblies:
   - Meridian.Contracts
@@ -697,7 +697,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageDirectLending
-    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    path: src/Meridian.Contracts/Auth/UserPermission.cs
     startLine: 85
   assemblies:
   - Meridian.Contracts

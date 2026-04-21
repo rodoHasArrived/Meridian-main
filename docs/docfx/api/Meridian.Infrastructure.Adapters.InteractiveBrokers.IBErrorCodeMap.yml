@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBErrorCodeMap
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 396
   assemblies:
   - Meridian.Infrastructure
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetErrorInfo
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 420
   assemblies:
   - Meridian.Infrastructure
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 424
   assemblies:
   - Meridian.Infrastructure
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatError
-    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
     startLine: 427
   assemblies:
   - Meridian.Infrastructure

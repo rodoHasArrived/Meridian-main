@@ -37,8 +37,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionEvaluationResult
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 331
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 451
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -75,8 +75,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 331
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 451
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -139,8 +139,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 332
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 452
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -168,8 +168,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 333
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 453
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -197,8 +197,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 334
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 454
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -226,8 +226,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceMode
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 335
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 455
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -255,8 +255,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetMode
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 336
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 456
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -284,8 +284,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEligible
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 337
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 457
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -313,8 +313,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharpeRatio
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 338
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 458
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -342,8 +342,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDrawdownPercent
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 339
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 459
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -371,8 +371,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalReturn
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 340
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 460
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -400,8 +400,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 341
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 461
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -429,8 +429,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Found
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 342
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 462
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -458,8 +458,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ready
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 343
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 463
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -487,8 +487,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresHumanApproval
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 344
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 464
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -516,8 +516,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresManualOverride
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 345
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 465
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -545,8 +545,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiredManualOverrideKind
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 346
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 466
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -574,8 +574,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BlockingReasons
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 347
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 467
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -603,8 +603,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 349
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 469
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -637,8 +637,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotReady
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 355
+    path: src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 475
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services

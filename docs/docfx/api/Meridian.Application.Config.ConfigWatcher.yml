@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigWatcher
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigChanged
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 22
   assemblies:
   - Meridian.Application
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 23
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DebounceInterval
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 47
   assemblies:
   - Meridian.Application
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stop
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    path: src/Meridian.Application/Config/ConfigWatcher.cs
     startLine: 128
   assemblies:
   - Meridian.Application

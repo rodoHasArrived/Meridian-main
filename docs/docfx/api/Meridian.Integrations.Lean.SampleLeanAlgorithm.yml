@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleLeanAlgorithm
-    path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
+    path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
     startLine: 12
   assemblies:
   - Meridian
@@ -747,7 +747,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
-    path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
+    path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
     startLine: 22
   assemblies:
   - Meridian
@@ -776,7 +776,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnData
-    path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
+    path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
     startLine: 46
   assemblies:
   - Meridian
@@ -808,7 +808,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnEndOfAlgorithm
-    path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
+    path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
     startLine: 137
   assemblies:
   - Meridian

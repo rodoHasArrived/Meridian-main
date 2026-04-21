@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthDto
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 139
   assemblies:
   - Meridian.Contracts
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionId
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 141
   assemblies:
   - Meridian.Contracts
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 144
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 147
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 150
   assemblies:
   - Meridian.Contracts
@@ -228,7 +228,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastHeartbeatTime
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 153
   assemblies:
   - Meridian.Contracts
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissedHeartbeats
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 156
   assemblies:
   - Meridian.Contracts
@@ -310,7 +310,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UptimeSeconds
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 159
   assemblies:
   - Meridian.Contracts
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyMs
-    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
     startLine: 162
   assemblies:
   - Meridian.Contracts

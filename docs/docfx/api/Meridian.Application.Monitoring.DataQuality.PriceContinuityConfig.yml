@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceContinuityConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 399
   assemblies:
   - Meridian.Application
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapThresholdPercent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 404
   assemblies:
   - Meridian.Application
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LargeGapThresholdPercent
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 409
   assemblies:
   - Meridian.Application
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxPriceAge
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 414
   assemblies:
   - Meridian.Application
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
     startLine: 416
   assemblies:
   - Meridian.Application

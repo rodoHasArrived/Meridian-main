@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundAccountsDto
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 196
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 196
   assemblies:
   - Meridian.Contracts
@@ -104,7 +104,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 197
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodianAccounts
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankAccounts
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 199
   assemblies:
   - Meridian.Contracts
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageAccounts
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 200
   assemblies:
   - Meridian.Contracts
@@ -220,7 +220,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OtherAccounts
-    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
     startLine: 201
   assemblies:
   - Meridian.Contracts

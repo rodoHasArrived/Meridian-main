@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBackgroundTaskSchedulerService
-    path: ../../src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
+    path: src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
     startLine: 7
   assemblies:
   - Meridian.Ui.Services
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleTaskAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
+    path: src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
     startLine: 9
   assemblies:
   - Meridian.Ui.Services
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelTaskAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
+    path: src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTaskRunning
-    path: ../../src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
+    path: src/Meridian.Ui.Services/Contracts/IBackgroundTaskSchedulerService.cs
     startLine: 11
   assemblies:
   - Meridian.Ui.Services

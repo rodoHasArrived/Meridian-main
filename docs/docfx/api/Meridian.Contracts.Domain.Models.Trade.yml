@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trade
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aggressor
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 38
   assemblies:
   - Meridian.Contracts
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawConditions
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 54
   assemblies:
   - Meridian.Contracts
@@ -352,7 +352,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalConditions
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 60
   assemblies:
   - Meridian.Contracts
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/Trade.cs
+    path: src/Meridian.Contracts/Domain/Models/Trade.cs
     startLine: 65
   assemblies:
   - Meridian.Contracts

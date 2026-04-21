@@ -1,9 +1,10 @@
 // Security Master Lifecycle Diagram
 // Meridian v1.8.x
-// Last Updated: 2026-04-07
+// Last Updated: 2026-04-21
 //
-// This diagram shows the current Security Master flow across import, event
-// storage, projections, cache warmup, and workstation/query consumers.
+// This diagram shows the current Security Master flow across import, ingest
+// status, conflict triage, projections, cache warmup, and workstation/query
+// consumers.
 
 digraph SecurityMasterLifecycle {
   rankdir=LR;
@@ -12,7 +13,7 @@ digraph SecurityMasterLifecycle {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - Security Master Lifecycle\nImport, event storage, projections, and workstation consumers | v1.8.x";
+  label="Meridian - Security Master Lifecycle\nImport, ingest status, conflict triage, and workstation consumers | v1.8.x";
 
   subgraph cluster_inputs {
     label="Inputs and Entry Paths";
@@ -21,13 +22,15 @@ digraph SecurityMasterLifecycle {
     bgcolor="#faf5ff";
 
     WPF_PAGE [fillcolor="#805ad5", fontcolor="white",
-              label="SecurityMasterPage\nWPF create/edit/import"];
+              label="SecurityMasterPage\nsearch / detail /\ngrouped conflict triage"];
+    WORKFLOW_CLIENT [fillcolor="#c4b5fd",
+                     label="SecurityMasterOperatorWorkflowClient\ningest posture / grouped queue\nresolve + dismiss actions"];
     API_ENDPOINTS [fillcolor="#c4b5fd",
                    label="Security Master endpoints\n/api/security-master/*\n/api/workstation/security-master/*"];
     CSV_PARSER [fillcolor="#fbd38d",
                 label="SecurityMasterCsvParser\nCSV -> CreateSecurityRequest"];
     IMPORT_SERVICE [fillcolor="#fbd38d",
-                    label="SecurityMasterImportService\nCSV / JSON bulk import\nprogress + conflict counts"];
+                    label="SecurityMasterImportService\nCSV / JSON bulk import\nsession snapshots + conflict counts"];
     CORPORATE_ACTIONS [fillcolor="#fbd38d",
                        label="PolygonCorporateActionFetcher\ncorporate action ingestion"];
   }
@@ -41,7 +44,9 @@ digraph SecurityMasterLifecycle {
     SECURITY_SERVICE [fillcolor="#93c5fd",
                       label="SecurityMasterService\ncreate / update / deactivate"];
     CONFLICT_SERVICE [fillcolor="#bfdbfe",
-                      label="SecurityMasterConflictService\nduplicate / ambiguity handling"];
+                      label="SecurityMasterConflictService\ndetect / queue / resolve\nprovider conflicts"];
+    INGEST_STATUS_SERVICE [fillcolor="#bfdbfe",
+                           label="SecurityMasterIngestStatusService\nactive import + last completed\nsession snapshot"];
     AGGREGATE_REBUILDER [fillcolor="#bfdbfe",
                          label="SecurityMasterAggregateRebuilder\nreplay security streams"];
     PROJECTION_SERVICE [fillcolor="#bfdbfe",
@@ -56,6 +61,8 @@ digraph SecurityMasterLifecycle {
                   label="SecurityMasterCanonicalSymbolSeedService\nseed canonical-symbol cache"];
     LOOKUP [fillcolor="#d1fae5",
             label="SecurityMasterSecurityReferenceLookup\nportfolio / ledger enrichment"];
+    CONFLICT_QUEUE [shape=note, fillcolor="#feebc8",
+                    label="Open conflict queue +\nresolution state live in-memory\ntoday"];
     NULL_FALLBACKS [shape=note, fillcolor="#feebc8",
                     label="NullSecurityMaster* fallbacks\nkeep APIs routable when Postgres\nsecurity-master config is absent"];
   }
@@ -74,12 +81,19 @@ digraph SecurityMasterLifecycle {
                       label="PostgresSecurityMasterStore\nprojection records + lookups"];
   }
 
+  WPF_PAGE -> WORKFLOW_CLIENT [style=dashed, color="#2b6cb0",
+                               label="poll posture / grouped queue"];
   WPF_PAGE -> IMPORT_SERVICE [label="bulk import"];
+  WPF_PAGE -> QUERY_SERVICE [style=dashed, color="#2b6cb0",
+                             label="detail / history /\ntrading params"];
   API_ENDPOINTS -> IMPORT_SERVICE [label="import requests"];
+  WORKFLOW_CLIENT -> API_ENDPOINTS [label="HTTP status + resolve"];
+  API_ENDPOINTS -> CONFLICT_SERVICE [label="open queue / resolve"];
+  API_ENDPOINTS -> INGEST_STATUS_SERVICE [label="ingest status"];
   IMPORT_SERVICE -> CSV_PARSER [label="parse CSV"];
-  IMPORT_SERVICE -> SECURITY_SERVICE [label="CreateAsync"];
+  IMPORT_SERVICE -> SECURITY_SERVICE [label="create / update"];
   IMPORT_SERVICE -> CONFLICT_SERVICE [style=dashed, color="#ed8936",
-                                      label="count/report conflicts"];
+                                      label="record conflicts + counts"];
 
   WPF_PAGE -> SECURITY_SERVICE [label="create / edit"];
   API_ENDPOINTS -> QUERY_SERVICE [label="query detail/history"];
@@ -88,7 +102,11 @@ digraph SecurityMasterLifecycle {
   SECURITY_SERVICE -> SNAPSHOT_STORE [style=dashed, color="#c53030",
                                       label="snapshot cadence"];
   CONFLICT_SERVICE -> PROJECTION_STORE [style=dashed, color="#ed8936",
-                                        label="open conflict review"];
+                                        label="scan projection identifiers"];
+  CONFLICT_SERVICE -> CONFLICT_QUEUE [style=dashed, color="#ed8936",
+                                      label="track open queue"];
+  INGEST_STATUS_SERVICE -> IMPORT_SERVICE [style=dashed, color="#718096",
+                                           label="active + completed snapshots"];
   CORPORATE_ACTIONS -> EVENT_STORE [label="append corp actions"];
 
   WARMUP_SERVICE -> PROJECTION_SERVICE [label="startup warm"];

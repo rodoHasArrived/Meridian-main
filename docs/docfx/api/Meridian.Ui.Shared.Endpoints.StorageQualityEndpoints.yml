@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageQualityEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapStorageQualityEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapQualityDropsEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs
     startLine: 280
   assemblies:
   - Meridian.Ui.Shared

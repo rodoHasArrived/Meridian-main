@@ -334,6 +334,36 @@ public sealed class PaperSessionPersistenceService
         }
 
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
+        var comparedFillCount = 0;
+        var comparedOrderCount = detail.OrderHistory?.Count ?? 0;
+        var comparedLedgerEntryCount = 0;
+        DateTimeOffset? lastPersistedFillAt = null;
+        DateTimeOffset? lastPersistedOrderUpdateAt = null;
+
+        if (_store is not null)
+        {
+            var fillsTask = _store.LoadFillsAsync(sessionId, ct);
+            var ordersTask = _store.LoadOrderHistoryAsync(sessionId, ct);
+            var ledgerTask = _store.LoadLedgerJournalAsync(sessionId, ct);
+            await Task.WhenAll(fillsTask, ordersTask, ledgerTask).ConfigureAwait(false);
+
+            var persistedFills = await fillsTask.ConfigureAwait(false);
+            var persistedOrders = await ordersTask.ConfigureAwait(false);
+            var persistedLedger = await ledgerTask.ConfigureAwait(false);
+
+            comparedFillCount = persistedFills.Count;
+            comparedOrderCount = persistedOrders.Count;
+            comparedLedgerEntryCount = persistedLedger.Count;
+            lastPersistedFillAt = persistedFills.Count == 0
+                ? null
+                : persistedFills.Max(static fill => fill.Timestamp);
+            lastPersistedOrderUpdateAt = persistedOrders.Count == 0
+                ? null
+                : persistedOrders.Max(static order => order.LastUpdatedAt ?? order.CreatedAt);
+
+            CompareOrderHistory(detail.OrderHistory, persistedOrders, mismatchReasons);
+        }
+
         return new PaperSessionReplayVerificationDto(
             Summary: detail.Summary,
             Symbols: detail.Symbols,
@@ -342,7 +372,13 @@ public sealed class PaperSessionPersistenceService
             MismatchReasons: mismatchReasons,
             CurrentPortfolio: detail.Portfolio,
             ReplayPortfolio: replayPortfolio,
-            VerifiedAt: DateTimeOffset.UtcNow);
+            ComparedFillCount: comparedFillCount,
+            ComparedOrderCount: comparedOrderCount,
+            ComparedLedgerEntryCount: comparedLedgerEntryCount,
+            LastPersistedFillAt: lastPersistedFillAt,
+            LastPersistedOrderUpdateAt: lastPersistedOrderUpdateAt,
+            VerifiedAt: DateTimeOffset.UtcNow,
+            VerificationAuditId: null);
     }
 
     // ------------------------------------------------------------------
@@ -447,7 +483,7 @@ public sealed class PaperSessionPersistenceService
         IsActive: session.IsActive,
         Symbols: session.Symbols);
 
-    private static IReadOnlyList<string> ComparePortfolios(
+    private static List<string> ComparePortfolios(
         ExecutionPortfolioSnapshotDto? current,
         ExecutionPortfolioSnapshotDto replay)
     {
@@ -515,11 +551,69 @@ public sealed class PaperSessionPersistenceService
         string label,
         decimal current,
         decimal replay,
-        ICollection<string> mismatchReasons)
+        List<string> mismatchReasons)
     {
         if (current != replay)
         {
             mismatchReasons.Add($"{label} differs: current={current:G29}, replay={replay:G29}.");
+        }
+    }
+
+    private static void CompareOrderHistory(
+        IReadOnlyList<OrderState>? currentOrders,
+        IReadOnlyList<OrderState> persistedOrders,
+        List<string> mismatchReasons)
+    {
+        var currentCount = currentOrders?.Count ?? 0;
+        if (currentCount != persistedOrders.Count)
+        {
+            mismatchReasons.Add(
+                $"Order history count differs: current={currentCount}, persisted={persistedOrders.Count}.");
+        }
+
+        if (currentOrders is null || currentOrders.Count == 0 || persistedOrders.Count == 0)
+        {
+            return;
+        }
+
+        var currentById = currentOrders
+            .GroupBy(static order => order.OrderId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Last(),
+                StringComparer.OrdinalIgnoreCase);
+        var persistedById = persistedOrders
+            .GroupBy(static order => order.OrderId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Last(),
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var orderId in currentById.Keys.Except(persistedById.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            mismatchReasons.Add($"Persisted order history is missing order {orderId}.");
+        }
+
+        foreach (var orderId in persistedById.Keys.Except(currentById.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            mismatchReasons.Add($"Persisted order history contains unexpected order {orderId}.");
+        }
+
+        foreach (var orderId in currentById.Keys.Intersect(persistedById.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            var current = currentById[orderId];
+            var persisted = persistedById[orderId];
+            if (current.Status != persisted.Status)
+            {
+                mismatchReasons.Add(
+                    $"Order {orderId} status differs: current={current.Status}, persisted={persisted.Status}.");
+            }
+
+            if (current.FilledQuantity != persisted.FilledQuantity)
+            {
+                mismatchReasons.Add(
+                    $"Order {orderId} filled quantity differs: current={current.FilledQuantity:G29}, persisted={persisted.FilledQuantity:G29}.");
+            }
         }
     }
 
@@ -592,4 +686,10 @@ public sealed record PaperSessionReplayVerificationDto(
     IReadOnlyList<string> MismatchReasons,
     ExecutionPortfolioSnapshotDto? CurrentPortfolio,
     ExecutionPortfolioSnapshotDto ReplayPortfolio,
-    DateTimeOffset VerifiedAt);
+    int ComparedFillCount,
+    int ComparedOrderCount,
+    int ComparedLedgerEntryCount,
+    DateTimeOffset? LastPersistedFillAt,
+    DateTimeOffset? LastPersistedOrderUpdateAt,
+    DateTimeOffset VerifiedAt,
+    string? VerificationAuditId);

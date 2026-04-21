@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetadataEnrichmentService
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMetadataAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMetadataBatchAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 56
   assemblies:
   - Meridian.Application
@@ -176,7 +176,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilterSymbolsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 77
   assemblies:
   - Meridian.Application
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableSectorsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 152
   assemblies:
   - Meridian.Application
@@ -244,7 +244,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableIndustriesAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -282,7 +282,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMetadataAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 192
   assemblies:
   - Meridian.Application
@@ -317,7 +317,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMetadataBatchAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 202
   assemblies:
   - Meridian.Application
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CategorizeMarketCap
-    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
     startLine: 218
   assemblies:
   - Meridian.Application

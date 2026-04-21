@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagedFile
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 825
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 827
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OriginalSize
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 828
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checksum
-    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
     startLine: 829
   assemblies:
   - Meridian.Ui.Services

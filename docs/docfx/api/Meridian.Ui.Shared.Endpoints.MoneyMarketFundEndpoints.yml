@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MoneyMarketFundEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Shared
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapMoneyMarketFundEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs
     startLine: 17
   assemblies:
   - Meridian.Ui.Shared

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MonotonicityStats
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 449
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 449
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsChecked
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 450
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalViolations
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 451
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGaps
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 452
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStats
-    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
     startLine: 453
   assemblies:
   - Meridian.Application

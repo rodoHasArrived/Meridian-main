@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunStore
-    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRunAsync
-    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
-    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
     startLine: 38
   assemblies:
   - Meridian.Strategies
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestRunAsync
-    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
     startLine: 60
   assemblies:
   - Meridian.Strategies
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllRunsAsync
-    path: ../../src/Meridian.Strategies/Storage/StrategyRunStore.cs
+    path: src/Meridian.Strategies/Storage/StrategyRunStore.cs
     startLine: 76
   assemblies:
   - Meridian.Strategies

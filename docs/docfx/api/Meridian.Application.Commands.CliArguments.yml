@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliArguments
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 6
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Help
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelfTest
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 10
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SimulateFeed
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 12
   assemblies:
   - Meridian.Application
@@ -212,7 +212,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRun
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 13
   assemblies:
   - Meridian.Application
@@ -241,7 +241,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quickstart
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -270,7 +270,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Offline
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfig
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 16
   assemblies:
   - Meridian.Application
@@ -328,7 +328,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSchemas
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 17
   assemblies:
   - Meridian.Application
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrictSchemas
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 18
   assemblies:
   - Meridian.Application
@@ -386,7 +386,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchConfig
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckConfig
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 25
   assemblies:
   - Meridian.Application
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resume
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecommendProviders
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 37
   assemblies:
   - Meridian.Application
@@ -511,7 +511,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -540,7 +540,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsMonitored
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 41
   assemblies:
   - Meridian.Application
@@ -569,7 +569,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsArchived
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -598,7 +598,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAdd
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 43
   assemblies:
   - Meridian.Application
@@ -627,7 +627,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsRemove
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 44
   assemblies:
   - Meridian.Application
@@ -656,7 +656,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsImport
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 45
   assemblies:
   - Meridian.Application
@@ -685,7 +685,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolStatus
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 46
   assemblies:
   - Meridian.Application
@@ -714,7 +714,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoTrades
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 49
   assemblies:
   - Meridian.Application
@@ -743,7 +743,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoDepth
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 50
   assemblies:
   - Meridian.Application
@@ -772,7 +772,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 51
   assemblies:
   - Meridian.Application
@@ -801,7 +801,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Update
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 52
   assemblies:
   - Meridian.Application
@@ -830,7 +830,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProvider
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 55
   assemblies:
   - Meridian.Application
@@ -859,7 +859,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillSymbols
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 56
   assemblies:
   - Meridian.Application
@@ -888,7 +888,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillFrom
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 57
   assemblies:
   - Meridian.Application
@@ -917,7 +917,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTo
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 58
   assemblies:
   - Meridian.Application
@@ -946,7 +946,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillGranularity
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 59
   assemblies:
   - Meridian.Application
@@ -975,7 +975,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 62
   assemblies:
   - Meridian.Application
@@ -1004,7 +1004,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Replay
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 63
   assemblies:
   - Meridian.Application
@@ -1033,7 +1033,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpPort
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 64
   assemblies:
   - Meridian.Application
@@ -1062,7 +1062,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 65
   assemblies:
   - Meridian.Application
@@ -1091,7 +1091,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Raw
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 70
   assemblies:
   - Meridian.Application
@@ -1122,7 +1122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasSymbolCommand
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 75
   assemblies:
   - Meridian.Application
@@ -1153,7 +1153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parse
-    path: ../../src/Meridian.Application/Commands/CliArguments.cs
+    path: src/Meridian.Application/Commands/CliArguments.cs
     startLine: 82
   assemblies:
   - Meridian.Application

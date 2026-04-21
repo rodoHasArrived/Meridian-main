@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveReconciliationExceptionRequest
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -91,7 +91,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolutionNote
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 199
   assemblies:
   - Meridian.Contracts
@@ -120,7 +120,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssignedTo
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
     startLine: 200
   assemblies:
   - Meridian.Contracts

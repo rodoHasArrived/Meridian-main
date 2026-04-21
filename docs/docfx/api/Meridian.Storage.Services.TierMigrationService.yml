@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierMigrationService
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 9
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 14
   assemblies:
   - Meridian.Storage
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrateAsync
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 20
   assemblies:
   - Meridian.Storage
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlanMigrationAsync
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 94
   assemblies:
   - Meridian.Storage
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetermineTargetTier
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 155
   assemblies:
   - Meridian.Storage
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTierStatisticsAsync
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 174
   assemblies:
   - Meridian.Storage

@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCheckpoint
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 310
   assemblies:
   - Meridian.Ui.Services
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobId
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 312
   assemblies:
   - Meridian.Ui.Services
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 315
   assemblies:
   - Meridian.Ui.Services
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 318
   assemblies:
   - Meridian.Ui.Services
@@ -191,7 +191,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 321
   assemblies:
   - Meridian.Ui.Services
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 324
   assemblies:
   - Meridian.Ui.Services
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 327
   assemblies:
   - Meridian.Ui.Services
@@ -314,7 +314,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 330
   assemblies:
   - Meridian.Ui.Services
@@ -355,7 +355,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 333
   assemblies:
   - Meridian.Ui.Services
@@ -396,7 +396,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBarsDownloaded
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 336
   assemblies:
   - Meridian.Ui.Services
@@ -437,7 +437,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCheckpoints
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 339
   assemblies:
   - Meridian.Ui.Services
@@ -478,7 +478,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedCount
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 345
   assemblies:
   - Meridian.Ui.Services
@@ -519,7 +519,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedCount
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 352
   assemblies:
   - Meridian.Ui.Services
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingCount
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 359
   assemblies:
   - Meridian.Ui.Services
@@ -601,7 +601,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressPercent
-    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
     startLine: 366
   assemblies:
   - Meridian.Ui.Services

@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityAnalyzerConfig
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 168
   assemblies:
   - Meridian.Application
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSeverityToReport
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 169
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 170
   assemblies:
   - Meridian.Application
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeRange
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 171
   assemblies:
   - Meridian.Application
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomSettings
-    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
     startLine: 172
   assemblies:
   - Meridian.Application

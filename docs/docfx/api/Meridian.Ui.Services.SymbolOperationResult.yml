@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolOperationResult
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 552
   assemblies:
   - Meridian.Ui.Services
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 554
   assemblies:
   - Meridian.Ui.Services
@@ -85,7 +85,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 555
   assemblies:
   - Meridian.Ui.Services
@@ -114,7 +114,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 556
   assemblies:
   - Meridian.Ui.Services
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
     startLine: 557
   assemblies:
   - Meridian.Ui.Services

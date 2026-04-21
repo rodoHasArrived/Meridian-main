@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Shared
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapWorkstationEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
     startLine: 28
   assemblies:
   - Meridian.Ui.Shared

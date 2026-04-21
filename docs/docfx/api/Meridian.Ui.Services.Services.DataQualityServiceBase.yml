@@ -32,7 +32,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 172
   assemblies:
   - Meridian.Ui.Services
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 177
   assemblies:
   - Meridian.Ui.Services
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 182
   assemblies:
   - Meridian.Ui.Services
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostWithResponseAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 187
   assemblies:
   - Meridian.Ui.Services
@@ -202,7 +202,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualitySummaryAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 189
   assemblies:
   - Meridian.Ui.Services
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityScoresAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 192
   assemblies:
   - Meridian.Ui.Services
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolQualityAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 200
   assemblies:
   - Meridian.Ui.Services
@@ -305,7 +305,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityAlertsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 203
   assemblies:
   - Meridian.Ui.Services
@@ -341,7 +341,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgeAlertAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 211
   assemblies:
   - Meridian.Ui.Services
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourceRankingsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 218
   assemblies:
   - Meridian.Ui.Services
@@ -413,7 +413,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityTrendsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 221
   assemblies:
   - Meridian.Ui.Services
@@ -449,7 +449,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 224
   assemblies:
   - Meridian.Ui.Services
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQualityCheckAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 232
   assemblies:
   - Meridian.Ui.Services
@@ -521,7 +521,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataGapsAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 235
   assemblies:
   - Meridian.Ui.Services
@@ -557,7 +557,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifySymbolIntegrityAsync
-    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
     startLine: 254
   assemblies:
   - Meridian.Ui.Services

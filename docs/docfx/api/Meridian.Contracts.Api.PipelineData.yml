@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineData
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 86
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishedCount
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 88
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DroppedCount
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 91
   assemblies:
   - Meridian.Contracts
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsumedCount
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 94
   assemblies:
   - Meridian.Contracts
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentQueueSize
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 97
   assemblies:
   - Meridian.Contracts
@@ -226,7 +226,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeakQueueSize
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 100
   assemblies:
   - Meridian.Contracts
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueCapacity
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 103
   assemblies:
   - Meridian.Contracts
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 106
   assemblies:
   - Meridian.Contracts
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageProcessingTimeUs
-    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    path: src/Meridian.Contracts/Api/StatusModels.cs
     startLine: 109
   assemblies:
   - Meridian.Contracts

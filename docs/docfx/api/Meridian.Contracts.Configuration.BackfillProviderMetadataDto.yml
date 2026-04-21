@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProviderMetadataDto
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 254
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 256
   assemblies:
   - Meridian.Contracts
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 259
   assemblies:
   - Meridian.Contracts
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 262
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 265
   assemblies:
   - Meridian.Contracts
@@ -234,7 +234,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresApiKey
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 268
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCredentials
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 271
   assemblies:
   - Meridian.Contracts
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreeTier
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 274
   assemblies:
   - Meridian.Contracts
@@ -357,7 +357,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPriority
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 277
   assemblies:
   - Meridian.Contracts
@@ -398,7 +398,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultRateLimitPerMinute
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 280
   assemblies:
   - Meridian.Contracts
@@ -439,7 +439,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultRateLimitPerHour
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 283
   assemblies:
   - Meridian.Contracts
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigSource
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 286
   assemblies:
   - Meridian.Contracts
@@ -521,7 +521,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedGranularities
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 289
   assemblies:
   - Meridian.Contracts
@@ -562,7 +562,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureFlags
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
     startLine: 292
   assemblies:
   - Meridian.Contracts

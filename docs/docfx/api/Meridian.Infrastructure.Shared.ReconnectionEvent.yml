@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectionEvent
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 174
   assemblies:
   - Meridian.Infrastructure
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 174
   assemblies:
   - Meridian.Infrastructure
@@ -112,7 +112,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 175
   assemblies:
   - Meridian.Infrastructure
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectedAt
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 176
   assemblies:
   - Meridian.Infrastructure
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectedAt
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 177
   assemblies:
   - Meridian.Infrastructure
@@ -205,7 +205,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AttemptsUsed
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 178
   assemblies:
   - Meridian.Infrastructure
@@ -236,7 +236,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapDuration
-    path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
+    path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
     startLine: 183
   assemblies:
   - Meridian.Infrastructure

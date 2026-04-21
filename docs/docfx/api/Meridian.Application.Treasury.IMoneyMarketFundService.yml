@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMoneyMarketFundService
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 9
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 21
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLiquidityAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -173,7 +173,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSweepProfileAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 33
   assemblies:
   - Meridian.Application
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundFamilyAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 39
   assemblies:
   - Meridian.Application
@@ -252,7 +252,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRebuildCheckpointsAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 44
   assemblies:
   - Meridian.Application
@@ -285,7 +285,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildProjectionsAsync
-    path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
+    path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
     startLine: 50
   assemblies:
   - Meridian.Application

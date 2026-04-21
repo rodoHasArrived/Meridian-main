@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionSnapshot
-    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
     startLine: 246
   assemblies:
   - Meridian.Infrastructure
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
     startLine: 246
   assemblies:
   - Meridian.Infrastructure
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSubscriptions
-    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
     startLine: 247
   assemblies:
   - Meridian.Infrastructure
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsByKind
-    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
     startLine: 248
   assemblies:
   - Meridian.Infrastructure
@@ -156,7 +156,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscriptions
-    path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
+    path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
     startLine: 249
   assemblies:
   - Meridian.Infrastructure

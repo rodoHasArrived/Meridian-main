@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryDateRange
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 278
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Earliest
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 283
   assemblies:
   - Meridian.Contracts
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Latest
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 289
   assemblies:
   - Meridian.Contracts
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Granularity
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 295
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatesWithData
-    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
     startLine: 301
   assemblies:
   - Meridian.Contracts

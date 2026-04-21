@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolAlias
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 165
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alias
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 170
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 176
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 182
   assemblies:
   - Meridian.Contracts
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 188
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidFrom
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 194
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidTo
-    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
     startLine: 200
   assemblies:
   - Meridian.Contracts

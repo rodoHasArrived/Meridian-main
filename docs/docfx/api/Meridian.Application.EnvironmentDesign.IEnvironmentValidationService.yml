@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEnvironmentValidationService
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
     startLine: 4
   assemblies:
   - Meridian.Application
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateAsync
-    path: ../../src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
+    path: src/Meridian.Application/EnvironmentDesign/IEnvironmentValidationService.cs
     startLine: 6
   assemblies:
   - Meridian.Application

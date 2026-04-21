@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SystemMetrics
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 163
   assemblies:
   - Meridian.Ui.Services
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CpuUsagePercent
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 165
   assemblies:
   - Meridian.Ui.Services
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryUsedBytes
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 166
   assemblies:
   - Meridian.Ui.Services
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryTotalBytes
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 167
   assemblies:
   - Meridian.Ui.Services
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryUsedPercent
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 168
   assemblies:
   - Meridian.Ui.Services
@@ -179,7 +179,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThreadCount
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 169
   assemblies:
   - Meridian.Ui.Services
@@ -208,7 +208,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleCount
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 170
   assemblies:
   - Meridian.Ui.Services
@@ -237,7 +237,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 171
   assemblies:
   - Meridian.Ui.Services
@@ -266,7 +266,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BytesPerSecond
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 172
   assemblies:
   - Meridian.Ui.Services
@@ -295,7 +295,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveConnections
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 173
   assemblies:
   - Meridian.Ui.Services
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingOperations
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 174
   assemblies:
   - Meridian.Ui.Services
@@ -353,7 +353,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
     startLine: 175
   assemblies:
   - Meridian.Ui.Services

@@ -6,6 +6,7 @@ items:
   children:
   - Meridian.Strategies.Promotions.BacktestToLivePromoter
   - Meridian.Strategies.Promotions.PromotionCriteria
+  - Meridian.Strategies.Promotions.PromotionDecisionKinds
   - Meridian.Strategies.Promotions.StrategyPromotionRecord
   langs:
   - csharp
@@ -24,6 +25,12 @@ references:
   name: BacktestToLivePromoter
   nameWithType: BacktestToLivePromoter
   fullName: Meridian.Strategies.Promotions.BacktestToLivePromoter
+- uid: Meridian.Strategies.Promotions.PromotionDecisionKinds
+  commentId: T:Meridian.Strategies.Promotions.PromotionDecisionKinds
+  href: Meridian.Strategies.Promotions.PromotionDecisionKinds.html
+  name: PromotionDecisionKinds
+  nameWithType: PromotionDecisionKinds
+  fullName: Meridian.Strategies.Promotions.PromotionDecisionKinds
 - uid: Meridian.Strategies.Promotions.PromotionCriteria
   commentId: T:Meridian.Strategies.Promotions.PromotionCriteria
   parent: Meridian.Strategies.Promotions

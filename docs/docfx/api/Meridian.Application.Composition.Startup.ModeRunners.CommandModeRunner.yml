@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandModeRunner
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
     startLine: 15
   assemblies:
   - Meridian.Application
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRunAsync
-    path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
+    path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
     startLine: 24
   assemblies:
   - Meridian.Application

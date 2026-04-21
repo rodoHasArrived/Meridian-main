@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMetadataFilter
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 52
   assemblies:
   - Meridian.Core
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 52
   assemblies:
   - Meridian.Core
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sector
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 53
   assemblies:
   - Meridian.Core
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Industry
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 55
   assemblies:
   - Meridian.Core
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinMarketCap
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 57
   assemblies:
   - Meridian.Core
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMarketCap
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 59
   assemblies:
   - Meridian.Core
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCapCategory
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 61
   assemblies:
   - Meridian.Core
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 63
   assemblies:
   - Meridian.Core
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 65
   assemblies:
   - Meridian.Core
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetType
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 67
   assemblies:
   - Meridian.Core
@@ -351,7 +351,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexMembership
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 69
   assemblies:
   - Meridian.Core
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaysDividend
-    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
     startLine: 71
   assemblies:
   - Meridian.Core

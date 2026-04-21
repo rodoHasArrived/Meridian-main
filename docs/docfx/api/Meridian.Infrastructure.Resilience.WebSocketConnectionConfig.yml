@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketConnectionConfig
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 48
   assemblies:
   - Meridian.Infrastructure
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 53
   assemblies:
   - Meridian.Infrastructure
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryBaseDelay
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 58
   assemblies:
   - Meridian.Infrastructure
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetryDelay
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 63
   assemblies:
   - Meridian.Infrastructure
@@ -194,7 +194,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerFailureThreshold
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 68
   assemblies:
   - Meridian.Infrastructure
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerDuration
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 73
   assemblies:
   - Meridian.Infrastructure
@@ -256,7 +256,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationTimeout
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 78
   assemblies:
   - Meridian.Infrastructure
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatInterval
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 83
   assemblies:
   - Meridian.Infrastructure
@@ -318,7 +318,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatTimeout
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 88
   assemblies:
   - Meridian.Infrastructure
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectAttempts
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 93
   assemblies:
   - Meridian.Infrastructure
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMessageSizeBytes
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 100
   assemblies:
   - Meridian.Infrastructure
@@ -416,7 +416,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 106
   assemblies:
   - Meridian.Infrastructure
@@ -450,7 +450,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighFrequency
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 111
   assemblies:
   - Meridian.Infrastructure
@@ -481,7 +481,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resilient
-    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
     startLine: 123
   assemblies:
   - Meridian.Infrastructure

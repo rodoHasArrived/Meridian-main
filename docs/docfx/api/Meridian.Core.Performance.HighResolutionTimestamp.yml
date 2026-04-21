@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighResolutionTimestamp
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 235
   assemblies:
   - Meridian.Core
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTimestamp
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 244
   assemblies:
   - Meridian.Core
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetElapsedMicroseconds
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 250
   assemblies:
   - Meridian.Core
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetElapsedNanoseconds
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 260
   assemblies:
   - Meridian.Core
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDateTimeOffset
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 271
   assemblies:
   - Meridian.Core
@@ -201,7 +201,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentTime
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 281
   assemblies:
   - Meridian.Core

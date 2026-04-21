@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumMismatch
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 545
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 547
   assemblies:
   - Meridian.Ui.Services
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedChecksum
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 548
   assemblies:
   - Meridian.Ui.Services
@@ -115,7 +115,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualChecksum
-    path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
+    path: src/Meridian.Ui.Services/Services/ManifestService.cs
     startLine: 549
   assemblies:
   - Meridian.Ui.Services

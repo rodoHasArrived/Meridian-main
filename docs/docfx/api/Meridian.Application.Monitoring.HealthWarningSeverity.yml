@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthWarningSeverity
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 392
   assemblies:
   - Meridian.Application
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 394
   assemblies:
   - Meridian.Application
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 395
   assemblies:
   - Meridian.Application
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
     startLine: 396
   assemblies:
   - Meridian.Application

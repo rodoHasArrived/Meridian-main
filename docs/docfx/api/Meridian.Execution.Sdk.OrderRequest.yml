@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderRequest
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 66
   assemblies:
   - Meridian.Execution.Sdk
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 68
   assemblies:
   - Meridian.Execution.Sdk
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 69
   assemblies:
   - Meridian.Execution.Sdk
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 70
   assemblies:
   - Meridian.Execution.Sdk
@@ -153,7 +153,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 71
   assemblies:
   - Meridian.Execution.Sdk
@@ -182,7 +182,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 72
   assemblies:
   - Meridian.Execution.Sdk
@@ -211,7 +211,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 73
   assemblies:
   - Meridian.Execution.Sdk
@@ -240,7 +240,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeInForce
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 74
   assemblies:
   - Meridian.Execution.Sdk
@@ -269,7 +269,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 75
   assemblies:
   - Meridian.Execution.Sdk
@@ -298,7 +298,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 76
   assemblies:
   - Meridian.Execution.Sdk
@@ -327,7 +327,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
-    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    path: src/Meridian.Execution.Sdk/Models.cs
     startLine: 77
   assemblies:
   - Meridian.Execution.Sdk

@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionWarmUp
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 10
   assemblies:
   - Meridian.Core
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastWarmUpStats
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 19
   assemblies:
   - Meridian.Core
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 21
   assemblies:
   - Meridian.Core
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShouldWarmUp
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 30
   assemblies:
   - Meridian.Core
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteWarmUpAsync
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 45
   assemblies:
   - Meridian.Core
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteWarmUpAsync
-    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
     startLine: 101
   assemblies:
   - Meridian.Core

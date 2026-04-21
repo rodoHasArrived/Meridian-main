@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingErrorCode
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validation
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotFound
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConcurrencyConflict
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts

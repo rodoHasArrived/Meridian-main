@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSessionEventArgs
-    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
     startLine: 591
   assemblies:
   - Meridian.Ui.Services
@@ -57,7 +57,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Session
-    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
     startLine: 593
   assemblies:
   - Meridian.Ui.Services

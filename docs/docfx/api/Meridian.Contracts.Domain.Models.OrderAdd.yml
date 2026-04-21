@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderAdd
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 23
   assemblies:
   - Meridian.Contracts
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 28
   assemblies:
   - Meridian.Contracts
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayedSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 33
   assemblies:
   - Meridian.Contracts
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriorityTimestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 38
   assemblies:
   - Meridian.Contracts
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 43
   assemblies:
   - Meridian.Contracts
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HiddenSize
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 48
   assemblies:
   - Meridian.Contracts
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParticipantId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 53
   assemblies:
   - Meridian.Contracts
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketMaker
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 58
   assemblies:
   - Meridian.Contracts
@@ -424,7 +424,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/OrderAdd.cs
+    path: src/Meridian.Contracts/Domain/Models/OrderAdd.cs
     startLine: 68
   assemblies:
   - Meridian.Contracts

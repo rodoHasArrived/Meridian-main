@@ -30,7 +30,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 
 ## Shell Architecture
 
-### MainPage — four-section sidebar + command palette
+### MainPage — workspace selector + grouped shell navigation + command palette
 
 ```text
 Left Sidebar (288 px)
@@ -52,7 +52,13 @@ Content Frame
 
 **Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
 
+**Canonical sidebar buckets** — the shell now standardizes the left-rail group labels as `Home`, `Active Work`, `Review / Alerts`, and `Admin / Support`. The workspace selector tiles expose the same grouping model in their hover help so operators can see the shell structure before they switch workspaces.
+
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
+
+**Security Master conflict operator lane** — the workstation conflict queue now groups open mismatches by security, scores severity and auto-resolve confidence from the selected field mismatch, and turns fund-review, reconciliation, cash-flow, and report-pack jumps on only when the active conflict actually affects those downstream workflows.
+
+**Security Master trust posture** — detail refresh now loads economic-definition provenance, latest history actor/timestamp, and trading-parameter coverage so the selected security surface can answer whether the instrument definition is ready for downstream portfolio, ledger, reconciliation, and reporting use.
 
 **Selection suppression** — `_suppressNavSelection` prevents feedback loops when the NavigationService drives sidebar selection changes programmatically.
 

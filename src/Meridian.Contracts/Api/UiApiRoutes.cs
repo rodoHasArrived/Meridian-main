@@ -429,6 +429,10 @@ public static class UiApiRoutes
     public const string ExecutionHealth = "/api/execution/health";
     public const string ExecutionCapabilities = "/api/execution/capabilities";
     public const string ExecutionAudit = "/api/execution/audit";
+    public const string ExecutionControls = "/api/execution/controls";
+    public const string ExecutionControlsCircuitBreaker = "/api/execution/controls/circuit-breaker";
+    public const string ExecutionControlsManualOverrides = "/api/execution/controls/manual-overrides";
+    public const string ExecutionControlsManualOverrideClear = "/api/execution/controls/manual-overrides/{overrideId}/clear";
     public const string ExecutionSessions = "/api/execution/sessions";
     public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
@@ -465,6 +469,8 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
     public const string WorkstationSecurityMasterIdentity = "/api/workstation/security-master/securities/{securityId:guid}/identity";
+    public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
+    public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";

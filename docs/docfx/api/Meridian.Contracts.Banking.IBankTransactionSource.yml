@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBankTransactionSource
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 99
   assemblies:
   - Meridian.Contracts
@@ -53,7 +53,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBankTransactionsAsync
-    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    path: src/Meridian.Contracts/Banking/BankingModels.cs
     startLine: 105
   assemblies:
   - Meridian.Contracts

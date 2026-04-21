@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderStatusUpdate
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 6
   assemblies:
   - Meridian.Execution
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 6
   assemblies:
   - Meridian.Execution
@@ -119,7 +119,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 7
   assemblies:
   - Meridian.Execution
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 8
   assemblies:
   - Meridian.Execution
@@ -177,7 +177,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 9
   assemblies:
   - Meridian.Execution
@@ -206,7 +206,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 10
   assemblies:
   - Meridian.Execution
@@ -235,7 +235,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageFillPrice
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 12
   assemblies:
   - Meridian.Execution
@@ -293,7 +293,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectReason
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 13
   assemblies:
   - Meridian.Execution
@@ -322,7 +322,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
+    path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
     startLine: 14
   assemblies:
   - Meridian.Execution

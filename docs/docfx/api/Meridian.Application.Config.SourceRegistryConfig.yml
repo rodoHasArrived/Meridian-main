@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceRegistryConfig
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    path: src/Meridian.Core/Config/AppConfig.cs
     startLine: 131
   assemblies:
   - Meridian.Core
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    path: src/Meridian.Core/Config/AppConfig.cs
     startLine: 131
   assemblies:
   - Meridian.Core
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistencePath
-    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    path: src/Meridian.Core/Config/AppConfig.cs
     startLine: 132
   assemblies:
   - Meridian.Core

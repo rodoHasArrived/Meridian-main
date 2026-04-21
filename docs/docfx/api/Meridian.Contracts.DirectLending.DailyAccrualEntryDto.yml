@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyAccrualEntryDto
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 194
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 194
   assemblies:
   - Meridian.Contracts
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccrualEntryId
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 195
   assemblies:
   - Meridian.Contracts
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccrualDate
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 196
   assemblies:
   - Meridian.Contracts
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InterestAmount
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 197
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommitmentFeeAmount
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 198
   assemblies:
   - Meridian.Contracts
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PenaltyAmount
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 199
   assemblies:
   - Meridian.Contracts
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnnualRateApplied
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 200
   assemblies:
   - Meridian.Contracts
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordedAt
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 201
   assemblies:
   - Meridian.Contracts

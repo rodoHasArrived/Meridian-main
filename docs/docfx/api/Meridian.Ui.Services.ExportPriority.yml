@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPriority
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 738
   assemblies:
   - Meridian.Ui.Services
@@ -46,7 +46,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 740
   assemblies:
   - Meridian.Ui.Services
@@ -72,7 +72,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 741
   assemblies:
   - Meridian.Ui.Services
@@ -98,7 +98,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
     startLine: 742
   assemblies:
   - Meridian.Ui.Services

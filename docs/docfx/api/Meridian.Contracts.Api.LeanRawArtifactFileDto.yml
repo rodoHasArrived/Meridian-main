@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanRawArtifactFileDto
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 100
   assemblies:
   - Meridian.Contracts
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArtifactType
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 102
   assemblies:
   - Meridian.Contracts
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 105
   assemblies:
   - Meridian.Contracts
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exists
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 108
   assemblies:
   - Meridian.Contracts
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 111
   assemblies:
   - Meridian.Contracts
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastWriteTimeUtc
-    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    path: src/Meridian.Contracts/Api/LeanApiModels.cs
     startLine: 114
   assemblies:
   - Meridian.Contracts

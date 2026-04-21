@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITaxLotSelector
-    path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+    path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
     startLine: 8
   assemblies:
   - Meridian.Execution
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Method
-    path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+    path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
     startLine: 11
   assemblies:
   - Meridian.Execution
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Relieve
-    path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+    path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
     startLine: 27
   assemblies:
   - Meridian.Execution

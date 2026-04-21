@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CleanupOptions
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 307
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteEmptyDirectories
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 309
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteTempFiles
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 310
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteOrphanedFiles
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 311
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteCorruptFiles
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 312
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OlderThanDays
-    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
     startLine: 313
   assemblies:
   - Meridian.Ui.Services

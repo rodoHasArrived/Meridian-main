@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolNormalization
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 6
   assemblies:
   - Meridian.Infrastructure
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normalize
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 12
   assemblies:
   - Meridian.Infrastructure
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForTiingo
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -144,7 +144,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForYahoo
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 31
   assemblies:
   - Meridian.Infrastructure
@@ -185,7 +185,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForStooq
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 47
   assemblies:
   - Meridian.Infrastructure
@@ -224,7 +224,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForNasdaqDataLink
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 57
   assemblies:
   - Meridian.Infrastructure
@@ -263,7 +263,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeForOpenFigi
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 66
   assemblies:
   - Meridian.Infrastructure
@@ -302,7 +302,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidSymbol
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 80
   assemblies:
   - Meridian.Infrastructure
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeMany
-    path: ../../src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
+    path: src/Meridian.Infrastructure/Utilities/SymbolNormalization.cs
     startLine: 92
   assemblies:
   - Meridian.Infrastructure

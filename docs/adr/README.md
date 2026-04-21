@@ -9,7 +9,7 @@ An ADR is a document that captures an important architectural decision along wit
 ## ADR Index
 
 | ID | Title | Status | Key Components |
-|----|-------|--------|----------------|
+| --- | --- | --- | --- |
 | [ADR-001](001-provider-abstraction.md) | Provider Abstraction Pattern | Accepted | `IMarketDataClient`, `IHistoricalDataProvider` |
 | [ADR-002](002-tiered-storage-architecture.md) | Tiered Storage Architecture | Accepted | `IStorageSink`, `TierMigrationService` |
 | [ADR-003](003-microservices-decomposition.md) | Microservices Decomposition | Rejected | Monolith preferred |
@@ -26,13 +26,13 @@ An ADR is a document that captures an important architectural decision along wit
 | [ADR-014](014-json-source-generators.md) | JSON Source Generators | Accepted | `MarketDataJsonContext` |
 | [ADR-015](015-strategy-execution-contract.md) | Strategy Execution Contract | Accepted | `IOrderGateway`, `IExecutionContext` |
 | [ADR-016](016-platform-architecture-migration.md) | Platform Architecture Migration Mandate | Accepted | `Meridian.Execution`, `Meridian.Risk`, `Meridian.Strategies`, `Meridian.QuantScript`, `StrategyRunStore` |
-| [ADR-015-platform-restructuring](../../archive/docs/migrations/ADR-015-platform-restructuring.md) | Platform Restructuring (historical) | **Superseded** | Archived in migration docs; superseded by ADR-015 and ADR-016 |
+| [ADR-015-platform-restructuring](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/migrations/ADR-015-platform-restructuring.md) | Platform Restructuring (historical) | **Superseded** | Archived in migration docs; superseded by ADR-015 and ADR-016 |
 
 ## ADR Dependencies
 
 ADRs build on each other. The diagram below shows key relationships:
 
-```
+```text
 ADR-001 Provider Abstraction
   ├─→ ADR-005 Attribute-Based Discovery (auto-registers providers)
   ├─→ ADR-010 HttpClientFactory (providers use named HTTP clients)
@@ -78,4 +78,4 @@ This ensures documented decisions remain in sync with actual code.
 
 ---
 
-*Last Updated: 2026-04-07*
+_Last Updated: 2026-04-07_

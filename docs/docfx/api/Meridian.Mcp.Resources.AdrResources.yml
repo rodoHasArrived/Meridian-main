@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrResources
-    path: ../../src/Meridian.Mcp/Resources/AdrResources.cs
+    path: src/Meridian.Mcp/Resources/AdrResources.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Mcp/Resources/AdrResources.cs
+    path: src/Meridian.Mcp/Resources/AdrResources.cs
     startLine: 2
   assemblies:
   - mdc-mcp
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdrIndex
-    path: ../../src/Meridian.Mcp/Resources/AdrResources.cs
+    path: src/Meridian.Mcp/Resources/AdrResources.cs
     startLine: 5
   assemblies:
   - mdc-mcp
@@ -148,7 +148,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdr
-    path: ../../src/Meridian.Mcp/Resources/AdrResources.cs
+    path: src/Meridian.Mcp/Resources/AdrResources.cs
     startLine: 54
   assemblies:
   - mdc-mcp

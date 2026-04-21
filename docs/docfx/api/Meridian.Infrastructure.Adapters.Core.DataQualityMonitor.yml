@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityMonitor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 183
   assemblies:
   - Meridian.Infrastructure
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 191
   assemblies:
   - Meridian.Infrastructure
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateScoreAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 206
   assemblies:
   - Meridian.Infrastructure
@@ -143,7 +143,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAlertsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 261
   assemblies:
   - Meridian.Infrastructure
@@ -181,7 +181,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCachedScore
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 299
   assemblies:
   - Meridian.Infrastructure
@@ -217,7 +217,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllScores
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 307
   assemblies:
   - Meridian.Infrastructure
@@ -247,7 +247,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearCache
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
     startLine: 315
   assemblies:
   - Meridian.Infrastructure

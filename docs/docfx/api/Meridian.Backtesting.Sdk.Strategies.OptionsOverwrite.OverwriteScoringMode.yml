@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverwriteScoringMode
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 5
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Basic
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 10
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Relative
-    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk

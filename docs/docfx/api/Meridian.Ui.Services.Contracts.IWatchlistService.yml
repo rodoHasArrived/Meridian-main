@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IWatchlistService
-    path: ../../src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
+    path: src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
     startLine: 8
   assemblies:
   - Meridian.Ui.Services
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadWatchlistAsync
-    path: ../../src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
+    path: src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services

@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConditionCodeMapper
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromFile
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 40
   assemblies:
   - Meridian.Application
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromJson
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 56
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapConditions
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 92
   assemblies:
   - Meridian.Application
@@ -215,7 +215,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSingle
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 105
   assemblies:
   - Meridian.Application
@@ -253,7 +253,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MappingCount
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 113
   assemblies:
   - Meridian.Application
@@ -284,7 +284,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContainsHaltCondition
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 121
   assemblies:
   - Meridian.Application
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHaltCondition
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 129
   assemblies:
   - Meridian.Application
@@ -358,7 +358,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsResumedCondition
-    path: ../../src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
+    path: src/Meridian.Application/Canonicalization/ConditionCodeMapper.cs
     startLine: 137
   assemblies:
   - Meridian.Application

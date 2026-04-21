@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleExecutionSummary
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 551
   assemblies:
   - Meridian.Storage
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 551
   assemblies:
   - Meridian.Storage
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleId
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 552
   assemblies:
   - Meridian.Storage
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleName
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 553
   assemblies:
   - Meridian.Storage
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExecutions
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 554
   assemblies:
   - Meridian.Storage
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessfulExecutions
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 555
   assemblies:
   - Meridian.Storage
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedExecutions
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 556
   assemblies:
   - Meridian.Storage
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessRate
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 557
   assemblies:
   - Meridian.Storage
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageDuration
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 558
   assemblies:
   - Meridian.Storage
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastExecutionAt
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 559
   assemblies:
   - Meridian.Storage
@@ -354,7 +354,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastStatus
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 560
   assemblies:
   - Meridian.Storage
@@ -383,7 +383,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextScheduledAt
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 561
   assemblies:
   - Meridian.Storage
@@ -412,7 +412,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentExecutions
-    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
     startLine: 562
   assemblies:
   - Meridian.Storage

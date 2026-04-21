@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSessionsConfig
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 224
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sessions
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 229
   assemblies:
   - Meridian.Contracts
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSessionId
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 235
   assemblies:
   - Meridian.Contracts
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoCreateDailySessions
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 241
   assemblies:
   - Meridian.Contracts
@@ -189,7 +189,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionNamingPattern
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 247
   assemblies:
   - Meridian.Contracts
@@ -232,7 +232,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateManifestOnComplete
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 253
   assemblies:
   - Meridian.Contracts
@@ -275,7 +275,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetainSessionHistory
-    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    path: src/Meridian.Contracts/Session/CollectionSession.cs
     startLine: 259
   assemblies:
   - Meridian.Contracts

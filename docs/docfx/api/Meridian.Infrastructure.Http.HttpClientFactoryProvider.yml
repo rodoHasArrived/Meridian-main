@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientFactoryProvider
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 724
   assemblies:
   - Meridian.Infrastructure
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 733
   assemblies:
   - Meridian.Infrastructure
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateClient
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 743
   assemblies:
   - Meridian.Infrastructure
@@ -150,7 +150,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateClient
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 768
   assemblies:
   - Meridian.Infrastructure
@@ -188,7 +188,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInitialized
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 778
   assemblies:
   - Meridian.Infrastructure
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
-    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
     startLine: 784
   assemblies:
   - Meridian.Infrastructure

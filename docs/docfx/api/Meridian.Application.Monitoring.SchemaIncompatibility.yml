@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaIncompatibility
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 320
   assemblies:
   - Meridian.Application
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 321
   assemblies:
   - Meridian.Application
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedVersion
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 322
   assemblies:
   - Meridian.Application
@@ -163,7 +163,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedVersion
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 323
   assemblies:
   - Meridian.Application
@@ -192,7 +192,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompatible
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 324
   assemblies:
   - Meridian.Application
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanMigrate
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 325
   assemblies:
   - Meridian.Application
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compatible
-    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
     startLine: 328
   assemblies:
   - Meridian.Application

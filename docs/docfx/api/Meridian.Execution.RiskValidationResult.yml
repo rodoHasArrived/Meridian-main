@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskValidationResult
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 14
   assemblies:
   - Meridian.Execution
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsApproved
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 16
   assemblies:
   - Meridian.Execution
@@ -89,7 +89,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectReason
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 17
   assemblies:
   - Meridian.Execution
@@ -118,7 +118,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Approved
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 19
   assemblies:
   - Meridian.Execution
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
-    path: ../../src/Meridian.Execution/IRiskValidator.cs
+    path: src/Meridian.Execution/IRiskValidator.cs
     startLine: 20
   assemblies:
   - Meridian.Execution

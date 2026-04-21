@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardWorkflowFactory
-    path: ../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
+    path: src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateInteractive
-    path: ../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
+    path: src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
     startLine: 16
   assemblies:
   - Meridian.Application

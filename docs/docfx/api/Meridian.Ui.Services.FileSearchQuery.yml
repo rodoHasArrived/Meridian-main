@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileSearchQuery
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 684
   assemblies:
   - Meridian.Ui.Services
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TextPattern
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 686
   assemblies:
   - Meridian.Ui.Services
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaseSensitive
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 687
   assemblies:
   - Meridian.Ui.Services
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 688
   assemblies:
   - Meridian.Ui.Services
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 689
   assemblies:
   - Meridian.Ui.Services
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxResults
-    path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
+    path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
     startLine: 690
   assemblies:
   - Meridian.Ui.Services

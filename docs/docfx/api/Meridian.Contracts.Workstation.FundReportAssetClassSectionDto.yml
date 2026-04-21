@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundReportAssetClassSectionDto
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 96
   assemblies:
   - Meridian.Contracts
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 97
   assemblies:
   - Meridian.Contracts
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Total
-    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
     startLine: 98
   assemblies:
   - Meridian.Contracts

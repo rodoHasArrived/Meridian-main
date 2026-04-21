@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPolygonCorporateActionFetcher
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 17
   assemblies:
   - Meridian.Infrastructure
@@ -52,7 +52,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAndPersistAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 22
   assemblies:
   - Meridian.Infrastructure
@@ -92,7 +92,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAndPersistAllAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
+    path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
     startLine: 27
   assemblies:
   - Meridian.Infrastructure

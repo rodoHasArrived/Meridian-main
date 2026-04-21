@@ -31,7 +31,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodOptionsChainProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 38
   assemblies:
   - Meridian.Infrastructure
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 62
   assemblies:
   - Meridian.Infrastructure
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 79
   assemblies:
   - Meridian.Infrastructure
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 82
   assemblies:
   - Meridian.Infrastructure
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 85
   assemblies:
   - Meridian.Infrastructure
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 89
   assemblies:
   - Meridian.Infrastructure
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 92
   assemblies:
   - Meridian.Infrastructure
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 98
   assemblies:
   - Meridian.Infrastructure
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 110
   assemblies:
   - Meridian.Infrastructure
@@ -447,7 +447,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 120
   assemblies:
   - Meridian.Infrastructure
@@ -480,7 +480,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 128
   assemblies:
   - Meridian.Infrastructure
@@ -523,7 +523,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 173
   assemblies:
   - Meridian.Infrastructure
@@ -569,7 +569,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainSnapshotAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 203
   assemblies:
   - Meridian.Infrastructure
@@ -621,7 +621,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionQuoteAsync
-    path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
+    path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs
     startLine: 334
   assemblies:
   - Meridian.Infrastructure

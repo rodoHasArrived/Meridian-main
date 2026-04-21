@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePermissionsOptions
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 377
   assemblies:
   - Meridian.Storage
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryMode
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 382
   assemblies:
   - Meridian.Storage
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileMode
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 387
   assemblies:
   - Meridian.Storage
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyToExistingFiles
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 392
   assemblies:
   - Meridian.Storage
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RestrictToCurrentUser
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 398
   assemblies:
   - Meridian.Storage
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOnStartup
-    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    path: src/Meridian.Storage/Services/FilePermissionsService.cs
     startLine: 403
   assemblies:
   - Meridian.Storage

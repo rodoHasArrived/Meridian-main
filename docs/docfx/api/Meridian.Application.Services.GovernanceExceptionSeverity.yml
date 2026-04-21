@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceExceptionSeverity
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 165
   assemblies:
   - Meridian.Application
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 167
   assemblies:
   - Meridian.Application
@@ -76,7 +76,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 168
   assemblies:
   - Meridian.Application
@@ -102,7 +102,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Medium
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 169
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 170
   assemblies:
   - Meridian.Application
@@ -154,7 +154,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
-    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    path: src/Meridian.Application/Services/GovernanceExceptionService.cs
     startLine: 171
   assemblies:
   - Meridian.Application

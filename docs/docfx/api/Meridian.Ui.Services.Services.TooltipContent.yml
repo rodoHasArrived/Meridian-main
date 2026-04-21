@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TooltipContent
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Services
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFeatureHelp
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 37
   assemblies:
   - Meridian.Ui.Services
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOnboardingTips
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 50
   assemblies:
   - Meridian.Ui.Services
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTooltipText
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 58
   assemblies:
   - Meridian.Ui.Services
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureHelpContent
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 68
   assemblies:
   - Meridian.Ui.Services
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnboardingTipsContent
-    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    path: src/Meridian.Ui.Services/Services/TooltipContent.cs
     startLine: 163
   assemblies:
   - Meridian.Ui.Services

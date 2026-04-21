@@ -38,7 +38,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BoundedObservableCollection
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 13
   assemblies:
   - Meridian.Ui.Services
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionChanged
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 22
   assemblies:
   - Meridian.Ui.Services
@@ -127,7 +127,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PropertyChanged
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 27
   assemblies:
   - Meridian.Ui.Services
@@ -160,7 +160,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Services
@@ -195,7 +195,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 43
   assemblies:
   - Meridian.Ui.Services
@@ -231,7 +231,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxCapacity
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 57
   assemblies:
   - Meridian.Ui.Services
@@ -264,7 +264,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsReadOnly
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 62
   assemblies:
   - Meridian.Ui.Services
@@ -299,7 +299,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: this[]
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 67
   assemblies:
   - Meridian.Ui.Services
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Prepend
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 95
   assemblies:
   - Meridian.Ui.Services
@@ -377,7 +377,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrependRange
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 134
   assemblies:
   - Meridian.Ui.Services
@@ -415,7 +415,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 164
   assemblies:
   - Meridian.Ui.Services
@@ -453,7 +453,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 197
   assemblies:
   - Meridian.Ui.Services
@@ -485,7 +485,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contains
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 213
   assemblies:
   - Meridian.Ui.Services
@@ -522,7 +522,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CopyTo
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 224
   assemblies:
   - Meridian.Ui.Services
@@ -560,7 +560,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnumerator
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 235
   assemblies:
   - Meridian.Ui.Services
@@ -594,7 +594,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOf
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 249
   assemblies:
   - Meridian.Ui.Services
@@ -631,7 +631,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Insert
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 260
   assemblies:
   - Meridian.Ui.Services
@@ -669,7 +669,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remove
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 279
   assemblies:
   - Meridian.Ui.Services
@@ -706,7 +706,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveAt
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 292
   assemblies:
   - Meridian.Ui.Services
@@ -742,7 +742,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceAll
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 314
   assemblies:
   - Meridian.Ui.Services
@@ -777,7 +777,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToList
-    path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
+    path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
     startLine: 331
   assemblies:
   - Meridian.Ui.Services

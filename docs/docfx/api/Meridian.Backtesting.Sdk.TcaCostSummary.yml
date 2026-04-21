@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TcaCostSummary
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 11
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCommissions
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 12
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBuyNotional
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 13
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSellNotional
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 14
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalNotional
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 15
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionRateBps
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 16
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFills
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 17
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuyFills
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 18
   assemblies:
   - Meridian.Backtesting.Sdk
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SellFills
-    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
     startLine: 19
   assemblies:
   - Meridian.Backtesting.Sdk

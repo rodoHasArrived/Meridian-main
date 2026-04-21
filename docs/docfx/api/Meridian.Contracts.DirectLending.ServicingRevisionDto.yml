@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServicingRevisionDto
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 187
   assemblies:
   - Meridian.Contracts
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RevisionNumber
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 188
   assemblies:
   - Meridian.Contracts
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RevisionSourceType
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 189
   assemblies:
   - Meridian.Contracts
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveAsOfDate
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 190
   assemblies:
   - Meridian.Contracts
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 191
   assemblies:
   - Meridian.Contracts
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
-    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
     startLine: 192
   assemblies:
   - Meridian.Contracts

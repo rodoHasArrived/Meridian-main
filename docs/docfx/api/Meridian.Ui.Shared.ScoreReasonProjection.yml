@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreReasonProjection
-    path: ../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
+    path: src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Shared
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
+    path: src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
     startLine: 32
   assemblies:
   - Meridian.Ui.Shared
@@ -95,7 +95,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
+    path: src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
     startLine: 33
   assemblies:
   - Meridian.Ui.Shared
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contribution
-    path: ../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
+    path: src/Meridian.Ui.Shared/ScoreExplanationProjection.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Shared

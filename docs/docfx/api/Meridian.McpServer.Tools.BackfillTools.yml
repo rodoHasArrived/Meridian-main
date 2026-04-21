@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTools
-    path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
+    path: src/Meridian.McpServer/Tools/BackfillTools.cs
     startLine: 8
   assemblies:
   - Meridian.McpServer
@@ -88,7 +88,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
+    path: src/Meridian.McpServer/Tools/BackfillTools.cs
     startLine: 26
   assemblies:
   - Meridian.McpServer
@@ -124,7 +124,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfill
-    path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
+    path: src/Meridian.McpServer/Tools/BackfillTools.cs
     startLine: 35
   assemblies:
   - Meridian.McpServer

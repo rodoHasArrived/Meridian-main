@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPositionSnapshotStore
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 50
   assemblies:
   - Meridian.Contracts
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSnapshotAsync
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 55
   assemblies:
   - Meridian.Contracts
@@ -90,7 +90,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestSnapshotAsync
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 61
   assemblies:
   - Meridian.Contracts
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotHistoryAsync
-    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
     startLine: 67
   assemblies:
   - Meridian.Contracts

@@ -9,6 +9,11 @@ This subtree is the committed Wave 1 evidence root for provider-confidence and c
 - `artifacts/provider-validation/<provider>/<yyyy-mm-dd>/manifest.json`
 - `artifacts/provider-validation/<provider>/<yyyy-mm-dd>/<scenario>/summary.md`
 
+The generated Wave 1 automation summaries are the reproducible gate snapshots. They restate the
+active provider set (`Alpaca`, `Robinhood`, `Yahoo`), the cross-cutting checkpoint and Parquet
+closures, and the deferred provider inventory so the artifact output stays aligned with the status
+docs.
+
 ## Result meanings
 
 - `validated`: the scenario has a committed sanitized runtime capture or a repo-backed offline replay that closes the Wave 1 claim.

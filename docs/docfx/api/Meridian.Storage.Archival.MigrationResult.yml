@@ -28,7 +28,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationResult
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 637
   assemblies:
   - Meridian.Storage
@@ -64,7 +64,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 639
   assemblies:
   - Meridian.Storage
@@ -93,7 +93,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromVersion
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 640
   assemblies:
   - Meridian.Storage
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToVersion
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 641
   assemblies:
   - Meridian.Storage
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 642
   assemblies:
   - Meridian.Storage
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 643
   assemblies:
   - Meridian.Storage
@@ -209,7 +209,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 644
   assemblies:
   - Meridian.Storage
@@ -238,7 +238,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsFailed
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 645
   assemblies:
   - Meridian.Storage
@@ -267,7 +267,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 646
   assemblies:
   - Meridian.Storage
@@ -296,7 +296,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 647
   assemblies:
   - Meridian.Storage
@@ -325,7 +325,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
     startLine: 648
   assemblies:
   - Meridian.Storage

@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateOrganizationRequest
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 2
   assemblies:
   - Meridian.Contracts
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrganizationId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 3
   assemblies:
   - Meridian.Contracts
@@ -135,7 +135,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 4
   assemblies:
   - Meridian.Contracts
@@ -164,7 +164,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 5
   assemblies:
   - Meridian.Contracts
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 6
   assemblies:
   - Meridian.Contracts
@@ -222,7 +222,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 7
   assemblies:
   - Meridian.Contracts
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 8
   assemblies:
   - Meridian.Contracts
@@ -280,7 +280,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts

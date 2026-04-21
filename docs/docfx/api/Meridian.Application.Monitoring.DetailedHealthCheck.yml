@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetailedHealthCheck
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDependencyUnhealthy
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 31
   assemblies:
   - Meridian.Application
@@ -96,7 +96,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDependencyRecovered
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 36
   assemblies:
   - Meridian.Application
@@ -125,7 +125,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 38
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterProviders
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 53
   assemblies:
   - Meridian.Application
@@ -197,7 +197,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterDependency
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 68
   assemblies:
   - Meridian.Application
@@ -239,7 +239,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterDependency
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 89
   assemblies:
   - Meridian.Application
@@ -273,7 +273,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailedHealthAsync
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 97
   assemblies:
   - Meridian.Application
@@ -306,7 +306,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 388
   assemblies:
   - Meridian.Application

@@ -25,7 +25,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResourceRequirements
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 640
   assemblies:
   - Meridian.Storage
@@ -61,7 +61,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 640
   assemblies:
   - Meridian.Storage
@@ -103,7 +103,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CpuCores
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 641
   assemblies:
   - Meridian.Storage
@@ -132,7 +132,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryBytes
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 642
   assemblies:
   - Meridian.Storage
@@ -161,7 +161,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiskIoMbps
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 643
   assemblies:
   - Meridian.Storage
@@ -190,7 +190,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetworkIoMbps
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 644
   assemblies:
   - Meridian.Storage
@@ -219,7 +219,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresExclusiveLock
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 645
   assemblies:
   - Meridian.Storage
@@ -248,7 +248,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExclusivePaths
-    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
     startLine: 646
   assemblies:
   - Meridian.Storage

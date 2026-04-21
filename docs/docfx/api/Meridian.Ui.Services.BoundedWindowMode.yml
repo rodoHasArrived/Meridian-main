@@ -21,7 +21,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BoundedWindowMode
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 132
   assemblies:
   - Meridian.Ui.Services
@@ -48,7 +48,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Focused
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 134
   assemblies:
   - Meridian.Ui.Services
@@ -74,7 +74,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DockFloat
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 135
   assemblies:
   - Meridian.Ui.Services
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkbenchPreset
-    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
     startLine: 136
   assemblies:
   - Meridian.Ui.Services

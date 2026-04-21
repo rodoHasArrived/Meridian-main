@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FallbackStrategy
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 796
   assemblies:
   - Meridian.Infrastructure
@@ -49,7 +49,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 799
   assemblies:
   - Meridian.Infrastructure
@@ -77,7 +77,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthScore
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 801
   assemblies:
   - Meridian.Infrastructure
@@ -105,7 +105,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RoundRobin
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 803
   assemblies:
   - Meridian.Infrastructure
@@ -133,7 +133,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Random
-    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
     startLine: 805
   assemblies:
   - Meridian.Infrastructure

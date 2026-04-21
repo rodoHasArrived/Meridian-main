@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderParitySnapshot
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 251
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 251
   assemblies:
   - Meridian.Application
@@ -113,7 +113,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Total
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 252
   assemblies:
   - Meridian.Application
@@ -142,7 +142,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 253
   assemblies:
   - Meridian.Application
@@ -171,7 +171,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SoftFail
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 254
   assemblies:
   - Meridian.Application
@@ -200,7 +200,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HardFail
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 255
   assemblies:
   - Meridian.Application
@@ -229,7 +229,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnresolvedSymbol
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 256
   assemblies:
   - Meridian.Application
@@ -258,7 +258,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnresolvedVenue
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 257
   assemblies:
   - Meridian.Application
@@ -287,7 +287,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnresolvedCondition
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 258
   assemblies:
   - Meridian.Application
@@ -316,7 +316,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MatchRatePercent
-    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
     startLine: 259
   assemblies:
   - Meridian.Application

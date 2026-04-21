@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CsvSchemaDefinition
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 299
   assemblies:
   - Meridian.Contracts
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaId
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 301
   assemblies:
   - Meridian.Contracts
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasHeaderRow
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 302
   assemblies:
   - Meridian.Contracts
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delimiter
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 303
   assemblies:
   - Meridian.Contracts
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Columns
-    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    path: src/Meridian.Contracts/Etl/EtlModels.cs
     startLine: 304
   assemblies:
   - Meridian.Contracts

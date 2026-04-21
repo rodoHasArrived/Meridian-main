@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelledEvent
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 133
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 133
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 134
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -126,7 +126,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 135
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -155,7 +155,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 136
   assemblies:
   - Meridian.Infrastructure.CppTrader
@@ -184,7 +184,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
     startLine: 137
   assemblies:
   - Meridian.Infrastructure.CppTrader

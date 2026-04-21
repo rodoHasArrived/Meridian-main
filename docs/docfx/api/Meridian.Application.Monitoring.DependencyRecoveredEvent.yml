@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DependencyRecoveredEvent
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 524
   assemblies:
   - Meridian.Application
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 524
   assemblies:
   - Meridian.Application
@@ -99,7 +99,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 525
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 526
   assemblies:
   - Meridian.Application
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 527
   assemblies:
   - Meridian.Application
@@ -186,7 +186,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DowntimeDuration
-    path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
+    path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
     startLine: 528
   assemblies:
   - Meridian.Application

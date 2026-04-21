@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunMode
-    path: ../../src/Meridian.Application/Services/CliModeResolver.cs
+    path: src/Meridian.Application/Services/CliModeResolver.cs
     startLine: 11
   assemblies:
   - Meridian.Application
@@ -47,7 +47,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Headless
-    path: ../../src/Meridian.Application/Services/CliModeResolver.cs
+    path: src/Meridian.Application/Services/CliModeResolver.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -75,7 +75,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Desktop
-    path: ../../src/Meridian.Application/Services/CliModeResolver.cs
+    path: src/Meridian.Application/Services/CliModeResolver.cs
     startLine: 16
   assemblies:
   - Meridian.Application

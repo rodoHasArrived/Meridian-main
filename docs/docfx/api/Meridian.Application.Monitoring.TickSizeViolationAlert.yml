@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSizeViolationAlert
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 358
   assemblies:
   - Meridian.Application
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 358
   assemblies:
   - Meridian.Application
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 359
   assemblies:
   - Meridian.Application
@@ -146,7 +146,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 360
   assemblies:
   - Meridian.Application
@@ -175,7 +175,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceType
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 361
   assemblies:
   - Meridian.Application
@@ -204,7 +204,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedTickSize
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 362
   assemblies:
   - Meridian.Application
@@ -233,7 +233,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remainder
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 363
   assemblies:
   - Meridian.Application
@@ -262,7 +262,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NearestValidPriceLow
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 364
   assemblies:
   - Meridian.Application
@@ -291,7 +291,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NearestValidPriceHigh
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 365
   assemblies:
   - Meridian.Application
@@ -320,7 +320,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 366
   assemblies:
   - Meridian.Application
@@ -349,7 +349,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 367
   assemblies:
   - Meridian.Application
@@ -378,7 +378,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViolationCount
-    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
     startLine: 368
   assemblies:
   - Meridian.Application

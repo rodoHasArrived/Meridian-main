@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStrategyLifecycle
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
     startLine: 9
   assemblies:
   - Meridian.Strategies
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
     startLine: 12
   assemblies:
   - Meridian.Strategies
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
     startLine: 15
   assemblies:
   - Meridian.Strategies
@@ -117,7 +117,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
     startLine: 22
   assemblies:
   - Meridian.Strategies
@@ -157,7 +157,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
     startLine: 28
   assemblies:
   - Meridian.Strategies
@@ -193,7 +193,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
-    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
     startLine: 34
   assemblies:
   - Meridian.Strategies

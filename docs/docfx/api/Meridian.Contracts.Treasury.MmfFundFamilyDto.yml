@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MmfFundFamilyDto
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 62
   assemblies:
   - Meridian.Contracts
@@ -66,7 +66,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 62
   assemblies:
   - Meridian.Contracts
@@ -111,7 +111,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizedFamilyName
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 63
   assemblies:
   - Meridian.Contracts
@@ -140,7 +140,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemberSecurityIds
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 64
   assemblies:
   - Meridian.Contracts
@@ -169,7 +169,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemberCount
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 65
   assemblies:
   - Meridian.Contracts
@@ -198,7 +198,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
-    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
     startLine: 66
   assemblies:
   - Meridian.Contracts

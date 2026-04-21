@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -62,7 +62,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapStatusEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs
     startLine: 20
   assemblies:
   - Meridian.Ui.Shared

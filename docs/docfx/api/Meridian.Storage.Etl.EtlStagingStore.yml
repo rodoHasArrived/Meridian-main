@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlStagingStore
-    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    path: src/Meridian.Storage/Etl/EtlStores.cs
     startLine: 10
   assemblies:
   - Meridian.Storage
@@ -54,7 +54,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    path: src/Meridian.Storage/Etl/EtlStores.cs
     startLine: 15
   assemblies:
   - Meridian.Storage
@@ -86,7 +86,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StageAsync
-    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    path: src/Meridian.Storage/Etl/EtlStores.cs
     startLine: 21
   assemblies:
   - Meridian.Storage

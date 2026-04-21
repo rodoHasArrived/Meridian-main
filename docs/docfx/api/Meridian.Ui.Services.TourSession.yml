@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TourSession
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 518
   assemblies:
   - Meridian.Ui.Services
@@ -58,7 +58,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TourId
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 520
   assemblies:
   - Meridian.Ui.Services
@@ -87,7 +87,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tour
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 521
   assemblies:
   - Meridian.Ui.Services
@@ -116,7 +116,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStepIndex
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 522
   assemblies:
   - Meridian.Ui.Services
@@ -145,7 +145,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
-    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
     startLine: 523
   assemblies:
   - Meridian.Ui.Services

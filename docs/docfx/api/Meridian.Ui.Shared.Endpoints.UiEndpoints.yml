@@ -25,8 +25,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UiEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 25
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 27
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -66,8 +66,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddUiSharedServices
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 33
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 35
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -110,8 +110,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddUiSharedServices
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 69
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 71
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -157,8 +157,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapUiEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 128
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 137
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -190,8 +190,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateEndpointJsonOptions
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 142
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 151
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -233,8 +233,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapUiEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 153
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 162
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -274,8 +274,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapUiEndpointsWithStatus
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 265
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 274
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -312,8 +312,8 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MutationRateLimitPolicy
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 380
+    path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 389
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

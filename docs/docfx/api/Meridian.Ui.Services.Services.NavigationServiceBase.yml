@@ -37,7 +37,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigationServiceBase
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Services
@@ -81,7 +81,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Navigated
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 16
   assemblies:
   - Meridian.Ui.Services
@@ -110,7 +110,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanGoBack
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 19
   assemblies:
   - Meridian.Ui.Services
@@ -141,7 +141,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 24
   assemblies:
   - Meridian.Ui.Services
@@ -172,7 +172,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigateTo
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 35
   assemblies:
   - Meridian.Ui.Services
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigateTo
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 69
   assemblies:
   - Meridian.Ui.Services
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GoBack
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 78
   assemblies:
   - Meridian.Ui.Services
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPageType
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 93
   assemblies:
   - Meridian.Ui.Services
@@ -315,7 +315,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBreadcrumbs
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 101
   assemblies:
   - Meridian.Ui.Services
@@ -345,7 +345,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRegisteredPages
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 109
   assemblies:
   - Meridian.Ui.Services
@@ -375,7 +375,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPageRegistered
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 114
   assemblies:
   - Meridian.Ui.Services
@@ -411,7 +411,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentPageTag
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 119
   assemblies:
   - Meridian.Ui.Services
@@ -441,7 +441,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearHistory
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 129
   assemblies:
   - Meridian.Ui.Services
@@ -469,7 +469,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterPage
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 140
   assemblies:
   - Meridian.Ui.Services
@@ -507,7 +507,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterAllPages
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 148
   assemblies:
   - Meridian.Ui.Services
@@ -535,7 +535,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigateToPageCore
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 157
   assemblies:
   - Meridian.Ui.Services
@@ -579,7 +579,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GoBackCore
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 162
   assemblies:
   - Meridian.Ui.Services
@@ -607,7 +607,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearHistoryCore
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 167
   assemblies:
   - Meridian.Ui.Services
@@ -635,7 +635,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransformNavigationParameter
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 173
   assemblies:
   - Meridian.Ui.Services
@@ -678,7 +678,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnNavigationFailed
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
     startLine: 179
   assemblies:
   - Meridian.Ui.Services

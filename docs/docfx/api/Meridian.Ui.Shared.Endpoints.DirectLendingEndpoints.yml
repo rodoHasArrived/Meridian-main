@@ -19,7 +19,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
     startLine: 10
   assemblies:
   - Meridian.Ui.Shared
@@ -55,7 +55,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapDirectLendingEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
+    path: src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
     startLine: 12
   assemblies:
   - Meridian.Ui.Shared

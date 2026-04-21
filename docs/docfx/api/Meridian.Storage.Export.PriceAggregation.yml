@@ -23,7 +23,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceAggregation
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 148
   assemblies:
   - Meridian.Storage
@@ -50,7 +50,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ohlc
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 151
   assemblies:
   - Meridian.Storage
@@ -78,7 +78,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vwap
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 153
   assemblies:
   - Meridian.Storage
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Twap
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 155
   assemblies:
   - Meridian.Storage
@@ -134,7 +134,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Last
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 157
   assemblies:
   - Meridian.Storage
@@ -162,7 +162,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mean
-    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    path: src/Meridian.Storage/Export/ExportRequest.cs
     startLine: 159
   assemblies:
   - Meridian.Storage

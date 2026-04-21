@@ -30,7 +30,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckResult
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -68,7 +68,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 32
   assemblies:
   - Meridian.Core
@@ -121,7 +121,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComponentName
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 33
   assemblies:
   - Meridian.Core
@@ -152,7 +152,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 34
   assemblies:
   - Meridian.Core
@@ -183,7 +183,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 35
   assemblies:
   - Meridian.Core
@@ -214,7 +214,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckedAt
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 36
   assemblies:
   - Meridian.Core
@@ -245,7 +245,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 37
   assemblies:
   - Meridian.Core
@@ -276,7 +276,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 38
   assemblies:
   - Meridian.Core
@@ -307,7 +307,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exception
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 39
   assemblies:
   - Meridian.Core
@@ -338,7 +338,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 44
   assemblies:
   - Meridian.Core
@@ -380,7 +380,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Degraded
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 51
   assemblies:
   - Meridian.Core
@@ -422,7 +422,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unhealthy
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 58
   assemblies:
   - Meridian.Core
@@ -466,7 +466,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
-    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
     startLine: 65
   assemblies:
   - Meridian.Core

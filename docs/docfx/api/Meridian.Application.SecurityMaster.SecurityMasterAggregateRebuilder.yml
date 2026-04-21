@@ -22,7 +22,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterAggregateRebuilder
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
     startLine: 5
   assemblies:
   - Meridian.Application
@@ -56,7 +56,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCorporateActionsAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
     startLine: 14
   assemblies:
   - Meridian.Application
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -128,7 +128,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildEconomicDefinitionAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
     startLine: 27
   assemblies:
   - Meridian.Application
@@ -166,7 +166,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAsync
-    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
     startLine: 53
   assemblies:
   - Meridian.Application

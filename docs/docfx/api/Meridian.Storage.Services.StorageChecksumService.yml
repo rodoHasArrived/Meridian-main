@@ -26,7 +26,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageChecksumService
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 11
   assemblies:
   - Meridian.Storage
@@ -67,7 +67,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 16
   assemblies:
   - Meridian.Storage
@@ -101,7 +101,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputeFileChecksumAsync
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 25
   assemblies:
   - Meridian.Storage
@@ -139,7 +139,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputeChecksumAsync
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 41
   assemblies:
   - Meridian.Storage
@@ -174,7 +174,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputeChecksum
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 53
   assemblies:
   - Meridian.Storage
@@ -210,7 +210,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputeChecksum
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 64
   assemblies:
   - Meridian.Storage
@@ -246,7 +246,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyFileChecksumAsync
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 75
   assemblies:
   - Meridian.Storage
@@ -286,7 +286,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputeFileChecksumsAsync
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 92
   assemblies:
   - Meridian.Storage
@@ -324,7 +324,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyAuditChainAsync
-    path: ../../src/Meridian.Storage/Services/StorageChecksumService.cs
+    path: src/Meridian.Storage/Services/StorageChecksumService.cs
     startLine: 116
   assemblies:
   - Meridian.Storage

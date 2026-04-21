@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKeyMiddleware
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs
     startLine: 15
   assemblies:
   - Meridian.Ui.Shared
@@ -65,7 +65,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs
     startLine: 29
   assemblies:
   - Meridian.Ui.Shared
@@ -97,7 +97,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvokeAsync
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs
+    path: src/Meridian.Ui.Shared/Endpoints/ApiKeyMiddleware.cs
     startLine: 34
   assemblies:
   - Meridian.Ui.Shared

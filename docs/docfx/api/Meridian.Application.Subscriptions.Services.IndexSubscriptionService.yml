@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexSubscriptionService
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 19
   assemblies:
   - Meridian.Application
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 29
   assemblies:
   - Meridian.Application
@@ -106,7 +106,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableIndices
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 42
   assemblies:
   - Meridian.Application
@@ -136,7 +136,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIndexComponentsAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 54
   assemblies:
   - Meridian.Application
@@ -178,7 +178,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeToIndexAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 71
   assemblies:
   - Meridian.Application
@@ -213,7 +213,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeFromIndexAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 164
   assemblies:
   - Meridian.Application
@@ -251,7 +251,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSubscriptionStatusAsync
-    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
     startLine: 210
   assemblies:
   - Meridian.Application

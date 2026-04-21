@@ -27,7 +27,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckOptions
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 557
   assemblies:
   - Meridian.Storage
@@ -63,7 +63,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 557
   assemblies:
   - Meridian.Storage
@@ -109,7 +109,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateChecksums
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 558
   assemblies:
   - Meridian.Storage
@@ -138,7 +138,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckSequenceContinuity
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 559
   assemblies:
   - Meridian.Storage
@@ -167,7 +167,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSchemas
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 560
   assemblies:
   - Meridian.Storage
@@ -196,7 +196,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckFilePermissions
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 561
   assemblies:
   - Meridian.Storage
@@ -225,7 +225,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifyCorruption
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 562
   assemblies:
   - Meridian.Storage
@@ -254,7 +254,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckManifestConsistency
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 563
   assemblies:
   - Meridian.Storage
@@ -283,7 +283,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paths
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 564
   assemblies:
   - Meridian.Storage
@@ -312,7 +312,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelChecks
-    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    path: src/Meridian.Storage/Services/FileMaintenanceService.cs
     startLine: 565
   assemblies:
   - Meridian.Storage

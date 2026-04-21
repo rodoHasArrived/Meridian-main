@@ -29,7 +29,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthIntegrityEvent
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -70,7 +70,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 9
   assemblies:
   - Meridian.Contracts
@@ -122,7 +122,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 10
   assemblies:
   - Meridian.Contracts
@@ -151,7 +151,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 11
   assemblies:
   - Meridian.Contracts
@@ -180,7 +180,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 12
   assemblies:
   - Meridian.Contracts
@@ -221,7 +221,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 13
   assemblies:
   - Meridian.Contracts
@@ -250,7 +250,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Position
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 14
   assemblies:
   - Meridian.Contracts
@@ -279,7 +279,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 15
   assemblies:
   - Meridian.Contracts
@@ -308,7 +308,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 16
   assemblies:
   - Meridian.Contracts
@@ -337,7 +337,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 17
   assemblies:
   - Meridian.Contracts
@@ -366,7 +366,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 18
   assemblies:
   - Meridian.Contracts
@@ -395,7 +395,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
-    path: ../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
+    path: src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs
     startLine: 19
   assemblies:
   - Meridian.Contracts

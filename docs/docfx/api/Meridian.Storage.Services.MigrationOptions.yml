@@ -24,7 +24,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationOptions
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 358
   assemblies:
   - Meridian.Storage
@@ -60,7 +60,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 358
   assemblies:
   - Meridian.Storage
@@ -100,7 +100,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSource
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 359
   assemblies:
   - Meridian.Storage
@@ -129,7 +129,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChecksum
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 360
   assemblies:
   - Meridian.Storage
@@ -158,7 +158,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertFormat
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 361
   assemblies:
   - Meridian.Storage
@@ -187,7 +187,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelFiles
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 362
   assemblies:
   - Meridian.Storage
@@ -216,7 +216,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnProgress
-    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    path: src/Meridian.Storage/Services/TierMigrationService.cs
     startLine: 363
   assemblies:
   - Meridian.Storage

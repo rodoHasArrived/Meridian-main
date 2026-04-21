@@ -20,7 +20,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThreadLocalSequenceGenerator
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 204
   assemblies:
   - Meridian.Core
@@ -59,7 +59,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 213
   assemblies:
   - Meridian.Core
@@ -94,7 +94,7 @@ items:
       branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Next
-    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
     startLine: 224
   assemblies:
   - Meridian.Core

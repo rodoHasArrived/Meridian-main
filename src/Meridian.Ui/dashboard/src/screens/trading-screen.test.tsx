@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { TradingScreen } from "@/screens/trading-screen";
@@ -9,28 +9,99 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
+    getSession: vi.fn().mockResolvedValue({
+      displayName: "Ada Operator",
+      role: "Operator",
+      environment: "paper",
+      activeWorkspace: "trading",
+      commandCount: 12
+    }),
     cancelOrder: vi.fn().mockResolvedValue({ actionId: "a1", status: "Completed", message: "ok", occurredAt: new Date().toISOString() }),
     cancelAllOrders: vi.fn().mockResolvedValue({ actionId: "a2", status: "Completed", message: "ok", occurredAt: new Date().toISOString() }),
     closePosition: vi.fn().mockResolvedValue({ actionId: "a3", status: "Accepted", message: "ok", occurredAt: new Date().toISOString() }),
     submitOrder: vi.fn().mockResolvedValue({ success: true, orderId: "O-1", reason: null }),
-    getExecutionSessions: vi.fn().mockResolvedValue([{ sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true }]),
+    getExecutionControls: vi.fn().mockResolvedValue({
+      circuitBreaker: { isOpen: false, reason: null, changedBy: "ops", changedAt: "2026-01-01T00:00:00Z" },
+      defaultMaxPositionSize: 100,
+      symbolPositionLimits: {},
+      manualOverrides: [],
+      asOf: "2026-01-01T00:00:00Z"
+    }),
+    createManualOverride: vi.fn().mockResolvedValue({
+      overrideId: "ovr-1",
+      kind: "AllowLivePromotion",
+      reason: "Risk reviewed",
+      createdBy: "Ada Operator",
+      createdAt: "2026-01-01T00:21:00Z",
+      expiresAt: null,
+      symbol: null,
+      strategyId: "strat-1",
+      runId: "run-1"
+    }),
+    clearManualOverride: vi.fn().mockResolvedValue({
+      actionId: "a-ovr-clear",
+      status: "Completed",
+      message: "Manual override ovr-1 cleared.",
+      occurredAt: "2026-01-01T00:22:00Z"
+    }),
+    getExecutionSessions: vi.fn().mockResolvedValue([
+      {
+        sessionId: "sess-1",
+        strategyId: "strat-1",
+        strategyName: null,
+        initialCash: 100000,
+        createdAt: "2026-01-01",
+        closedAt: null,
+        isActive: true
+      }
+    ]),
     createPaperSession: vi.fn(),
-    closePaperSession: vi.fn().mockResolvedValue({ actionId: "a4", status: "Completed", message: "closed", occurredAt: "2026-01-01T01:00:00Z", auditId: "audit-close-1" }),
+    closePaperSession: vi.fn().mockResolvedValue({
+      actionId: "a4",
+      status: "Completed",
+      message: "closed",
+      occurredAt: "2026-01-01T01:00:00Z",
+      auditId: "audit-close-1"
+    }),
     getPaperSessionDetail: vi.fn().mockResolvedValue({
-      summary: { sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true },
+      summary: {
+        sessionId: "sess-1",
+        strategyId: "strat-1",
+        strategyName: null,
+        initialCash: 100000,
+        createdAt: "2026-01-01",
+        closedAt: null,
+        isActive: true
+      },
       symbols: ["AAPL", "MSFT"],
       portfolio: {
         cash: 99000,
         portfolioValue: 100250,
         unrealisedPnl: 250,
         realisedPnl: 0,
-        positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
+        positions: [{
+          symbol: "AAPL",
+          quantity: 5,
+          averageCostBasis: 200,
+          currentPrice: 205,
+          marketValue: 1025,
+          unrealisedPnl: 25,
+          realisedPnl: 0
+        }],
         asOf: "2026-01-01T00:15:00Z"
       },
       orderHistory: []
     }),
     getPaperSessionReplayVerification: vi.fn().mockResolvedValue({
-      summary: { sessionId: "sess-1", strategyId: "strat-1", strategyName: null, initialCash: 100000, createdAt: "2026-01-01", closedAt: null, isActive: true },
+      summary: {
+        sessionId: "sess-1",
+        strategyId: "strat-1",
+        strategyName: null,
+        initialCash: 100000,
+        createdAt: "2026-01-01",
+        closedAt: null,
+        isActive: true
+      },
       symbols: ["AAPL", "MSFT"],
       replaySource: "DurableFillLog",
       isConsistent: true,
@@ -40,7 +111,15 @@ vi.mock("@/lib/api", async () => {
         portfolioValue: 100250,
         unrealisedPnl: 250,
         realisedPnl: 0,
-        positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
+        positions: [{
+          symbol: "AAPL",
+          quantity: 5,
+          averageCostBasis: 200,
+          currentPrice: 205,
+          marketValue: 1025,
+          unrealisedPnl: 25,
+          realisedPnl: 0
+        }],
         asOf: "2026-01-01T00:15:00Z"
       },
       replayPortfolio: {
@@ -48,10 +127,24 @@ vi.mock("@/lib/api", async () => {
         portfolioValue: 100250,
         unrealisedPnl: 250,
         realisedPnl: 0,
-        positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
+        positions: [{
+          symbol: "AAPL",
+          quantity: 5,
+          averageCostBasis: 200,
+          currentPrice: 205,
+          marketValue: 1025,
+          unrealisedPnl: 25,
+          realisedPnl: 0
+        }],
         asOf: "2026-01-01T00:15:00Z"
       },
-      verifiedAt: "2026-01-01T00:20:00Z"
+      comparedFillCount: 1,
+      comparedOrderCount: 0,
+      comparedLedgerEntryCount: 2,
+      lastPersistedFillAt: "2026-01-01T00:15:00Z",
+      lastPersistedOrderUpdateAt: null,
+      verifiedAt: "2026-01-01T00:20:00Z",
+      verificationAuditId: "audit-replay-1"
     }),
     getExecutionAudit: vi.fn().mockResolvedValue([
       {
@@ -70,7 +163,19 @@ vi.mock("@/lib/api", async () => {
         metadata: { sessionId: "sess-1" }
       }
     ]),
-    getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
+    getReplayFiles: vi.fn().mockResolvedValue({
+      files: [{
+        path: "/tmp/replay.jsonl",
+        name: "replay.jsonl",
+        symbol: "AAPL",
+        eventType: "trades",
+        sizeBytes: 1,
+        isCompressed: false,
+        lastModified: "2026-01-01"
+      }],
+      total: 1,
+      timestamp: "2026-01-01"
+    }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
     getReplayStatus: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "running", speedMultiplier: 1, eventsProcessed: 3, totalEvents: 10, progressPercent: 30, startedAt: "2026-01-01" }),
     pauseReplay: vi.fn().mockResolvedValue({}),
@@ -78,9 +183,51 @@ vi.mock("@/lib/api", async () => {
     stopReplay: vi.fn().mockResolvedValue({}),
     seekReplay: vi.fn().mockResolvedValue({}),
     setReplaySpeed: vi.fn().mockResolvedValue({}),
-    evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
-    approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved" }),
-    getPromotionHistory: vi.fn().mockResolvedValue([{ promotionId: "promo-1", strategyId: "strat-1", strategyName: "S1", sourceRunType: "backtest", targetRunType: "paper", qualifyingSharpe: 1.2, qualifyingMaxDrawdownPercent: 5, qualifyingTotalReturn: 10, promotedAt: "2026-01-01" }]),
+    evaluatePromotion: vi.fn().mockResolvedValue({
+      runId: "run-1",
+      strategyId: "strat-1",
+      strategyName: "S1",
+      sourceMode: "backtest",
+      targetMode: "paper",
+      isEligible: true,
+      sharpeRatio: 1.2,
+      maxDrawdownPercent: 5,
+      totalReturn: 10,
+      reason: "Eligible",
+      found: true,
+      ready: true,
+      requiresHumanApproval: true,
+      requiresManualOverride: false,
+      requiredManualOverrideKind: null,
+      blockingReasons: []
+    }),
+    approvePromotion: vi.fn().mockResolvedValue({
+      success: true,
+      promotionId: "promo-1",
+      newRunId: "paper-1",
+      reason: "approved",
+      auditReference: "audit-promo-1",
+      approvedBy: "Ada Operator"
+    }),
+    getPromotionHistory: vi.fn().mockResolvedValue([{
+      promotionId: "promo-1",
+      strategyId: "strat-1",
+      strategyName: "S1",
+      sourceRunType: "backtest",
+      targetRunType: "paper",
+      sourceRunId: "run-1",
+      targetRunId: "paper-1",
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      decision: "Approved",
+      promotedAt: "2026-01-01",
+      auditReference: "audit-promo-1",
+      approvedBy: "Ada Operator",
+      approvalReason: "Risk reviewed",
+      reviewNotes: "Looks good",
+      manualOverrideId: null
+    }]),
     pauseStrategy: vi.fn().mockResolvedValue({ strategyId: "s", action: "pause", success: true, reason: null }),
     stopStrategy: vi.fn().mockResolvedValue({ strategyId: "s", action: "stop", success: true, reason: null })
   };
@@ -101,33 +248,44 @@ const data: TradingWorkspaceResponse = {
 };
 
 describe("TradingScreen", () => {
-  it("renders cockpit tables and wiring state", () => {
+  it("renders cockpit tables, readiness blocks, and promotion lane", () => {
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
     expect(screen.getByText("Live positions")).toBeInTheDocument();
     expect(screen.getByText("Session replay controls")).toBeInTheDocument();
-    expect(screen.getByText("Backtest → Paper promotion gate")).toBeInTheDocument();
+    expect(screen.getByText("Promotion reliability gate")).toBeInTheDocument();
+    expect(screen.getByText("Session Active")).toBeInTheDocument();
+    expect(screen.getByText("Control State")).toBeInTheDocument();
   });
 
-  it("handles promotion happy path", async () => {
+  it("handles promotion happy path with operator identity", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
     await user.type(screen.getByLabelText("Run id"), "run-1");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText(/Eligible: Yes/i);
     await user.click(screen.getByRole("button", { name: /confirm promote/i }));
-    await screen.findByText(/Promoted\. Promotion ID: promo-1/i);
+
+    await screen.findByText(/Promoted\. Promotion ID: promo-1 · Audit audit-promo-1/i);
+    expect(api.approvePromotion).toHaveBeenCalledWith(expect.objectContaining({
+      runId: "run-1",
+      approvedBy: "Ada Operator"
+    }), "Ada Operator");
   });
 
   it("shows error path when promotion evaluation fails", async () => {
     vi.mocked(api.evaluatePromotion).mockRejectedValueOnce(new Error("eval failed"));
+
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
     await user.type(screen.getByLabelText("Run id"), "run-bad");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
+
     await screen.findByText("eval failed");
   });
 
-  it("supports replay start and restore session for reconnect/resume workflows", async () => {
+  it("supports replay start and restore session for reconnect workflows", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
@@ -140,7 +298,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText("AAPL, MSFT")).toBeInTheDocument();
   });
 
-  it("shows replay verification and execution audit for the selected session", async () => {
+  it("shows replay evidence counts and verification audit", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
 
@@ -148,7 +306,66 @@ describe("TradingScreen", () => {
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByText("Compared fills")).toBeInTheDocument();
+    expect(screen.getByText(/Verification audit: audit-replay-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
+  });
+
+  it("supports inline manual override creation for blocked promotions", async () => {
+    vi.mocked(api.evaluatePromotion).mockResolvedValueOnce({
+      runId: "run-1",
+      strategyId: "strat-1",
+      strategyName: "S1",
+      sourceMode: "paper",
+      targetMode: "live",
+      isEligible: false,
+      sharpeRatio: 1.2,
+      maxDrawdownPercent: 5,
+      totalReturn: 10,
+      reason: "Override required",
+      found: true,
+      ready: true,
+      requiresHumanApproval: true,
+      requiresManualOverride: true,
+      requiredManualOverrideKind: "AllowLivePromotion",
+      blockingReasons: ["Paper -> Live promotion requires an active AllowLivePromotion manual override."]
+    });
+    vi.mocked(api.getExecutionControls)
+      .mockResolvedValueOnce({
+        circuitBreaker: { isOpen: false, reason: null, changedBy: "ops", changedAt: "2026-01-01T00:00:00Z" },
+        defaultMaxPositionSize: 100,
+        symbolPositionLimits: {},
+        manualOverrides: [],
+        asOf: "2026-01-01T00:00:00Z"
+      })
+      .mockResolvedValueOnce({
+        circuitBreaker: { isOpen: false, reason: null, changedBy: "ops", changedAt: "2026-01-01T00:00:00Z" },
+        defaultMaxPositionSize: 100,
+        symbolPositionLimits: {},
+        manualOverrides: [{
+          overrideId: "ovr-1",
+          kind: "AllowLivePromotion",
+          reason: "Risk reviewed",
+          createdBy: "Ada Operator",
+          createdAt: "2026-01-01T00:21:00Z",
+          expiresAt: null,
+          symbol: null,
+          strategyId: "strat-1",
+          runId: "run-1"
+        }],
+        asOf: "2026-01-01T00:21:00Z"
+      });
+
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    await user.type(screen.getByLabelText("Run id"), "run-1");
+    await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
+    await screen.findByText(/Blocking reasons/i);
+    await user.click(screen.getByRole("button", { name: /create override/i }));
+
+    await waitFor(() => expect(api.createManualOverride).toHaveBeenCalled());
+    expect(screen.getByText(/Manual override created: ovr-1/i)).toBeInTheDocument();
   });
 
   it("opens confirmation dialog when Cancel order button is clicked", () => {
