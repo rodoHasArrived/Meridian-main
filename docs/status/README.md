@@ -30,6 +30,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [IMPROVEMENTS.md](IMPROVEMENTS.md) | Tracked implementation themes and recommended focus areas |
 | [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md) | Normalized broader implementation backlog |
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
+| [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
 
 ## Generated Status Reports
 
