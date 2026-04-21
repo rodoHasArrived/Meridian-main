@@ -954,11 +954,8 @@ internal sealed class SimulatedPortfolio
             }
             else
             {
-                lots.Remove(node);
-                if (method == LotSelectionMethod.Lifo)
-                    lots.AddLast(lot with { Quantity = lot.Quantity - remaining });
-                else
-                    lots.AddFirst(lot with { Quantity = lot.Quantity - remaining });
+                // Partial close: reduce the lot in-place while preserving its list position.
+                node.Value = lot with { Quantity = lot.Quantity - remaining };
                 remaining = 0;
             }
         }

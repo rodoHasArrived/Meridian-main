@@ -29,9 +29,19 @@ public sealed record ClosedLot(
 {
     /// <summary>
     /// Realised P&amp;L for this closed lot.
-    /// Positive = gain; negative = loss.
-    /// For long positions: <c>(ClosePrice − EntryPrice) × Quantity</c>.
-    /// For short positions the caller negates the sign before constructing the record.
+    /// Always positive for a gain, negative for a loss.
+    /// Formula: <c>(ClosePrice − EntryPrice) × Quantity</c>.
+    /// <para>
+    /// For <b>long</b> positions <c>EntryPrice</c> is the acquisition cost and <c>ClosePrice</c>
+    /// is the sale price, so the formula yields a profit when the stock appreciated.
+    /// </para>
+    /// <para>
+    /// For <b>short</b> positions the price arguments are intentionally swapped by the
+    /// constructor: <c>EntryPrice</c> receives the cover (buy-back) price and
+    /// <c>ClosePrice</c> receives the original short-sale price.  The formula therefore
+    /// yields a profit when the cover price is lower than the short-sale price, matching
+    /// the sign convention of the portfolio's realised P&amp;L calculation.
+    /// </para>
     /// </summary>
     public decimal RealizedPnl => (ClosePrice - EntryPrice) * Quantity;
 

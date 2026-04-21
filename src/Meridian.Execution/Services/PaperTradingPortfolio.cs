@@ -89,7 +89,11 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         }
     }
 
-    /// <summary>All currently open lots across every position in this session.</summary>
+    /// <summary>
+    /// All currently open lots for long positions in this session.
+    /// Short positions are not lot-tracked in the paper trading portfolio (long-only for now).
+    /// Only populated for whole-share fills; fractional positions are excluded.
+    /// </summary>
     public IReadOnlyList<OpenLot> OpenLots
     {
         get
@@ -101,7 +105,11 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         }
     }
 
-    /// <summary>All lots that have been closed since the session began.</summary>
+    /// <summary>
+    /// All lots that have been fully or partially closed since the session began.
+    /// Covers long position closes only; short covers are not lot-tracked.
+    /// Only populated for whole-share fills; fractional closes are excluded.
+    /// </summary>
     public IReadOnlyList<ClosedLot> ClosedLots
     {
         get
@@ -225,13 +233,18 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         _cash -= notional + commission;
 
         // Append a new open lot for lot-level tracking.
-        pos.Lots.AddLast(new OpenLot(
-            LotId: Guid.NewGuid(),
-            Symbol: symbol,
-            Quantity: (long)qty,
-            EntryPrice: price,
-            OpenedAt: ts,
-            OpenFillId: Guid.NewGuid()));
+        // Only whole-share fills produce a tracked lot; fractional fills are skipped
+        // to avoid silent truncation of the long quantity.
+        if (qty == decimal.Truncate(qty) && qty > 0)
+        {
+            pos.Lots.AddLast(new OpenLot(
+                LotId: Guid.NewGuid(),
+                Symbol: symbol,
+                Quantity: checked((long)qty),
+                EntryPrice: price,
+                OpenedAt: ts,
+                OpenFillId: Guid.NewGuid()));
+        }
 
         if (_ledger is not null)
         {
@@ -299,35 +312,40 @@ public sealed class PaperTradingPortfolio : IPortfolioState
         _realisedPnl += realised;
 
         // FIFO lot-level close: drain from the front of the lot queue.
-        var closeFillId = Guid.NewGuid();
-        var remaining = (long)closeQty;
-        while (remaining > 0 && pos.Lots.Count > 0)
+        // Only whole-share closes drain lots; fractional closes are skipped to avoid
+        // silent truncation and to stay consistent with lot-open behaviour.
+        if (closeQty == decimal.Truncate(closeQty) && pos.Lots.Count > 0)
         {
-            var node = pos.Lots.First!;
-            var lot = node.Value;
-            var lotClose = Math.Min(lot.Quantity, remaining);
-
-            pos.ClosedLots.Add(new ClosedLot(
-                LotId: lot.LotId,
-                Symbol: lot.Symbol,
-                Quantity: lotClose,
-                EntryPrice: lot.EntryPrice,
-                OpenedAt: lot.OpenedAt,
-                OpenFillId: lot.OpenFillId,
-                ClosePrice: price,
-                ClosedAt: ts,
-                CloseFillId: closeFillId));
-
-            pos.Lots.RemoveFirst();
-            if (lot.Quantity > remaining)
+            var closeFillId = Guid.NewGuid();
+            var remaining = checked((long)closeQty);
+            while (remaining > 0 && pos.Lots.Count > 0)
             {
-                // Partial close: add back the reduced lot.
-                pos.Lots.AddFirst(lot with { Quantity = lot.Quantity - remaining });
-                remaining = 0;
-            }
-            else
-            {
-                remaining -= lot.Quantity;
+                var node = pos.Lots.First!;
+                var lot = node.Value;
+                var lotClose = Math.Min(lot.Quantity, remaining);
+
+                pos.ClosedLots.Add(new ClosedLot(
+                    LotId: lot.LotId,
+                    Symbol: lot.Symbol,
+                    Quantity: lotClose,
+                    EntryPrice: lot.EntryPrice,
+                    OpenedAt: lot.OpenedAt,
+                    OpenFillId: lot.OpenFillId,
+                    ClosePrice: price,
+                    ClosedAt: ts,
+                    CloseFillId: closeFillId));
+
+                if (lot.Quantity > remaining)
+                {
+                    // Partial close: update the head lot in-place to preserve list order.
+                    node.Value = lot with { Quantity = lot.Quantity - remaining };
+                    remaining = 0;
+                }
+                else
+                {
+                    remaining -= lot.Quantity;
+                    pos.Lots.RemoveFirst();
+                }
             }
         }
 
