@@ -117,6 +117,22 @@ public sealed class FundStructureEndpointTests
         payload.AssetClassSectionCount.Should().BeGreaterThan(0);
     }
 
+    [Fact]
+    public async Task GetCashFlowView_WithBlankLedgerGroupId_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetCashFlowView_WithInvalidLedgerGroupId_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=BAD/GROUP");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync()
     {
         var fundProfileId = $"fund-endpoint-{Guid.NewGuid():N}";
