@@ -12,9 +12,27 @@ describe("trading endpoint wiring", () => {
 
   it("wires promotion endpoints", async () => {
     await evaluatePromotion("run-123");
-    await approvePromotion("run-123", "ok");
+    await approvePromotion({
+      runId: "run-123",
+      approvedBy: "ops-1",
+      approvalReason: "Risk and quality checks passed",
+      reviewNotes: "Reviewed by trading desk",
+      manualOverrideId: "override-42"
+    });
     expect(fetchMock).toHaveBeenCalledWith("/api/promotion/evaluate/run-123", expect.anything());
-    expect(fetchMock).toHaveBeenCalledWith("/api/promotion/approve", expect.objectContaining({ method: "POST" }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/promotion/approve",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          runId: "run-123",
+          approvedBy: "ops-1",
+          approvalReason: "Risk and quality checks passed",
+          reviewNotes: "Reviewed by trading desk",
+          manualOverrideId: "override-42"
+        })
+      })
+    );
   });
 
   it("wires execution/replay endpoints", async () => {
