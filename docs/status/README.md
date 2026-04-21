@@ -24,6 +24,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md) | Concise description of Meridian's intended finished product |
 | [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | Current-vs-target capability inventory across platform and product areas |
 | [provider-validation-matrix.md](provider-validation-matrix.md) | Evidence-backed provider readiness matrix used by readiness docs |
+| [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | Compatibility, deprecation, and migration policy for workstation/strategy/ledger contracts |
 | [production-status.md](production-status.md) | Current production and pilot-readiness caveats |
 | [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
 | [IMPROVEMENTS.md](IMPROVEMENTS.md) | Tracked implementation themes and recommended focus areas |
@@ -68,7 +69,8 @@ These dated snapshots remain useful for history, but they no longer act as activ
 7. [../plans/README.md](../plans/README.md)
 8. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
 9. [provider-validation-matrix.md](provider-validation-matrix.md)
-10. [IMPROVEMENTS.md](IMPROVEMENTS.md)
+10. [contract-compatibility-matrix.md](contract-compatibility-matrix.md)
+11. [IMPROVEMENTS.md](IMPROVEMENTS.md)
 
 ## Contributor Checklist (Required Headings)
 
