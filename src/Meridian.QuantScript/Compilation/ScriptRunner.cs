@@ -166,7 +166,7 @@ public sealed class ScriptRunner : IScriptRunner
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
-        var trades = backtestProxy.CapturedFills
+        var trades = globals.Backtest.CapturedFills
             .Select(static fill => new ScriptTradeResult(
                 Timestamp: fill.FilledAt,
                 Symbol: fill.Symbol,

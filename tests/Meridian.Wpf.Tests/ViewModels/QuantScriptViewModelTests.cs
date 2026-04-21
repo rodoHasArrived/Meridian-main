@@ -119,6 +119,42 @@ public sealed class QuantScriptViewModelTests
         raised.Should().Contain(nameof(vm.ScriptSource));
     }
 
+    [Fact]
+    public async Task RunScriptCommand_WhenResultHasTrades_PopulatesTradesAndPrefersBacktestOutputTab()
+    {
+        var fakeRunner = new FakeScriptRunner().SetResult(new ScriptRunResult(
+            Success: true,
+            Elapsed: TimeSpan.FromMilliseconds(50),
+            CompileTime: TimeSpan.FromMilliseconds(10),
+            PeakMemoryBytes: 1024,
+            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeError: null,
+            ConsoleOutput: string.Empty,
+            Metrics: Array.Empty<KeyValuePair<string, string>>(),
+            Plots: Array.Empty<PlotRequest>(),
+            Trades:
+            [
+                new ScriptTradeResult(
+                    Timestamp: new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero),
+                    Symbol: "AAPL",
+                    Side: "Buy",
+                    Quantity: 5m,
+                    Price: 190.25m,
+                    Commission: 0.10m),
+            ]));
+        var vm = CreateVm(fakeRunner);
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        vm.Trades.Should().ContainSingle();
+        vm.Trades[0].Symbol.Should().Be("AAPL");
+        vm.Trades[0].Side.Should().Be("Buy");
+        vm.Trades[0].FilledQuantity.Should().Be(5m);
+        vm.Trades[0].FillPrice.Should().Be(190.25m);
+        vm.Trades[0].Commission.Should().Be(0.10m);
+        vm.ActiveResultsTab.Should().Be(4);
+    }
+
     // ── ClearConsole command ──────────────────────────────────────────────────
 
     [Fact]

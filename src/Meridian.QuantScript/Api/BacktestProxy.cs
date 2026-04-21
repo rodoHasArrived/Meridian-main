@@ -44,6 +44,7 @@ public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions opt
     public BacktestResult Run(Action<BacktestProgressEvent>? onProgress)
     {
         ArgumentNullException.ThrowIfNull(engine);
+        _capturedFills = [];
 
         var request = new BacktestRequest(
             From: _from,
