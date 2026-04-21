@@ -226,8 +226,11 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     map[position.Symbol] = new SecurityClassificationSummaryDto(
                         AssetClass: position.Security.AssetClass,
                         SubType: position.Security.SubType,
-                        PrimaryIdentifierKind: "Ticker",
-                        PrimaryIdentifierValue: position.Security.PrimaryIdentifier ?? position.Symbol);
+                        PrimaryIdentifierKind: position.Security.MatchedIdentifierKind ?? "Ticker",
+                        PrimaryIdentifierValue: position.Security.PrimaryIdentifier ?? position.Symbol,
+                        MatchedIdentifierKind: position.Security.MatchedIdentifierKind,
+                        MatchedIdentifierValue: position.Security.MatchedIdentifierValue,
+                        MatchedProvider: position.Security.MatchedProvider);
                 }
             }
         }
@@ -243,8 +246,11 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     map[line.Symbol] = new SecurityClassificationSummaryDto(
                         AssetClass: line.Security.AssetClass,
                         SubType: line.Security.SubType,
-                        PrimaryIdentifierKind: "Ticker",
-                        PrimaryIdentifierValue: line.Security.PrimaryIdentifier ?? line.Symbol);
+                        PrimaryIdentifierKind: line.Security.MatchedIdentifierKind ?? "Ticker",
+                        PrimaryIdentifierValue: line.Security.PrimaryIdentifier ?? line.Symbol,
+                        MatchedIdentifierKind: line.Security.MatchedIdentifierKind,
+                        MatchedIdentifierValue: line.Security.MatchedIdentifierValue,
+                        MatchedProvider: line.Security.MatchedProvider);
                 }
             }
         }
