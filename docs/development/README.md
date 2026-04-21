@@ -50,6 +50,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 | Document | Use it when you need to... |
 |----------|-----------------------------|
 | [Provider Implementation Guide](provider-implementation.md) | add or extend streaming, historical, or symbol-search providers |
+| [Rule Evaluation Contract Layer](rule-evaluation-contracts.md) | align kernel outputs to the shared `Score + Reasons + Trace` envelope |
 | [Refactor Map](refactor-map.md) | understand the current dependency-safe refactor opportunities |
 | [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | review proposed contributor-workflow and automation cleanup themes |
 

@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.RuleEvaluation;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
@@ -181,7 +182,21 @@ public sealed class FundAccountsViewModelTests
                     HealthStatus: "Healthy",
                     IsProductionReady: true,
                     IsCertificationFresh: true,
-                    Signals: ["certified", "healthy"])
+                    Signals: ["certified", "healthy"],
+                    Decision: new DecisionResult<double>(
+                        Score: 97,
+                        Reasons:
+                        [
+                            new DecisionReason(
+                                RuleId: "provider-trust.health-status",
+                                Weight: 0,
+                                ReasonCode: "HEALTHY",
+                                HumanExplanation: "Connection is healthy.")
+                        ],
+                        Trace: new DecisionTrace(
+                            SchemaVersion: "1.0.0",
+                            KernelVersion: "test-kernel",
+                            EvaluatedAt: DateTimeOffset.UtcNow)))
             ],
             previews:
             [

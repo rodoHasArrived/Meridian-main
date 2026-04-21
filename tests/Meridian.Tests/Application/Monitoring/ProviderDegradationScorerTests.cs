@@ -109,6 +109,22 @@ public sealed class ProviderDegradationScorerTests : IDisposable
     }
 
     [Fact]
+    public void GetScore_IncludesStandardDecisionEnvelope()
+    {
+        _healthMonitor.RegisterConnection("trace-provider", "trace-provider");
+        _healthMonitor.MarkDisconnected("trace-provider", "network outage");
+        _scorer.RecordError("trace-provider", "timeout");
+
+        var score = _scorer.GetScore("trace-provider");
+
+        score.Decision.Score.Should().Be(score.CompositeScore);
+        score.Decision.Trace.SchemaVersion.Should().Be(ProviderDegradationScorer.DecisionSchemaVersion);
+        score.Decision.Trace.KernelVersion.Should().Be(ProviderDegradationScorer.KernelVersion);
+        score.Decision.Reasons.Should().Contain(r => r.RuleId == "provider-degradation.connection-connectivity");
+        score.Decision.Reasons.Should().OnlyContain(r => !string.IsNullOrWhiteSpace(r.ReasonCode));
+    }
+
+    [Fact]
     public void GetScore_UnknownProvider_ReturnsZeroScore()
     {
         // Act
