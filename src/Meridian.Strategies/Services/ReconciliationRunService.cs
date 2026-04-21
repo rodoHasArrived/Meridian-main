@@ -91,7 +91,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.Variance,
                 result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                result.HasActualAsOf ? result.ActualAsOf : null));
+                result.HasActualAsOf ? result.ActualAsOf : null,
+                MapSeverity(result.Category, result.Variance)));
         }
 
         var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
@@ -153,6 +154,18 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         "investigating" => ReconciliationBreakStatus.Investigating,
         "resolved" => ReconciliationBreakStatus.Resolved,
         _ => ReconciliationBreakStatus.Open
+    };
+
+    private static ReconciliationBreakSeverity MapSeverity(string category, decimal variance) => category switch
+    {
+        "timing_mismatch" => ReconciliationBreakSeverity.High,
+        "missing_ledger_coverage" or "missing_portfolio_coverage" => ReconciliationBreakSeverity.High,
+        "classification_gap" => ReconciliationBreakSeverity.Medium,
+        "amount_mismatch" when Math.Abs(variance) >= 1_000m => ReconciliationBreakSeverity.Critical,
+        "amount_mismatch" when Math.Abs(variance) >= 100m => ReconciliationBreakSeverity.High,
+        "amount_mismatch" when Math.Abs(variance) >= 10m => ReconciliationBreakSeverity.Medium,
+        "amount_mismatch" => ReconciliationBreakSeverity.Low,
+        _ => ReconciliationBreakSeverity.Info
     };
 
     private static IReadOnlyList<ReconciliationSecurityCoverageIssueDto> BuildSecurityCoverageIssues(StrategyRunDetail detail)

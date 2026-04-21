@@ -167,6 +167,47 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
+    public async Task RunAsync_WithNearToleranceVariance_ShouldKeepPartialLikeResultInMatches()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun(
+            "run-partial-like",
+            portfolioCashOverride: 750.005m));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-partial-like", AmountTolerance: 0.01m));
+
+        detail.Should().NotBeNull();
+        detail!.Matches.Should().Contain(match =>
+            match.CheckId == "cash-balance" &&
+            match.Variance != 0m &&
+            Math.Abs(match.Variance) < 0.01m);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithMaterialBreaks_ShouldSurfaceSeverityAndCanonicalReasonInDetail()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun(
+            "run-break-severity",
+            portfolioAsOfOffsetMinutes: 30,
+            portfolioCashOverride: 950m));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-break-severity", AmountTolerance: 0.01m, MaxAsOfDriftMinutes: 5));
+
+        detail.Should().NotBeNull();
+        detail!.Breaks.Should().Contain(b => b.CheckId == "cash-balance"
+            && b.Category == ReconciliationBreakCategory.TimingMismatch
+            && b.Severity == ReconciliationBreakSeverity.High);
+        detail.Breaks.Should().Contain(b => b.CheckId == "net-equity"
+            && b.Category == ReconciliationBreakCategory.TimingMismatch
+            && b.Reason.Contains("drift beyond tolerance", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task GetHistoryForRunAsync_ShouldReturnNewestFirst()
     {
         var store = new StrategyRunStore();
@@ -338,10 +379,17 @@ public sealed class ReconciliationRunServiceTests
 
     private static class TestRunFactory
     {
-        public static StrategyRunEntry BuildReconciliationReadyRun(string runId)
+        public static StrategyRunEntry BuildReconciliationReadyRun(
+            string runId,
+            decimal? portfolioCashOverride = null,
+            int portfolioAsOfOffsetMinutes = 0,
+            int ledgerAsOfOffsetMinutes = 0)
         {
             var startedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero);
             var completedAt = startedAt.AddMinutes(30);
+            var portfolioAsOf = completedAt.AddMinutes(portfolioAsOfOffsetMinutes);
+            var ledgerAsOf = completedAt.AddMinutes(ledgerAsOfOffsetMinutes);
+            var portfolioCash = portfolioCashOverride ?? 750m;
             var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
             {
                 ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m),
@@ -352,21 +400,21 @@ public sealed class ReconciliationRunServiceTests
                 DisplayName: "Primary Brokerage",
                 Kind: FinancialAccountKind.Brokerage,
                 Institution: "Simulated Broker",
-                Cash: 750m,
+                Cash: portfolioCash,
                 MarginBalance: 0m,
                 LongMarketValue: 400m,
                 ShortMarketValue: -150m,
-                Equity: 1000m,
+                Equity: portfolioCash + 400m - 150m,
                 Positions: positions,
                 Rules: new FinancialAccountRules());
             var snapshot = new PortfolioSnapshot(
-                Timestamp: completedAt,
-                Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
-                Cash: 750m,
+                Timestamp: portfolioAsOf,
+                Date: DateOnly.FromDateTime(portfolioAsOf.UtcDateTime),
+                Cash: portfolioCash,
                 MarginBalance: 0m,
                 LongMarketValue: 400m,
                 ShortMarketValue: -150m,
-                TotalEquity: 1000m,
+                TotalEquity: portfolioCash + 400m - 150m,
                 DailyReturn: 0m,
                 Positions: positions,
                 Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
@@ -411,7 +459,7 @@ public sealed class ReconciliationRunServiceTests
                 CashFlows: [],
                 Fills: [],
                 Metrics: metrics,
-                Ledger: CreateLedger(),
+                Ledger: CreateLedger(ledgerAsOf),
                 ElapsedTime: TimeSpan.FromMinutes(30),
                 TotalEventsProcessed: 100);
 
@@ -522,20 +570,20 @@ public sealed class ReconciliationRunServiceTests
             };
         }
 
-        private static IReadOnlyLedger CreateLedger()
+        private static IReadOnlyLedger CreateLedger(DateTimeOffset asOf)
         {
             var ledger = new global::Meridian.Ledger.Ledger();
-            PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero), "Initial capital",
+            PostBalancedEntry(ledger, asOf.AddMinutes(-30), "Initial capital",
             [
                 (LedgerAccounts.Cash, 1_000m, 0m),
                 (LedgerAccounts.CapitalAccount, 0m, 1_000m)
             ]);
-            PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, TimeSpan.Zero), "Buy AAPL",
+            PostBalancedEntry(ledger, asOf.AddMinutes(-20), "Buy AAPL",
             [
                 (LedgerAccounts.Securities("AAPL"), 400m, 0m),
                 (LedgerAccounts.Cash, 0m, 400m)
             ]);
-            PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, TimeSpan.Zero), "Open TSLA short",
+            PostBalancedEntry(ledger, asOf.AddMinutes(-10), "Open TSLA short",
             [
                 (LedgerAccounts.Cash, 150m, 0m),
                 (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
