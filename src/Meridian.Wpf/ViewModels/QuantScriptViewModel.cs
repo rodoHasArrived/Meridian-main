@@ -46,6 +46,14 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private string _elapsedText = "--";
     private string _memoryText = "--";
     private int _activeResultsTab;
+    private int _selectedChartIndex = -1;
+    private PlotViewModel? _selectedChart;
+    private int _runSequence;
+    private int _activeRunNumber;
+    private bool _pinPreviousRun;
+    private bool _viewPinnedRun;
+    private RunSnapshot? _latestRunSnapshot;
+    private RunSnapshot? _pinnedRunSnapshot;
 
     public QuantScriptViewModel(
         IScriptRunner runner,
@@ -77,7 +85,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         DeleteCellCommand = new RelayCommand(DeleteSelectedCell, () => !IsRunning && NotebookCells.Count > 1);
 
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
-        Charts.CollectionChanged += (_, _) => { RaisePropertyChanged(nameof(ChartsTabHeader)); UpdatePrimaryChart(); };
+        Charts.CollectionChanged += (_, _) => { RaisePropertyChanged(nameof(ChartsTabHeader)); EnsureSelectedChart(); UpdatePrimaryChart(); };
         Metrics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(MetricsTabHeader));
         Trades.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(TradesTabHeader));
         Diagnostics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DiagnosticsTabHeader));
@@ -98,11 +106,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public DateTime ToDate { get => _toDate; set => SetProperty(ref _toDate, value); }
     public string SelectedInterval { get => _selectedInterval; set => SetProperty(ref _selectedInterval, value); }
     public static IReadOnlyList<string> Intervals { get; } = ["Daily", "Daily (Custom)", "Weekly", "Monthly"];
-    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
-    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
-    public bool HasChart => Charts.Count > 0;
+    public PlotRequest? PrimaryChartRequest => SelectedChart?.Request;
+    public string PrimaryChartTitle => SelectedChart?.Title ?? string.Empty;
+    public bool HasChart => SelectedChart is not null;
     public bool HasNoChart => Charts.Count == 0;
     public bool HasLegend => LegendEntries.Count > 0;
+    public string ResultsContextText => BuildResultsContextText();
     private static readonly System.Windows.Media.Color[] LegendPalette =
     [
         System.Windows.Media.Color.FromRgb(66, 153, 225),
@@ -191,6 +200,60 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public bool HasInvalidParameters => Parameters.Any(parameter => !parameter.IsValid);
     public bool CanRun => !IsRunning && SelectedCell is not null && !HasInvalidParameters;
     public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
+    public int SelectedChartIndex
+    {
+        get => _selectedChartIndex;
+        set
+        {
+            if (!SetProperty(ref _selectedChartIndex, value))
+                return;
+            var chart = value >= 0 && value < Charts.Count ? Charts[value] : null;
+            if (!ReferenceEquals(_selectedChart, chart))
+                SetProperty(ref _selectedChart, chart, nameof(SelectedChart));
+            UpdatePrimaryChart();
+        }
+    }
+
+    public PlotViewModel? SelectedChart
+    {
+        get => _selectedChart;
+        set
+        {
+            if (!SetProperty(ref _selectedChart, value))
+                return;
+            var index = value is null ? -1 : Charts.IndexOf(value);
+            if (_selectedChartIndex != index)
+                SetProperty(ref _selectedChartIndex, index, nameof(SelectedChartIndex));
+            UpdatePrimaryChart();
+        }
+    }
+
+    public bool PinPreviousRun
+    {
+        get => _pinPreviousRun;
+        set => SetProperty(ref _pinPreviousRun, value);
+    }
+
+    public bool ViewPinnedRun
+    {
+        get => _viewPinnedRun;
+        set
+        {
+            if (!SetProperty(ref _viewPinnedRun, value))
+                return;
+            if (_viewPinnedRun && _pinnedRunSnapshot is null)
+            {
+                _viewPinnedRun = false;
+                RaisePropertyChanged(nameof(ViewPinnedRun));
+                return;
+            }
+            if (!IsRunning)
+                LoadSnapshotIntoResults(_viewPinnedRun ? _pinnedRunSnapshot : _latestRunSnapshot);
+            RaisePropertyChanged(nameof(ResultsContextText));
+        }
+    }
+
+    public bool HasPinnedRun => _pinnedRunSnapshot is not null;
 
     public IAsyncRelayCommand RunScriptCommand { get; }
     public IAsyncRelayCommand RunAllCommand { get; }
@@ -284,12 +347,18 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (startIndex < 0 || endIndex < startIndex || endIndex >= NotebookCells.Count)
             return false;
 
-        if (!ValidateExecutionDateRange())
-            return false;
+        if (PinPreviousRun && _latestRunSnapshot is not null)
+            _pinnedRunSnapshot = _latestRunSnapshot;
+        if (ViewPinnedRun)
+            ViewPinnedRun = false;
+        RaisePropertyChanged(nameof(HasPinnedRun));
 
+        _activeRunNumber = ++_runSequence;
         ClearResults();
         IsRunning = true;
-        StatusText = startIndex == endIndex ? $"Running {NotebookCells[endIndex].Title.ToLowerInvariant()}..." : $"Running cells {startIndex + 1}-{endIndex + 1}...";
+        StatusText = startIndex == endIndex
+            ? $"Running run #{_activeRunNumber}: {NotebookCells[endIndex].Title.ToLowerInvariant()}..."
+            : $"Running run #{_activeRunNumber}: cells {startIndex + 1}-{endIndex + 1}...";
         _runStopwatch = System.Diagnostics.Stopwatch.StartNew();
         _elapsedTimer?.Start();
         var identities = GetCellIdentities();
@@ -336,7 +405,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
             if (succeeded)
             {
-                StatusText = endIndex > startIndex ? $"Completed {endIndex - startIndex + 1} cells" : $"Completed {NotebookCells[endIndex].Title.ToLowerInvariant()}";
+                StatusText = endIndex > startIndex
+                    ? $"Completed run #{_activeRunNumber} ({endIndex - startIndex + 1} cells)"
+                    : $"Completed run #{_activeRunNumber}: {NotebookCells[endIndex].Title.ToLowerInvariant()}";
                 if (advanceSelection)
                     AdvanceSelectionAfterRun();
             }
@@ -391,8 +462,11 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
         Diagnostics.Add(new DiagnosticEntry("Peak memory", $"{result.PeakMemoryBytes / 1024.0:F0} KB"));
+        UpdateDiagnosticsContextEntry();
         ElapsedText = $"{result.Elapsed.TotalSeconds:F1}s";
         MemoryText = $"{result.PeakMemoryBytes / 1024.0:F0} KB";
+        CaptureLatestSnapshot();
+        RaisePropertyChanged(nameof(ResultsContextText));
     }
 
     private void StopRunning()
@@ -491,9 +565,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private void UpdatePrimaryChart()
     {
         LegendEntries.Clear();
-        if (Charts.Count > 0)
+        if (SelectedChart is not null)
         {
-            var request = Charts[0].Request;
+            var request = SelectedChart.Request;
             if (request.MultiSeries is { Count: > 0 } multi)
             {
                 var index = 0;
@@ -502,7 +576,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             }
             else if (request.Series is { Count: > 0 })
             {
-                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, LegendPalette[0]));
+                LegendEntries.Add(new ChartLegendEntry(SelectedChart.Title, LegendPalette[0]));
             }
         }
         RaisePropertyChanged(nameof(PrimaryChartRequest));
@@ -510,6 +584,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(HasChart));
         RaisePropertyChanged(nameof(HasNoChart));
         RaisePropertyChanged(nameof(HasLegend));
+        UpdateDiagnosticsContextEntry();
+        RaisePropertyChanged(nameof(ResultsContextText));
     }
 
     private void ClearResults()
@@ -519,11 +595,87 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         Metrics.Clear();
         Trades.Clear();
         Diagnostics.Clear();
+        SelectedChart = null;
+        SelectedChartIndex = -1;
         ProgressFraction = 0;
         ActiveResultsTab = 0;
         ElapsedText = "--";
         MemoryText = "--";
     }
+
+    private void EnsureSelectedChart()
+    {
+        if (Charts.Count == 0)
+        {
+            SelectedChart = null;
+            return;
+        }
+
+        if (SelectedChart is null || !Charts.Contains(SelectedChart))
+            SelectedChart = Charts[0];
+    }
+
+    private string BuildResultsContextText()
+    {
+        var snapshot = ViewPinnedRun ? _pinnedRunSnapshot : _latestRunSnapshot;
+        if (snapshot is null)
+            return "No run selected.";
+
+        var mode = ViewPinnedRun ? "Pinned" : "Current";
+        if (SelectedChart is null)
+            return $"{mode} run #{snapshot.RunNumber} · no chart selected";
+
+        var chartIndex = Math.Max(0, SelectedChartIndex) + 1;
+        return $"{mode} run #{snapshot.RunNumber} · chart {chartIndex}/{Charts.Count}: {SelectedChart.Title}";
+    }
+
+    private void CaptureLatestSnapshot()
+    {
+        UpdateDiagnosticsContextEntry();
+        _latestRunSnapshot = new RunSnapshot(
+            _activeRunNumber,
+            Charts.ToList(),
+            Metrics.ToList(),
+            Diagnostics.ToList());
+    }
+
+    private void LoadSnapshotIntoResults(RunSnapshot? snapshot)
+    {
+        ClearResults();
+        if (snapshot is null)
+        {
+            RaisePropertyChanged(nameof(ResultsContextText));
+            return;
+        }
+
+        foreach (var chart in snapshot.Charts)
+            Charts.Add(chart);
+        foreach (var metric in snapshot.Metrics)
+            Metrics.Add(metric);
+        foreach (var diagnostic in snapshot.Diagnostics)
+            Diagnostics.Add(diagnostic);
+        EnsureSelectedChart();
+        StatusText = ViewPinnedRun ? $"Viewing pinned run #{snapshot.RunNumber}" : $"Viewing current run #{snapshot.RunNumber}";
+        UpdateDiagnosticsContextEntry();
+        RaisePropertyChanged(nameof(ResultsContextText));
+    }
+
+    private void UpdateDiagnosticsContextEntry()
+    {
+        if (_latestRunSnapshot is null && _pinnedRunSnapshot is null && Diagnostics.Count == 0)
+            return;
+        var context = BuildResultsContextText();
+        if (Diagnostics.Count > 0 && string.Equals(Diagnostics[0].Key, "View", StringComparison.Ordinal))
+            Diagnostics[0] = new DiagnosticEntry("View", context);
+        else
+            Diagnostics.Insert(0, new DiagnosticEntry("View", context));
+    }
+
+    private sealed record RunSnapshot(
+        int RunNumber,
+        IReadOnlyList<PlotViewModel> Charts,
+        IReadOnlyList<MetricEntry> Metrics,
+        IReadOnlyList<DiagnosticEntry> Diagnostics);
 
     private void AppendConsole(string text, ConsoleEntryKind kind) => ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.Now, text, kind));
 
