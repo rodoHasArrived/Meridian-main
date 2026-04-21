@@ -1,6 +1,6 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-20
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Waves 2-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
 **Repository Snapshot (2026-04-13 working tree):** solution projects: 39 | `src/` project files: 27 | test projects: 9 | workflow files: 42
 
@@ -251,6 +251,120 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 - broader advanced research extensions after the core workstation product is trustworthy and coherent
 
 **Exit signal:** These deepen Meridian's ceiling after the core workstation product is operator-ready.
+
+---
+
+## Wave DK Program (Focused Migration Wrapper for Waves 2-4)
+
+To avoid piecemeal adoption, Meridian now treats the active workstation migration as a two-wave **Delivery Kernel (DK)** program that wraps and strengthens Waves 2-4 rather than running in parallel.
+
+### Program intent
+
+- keep one dependency-ordered path from provider trust to operator-ready cockpit, then into shared-model continuity and governance productization
+- require the same quality gates in each wave: **parity pass**, **explainability pass**, **calibration pass**, and **operator sign-off**
+- enforce shared interop contracts through one cross-wave owner so subsystem delivery does not drift into incompatible seams
+
+### Wave DK1 - Data quality and provider trust hardening
+
+**Scope alignment:** operationally reinforces Wave 2 and the trust-dependent portions of Wave 3.
+
+**Primary outcomes:**
+
+- maintain and extend the closed Wave 1 evidence gate into daily operator workflows
+- make provider behavior, replay outcomes, and cockpit data surfaces explainable to operators
+- calibrate trust metrics and promotion thresholds before expanding promotion scope
+
+**Entry criteria (must all be true):**
+
+1. **Parity entry:** Wave 1 matrix remains repo-closed for Alpaca, Robinhood (bounded), Yahoo, checkpoint reliability, and Parquet L2 proof.
+2. **Explainability entry:** provider-confidence evidence is visible in operator-facing docs and workstation drill-ins, not only in scripts.
+3. **Calibration entry:** baseline trust thresholds are declared for freshness, completeness, and replay consistency.
+4. **Operator entry:** Data Operations and Trading operator reps agree on the DK1 pilot symbol/account set.
+
+**Exit criteria (must all be true):**
+
+1. **Parity pass:** paper-cockpit data views match validated provider and replay outputs for the agreed pilot set.
+2. **Explainability pass:** every trust alert in scope has attributable source, reason code, and operator action guidance.
+3. **Calibration pass:** trust thresholds are tuned against replay + paper session evidence with documented false-positive and false-negative review.
+4. **Operator sign-off:** named Data Operations and Trading owners approve DK1 completion and unblock DK2 promotion scope.
+
+### Wave DK2 - Promotion, export, and reconciliation continuity
+
+**Scope alignment:** delivers the integration-critical path of Waves 3-4 (promotion workflow, export reliability, and governance reconciliation).
+
+**Primary outcomes:**
+
+- make `Backtest -> Paper -> Governance` promotion a single audited path
+- ensure exports and governed outputs are consistent with shared run/portfolio/ledger contracts
+- establish reconciliation as an always-on control rather than end-of-process cleanup
+
+**Entry criteria (must all be true):**
+
+1. **Parity entry:** DK1 exit is signed and shared run/portfolio/ledger DTO seams are the active path for pilot workflows.
+2. **Explainability entry:** promotion and export decisions emit audit-grade rationale with linked run, portfolio, and ledger context.
+3. **Calibration entry:** reconciliation tolerance bands and exception severities are defined per subsystem.
+4. **Operator entry:** Governance and Trading operators accept the DK2 pilot operating playbook.
+
+**Exit criteria (must all be true):**
+
+1. **Parity pass:** promoted runs, exported artifacts, and reconciliation outputs agree across workstation, API, and governance views for pilot scenarios.
+2. **Explainability pass:** operators can trace each promoted run to source data trust signals, approval chain, exported package, and reconciliation state.
+3. **Calibration pass:** reconciliation thresholds and promotion controls are tuned with documented exception burn-down and zero unresolved critical mismatches.
+4. **Operator sign-off:** Trading and Governance owners sign production-readiness for the DK2 scope.
+
+### Subsystem ownership and interop governance
+
+| Subsystem | Primary owner | Responsibilities |
+|---|---|---|
+| Data quality + provider trust | Data Operations & Provider Reliability owner | Provider evidence gate maintenance, trust metrics, provider incident review |
+| Promotion + paper-trading cockpit | Trading Workstation owner | Promotion controls, paper workflow reliability, operator controls |
+| Export + packaging | Data Operations Export owner | Export contract parity, package lineage, operator-facing export diagnostics |
+| Reconciliation + governance | Governance/Fund Ops owner | Reconciliation policy, exception workflow, governed outputs |
+| Shared run/portfolio/ledger contracts | Shared Platform Interop owner (Architecture + Contracts) | Cross-subsystem DTO/version governance, compatibility policy, contract change review |
+
+**Interop contract governance rule:** no DK subsystem can ship a contract-breaking change without Shared Platform Interop owner approval and a documented compatibility/rollback note.
+
+### Risk register and rollback plans by subsystem
+
+| Subsystem | Key risk | Leading indicator | Rollback plan |
+|---|---|---|---|
+| Data quality + provider trust | trust drift between validation scripts and cockpit surfaces | rising unresolved trust alert delta between scripts and UI | freeze promotion expansion, pin to last verified provider matrix + replay baseline, rerun DK1 calibration |
+| Promotion + paper cockpit | promotion path divergence across UI/API | mismatched promotion state or approval chain in audits | revert promotion workflow to last signed contract version, disable new promotion lanes behind feature flags |
+| Export + packaging | exported artifact schema drift or lineage gaps | increase in export validation failures or missing lineage links | roll back exporter contract version, regenerate artifacts from last good run snapshots |
+| Reconciliation + governance | tolerance miscalibration causing exception floods or misses | sustained spike in unresolved critical exceptions | restore prior tolerance profile, reprocess affected window, require manual governance approval for new promotions |
+| Shared interop contracts | uncoordinated DTO/version change cascades | cross-workspace contract test failures | revert to previous shared contract package/API shape and block downstream deploy until compatibility suite passes |
+
+### Kernel readiness dashboard (single status surface)
+
+Use [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md) as the single hand-authored status dashboard for DK wave and subsystem readiness.
+
+Dashboard requirements:
+
+- one row per subsystem with current DK wave state, gate status, owner, and next milestone
+- explicit tracking of parity/explainability/calibration/operator-sign-off per subsystem
+- linked evidence and rollback status so release decisions are auditable
+
+### Alignment guardrail with Waves 2-4
+
+DK1 and DK2 are **execution wrappers** for existing Waves 2-4, not new parallel scope:
+
+- Wave 2 cockpit hardening work is planned and reported through DK1
+- Wave 3 shared-model continuity is split: trust-dependent scope in DK1, promotion/export/reconciliation continuity in DK2
+- Wave 4 governance productization readiness gates are tracked through DK2 exit criteria
+
+Any proposed work item that cannot map to Wave 2, 3, or 4 plus DK1/DK2 gates should be treated as optional or deferred work, not core operator-readiness path.
+
+### Immediate implementation commitments (2026-04-20 to 2026-05-29)
+
+To move from planning into execution, the DK program now carries date-bounded commitments tracked in the dashboard:
+
+1. **2026-04-20 -> 2026-05-01:** close DK1 pilot parity runbook and replay/sample standardization for Alpaca/Robinhood/Yahoo.
+2. **2026-04-20 -> 2026-05-01:** publish shared interop compatibility matrix template and contract-review cadence.
+3. **2026-05-02 -> 2026-05-15:** lock promotion rationale fields and operator approval checklist coverage for DK1 -> DK2 handoff.
+4. **2026-05-09 -> 2026-05-22:** freeze governed export schema/version contract and validate pilot scenarios.
+5. **2026-05-16 -> 2026-05-29:** calibrate reconciliation tolerance profiles and exception routing for governance sign-off readiness.
+
+The implementation source of truth remains [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md), which must be updated weekly.
 
 ---
 
