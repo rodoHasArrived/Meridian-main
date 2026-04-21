@@ -14,11 +14,20 @@ public enum FundLedgerScope : byte
 /// <summary>
 /// Query for governance-first fund ledger views.
 /// </summary>
+/// <remarks>
+/// Selection semantics:
+/// <list type="bullet">
+/// <item><description><c>SelectedLedgerIds</c> is null/empty: full fund consolidation for the requested scope.</description></item>
+/// <item><description><c>SelectedLedgerIds</c> has values: consolidation constrained to those run/ledger IDs.</description></item>
+/// <item><description>Unknown IDs produce an empty result set (no matching ledgers).</description></item>
+/// </list>
+/// </remarks>
 public sealed record FundLedgerQuery(
     string FundProfileId,
     DateTimeOffset? AsOf = null,
     FundLedgerScope ScopeKind = FundLedgerScope.Consolidated,
-    string? ScopeId = null);
+    string? ScopeId = null,
+    IReadOnlyList<string>? SelectedLedgerIds = null);
 
 /// <summary>
 /// Trial-balance row for a fund ledger view.

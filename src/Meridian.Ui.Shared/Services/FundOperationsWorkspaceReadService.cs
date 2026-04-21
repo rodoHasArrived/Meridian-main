@@ -59,6 +59,12 @@ public sealed class FundOperationsWorkspaceReadService
         await Task.WhenAll(runsTask, accountProjectionsTask, bankSnapshotsTask).ConfigureAwait(false);
 
         var runs = await runsTask.ConfigureAwait(false);
+        var selectedLedgerIds = NormalizeSelectedLedgerIds(query.SelectedLedgerIds);
+        if (selectedLedgerIds.Count > 0)
+        {
+            runs = runs.Where(run => selectedLedgerIds.Contains(run.RunId)).ToArray();
+        }
+
         var accountProjections = await accountProjectionsTask.ConfigureAwait(false);
         var bankSnapshots = await bankSnapshotsTask.ConfigureAwait(false);
         var accountSummaries = accountProjections
@@ -643,6 +649,13 @@ public sealed class FundOperationsWorkspaceReadService
         => lines
             .Where(line => string.Equals(line.AccountType, accountType.ToString(), StringComparison.Ordinal))
             .Sum(static line => line.Balance);
+
+    private static HashSet<string> NormalizeSelectedLedgerIds(IReadOnlyList<string>? selectedLedgerIds) =>
+        selectedLedgerIds?
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Select(static id => id.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+        ?? [];
 
     private static FundWorkspaceSummary BuildWorkspaceSummary(
         string fundProfileId,
