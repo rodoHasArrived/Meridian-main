@@ -80,7 +80,22 @@ vi.mock("@/lib/api", async () => {
     setReplaySpeed: vi.fn().mockResolvedValue({}),
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
     approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved" }),
-    getPromotionHistory: vi.fn().mockResolvedValue([{ promotionId: "promo-1", strategyId: "strat-1", strategyName: "S1", sourceRunType: "backtest", targetRunType: "paper", qualifyingSharpe: 1.2, qualifyingMaxDrawdownPercent: 5, qualifyingTotalReturn: 10, promotedAt: "2026-01-01" }]),
+    getPromotionHistory: vi.fn().mockResolvedValue([{
+      promotionId: "promo-1",
+      strategyId: "strat-1",
+      strategyName: "S1",
+      sourceRunType: "backtest",
+      targetRunType: "paper",
+      runId: "run-1",
+      approvedBy: "operator-7",
+      approvalReason: "Meets risk constraints",
+      reviewNotes: "Checked replay consistency",
+      manualOverrideId: "override-9",
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      promotedAt: "2026-01-01"
+    }]),
     pauseStrategy: vi.fn().mockResolvedValue({ strategyId: "s", action: "pause", success: true, reason: null }),
     stopStrategy: vi.fn().mockResolvedValue({ strategyId: "s", action: "stop", success: true, reason: null })
   };
@@ -112,10 +127,25 @@ describe("TradingScreen", () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
     await user.type(screen.getByLabelText("Run id"), "run-1");
+    await user.type(screen.getByLabelText("Approved by"), "operator-7");
+    await user.type(screen.getByLabelText("Approval reason"), "Meets risk constraints");
+    await user.type(screen.getByLabelText("Review notes"), "Checked replay consistency");
+    await user.type(screen.getByLabelText("Manual override id"), "override-9");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText(/Eligible: Yes/i);
     await user.click(screen.getByRole("button", { name: /confirm promote/i }));
     await screen.findByText(/Promoted\. Promotion ID: promo-1/i);
+    expect(api.approvePromotion).toHaveBeenCalledWith({
+      runId: "run-1",
+      approvedBy: "operator-7",
+      approvalReason: "Meets risk constraints",
+      reviewNotes: "Checked replay consistency",
+      manualOverrideId: "override-9"
+    });
+    await screen.findByText(/by operator-7/i);
+    await screen.findByText(/reason: Meets risk constraints/i);
+    await screen.findByText(/override: override-9/i);
+    await screen.findByText(/notes: Checked replay consistency/i);
   });
 
   it("shows error path when promotion evaluation fails", async () => {

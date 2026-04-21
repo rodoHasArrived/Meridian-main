@@ -168,6 +168,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [seekMs, setSeekMs] = useState("0");
 
   const [promotionRunId, setPromotionRunId] = useState("");
+  const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
+  const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
+  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
+  const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [promotionError, setPromotionError] = useState<string | null>(null);
@@ -346,11 +350,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   async function handlePromoteToPaper() {
-    if (!promotionEval?.isEligible || !promotionRunId.trim()) return;
+    if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
+      setPromotionError("Approver and approval reason are required.");
+      return;
+    }
     setPromotionBusy(true);
     setPromotionError(null);
     try {
-      const result = await approvePromotion(promotionRunId.trim(), "Approved from trading workstation promotion gate.");
+      const result = await approvePromotion({
+        runId: promotionRunId.trim(),
+        approvedBy: promotionApprovedBy.trim(),
+        approvalReason: promotionApprovalReason.trim(),
+        reviewNotes: promotionReviewNotes.trim() || undefined,
+        manualOverrideId: promotionManualOverrideId.trim() || undefined
+      });
       setPromotionResult(result.success ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}` : result.reason);
       const history = await getPromotionHistory();
       setPromotionHistory(history);
@@ -1034,9 +1047,39 @@ export function TradingScreen({ data }: TradingScreenProps) {
               onChange={(e) => setPromotionRunId(e.target.value)}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
             />
+            <input
+              aria-label="Approved by"
+              placeholder="operator id"
+              value={promotionApprovedBy}
+              onChange={(e) => setPromotionApprovedBy(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              required
+            />
+            <input
+              aria-label="Approval reason"
+              placeholder="why this promotion is approved"
+              value={promotionApprovalReason}
+              onChange={(e) => setPromotionApprovalReason(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              required
+            />
+            <input
+              aria-label="Review notes"
+              placeholder="optional review notes"
+              value={promotionReviewNotes}
+              onChange={(e) => setPromotionReviewNotes(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <input
+              aria-label="Manual override id"
+              placeholder="optional manual override id"
+              value={promotionManualOverrideId}
+              onChange={(e) => setPromotionManualOverrideId(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+            />
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
-              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible}>Confirm promote</Button>
+              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
             </div>
             {promotionEval && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
@@ -1051,7 +1094,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
                 {promotionHistory.slice(0, 4).map((record) => (
-                  <li key={record.promotionId} className="font-mono">{record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}</li>
+                  <li key={record.promotionId} className="font-mono">
+                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
+                    {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
+                    {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
+                    {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
+                    {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
+                  </li>
                 ))}
               </ul>
             </div>

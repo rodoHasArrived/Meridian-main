@@ -102,8 +102,16 @@ export function evaluatePromotion(runId: string) {
   return getJson<PromotionEvaluationResult>(`/api/promotion/evaluate/${encodeURIComponent(runId)}`);
 }
 
-export function approvePromotion(runId: string, reviewNotes?: string) {
-  return postJson<PromotionDecisionResult>("/api/promotion/approve", { runId, reviewNotes });
+export interface ApprovePromotionRequest {
+  runId: string;
+  approvedBy: string;
+  approvalReason: string;
+  reviewNotes?: string;
+  manualOverrideId?: string;
+}
+
+export function approvePromotion(request: ApprovePromotionRequest) {
+  return postJson<PromotionDecisionResult>("/api/promotion/approve", request);
 }
 
 export function rejectPromotion(runId: string, reason: string) {

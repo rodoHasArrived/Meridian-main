@@ -71,6 +71,11 @@ export interface PromotionRecord {
   strategyName: string;
   sourceRunType: string;
   targetRunType: string;
+  runId?: string;
+  approvedBy?: string | null;
+  approvalReason?: string | null;
+  reviewNotes?: string | null;
+  manualOverrideId?: string | null;
   qualifyingSharpe: number;
   qualifyingMaxDrawdownPercent: number;
   qualifyingTotalReturn: number;
