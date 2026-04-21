@@ -1,6 +1,6 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-14
+**Last Updated:** 2026-04-21
 
 ## Summary
 
@@ -571,17 +571,33 @@ Current delivered slice: report-pack preview contracts and a shared preview endp
 
 ## Suggested first PR slices
 
-1. Security Master governance delta closure in portfolio, ledger, reconciliation, and report-generation paths
-2. Multi-ledger grouping and consolidated trial-balance query path
-3. Reconciliation DTOs plus F# rules spike and C# orchestration shell
-4. Cash-flow projection kernel plus governance cash-ladder read path
-5. Report-pack contracts plus export-profile integration
-6. Pre/post-trade compliance hard-stops wired into `IRiskRule` and the execution path
-7. Post-trade allocation rule engine (F# kernel) plus allocation DTOs and `PostTradeAllocationService`
-8. External custodian statement adapter plus break classification kernel for T+1 reconciliation
-9. Shadow-NAV calculation path, locked reporting periods, and governed report pack profiles
-10. MiFID II RTS 28 and cost/charges data model plus `RegulatoryReportingService` shell
-11. Model portfolio domain model, drift monitoring service, and rebalancing signal generator
+### Slice 1: Security Master governance drill-through + conflict queue
+
+- **Prerequisite services/contracts:** `ISecurityMasterQueryService`, `ISecurityMasterService`, `ISecurityResolver`, `WorkstationSecurityReference`, `SecurityMasterWorkstationDto`, `SecurityClassificationSummaryDto`, `SecurityEconomicDefinitionSummaryDto`, governance workspace projection contracts.
+- **API endpoints affected:** `/api/security-master/*`, `/api/fund-structure/workspace-view`, `/api/workstation/*` drill-through endpoints that surface security reference details and conflict state.
+- **Workstation pages (web + WPF):** governance workspace summary page, reconciliation queue page, Security Master detail/drill-through pane in both web workstation and WPF Governance/Run surfaces.
+- **Deterministic scenario evidence required to mark complete:** fixed fixture with one canonical instrument and two conflicting upstream definitions; conflict queue deterministically ranks/severity-tags the mismatch; drill-through shows canonical-vs-source deltas; resolve/reject action updates queue state and audit trail without non-deterministic ordering.
+
+### Slice 2: Corporate action propagation + reconciliation variance reasons
+
+- **Prerequisite services/contracts:** Security Master corporate-action contracts, reconciliation DTOs/rules (`ReconciliationRules`, `ReconciliationTypes`), governance cash-flow view DTOs, variance classification DTOs.
+- **API endpoints affected:** `/api/security-master/*` corporate-action reads, `/api/fund-structure/cash-flow-view`, `/api/fund-structure/workspace-view`, reconciliation endpoints `/api/workstation/reconciliation/runs` and `/api/workstation/reconciliation/runs/{id}`.
+- **Workstation pages (web + WPF):** corporate action timeline/impact panel, reconciliation break queue with variance-reason column, cash-flow ladder detail view.
+- **Deterministic scenario evidence required to mark complete:** seeded dividend + split + maturity event set applied to a static ledger/account fixture; propagation updates projected and realized ladders identically on repeated runs; reconciliation breaks include explicit variance reason codes (timing, amount, classification, missing action) with stable totals and row ordering.
+
+### Slice 3: Multi-ledger trial-balance + cash-flow projection continuity
+
+- **Prerequisite services/contracts:** `LedgerGroupId`, `LedgerGroupSummaryDto`, `LedgerConsolidationRequest`, `LedgerConsolidationResultDto`, `TrialBalanceViewDto`, `TrialBalanceRowDto`, `MultiLedgerSelectionDto`, governance cash-flow projection contracts.
+- **API endpoints affected:** trial-balance and ledger aggregation routes in `/api/workstation/*`, governance projection routes `/api/fund-structure/workspace-view` and `/api/fund-structure/cash-flow-view`, plus any ledger read endpoints in `/api/ledger/*` used for consolidation.
+- **Workstation pages (web + WPF):** multi-ledger selector view, consolidated/per-ledger trial-balance grid, governance cash-flow continuity panel.
+- **Deterministic scenario evidence required to mark complete:** fixed three-ledger fixture (fund/sleeve/vehicle) where consolidated debits equal credits each run; carry-forward from prior period opening balances remains invariant; projected cash-flow buckets reconcile to trial-balance movement deltas with exact expected totals.
+
+### Slice 4: Report/export governance pack
+
+- **Prerequisite services/contracts:** `ReportPackRequestDto`, `ReportPackPreviewDto`, `GovernanceReportProfileDto`, `ReportGenerationService`, `AnalysisExportService`, `ExportProfile` governance variants, report provenance/audit DTOs.
+- **API endpoints affected:** `/api/fund-structure/report-pack-preview`, `/api/export/*`, governance report-pack generation/publish endpoints (new or existing `/api/reports/*` routes).
+- **Workstation pages (web + WPF):** governance report pack wizard, export profile selector, publication history/audit page.
+- **Deterministic scenario evidence required to mark complete:** golden-input fixture generates identical pack structure (sections, metric values, filenames, hashes) across JSONL/Parquet/XLSX/CSV exports; preview totals match published artifacts; provenance links resolve to source ledger/reconciliation snapshots; rerun without data change produces byte-stable or hash-stable outputs per format policy.
 
 ## Open Questions
 
