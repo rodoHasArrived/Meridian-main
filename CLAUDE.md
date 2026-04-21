@@ -130,6 +130,8 @@ Always complete this checklist before submitting a PR or marking work as complet
 
 ```text
 Meridian-main
+├── .artifacts
+│   └── link-repair-report.md
 ├── .claude
 │   ├── agents
 │   │   ├── meridian-blueprint.md
@@ -768,6 +770,7 @@ Meridian-main
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
 │   ├── condition-codes.json
+│   ├── score-reason-registry.json
 │   └── venue-mapping.json
 ├── deploy
 │   ├── docker
@@ -876,7 +879,8 @@ Meridian-main
 │   │   └── README.md
 │   ├── development
 │   │   ├── policies
-│   │   │   └── desktop-support-policy.md
+│   │   │   ├── desktop-support-policy.md
+│   │   │   └── promotion-policy-matrix.md
 │   │   ├── adding-custom-rules.md
 │   │   ├── build-observability.md
 │   │   ├── central-package-management.md
@@ -895,6 +899,8 @@ Meridian-main
 │   │   ├── refactor-map.md
 │   │   ├── repository-organization-guide.md
 │   │   ├── repository-rule-set.md
+│   │   ├── rule-evaluation-contracts.md
+│   │   ├── score-reason-taxonomy.md
 │   │   ├── tooling-workflow-backlog.md
 │   │   ├── ui-fixture-mode-guide.md
 │   │   └── wpf-implementation-notes.md
@@ -1188,7 +1194,10 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Config.FieldValidationStage.yml
 │   │   │   ├── Meridian.Application.Config.FinnhubConfig.yml
 │   │   │   ├── Meridian.Application.Config.FredConfig.yml
+│   │   │   ├── Meridian.Application.Config.IBClientPortalOptions.yml
+│   │   │   ├── Meridian.Application.Config.IBClientPortalOptionsValidator.yml
 │   │   │   ├── Meridian.Application.Config.IBOptions.yml
+│   │   │   ├── Meridian.Application.Config.IBOptionsValidator.yml
 │   │   │   ├── Meridian.Application.Config.IConfigurationProvider.yml
 │   │   │   ├── Meridian.Application.Config.IConfigValidationStage.yml
 │   │   │   ├── Meridian.Application.Config.IConfigValidator.yml
@@ -1267,6 +1276,12 @@ Meridian-main
 │   │   │   ├── Meridian.Application.DirectLending.PostgresDirectLendingQueryService.yml
 │   │   │   ├── Meridian.Application.DirectLending.PostgresDirectLendingService.yml
 │   │   │   ├── Meridian.Application.DirectLending.yml
+│   │   │   ├── Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.yml
+│   │   │   ├── Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.yml
+│   │   │   ├── Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.yml
+│   │   │   ├── Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.yml
+│   │   │   ├── Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.yml
+│   │   │   ├── Meridian.Application.EnvironmentDesign.yml
 │   │   │   ├── Meridian.Application.Etl.EtlExportResult.yml
 │   │   │   ├── Meridian.Application.Etl.EtlExportService.yml
 │   │   │   ├── Meridian.Application.Etl.EtlJobDefinitionStore.yml
@@ -1297,6 +1312,11 @@ Meridian-main
 │   │   │   ├── Meridian.Application.FundAccounts.IFundAccountService.yml
 │   │   │   ├── Meridian.Application.FundAccounts.InMemoryFundAccountService.yml
 │   │   │   ├── Meridian.Application.FundAccounts.yml
+│   │   │   ├── Meridian.Application.FundStructure.GovernanceSharedDataAccessService.yml
+│   │   │   ├── Meridian.Application.FundStructure.IFundStructureService.yml
+│   │   │   ├── Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.yml
+│   │   │   ├── Meridian.Application.FundStructure.InMemoryFundStructureService.yml
+│   │   │   ├── Meridian.Application.FundStructure.yml
 │   │   │   ├── Meridian.Application.Indicators.HistoricalIndicatorResult.yml
 │   │   │   ├── Meridian.Application.Indicators.IndicatorConfiguration.yml
 │   │   │   ├── Meridian.Application.Indicators.IndicatorDataPoint.yml
@@ -1317,6 +1337,8 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Monitoring.BadTickFilterConfig.yml
 │   │   │   ├── Meridian.Application.Monitoring.BadTickFilterStats.yml
 │   │   │   ├── Meridian.Application.Monitoring.BadTickReason.yml
+│   │   │   ├── Meridian.Application.Monitoring.CalibrationComparisonSummary.yml
+│   │   │   ├── Meridian.Application.Monitoring.CalibrationGateDecision.yml
 │   │   │   ├── Meridian.Application.Monitoring.CircuitBreakerDashboard.yml
 │   │   │   ├── Meridian.Application.Monitoring.CircuitBreakerState.yml
 │   │   │   ├── Meridian.Application.Monitoring.CircuitBreakerStateChange.yml
@@ -1458,7 +1480,10 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Monitoring.HighLatencyEvent.yml
 │   │   │   ├── Meridian.Application.Monitoring.IConnectionHealthMonitor.yml
 │   │   │   ├── Meridian.Application.Monitoring.IEventMetrics.yml
+│   │   │   ├── Meridian.Application.Monitoring.IncidentSeverity.yml
 │   │   │   ├── Meridian.Application.Monitoring.IReconnectionMetrics.yml
+│   │   │   ├── Meridian.Application.Monitoring.KernelPromotionDecision.yml
+│   │   │   ├── Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService.yml
 │   │   │   ├── Meridian.Application.Monitoring.LatencyBucket.yml
 │   │   │   ├── Meridian.Application.Monitoring.LuldBand.yml
 │   │   │   ├── Meridian.Application.Monitoring.MemoryInfo.yml
@@ -1472,10 +1497,19 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Monitoring.PrometheusMetrics.yml
 │   │   │   ├── Meridian.Application.Monitoring.PrometheusMetricsUpdater.yml
 │   │   │   ├── Meridian.Application.Monitoring.PrometheusReconnectionMetrics.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderCalibrationReportWriter.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderDegradationConfig.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderDegradationKernelProfile.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderDegradationScore.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderDegradationScoreDelta.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderDegradationScorer.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderDegradedEvent.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderIncidentWindow.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderLatencyConfig.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderLatencyHistogram.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderLatencyService.yml
@@ -1483,13 +1517,17 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Monitoring.ProviderLatencySummary.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderMetrics.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderMetricsStatus.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderReasonCodes.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderReasonDelta.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderReconciliation.yml
 │   │   │   ├── Meridian.Application.Monitoring.ProviderRecoveredEvent.yml
+│   │   │   ├── Meridian.Application.Monitoring.ProviderScoreReason.yml
 │   │   │   ├── Meridian.Application.Monitoring.ReconciliationReport.yml
 │   │   │   ├── Meridian.Application.Monitoring.SchemaCheckResult.yml
 │   │   │   ├── Meridian.Application.Monitoring.SchemaIncompatibility.yml
 │   │   │   ├── Meridian.Application.Monitoring.SchemaValidationOptions.yml
 │   │   │   ├── Meridian.Application.Monitoring.SchemaValidationService.yml
+│   │   │   ├── Meridian.Application.Monitoring.SeverityThresholdMetrics.yml
 │   │   │   ├── Meridian.Application.Monitoring.SpreadMonitor.yml
 │   │   │   ├── Meridian.Application.Monitoring.SpreadMonitorConfig.yml
 │   │   │   ├── Meridian.Application.Monitoring.SpreadMonitorStats.yml
@@ -1539,6 +1577,12 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Pipeline.ValidationResult.yml
 │   │   │   ├── Meridian.Application.Pipeline.yml
 │   │   │   ├── Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.yml
+│   │   │   ├── Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds.yml
+│   │   │   ├── Meridian.Application.ProviderRouting.KernelDomainSnapshot.yml
+│   │   │   ├── Meridian.Application.ProviderRouting.KernelExecutionScope.yml
+│   │   │   ├── Meridian.Application.ProviderRouting.KernelLatencyPercentiles.yml
+│   │   │   ├── Meridian.Application.ProviderRouting.KernelObservabilityService.yml
+│   │   │   ├── Meridian.Application.ProviderRouting.KernelObservabilitySnapshot.yml
 │   │   │   ├── Meridian.Application.ProviderRouting.ProviderBindingService.yml
 │   │   │   ├── Meridian.Application.ProviderRouting.ProviderCertificationService.yml
 │   │   │   ├── Meridian.Application.ProviderRouting.ProviderConnectionService.yml
@@ -1583,17 +1627,26 @@ Meridian-main
 │   │   │   ├── Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.ISecurityMasterConflictService.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.ISecurityMasterImportService.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.ISecurityMasterQueryService.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.ISecurityResolver.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.NullSecurityMasterImportService.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.NullSecurityMasterService.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.SecurityKindMapping.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterConflictService.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterCsvParser.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterImportProgress.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterImportResult.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterImportService.yml
+│   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterOptionsValidator.yml
 │   │   │   ├── Meridian.Application.SecurityMaster.SecurityMasterProjectionService.yml
@@ -1702,6 +1755,7 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Services.OpenApiTag.yml
 │   │   │   ├── Meridian.Application.Services.OperationProgress.yml
 │   │   │   ├── Meridian.Application.Services.OptionsChainService.yml
+│   │   │   ├── Meridian.Application.Services.OptionsProviderStatus.yml
 │   │   │   ├── Meridian.Application.Services.PluginLoaderService.yml
 │   │   │   ├── Meridian.Application.Services.PluginLoadResult.yml
 │   │   │   ├── Meridian.Application.Services.PortfolioPositionInput.yml
@@ -1934,6 +1988,7 @@ Meridian-main
 │   │   │   ├── Meridian.Backtesting.Sdk.FinancialAccountSnapshot.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.IBacktestContext.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.IBacktestStrategy.yml
+│   │   │   ├── Meridian.Backtesting.Sdk.IntermediateMetrics.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.LotSelectionMethod.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.MarginInterestCashFlow.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.OpenLot.yml
@@ -1958,12 +2013,14 @@ Meridian-main
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.yml
+│   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact.yml
+│   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator.yml
 │   │   │   ├── Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.yml
@@ -2018,6 +2075,9 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Api.ErrorResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.ErrorsResponseDto.yml
 │   │   │   ├── Meridian.Contracts.Api.ErrorStatsDto.yml
+│   │   │   ├── Meridian.Contracts.Api.ExecutionBlotterSnapshotResponse.yml
+│   │   │   ├── Meridian.Contracts.Api.ExecutionPositionActionRequest.yml
+│   │   │   ├── Meridian.Contracts.Api.ExecutionPositionDetailResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.FailoverConfigRequest.yml
 │   │   │   ├── Meridian.Contracts.Api.FailoverConfigResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.FailoverRuleRequest.yml
@@ -2051,6 +2111,7 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Api.OptionsRefreshRequest.yml
 │   │   │   ├── Meridian.Contracts.Api.OptionsStrikesResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.OptionsSummaryResponse.yml
+│   │   │   ├── Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.OptionTradeDto.yml
 │   │   │   ├── Meridian.Contracts.Api.OrderBookLevelDto.yml
 │   │   │   ├── Meridian.Contracts.Api.OrderBookResponse.yml
@@ -2072,6 +2133,7 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Api.ProviderPresetDto.yml
 │   │   │   ├── Meridian.Contracts.Api.ProviderRateLimitOutput.yml
 │   │   │   ├── Meridian.Contracts.Api.ProviderRouteScopeDto.yml
+│   │   │   ├── Meridian.Contracts.Api.ProviderScoreReasonResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.ProviderStatusResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.ProviderTemplateOutput.yml
 │   │   │   ├── Meridian.Contracts.Api.ProviderTrustSnapshotDto.yml
@@ -2102,6 +2164,9 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Api.RoutePreviewRequest.yml
 │   │   │   ├── Meridian.Contracts.Api.RoutePreviewResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.RunCertificationRequest.yml
+│   │   │   ├── Meridian.Contracts.Api.SecurityMasterActiveImportStatusResponse.yml
+│   │   │   ├── Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.yml
+│   │   │   ├── Meridian.Contracts.Api.SecurityMasterIngestStatusResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.ServiceHealthResult.yml
 │   │   │   ├── Meridian.Contracts.Api.StatusResponse.yml
 │   │   │   ├── Meridian.Contracts.Api.StorageAnalytics.yml
@@ -2191,9 +2256,11 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Configuration.DataSourcesConfigDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.DerivativesConfigDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.yml
+│   │   │   ├── Meridian.Contracts.Configuration.IBClientPortalOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.IBOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.IndexOptionsConfigDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.IQFeedOptionsDto.yml
+│   │   │   ├── Meridian.Contracts.Configuration.MeridianPathDefaults.yml
 │   │   │   ├── Meridian.Contracts.Configuration.PolygonOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.ProviderBindingConfigDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.ProviderCertificationConfigDto.yml
@@ -2370,6 +2437,30 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Domain.TradeDto.yml
 │   │   │   ├── Meridian.Contracts.Domain.VenueCode.yml
 │   │   │   ├── Meridian.Contracts.Domain.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentContextMappingDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentLedgerGroupRuntimeDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentNodeRemapDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentPublishChangeDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentNodeRuntimeDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest.yml
+│   │   │   ├── Meridian.Contracts.EnvironmentDesign.yml
 │   │   │   ├── Meridian.Contracts.Etl.CsvSchemaDefinition.yml
 │   │   │   ├── Meridian.Contracts.Etl.EtlAuditEvent.yml
 │   │   │   ├── Meridian.Contracts.Etl.EtlCheckpointToken.yml
@@ -2422,44 +2513,82 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Export.StandardPresets.yml
 │   │   │   ├── Meridian.Contracts.Export.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.AccountingStructureQuery.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.AccountingStructureViewDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountManagementOptions.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountReconciliationResultDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountReconciliationRunDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountStructureQuery.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AccountTypeDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.AdvisoryClientViewDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.AdvisoryStructureQuery.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.AdvisoryStructureViewDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.BankAccountDetailsDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.BankStatementBatchDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.BankStatementLineDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.BusinessKindDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.BusinessSummaryDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.ClientSegmentKind.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.ClientSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CreateAccountRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.CreateBusinessRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.CreateClientRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CreateFundRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CreateLegalEntityRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.CreateOrganizationRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CreateSleeveRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CreateVehicleRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CustodianPositionLineDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.CustodianStatementBatchDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundAccountsDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.FundOperatingSliceDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.FundOperatingStructureQuery.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.FundOperatingViewDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundStructureAssignmentDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundStructureAssignmentQuery.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundStructureGraphDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundStructureNodeDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundStructureNodeKindDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundStructureQuery.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.FundSummaryDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowQuery.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.IngestBankStatementRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.LedgerGroupId.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.LedgerGroupSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.LegalEntitySummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.LegalEntityTypeDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.OrganizationStructureGraphDto.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.OrganizationStructureQuery.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.OrganizationSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.OwnershipLinkDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.ReconcileAccountRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.SleeveSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.UpdateCustodianAccountDetailsRequest.yml
+│   │   │   ├── Meridian.Contracts.FundStructure.VehicleOperatingViewDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.VehicleSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.FundStructure.yml
 │   │   │   ├── Meridian.Contracts.Manifest.DataManifest.yml
@@ -2477,19 +2606,31 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Pipeline.PipelinePolicyConstants.yml
 │   │   │   ├── Meridian.Contracts.Pipeline.RetryEnvelope.yml
 │   │   │   ├── Meridian.Contracts.Pipeline.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.DecisionInput.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.DecisionReason.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.DecisionResult-1.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.DecisionSeverity.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.DecisionTrace.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.IDecisionKernel-2.yml
+│   │   │   ├── Meridian.Contracts.RuleEvaluation.yml
 │   │   │   ├── Meridian.Contracts.Schema.DataDictionary.yml
 │   │   │   ├── Meridian.Contracts.Schema.EventSchema.yml
 │   │   │   ├── Meridian.Contracts.Schema.FieldValidRange.yml
 │   │   │   ├── Meridian.Contracts.Schema.ISchemaUpcaster-1.yml
 │   │   │   ├── Meridian.Contracts.Schema.SchemaField.yml
 │   │   │   ├── Meridian.Contracts.Schema.yml
+│   │   │   ├── Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.yml
+│   │   │   ├── Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest.yml
+│   │   │   ├── Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.CorporateActionDto.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.CreateSecurityRequest.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.yml
+│   │   │   ├── Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.ISecurityMasterService.yml
+│   │   │   ├── Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.ResolveConflictRequest.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.ResolveSecurityRequest.yml
 │   │   │   ├── Meridian.Contracts.SecurityMaster.SecurityAliasDto.yml
@@ -2532,6 +2673,7 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Workstation.CashFinancingSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.CashFlowEntryDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.CashLadderBucketDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ClosedLotSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.EquityCurvePoint.yml
 │   │   │   ├── Meridian.Contracts.Workstation.EquityCurveSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundAccountSummary.yml
@@ -2540,15 +2682,28 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Workstation.FundLedgerQuery.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundLedgerScope.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundLedgerSummary.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundNavAttributionSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundOperationsNavigationContext.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundOperationsTab.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundPortfolioPosition.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundReconciliationItem.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundReportingProfileDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundReportingSummaryDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundReportPackPreviewDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundTrialBalanceLine.yml
 │   │   │   ├── Meridian.Contracts.Workstation.FundWorkspaceSummary.yml
+│   │   │   ├── Meridian.Contracts.Workstation.GovernanceReportKindDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.InsightFeed.yml
+│   │   │   ├── Meridian.Contracts.Workstation.InsightWidget.yml
 │   │   │   ├── Meridian.Contracts.Workstation.LedgerJournalLine.yml
 │   │   │   ├── Meridian.Contracts.Workstation.LedgerSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.LedgerTrialBalanceLine.yml
+│   │   │   ├── Meridian.Contracts.Workstation.OpenLotSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.PortfolioPositionSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.PortfolioSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.ReconciliationBreakCategory.yml
@@ -2563,6 +2718,14 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.ReconciliationSourceKind.yml
 │   │   │   ├── Meridian.Contracts.Workstation.ReconciliationSummary.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchBriefingAlert.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchBriefingDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchBriefingRun.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchRunDrillInLinks.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchSavedComparison.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchSavedComparisonMode.yml
+│   │   │   ├── Meridian.Contracts.Workstation.ResearchWhatChangedItem.yml
 │   │   │   ├── Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest.yml
 │   │   │   ├── Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest.yml
 │   │   │   ├── Meridian.Contracts.Workstation.RunAttributionSummary.yml
@@ -2571,11 +2734,18 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Workstation.RunComparisonDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.RunFillEntry.yml
 │   │   │   ├── Meridian.Contracts.Workstation.RunFillSummary.yml
+│   │   │   ├── Meridian.Contracts.Workstation.RunLotSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.SecurityClassificationSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.SecurityIdentityDrillInDto.yml
 │   │   │   ├── Meridian.Contracts.Workstation.SecurityMasterWorkstationDto.yml
+│   │   │   ├── Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.yml
 │   │   │   ├── Meridian.Contracts.Workstation.StrategyRunComparison.yml
+│   │   │   ├── Meridian.Contracts.Workstation.StrategyRunContinuityDetail.yml
+│   │   │   ├── Meridian.Contracts.Workstation.StrategyRunContinuityLineage.yml
+│   │   │   ├── Meridian.Contracts.Workstation.StrategyRunContinuityLink.yml
+│   │   │   ├── Meridian.Contracts.Workstation.StrategyRunContinuityStatus.yml
+│   │   │   ├── Meridian.Contracts.Workstation.StrategyRunContinuityWarning.yml
 │   │   │   ├── Meridian.Contracts.Workstation.StrategyRunDetail.yml
 │   │   │   ├── Meridian.Contracts.Workstation.StrategyRunEngine.yml
 │   │   │   ├── Meridian.Contracts.Workstation.StrategyRunExecutionSummary.yml
@@ -2588,7 +2758,9 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Workstation.StrategyRunSummary.yml
 │   │   │   ├── Meridian.Contracts.Workstation.StrategyRunTimelineEntry.yml
 │   │   │   ├── Meridian.Contracts.Workstation.SymbolAttributionEntry.yml
+│   │   │   ├── Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus.yml
 │   │   │   ├── Meridian.Contracts.Workstation.WorkstationSecurityReference.yml
+│   │   │   ├── Meridian.Contracts.Workstation.WorkstationWatchlist.yml
 │   │   │   ├── Meridian.Contracts.Workstation.yml
 │   │   │   ├── Meridian.Core.Performance.ConnectionWarmUp.yml
 │   │   │   ├── Meridian.Core.Performance.ExponentialBackoffRetry.yml
@@ -2662,6 +2834,8 @@ Meridian-main
 │   │   │   ├── Meridian.Execution.IRiskValidator.yml
 │   │   │   ├── Meridian.Execution.ISecurityMasterGate.yml
 │   │   │   ├── Meridian.Execution.Margin.IMarginModel.yml
+│   │   │   ├── Meridian.Execution.Margin.MarginAccountType.yml
+│   │   │   ├── Meridian.Execution.Margin.MarginCallStatus.yml
 │   │   │   ├── Meridian.Execution.Margin.MarginRequirement.yml
 │   │   │   ├── Meridian.Execution.Margin.PortfolioMarginModel.yml
 │   │   │   ├── Meridian.Execution.Margin.RegTMarginModel.yml
@@ -2691,6 +2865,9 @@ Meridian-main
 │   │   │   ├── Meridian.Execution.Sdk.BrokerageCapabilities.yml
 │   │   │   ├── Meridian.Execution.Sdk.BrokerageConfiguration.yml
 │   │   │   ├── Meridian.Execution.Sdk.BrokeragePositionDto.yml
+│   │   │   ├── Meridian.Execution.Sdk.BrokerageValidationEvaluator.yml
+│   │   │   ├── Meridian.Execution.Sdk.BrokerageValidationReport.yml
+│   │   │   ├── Meridian.Execution.Sdk.BrokerageValidationState.yml
 │   │   │   ├── Meridian.Execution.Sdk.BrokerHealthStatus.yml
 │   │   │   ├── Meridian.Execution.Sdk.BrokerOrder.yml
 │   │   │   ├── Meridian.Execution.Sdk.BrokerPosition.yml
@@ -2707,6 +2884,7 @@ Meridian-main
 │   │   │   ├── Meridian.Execution.Sdk.IBrokeragePositionSync.yml
 │   │   │   ├── Meridian.Execution.Sdk.IExecutionGateway.yml
 │   │   │   ├── Meridian.Execution.Sdk.IOrderManager.yml
+│   │   │   ├── Meridian.Execution.Sdk.IPosition.yml
 │   │   │   ├── Meridian.Execution.Sdk.IPositionTracker.yml
 │   │   │   ├── Meridian.Execution.Sdk.OrderModification.yml
 │   │   │   ├── Meridian.Execution.Sdk.OrderRequest.yml
@@ -2715,6 +2893,7 @@ Meridian-main
 │   │   │   ├── Meridian.Execution.Sdk.OrderState.yml
 │   │   │   ├── Meridian.Execution.Sdk.OrderStatus.yml
 │   │   │   ├── Meridian.Execution.Sdk.OrderType.yml
+│   │   │   ├── Meridian.Execution.Sdk.PositionExtensions.yml
 │   │   │   ├── Meridian.Execution.Sdk.PositionState.yml
 │   │   │   ├── Meridian.Execution.Sdk.TaxLot.yml
 │   │   │   ├── Meridian.Execution.Sdk.TimeInForce.yml
@@ -2742,6 +2921,7 @@ Meridian-main
 │   │   │   ├── Meridian.Execution.Services.PaperSessionDetailDto.yml
 │   │   │   ├── Meridian.Execution.Services.PaperSessionOptions.yml
 │   │   │   ├── Meridian.Execution.Services.PaperSessionPersistenceService.yml
+│   │   │   ├── Meridian.Execution.Services.PaperSessionReplayVerificationDto.yml
 │   │   │   ├── Meridian.Execution.Services.PaperSessionSummaryDto.yml
 │   │   │   ├── Meridian.Execution.Services.PaperTradingPortfolio.yml
 │   │   │   ├── Meridian.Execution.Services.PersistedJournalEntryDto.yml
@@ -2764,6 +2944,7 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Alpaca.yml
@@ -2818,6 +2999,7 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.Core.HistoricalTradesResult.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.yml
@@ -2897,6 +3079,7 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.Fred.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.ContractFactory.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiException.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiLimits.yml
@@ -2910,16 +3093,21 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorCodeMap.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorInfo.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBGenericTickTypes.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataNotSubscribedException.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPacingViolationException.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSecurityNotFoundException.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBSimulationClient.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickByTickTypes.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.InteractiveBrokers.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.NasdaqDataLink.yml
@@ -2939,6 +3127,7 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService.yml
@@ -2946,12 +3135,14 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Stooq.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient.yml
+│   │   │   ├── Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Synthetic.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Templates.yml
@@ -3493,6 +3684,7 @@ Meridian-main
 │   │   │   ├── Meridian.Storage.Services.PlannedMigrationAction.yml
 │   │   │   ├── Meridian.Storage.Services.QualityAlert.yml
 │   │   │   ├── Meridian.Storage.Services.QualityAssessment.yml
+│   │   │   ├── Meridian.Storage.Services.QualityAssessmentMetadataUpdate.yml
 │   │   │   ├── Meridian.Storage.Services.QualityDimension.yml
 │   │   │   ├── Meridian.Storage.Services.QualityIssue.yml
 │   │   │   ├── Meridian.Storage.Services.QualityIssueSeverity.yml
@@ -3602,6 +3794,7 @@ Meridian-main
 │   │   │   ├── Meridian.Strategies.Services.ReconciliationRunService.yml
 │   │   │   ├── Meridian.Strategies.Services.RunPositionContribution.yml
 │   │   │   ├── Meridian.Strategies.Services.StrategyLifecycleManager.yml
+│   │   │   ├── Meridian.Strategies.Services.StrategyRunContinuityService.yml
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunReadService.yml
 │   │   │   ├── Meridian.Strategies.Services.yml
 │   │   │   ├── Meridian.Strategies.Storage.StrategyRunStore.yml
@@ -3681,16 +3874,19 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Services.BacktestHistoryResponse.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestHistoryResult.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestOptions.yml
+│   │   │   ├── Meridian.Ui.Services.BacktestResults.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestStartResponse.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestStartResult.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestState.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestStatus.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestStatusChangedEventArgs.yml
 │   │   │   ├── Meridian.Ui.Services.BacktestSummary.yml
+│   │   │   ├── Meridian.Ui.Services.BacktestTradeRecord.yml
 │   │   │   ├── Meridian.Ui.Services.BatchExportSchedulerService.yml
 │   │   │   ├── Meridian.Ui.Services.BatchOperationResponse.yml
 │   │   │   ├── Meridian.Ui.Services.BboQuote.yml
 │   │   │   ├── Meridian.Ui.Services.BollingerBandsData.yml
+│   │   │   ├── Meridian.Ui.Services.BoundedWindowMode.yml
 │   │   │   ├── Meridian.Ui.Services.BrowserArchiveFileInfo.yml
 │   │   │   ├── Meridian.Ui.Services.BulkSymbolOperationResponse.yml
 │   │   │   ├── Meridian.Ui.Services.BulkSymbolOperationResult.yml
@@ -3852,6 +4048,7 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Services.DryRunResponse.yml
 │   │   │   ├── Meridian.Ui.Services.DryRunResult.yml
 │   │   │   ├── Meridian.Ui.Services.EnableResponse.yml
+│   │   │   ├── Meridian.Ui.Services.EquityPoint.yml
 │   │   │   ├── Meridian.Ui.Services.ErrorCodeInfo.yml
 │   │   │   ├── Meridian.Ui.Services.ErrorCodesResponse.yml
 │   │   │   ├── Meridian.Ui.Services.ErrorCodesResult.yml
@@ -3949,6 +4146,7 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Services.LeanConfiguration.yml
 │   │   │   ├── Meridian.Ui.Services.LeanConfigurationUpdate.yml
 │   │   │   ├── Meridian.Ui.Services.LeanIntegrationService.yml
+│   │   │   ├── Meridian.Ui.Services.LeanResultsIngestResult.yml
 │   │   │   ├── Meridian.Ui.Services.LeanStatus.yml
 │   │   │   ├── Meridian.Ui.Services.LeanSymbolMapping.yml
 │   │   │   ├── Meridian.Ui.Services.LeanSymbolMappingResult.yml
@@ -4373,6 +4571,7 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CronEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.DiagnosticsEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.DirectLendingEndpoints.yml
+│   │   │   ├── Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ExecutionAccountSnapshot.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ExecutionEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.yml
@@ -4380,6 +4579,7 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ExportEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.FailoverEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.FundAccountEndpoints.yml
+│   │   │   ├── Meridian.Ui.Shared.Endpoints.FundStructureEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.HealthEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.HistoricalEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.IBEndpoints.yml
@@ -4418,17 +4618,21 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.SymbolMappingEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.TradingActionResult.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.UiEndpoints.yml
+│   │   │   ├── Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.WorkstationEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.HtmlTemplateGenerator.yml
 │   │   │   ├── Meridian.Ui.Shared.LeanAutoExportService.yml
 │   │   │   ├── Meridian.Ui.Shared.LeanSymbolMapper.yml
 │   │   │   ├── Meridian.Ui.Shared.LoginSessionService.yml
+│   │   │   ├── Meridian.Ui.Shared.ScoreExplanationProjection.yml
+│   │   │   ├── Meridian.Ui.Shared.ScoreReasonProjection.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.BackfillCoordinator.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.BackfillPreviewResult.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.ConfigStore.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.ConfigStoreExtensions.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.ExistingDataInfo.yml
+│   │   │   ├── Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.SymbolPreview.yml
 │   │   │   ├── Meridian.Ui.Shared.Services.yml
@@ -4499,6 +4703,7 @@ Meridian-main
 │   │   ├── performance-tuning.md
 │   │   ├── portable-data-packager.md
 │   │   ├── preflight-checklist.md
+│   │   ├── provider-degradation-calibration.md
 │   │   ├── README.md
 │   │   └── service-level-objectives.md
 │   ├── plans
@@ -4515,6 +4720,7 @@ Meridian-main
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── options-roadmap.md
+│   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── portfolio-level-backtesting-composer-blueprint.md
 │   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
@@ -4548,6 +4754,7 @@ Meridian-main
 │   │   ├── ufl-swap-target-state-v2.md
 │   │   ├── ufl-treasury-bill-target-state-v2.md
 │   │   ├── ufl-warrant-target-state-v2.md
+│   │   ├── waves-2-4-operator-readiness-addendum.md
 │   │   ├── workstation-release-readiness-blueprint.md
 │   │   └── workstation-sprint-1-implementation-backlog.md
 │   ├── providers
@@ -4559,7 +4766,8 @@ Meridian-main
 │   │   ├── provider-comparison.md
 │   │   ├── provider-confidence-baseline.md
 │   │   ├── README.md
-│   │   └── security-master-guide.md
+│   │   ├── security-master-guide.md
+│   │   └── stocksharp-connectors.md
 │   ├── reference
 │   │   ├── api-reference.md
 │   │   ├── brand-assets.md
@@ -4568,7 +4776,9 @@ Meridian-main
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
 │   │   ├── open-source-references.md
-│   │   └── README.md
+│   │   ├── README.md
+│   │   ├── reconciliation-break-taxonomy.md
+│   │   └── research-briefing-workflow.md
 │   ├── screenshots
 │   │   ├── desktop
 │   │   │   ├── wpf-backfill.png
@@ -4641,6 +4851,7 @@ Meridian-main
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
 │   │   ├── health-dashboard.md
 │   │   ├── IMPROVEMENTS.md
+│   │   ├── kernel-readiness-dashboard.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
@@ -4726,7 +4937,8 @@ Meridian-main
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
 │   │   ├── run-wave1-provider-validation.ps1
-│   │   └── SharedBuild.ps1
+│   │   ├── SharedBuild.ps1
+│   │   └── validate-position-blotter-route.ps1
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -4791,6 +5003,7 @@ Meridian-main
 │   │   │   ├── HelpCommand.cs
 │   │   │   ├── ICliCommand.cs
 │   │   │   ├── PackageCommands.cs
+│   │   │   ├── ProviderCalibrationCommand.cs
 │   │   │   ├── QueryCommand.cs
 │   │   │   ├── SchemaCheckCommand.cs
 │   │   │   ├── SecurityMasterCommands.cs
@@ -4952,6 +5165,7 @@ Meridian-main
 │   │   │   ├── IEventMetrics.cs
 │   │   │   ├── Metrics.cs
 │   │   │   ├── PrometheusMetrics.cs
+│   │   │   ├── ProviderDegradationCalibration.cs
 │   │   │   ├── ProviderDegradationScorer.cs
 │   │   │   ├── ProviderLatencyService.cs
 │   │   │   ├── ProviderMetricsStatus.cs
@@ -4977,6 +5191,7 @@ Meridian-main
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
 │   │   ├── ProviderRouting
+│   │   │   ├── KernelObservabilityService.cs
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConnectionService.cs
 │   │   │   ├── ProviderOperationsSupportServices.cs
@@ -5299,6 +5514,8 @@ Meridian-main
 │   │   ├── Pipeline
 │   │   │   ├── IngestionJob.cs
 │   │   │   └── PipelinePolicyConstants.cs
+│   │   ├── RuleEvaluation
+│   │   │   └── DecisionContracts.cs
 │   │   ├── Schema
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
@@ -5326,6 +5543,7 @@ Meridian-main
 │   │   │   ├── FundOperationsDtos.cs
 │   │   │   ├── FundOperationsWorkspaceDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
+│   │   │   ├── ResearchBriefingDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   └── StrategyRunReadModels.cs
 │   │   └── Meridian.Contracts.csproj
@@ -5502,6 +5720,7 @@ Meridian-main
 │   │   │   ├── OptionDetails.cs
 │   │   │   └── OptionGreeks.cs
 │   │   ├── BrokerageConfiguration.cs
+│   │   ├── BrokerageValidationEvaluator.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
@@ -5573,6 +5792,7 @@ Meridian-main
 │   │   ├── Meridian.FSharp.Ledger.fsproj
 │   │   ├── Posting.fs
 │   │   ├── Reconciliation.fs
+│   │   ├── ReconciliationClassification.fs
 │   │   ├── ReconciliationRules.fs
 │   │   └── ReconciliationTypes.fs
 │   ├── Meridian.FSharp.Trading
@@ -6272,6 +6492,7 @@ Meridian-main
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   ├── Meridian.Ui.Shared.csproj
+│   │   ├── ScoreExplanationProjection.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── Assets
@@ -6451,6 +6672,7 @@ Meridian-main
 │       │   ├── WorkspaceShellStateProviders.cs
 │       │   ├── WorkstationOperatingContextService.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
+│       │   ├── WorkstationResearchBriefingService.cs
 │       │   └── WpfShellServiceCollectionExtensions.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
@@ -6904,6 +7126,7 @@ Meridian-main
 │   │   │   │   ├── ErrorRingBufferTests.cs
 │   │   │   │   ├── PriceContinuityCheckerTests.cs
 │   │   │   │   ├── PrometheusMetricsTests.cs
+│   │   │   │   ├── ProviderDegradationCalibrationTests.cs
 │   │   │   │   ├── ProviderDegradationScorerTests.cs
 │   │   │   │   ├── ProviderLatencyServiceTests.cs
 │   │   │   │   ├── SchemaValidationServiceTests.cs
@@ -6932,7 +7155,8 @@ Meridian-main
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
-│   │   │   │   └── ProviderRoutingServiceTests.cs
+│   │   │   │   ├── ProviderRoutingServiceTests.cs
+│   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   └── SecurityMasterImportServiceTests.cs
 │   │   │   ├── Services
@@ -7324,6 +7548,7 @@ Meridian-main
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OfflineTrackingPersistenceServiceTests.cs
 │   │   │   ├── PendingOperationsQueueServiceTests.cs
+│   │   │   ├── ResearchBriefingWorkspaceServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
@@ -7338,9 +7563,11 @@ Meridian-main
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
+│   │   │   ├── FakeWorkstationResearchBriefingApiClient.cs
 │   │   │   ├── MainPageUiAutomationFacade.cs
 │   │   │   ├── NavigationHostInspector.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
+│   │   │   ├── RunMatUiAutomationFacadeTests.cs
 │   │   │   ├── StrategyRunWorkspaceTestData.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
@@ -7370,10 +7597,13 @@ Meridian-main
 │   │   │   ├── NavigationPageSmokeTests.cs
 │   │   │   ├── PageLifecycleCleanupTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
+│   │   │   ├── ResearchWorkspaceShellSmokeTests.cs
+│   │   │   ├── ResearchWorkspaceShellWorkflowTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
 │   │   │   ├── RunMatWorkflowSmokeTests.cs
 │   │   │   ├── SplitPaneHostControlTests.cs
 │   │   │   ├── SystemHealthPageSmokeTests.cs
+│   │   │   ├── TradingWorkspaceShellPageTests.cs
 │   │   │   ├── WorkspaceDeepPageChromeTests.cs
 │   │   │   ├── WorkspaceShellPageSmokeTests.cs
 │   │   │   └── WorkstationPageSmokeTests.cs
