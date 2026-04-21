@@ -181,6 +181,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 - add multi-ledger, cash-flow, reconciliation, and reporting slices on top of shared DTOs, read services, and export seams
 - connect external brokerage account state to fund-account review, cash movement, and reconciliation workflows through shared projections
 - deepen governance workflows without creating separate reporting or accounting stacks
+- enforce the governance architecture guard: Security Master remains the sole instrument source, and governance DTO/service additions with instrument metadata must carry Security Master identity/provenance references
 
 **Exit signal:** Governance becomes a real operator workflow with concrete review, drill-in, and governed-output seams built on the same contracts already used elsewhere in the workstation.
 
@@ -350,6 +351,8 @@ The implementation source of truth remains [`kernel-readiness-dashboard.md`](ker
 - **Cockpit hardening should precede live-readiness claims.** Meridian now has meaningful trading surfaces, but operator trust still matters more than feature count.
 - **The shared run model must remain the center of gravity.** If Research, Trading, Portfolio, Ledger, and Governance drift apart again, the workstation migration loses its product logic.
 - **Security Master must remain the authoritative seam.** It should enrich portfolio, ledger, reconciliation, and reporting flows rather than being reimplemented inside parallel governance workflows.
+
+- **Governance DTO/Service review search guidance:** in governance-related PRs, explicitly scan for new instrument-term fields (`Symbol`, `Cusip`, `Isin`, `Coupon`, `Maturity`, `Issuer`, `Venue`, `AssetClass`) that appear without Security Master identity/provenance references. Treat that as a review blocker unless the code is adapter-only with an explicit mapping step back to Security Master.
 - **Governance should extend shared DTOs, not invent a new stack.** Cash-flow, reconciliation, and reporting should reuse the same read-model and export seams already in place.
 - **WPF migration should avoid page-level re-fragmentation.** The right move is more orchestration and view-model or service extraction, not more page-local logic.
 - **Documentation drift is now a real delivery risk.** The planning set is large enough that roadmap, status, blueprint, and short-horizon docs need deliberate synchronization.

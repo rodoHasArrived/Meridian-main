@@ -1461,6 +1461,8 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 **Remaining follow-on work:**
 - deepen governance and fund-operations workflows built on top of the delivered baseline through K2 and Wave 4 work
 - reuse Security Master metadata in account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows instead of creating a parallel governance seam
+- enforce PR/review validation that governance DTOs/services introducing instrument metadata carry Security Master identity/provenance fields, with no governance-local instrument definitions except adapter-only mapped intermediates
+- reviewer search guidance: scan governance DTO/service changes for instrument-term fields (`Symbol`, `Cusip`, `Isin`, `Coupon`, `Maturity`, `Issuer`, `Venue`, `AssetClass`) lacking Security Master references
 
 **ROADMAP:** Phase 12A baseline delivered; follow-ons continue in Phase 12 / Wave 4
 
