@@ -320,10 +320,14 @@ internal sealed class SimulatedPortfolio
                 .Concat(a.ShortLots.Values.SelectMany(static ll => ll)))
             .ToArray();
 
-        var closedLots = _accounts.Values
-            .SelectMany(static a => a.ClosedLots)
-            .ToArray();
+        var closedLotsSinceLastSnapshot = new List<ClosedLot>();
+        foreach (var account in _accounts.Values)
+        {
+            closedLotsSinceLastSnapshot.AddRange(account.ClosedLots);
+            account.ClosedLots.Clear();
+        }
 
+        var closedLots = closedLotsSinceLastSnapshot.ToArray();
         return new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows, openLots, closedLots);
     }
 
