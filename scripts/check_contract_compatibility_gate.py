@@ -56,15 +56,13 @@ def migration_note_in_pr_body(pr_body: str) -> bool:
     return bool(re.search(r"migration notes", pr_body, re.IGNORECASE))
 
 
-def migration_note_in_matrix(matrix_doc: Path) -> bool:
-    if not matrix_doc.exists():
+def migration_note_in_matrix(diff_range: str, matrix_doc_path: str) -> bool:
+    """Checks if a new migration note entry was added in the diff."""
+    try:
+        patch = run_git(["diff", "--unified=0", diff_range, "--", matrix_doc_path])
+        return bool(re.search(r"^\+\s*-\s+\d{4}-\d{2}-\d{2}:", patch, re.MULTILINE))
+    except Exception:
         return False
-
-    content = matrix_doc.read_text(encoding="utf-8")
-    if "## Migration Notes" not in content:
-        return False
-
-    return bool(re.search(r"-\s+\d{4}-\d{2}-\d{2}:", content))
 
 
 def main() -> int:
