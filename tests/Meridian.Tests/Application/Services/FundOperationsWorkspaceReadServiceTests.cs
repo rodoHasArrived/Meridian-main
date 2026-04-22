@@ -183,6 +183,74 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GetWorkspaceAsync_WithSelectedLedgerIds_ConstrainsWorkspaceToSelection()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var repository = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            repository,
+            portfolioReadService,
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster));
+
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-selection-001",
+            strategyId: "carry-1",
+            strategyName: "Carry Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-selection-002",
+            strategyId: "carry-2",
+            strategyName: "Carry Strategy 2",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            SelectedLedgerIds: ["run-selection-001"]));
+
+        workspace.RecordedRunCount.Should().Be(1);
+        workspace.RelatedRunIds.Should().ContainSingle().Which.Should().Be("run-selection-001");
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithUnknownSelectedLedgerIds_ReturnsEmptyLedgerProjection()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var repository = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            repository,
+            portfolioReadService,
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster));
+
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-known-001",
+            strategyId: "carry-1",
+            strategyName: "Carry Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            SelectedLedgerIds: ["run-does-not-exist"]));
+
+        workspace.RecordedRunCount.Should().Be(0);
+        workspace.RelatedRunIds.Should().BeEmpty();
+        workspace.Ledger.JournalEntryCount.Should().Be(0);
+        workspace.Ledger.TrialBalance.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PreviewReportPackAsync_WithCancelledToken_ThrowsOperationCanceledException()
     {
         var accountService = new InMemoryFundAccountService();

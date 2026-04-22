@@ -14,12 +14,33 @@ public enum FundLedgerScope : byte
 /// <summary>
 /// Query for governance-first fund ledger views.
 /// </summary>
+/// <remarks>
+/// Selection semantics:
+/// <list type="bullet">
+/// <item><description><c>SelectedLedgerIds</c> is null/empty: full fund consolidation for the requested scope.</description></item>
+/// <item><description><c>SelectedLedgerIds</c> has values: consolidation constrained to those run/ledger IDs.</description></item>
+/// <item><description>Unknown IDs produce an empty result set (no matching ledgers).</description></item>
+/// </list>
+/// </remarks>
 public sealed record FundLedgerQuery(
     string FundProfileId,
     DateTimeOffset? AsOf = null,
     FundLedgerScope ScopeKind = FundLedgerScope.Consolidated,
-    string? ScopeId = null);
+    string? ScopeId = null)
+{
+    public IReadOnlyList<string>? SelectedLedgerIds { get; init; }
 
+    public FundLedgerQuery(
+        string FundProfileId,
+        DateTimeOffset? AsOf,
+        FundLedgerScope ScopeKind,
+        string? ScopeId,
+        IReadOnlyList<string>? SelectedLedgerIds)
+        : this(FundProfileId, AsOf, ScopeKind, ScopeId)
+    {
+        this.SelectedLedgerIds = SelectedLedgerIds;
+    }
+}
 /// <summary>
 /// Trial-balance row for a fund ledger view.
 /// </summary>
@@ -43,6 +64,31 @@ public sealed record FundJournalLine(
     decimal TotalCredits,
     int LineCount,
     IReadOnlyList<string>? FinancialAccountIds = null);
+
+/// <summary>
+/// Aggregated ledger totals for a ledger scope or slice.
+/// </summary>
+public sealed record FundLedgerTotalsDto(
+    int JournalEntryCount,
+    int LedgerEntryCount,
+    decimal AssetBalance,
+    decimal LiabilityBalance,
+    decimal EquityBalance,
+    decimal RevenueBalance,
+    decimal ExpenseBalance);
+
+/// <summary>
+/// Slice-level ledger projection that supports governance drill-in by scope/group.
+/// </summary>
+public sealed record FundLedgerSliceDto(
+    string SliceKey,
+    FundLedgerScope ScopeKind,
+    string? ScopeId,
+    string DisplayName,
+    FundLedgerTotalsDto Totals,
+    IReadOnlyList<FundTrialBalanceLine> TrialBalance,
+    IReadOnlyList<FundJournalLine> Journal,
+    IReadOnlyDictionary<string, string>? Metadata = null);
 
 /// <summary>
 /// Governance-facing fund ledger summary.

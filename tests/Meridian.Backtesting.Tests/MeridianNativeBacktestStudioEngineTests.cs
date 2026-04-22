@@ -61,7 +61,34 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
     }
 
     [Fact]
-    public async Task StartAsync_WhenCallerCancels_CancelsNativeRun()
+    public async Task StartAsync_WhenStartTokenIsCanceledAfterScheduling_RunStillCompletes()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
+
+        using var cts = new CancellationTokenSource();
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "native-decoupled-cancel",
+            StrategyName: "NoOp",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: new BacktestRequest(
+                From: new DateOnly(2024, 1, 2),
+                To: new DateOnly(2024, 1, 2),
+                DataRoot: _dataRoot),
+            Strategy: new NoOpBacktestStrategy());
+
+        var handle = await _engine.StartAsync(request, cts.Token);
+        cts.Cancel();
+
+        var result = await _engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None)
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        var status = await _engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None);
+
+        result.TotalEventsProcessed.Should().BeGreaterThan(0);
+        status.Status.Should().Be(StrategyRunStatus.Completed);
+    }
+
+    [Fact]
+    public async Task CancelAsync_WhenRunIsInFlight_TransitionsToCancelled()
     {
         WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
 
@@ -75,9 +102,8 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
             backtestEngine,
             NullLogger<MeridianNativeBacktestStudioEngine>.Instance);
 
-        using var cts = new CancellationTokenSource();
         var request = new BacktestStudioRunRequest(
-            StrategyId: "native-cancel",
+            StrategyId: "native-explicit-cancel",
             StrategyName: "NoOp",
             Engine: StrategyRunEngine.MeridianNative,
             NativeRequest: new BacktestRequest(
@@ -87,10 +113,10 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
                 AdjustForCorporateActions: true),
             Strategy: new NoOpBacktestStrategy());
 
-        var handle = await engine.StartAsync(request, cts.Token);
+        var handle = await engine.StartAsync(request, CancellationToken.None);
         await blockingAdjuster.Started.WaitAsync(TimeSpan.FromSeconds(5));
 
-        cts.Cancel();
+        await engine.CancelAsync(handle.EngineRunHandle, CancellationToken.None);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             async () => await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None)
@@ -98,6 +124,116 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
 
         var status = await engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None);
         status.Status.Should().Be(StrategyRunStatus.Cancelled);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenRunCompletes_PreservesResultWithinRetentionAfterActiveRemoval()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
+
+        var clock = new MutableTimeProvider(DateTimeOffset.UtcNow);
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var backtestEngine = new BacktestEngine(NullLogger<BacktestEngine>.Instance, catalog);
+        var engine = new MeridianNativeBacktestStudioEngine(
+            backtestEngine,
+            NullLogger<MeridianNativeBacktestStudioEngine>.Instance,
+            clock,
+            terminalRetention: TimeSpan.FromMinutes(5),
+            maxTerminalHistory: 10);
+
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "native-retained",
+            StrategyName: "NoOp",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: new BacktestRequest(
+                From: new DateOnly(2024, 1, 2),
+                To: new DateOnly(2024, 1, 2),
+                DataRoot: _dataRoot),
+            Strategy: new NoOpBacktestStrategy());
+
+        var handle = await engine.StartAsync(request, CancellationToken.None);
+        var result = await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None);
+        var status = await engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None);
+
+        status.Status.Should().Be(StrategyRunStatus.Completed);
+        result.EngineMetadata.Should().NotBeNull();
+        result.EngineMetadata!.EngineId.Should().Be("MeridianNative");
+    }
+
+    [Fact]
+    public async Task StartAsync_PrunesTerminalRunsByTtl()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
+
+        var startTime = DateTimeOffset.UtcNow;
+        var clock = new MutableTimeProvider(startTime);
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var backtestEngine = new BacktestEngine(NullLogger<BacktestEngine>.Instance, catalog);
+        var engine = new MeridianNativeBacktestStudioEngine(
+            backtestEngine,
+            NullLogger<MeridianNativeBacktestStudioEngine>.Instance,
+            clock,
+            terminalRetention: TimeSpan.FromSeconds(1),
+            maxTerminalHistory: 10);
+
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "native-ttl",
+            StrategyName: "NoOp",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: new BacktestRequest(
+                From: new DateOnly(2024, 1, 2),
+                To: new DateOnly(2024, 1, 2),
+                DataRoot: _dataRoot),
+            Strategy: new NoOpBacktestStrategy());
+
+        var handle = await engine.StartAsync(request, CancellationToken.None);
+        await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None);
+
+        clock.Advance(TimeSpan.FromSeconds(2));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StartAsync_PrunesTerminalRunsByMaximumHistory()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
+
+        var clock = new MutableTimeProvider(DateTimeOffset.UtcNow);
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var backtestEngine = new BacktestEngine(NullLogger<BacktestEngine>.Instance, catalog);
+        var engine = new MeridianNativeBacktestStudioEngine(
+            backtestEngine,
+            NullLogger<MeridianNativeBacktestStudioEngine>.Instance,
+            clock,
+            terminalRetention: TimeSpan.FromMinutes(10),
+            maxTerminalHistory: 2);
+
+        var handles = new List<BacktestStudioRunHandle>();
+        for (var i = 0; i < 3; i++)
+        {
+            var request = new BacktestStudioRunRequest(
+                StrategyId: $"native-cap-{i}",
+                StrategyName: "NoOp",
+                Engine: StrategyRunEngine.MeridianNative,
+                NativeRequest: new BacktestRequest(
+                    From: new DateOnly(2024, 1, 2),
+                    To: new DateOnly(2024, 1, 2),
+                    DataRoot: _dataRoot),
+                Strategy: new NoOpBacktestStrategy());
+
+            var handle = await engine.StartAsync(request, CancellationToken.None);
+            handles.Add(handle);
+            await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None);
+            clock.Advance(TimeSpan.FromSeconds(1));
+        }
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await engine.GetStatusAsync(handles[0].EngineRunHandle, CancellationToken.None));
+
+        var latestStatus = await engine.GetStatusAsync(handles[2].EngineRunHandle, CancellationToken.None);
+        latestStatus.Status.Should().Be(StrategyRunStatus.Completed);
     }
 
     private void WriteBarJsonl(string symbol, DateOnly date, decimal basePrice)
@@ -151,6 +287,23 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
             _started.TrySetResult(true);
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
             return bars;
+        }
+    }
+
+    private sealed class MutableTimeProvider : TimeProvider
+    {
+        private DateTimeOffset _utcNow;
+
+        public MutableTimeProvider(DateTimeOffset utcNow)
+        {
+            _utcNow = utcNow;
+        }
+
+        public override DateTimeOffset GetUtcNow() => _utcNow;
+
+        public void Advance(TimeSpan duration)
+        {
+            _utcNow = _utcNow.Add(duration);
         }
     }
 }

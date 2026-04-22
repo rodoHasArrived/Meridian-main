@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -76,6 +77,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private async System.Threading.Tasks.Task RefreshAsync()
     {
+        ApplyActivePositionsState(WorkspaceQueueRegionState.Loading("Loading active positions", "Refreshing run and portfolio position telemetry."));
+
         try
         {
             var summary = await _runService.GetTradingSummaryAsync();
@@ -92,11 +95,13 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             {
                 ActivePositionsList.ItemsSource = summary.ActivePositions;
                 NoPositionsText.Visibility = Visibility.Collapsed;
+                ApplyActivePositionsState(WorkspaceQueueRegionState.None);
             }
             else
             {
                 ActivePositionsList.ItemsSource = null;
-                NoPositionsText.Visibility = Visibility.Visible;
+                NoPositionsText.Visibility = Visibility.Collapsed;
+                ApplyActivePositionsState(summary.ActivePositionsQueueState);
             }
 
             var profile = _fundContextService.CurrentFundProfile;
@@ -123,9 +128,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Trading Cockpit",
-                WorkspaceSubtitle = "Risk-aware trading shell for live posture, blotter review, safe staging, and docked execution detail.",
-                PrimaryScopeLabel = "Desk",
+                WorkspaceTitle = WorkspaceCopyCatalog.Trading.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.Trading.ShellSubtitle,
+                PrimaryScopeLabel = WorkspaceCopyCatalog.Trading.PrimaryScopeLabel,
                 PrimaryScopeValue = summary.ActiveRunContext?.StrategyName ?? (_fundContextService.CurrentFundProfile?.DisplayName ?? "No active trading run"),
                 AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = summary.ActiveRunContext is null ? "Awaiting active run" : $"{summary.ActiveRunContext.ModeLabel} · {summary.ActiveRunContext.StatusLabel}",
@@ -170,6 +175,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 });
             RiskRailText.Text = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.";
             DeskActionStatusText.Text = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.";
+            ApplyActivePositionsState(WorkspaceQueueRegionState.Error("Active positions degraded", "Trading position telemetry is stale.", "Retry", "Retry", "Open Diagnostics", "Diagnostics"));
         }
     }
 
@@ -261,6 +267,45 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private Brush GetBrush(string resourceKey)
         => TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
 
+
+    private void ApplyActivePositionsState(WorkspaceQueueRegionState state)
+    {
+        if (state.IsVisible)
+        {
+            ActivePositionsStateContainer.Content = state;
+            ActivePositionsStateContainer.Visibility = Visibility.Visible;
+            ActivePositionsList.Visibility = Visibility.Collapsed;
+            NoPositionsText.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        ActivePositionsStateContainer.Content = null;
+        ActivePositionsStateContainer.Visibility = Visibility.Collapsed;
+        ActivePositionsList.Visibility = Visibility.Visible;
+    }
+
+    private void OnQueueStateActionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string actionId })
+        {
+            return;
+        }
+
+        if (actionId == "Retry")
+        {
+            DispatchRefresh(RefreshAsync);
+            return;
+        }
+
+        if (actionId == "SwitchContext")
+        {
+            RequestContextSelection(_fundContextService, _operatingContextService);
+            return;
+        }
+
+        OnCommandBarCommandInvoked(this, new WorkspaceCommandInvokedEventArgs(new WorkspaceCommandItem { Id = actionId }));
+    }
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenWorkspacePage(TradingDockManager, e.PageTag, e.Action);
 
@@ -315,6 +360,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 break;
             case "FundAuditTrail":
                 OpenAuditTrail_Click(sender, new RoutedEventArgs());
+                break;
+            case "Diagnostics":
+                NavigationService.NavigateTo("Diagnostics");
                 break;
             case "TradingHours":
                 NavigationService.NavigateTo("TradingHours");
@@ -482,9 +530,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "EventReplay", Label = "Event Replay", Description = "Open event replay", Glyph = "\uE768" },
                 new WorkspaceCommandItem { Id = "CollectionSessions", Label = "Collection Sessions", Description = "Open collection sessions", Glyph = "\uE8EF" },
-                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting consequences", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Trial Balance", Description = "Open accounting consequences", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Alerts", Description = "Open alerts", Glyph = "\uE7F4" },
                 new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
             ]
