@@ -38,7 +38,7 @@
                             <Border Style="{StaticResource InfoBadgeInlineStyle}">
                                 <TextBlock Text="{Binding CountLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}" />
+                                           Foreground="{StaticResource BadgeInfoForegroundBrush}" />
                             </Border>
                         </WrapPanel>
 
@@ -140,7 +140,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -212,7 +212,7 @@
                                        Text="Provider readiness, historical coverage, and storage posture live in the same operator shell." />
                             <UniformGrid Columns="3" Margin="0,14,0,0">
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Providers"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -221,11 +221,15 @@
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   Text="Loading…" />
+                                                   Text="3" />
+                                        <TextBlock Text="Connectivity posture"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Backfill"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -234,11 +238,15 @@
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource WarningColorBrush}"
-                                                   Text="Loading…" />
+                                                   Text="Queue" />
+                                        <TextBlock Text="Historical coverage"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Storage"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -247,7 +255,11 @@
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   Text="Loading…" />
+                                                   Text="Watch" />
+                                        <TextBlock Text="Durability health"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
@@ -256,7 +268,7 @@
 
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <Grid Margin="0,0,0,10">
+                            <Grid Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -282,7 +294,7 @@
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Storage"
                                         Click="OpenStorage_Click"
                                         Style="{StaticResource SecondaryButtonStyle}"

@@ -174,4 +174,21 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Workspace card composition patterns -->
+    <Style x:Key="WorkspaceCardHeaderGridStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="{StaticResource WorkspaceCardHeaderToBodyMargin}" />
+    </Style>
+
+    <Style x:Key="WorkspaceCardBodyStackStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+    </Style>
+
+    <Style x:Key="WorkspaceCardFooterPanelStyle" TargetType="WrapPanel">
+        <Setter Property="Margin" Value="{StaticResource WorkspaceCardBodyToFooterMargin}" />
+    </Style>
+
+    <Style x:Key="WorkspaceSummaryTileContentStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical" />
+    </Style>
 </ResourceDictionary>

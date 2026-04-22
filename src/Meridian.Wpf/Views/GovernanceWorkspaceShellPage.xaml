@@ -38,7 +38,7 @@
                             <Border Style="{StaticResource InfoBadgeInlineStyle}">
                                 <TextBlock Text="{Binding CountLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}" />
+                                           Foreground="{StaticResource BadgeInfoForegroundBrush}" />
                             </Border>
                         </WrapPanel>
 
@@ -191,7 +191,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -330,7 +330,7 @@
 
                             <UniformGrid Columns="3" Margin="0,14,0,0">
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Cash"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -340,11 +340,15 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="—" />
+                                        <TextBlock Text="Available balance"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Open Breaks"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -354,11 +358,15 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource WarningColorBrush}"
                                                    Text="—" />
+                                        <TextBlock Text="Exceptions to resolve"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Journal"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -368,6 +376,10 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="—" />
+                                        <TextBlock Text="Posting readiness"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
@@ -376,7 +388,7 @@
 
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <Grid Margin="0,0,0,10">
+                            <Grid Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -402,7 +414,7 @@
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Audit Trail"
                                         Click="OpenAuditTrail_Click"
                                         Style="{StaticResource SecondaryButtonStyle}"
