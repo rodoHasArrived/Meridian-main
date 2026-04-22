@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldConstraints
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinValue
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxValue
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pattern
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedValues
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs

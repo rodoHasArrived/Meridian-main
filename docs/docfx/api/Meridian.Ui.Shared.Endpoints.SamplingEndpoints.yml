@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SamplingEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSamplingEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs

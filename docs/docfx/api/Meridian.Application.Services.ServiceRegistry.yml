@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceRegistry
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByCategory
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderAcknowledgement
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderAcknowledgement.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgedAt
     path: ../../src/Meridian.Execution/Models/OrderAcknowledgement.cs

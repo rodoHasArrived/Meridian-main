@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestEventArgs
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 517
+    startLine: 512
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Manifest
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 519
+    startLine: 514
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -84,11 +84,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 520
+    startLine: 515
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

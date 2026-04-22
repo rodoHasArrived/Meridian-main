@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportPack
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportId
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportKind
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -284,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClassSections
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ReportGenerationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalNetAssets
     path: ../../src/Meridian.Application/Services/ReportGenerationService.cs

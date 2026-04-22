@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBacktestStrategy
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -41,6 +41,7 @@ items:
     content: public interface IBacktestStrategy
     content.vb: Public Interface IBacktestStrategy
   derivedClasses:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
   - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
 - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
   commentId: P:Meridian.Backtesting.Sdk.IBacktestStrategy.Name
@@ -56,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -87,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -118,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTrade
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -151,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnQuote
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -184,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBar
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -217,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderBook
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -250,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderFill
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -283,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDayEnd
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
@@ -319,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnFinished
     path: ../../src/Meridian.Backtesting.Sdk/IBacktestStrategy.cs

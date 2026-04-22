@@ -87,6 +87,14 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
+        <Style x:Key="ShellNavMetaStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource NavSectionLabelBrush}" />
+            <Setter Property="Opacity" Value="0.62" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
         <!-- Marquee: uppercase muted section labels — light text on dark sidebar -->
         <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
@@ -166,7 +174,7 @@
                                Style="{StaticResource ShellNavSubtitleStyle}"
                                Margin="0,2,0,0" />
                     <TextBlock Text="{Binding MetaLine}"
-                               Style="{StaticResource ShellSectionLabelStyle}"
+                               Style="{StaticResource ShellNavMetaStyle}"
                                Margin="0,4,0,0" />
                 </StackPanel>
             </Grid>
@@ -275,7 +283,7 @@
                                                    Style="{StaticResource ShellNavSubtitleStyle}"
                                                    Margin="0,2,0,0" />
                                         <TextBlock Text="{Binding MetaLine}"
-                                                   Style="{StaticResource ShellSectionLabelStyle}"
+                                                   Style="{StaticResource ShellNavMetaStyle}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>
@@ -602,6 +610,7 @@
                                      ItemsSource="{Binding PrimaryNavigationItems}"
                                      SelectedValuePath="PageTag"
                                      SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                     SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                      AutomationProperties.AutomationId="WorkspacePrimaryNavList"
                                      AutomationProperties.Name="Primary Workspace Navigation" />
 
@@ -618,6 +627,7 @@
                                          ItemsSource="{Binding SecondaryNavigationItems}"
                                          SelectedValuePath="PageTag"
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                         SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="WorkspaceSecondaryNavList"
                                          AutomationProperties.Name="Secondary Workspace Navigation" />
                             </StackPanel>
@@ -635,6 +645,7 @@
                                          ItemsSource="{Binding OverflowNavigationItems}"
                                          SelectedValuePath="PageTag"
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                         SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="WorkspaceOverflowNavList"
                                          AutomationProperties.Name="Workspace Overflow Navigation" />
                             </StackPanel>
@@ -652,6 +663,7 @@
                                          ItemsSource="{Binding RelatedWorkflowItems}"
                                          SelectedValuePath="PageTag"
                                          SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                         SelectionChanged="WorkspaceNavigationList_SelectionChanged"
                                          AutomationProperties.AutomationId="RelatedWorkflowNavList"
                                          AutomationProperties.Name="Related Workflow Navigation" />
                             </StackPanel>
@@ -851,7 +863,7 @@
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
                         BorderThickness="0,0,0,1"
                         CornerRadius="0"
-                        Padding="24,16"
+                        Padding="24,12"
                         Margin="0,0,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -880,6 +892,7 @@
                             <TextBlock x:Name="PageTitleTextBlock"
                                        Text="{Binding CurrentPageTitle}"
                                        Margin="0,6,0,0"
+                                       Visibility="Collapsed"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="20"
                                        FontWeight="SemiBold"
@@ -889,6 +902,7 @@
                             <TextBlock x:Name="PageSubtitleText"
                                        Margin="0,8,0,0"
                                        Text="{Binding CurrentPageSubtitle}"
+                                       Visibility="Collapsed"
                                        Style="{StaticResource CardDescriptionStyle}" />
                             <Border x:Name="ContextSelectionHint"
                                     Margin="0,12,0,0"
@@ -1063,6 +1077,7 @@
 
                 <views:WorkspaceShellContextStripControl Grid.Row="2"
                                                         Margin="24,0,24,16"
+                                                        Visibility="Collapsed"
                                                         ShellContext="{Binding ShellContext}" />
 
                 <DockPanel Grid.Row="3">

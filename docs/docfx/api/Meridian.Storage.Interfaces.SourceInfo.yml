@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceInfo
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClasses
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reliability
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostPerEvent
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/ISourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs

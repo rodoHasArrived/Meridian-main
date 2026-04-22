@@ -1,0 +1,745 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionReason
+  id: DecisionReason
+  parent: Meridian.Contracts.RuleEvaluation
+  children:
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.#ctor(System.String,System.Double,System.String,System.String,Meridian.Contracts.RuleEvaluation.DecisionSeverity,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.Severity
+  - Meridian.Contracts.RuleEvaluation.DecisionReason.Weight
+  langs:
+  - csharp
+  - vb
+  name: DecisionReason
+  nameWithType: DecisionReason
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DecisionReason
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  summary: Explains a single weighted rule contribution to a kernel decision.
+  example: []
+  syntax:
+    content: 'public sealed record DecisionReason : IEquatable<DecisionReason>'
+    content.vb: Public NotInheritable Class DecisionReason Implements IEquatable(Of DecisionReason)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.RuleEvaluation.DecisionReason}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.#ctor(System.String,System.Double,System.String,System.String,Meridian.Contracts.RuleEvaluation.DecisionSeverity,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Contracts.RuleEvaluation.DecisionReason.#ctor(System.String,System.Double,System.String,System.String,Meridian.Contracts.RuleEvaluation.DecisionSeverity,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.String,System.Double,System.String,System.String,Meridian.Contracts.RuleEvaluation.DecisionSeverity,System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: DecisionReason(string, double, string, string, DecisionSeverity, IReadOnlyList<string>?)
+  nameWithType: DecisionReason.DecisionReason(string, double, string, string, DecisionSeverity, IReadOnlyList<string>?)
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.DecisionReason(string, double, string, string, Meridian.Contracts.RuleEvaluation.DecisionSeverity, System.Collections.Generic.IReadOnlyList<string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  summary: Explains a single weighted rule contribution to a kernel decision.
+  example: []
+  syntax:
+    content: public DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null)
+    parameters:
+    - id: RuleId
+      type: System.String
+    - id: Weight
+      type: System.Double
+    - id: ReasonCode
+      type: System.String
+    - id: HumanExplanation
+      type: System.String
+    - id: Severity
+      type: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+    - id: EvidenceRefs
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(RuleId As String, Weight As Double, ReasonCode As String, HumanExplanation As String, Severity As DecisionSeverity = DecisionSeverity.Info, EvidenceRefs As IReadOnlyList(Of String) = Nothing)
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.#ctor*
+  nameWithType.vb: DecisionReason.New(String, Double, String, String, DecisionSeverity, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionReason.New(String, Double, String, String, Meridian.Contracts.RuleEvaluation.DecisionSeverity, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(String, Double, String, String, DecisionSeverity, IReadOnlyList(Of String))
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId
+  commentId: P:Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId
+  id: RuleId
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: RuleId
+  nameWithType: DecisionReason.RuleId
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RuleId
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: public string RuleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RuleId As String
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId*
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.Weight
+  commentId: P:Meridian.Contracts.RuleEvaluation.DecisionReason.Weight
+  id: Weight
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: Weight
+  nameWithType: DecisionReason.Weight
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.Weight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weight
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: public double Weight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Weight As Double
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.Weight*
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode
+  commentId: P:Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode
+  id: ReasonCode
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: ReasonCode
+  nameWithType: DecisionReason.ReasonCode
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReasonCode
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: public string ReasonCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReasonCode As String
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode*
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation
+  commentId: P:Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation
+  id: HumanExplanation
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: HumanExplanation
+  nameWithType: DecisionReason.HumanExplanation
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HumanExplanation
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: public string HumanExplanation { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property HumanExplanation As String
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation*
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.Severity
+  commentId: P:Meridian.Contracts.RuleEvaluation.DecisionReason.Severity
+  id: Severity
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: DecisionReason.Severity
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: public DecisionSeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+    content.vb: Public Property Severity As DecisionSeverity
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.Severity*
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs
+  commentId: P:Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs
+  id: EvidenceRefs
+  parent: Meridian.Contracts.RuleEvaluation.DecisionReason
+  langs:
+  - csharp
+  - vb
+  name: EvidenceRefs
+  nameWithType: DecisionReason.EvidenceRefs
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EvidenceRefs
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: public IReadOnlyList<string>? EvidenceRefs { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property EvidenceRefs As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs*
+references:
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  href: Meridian.html
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.RuleEvaluation.DecisionReason}
+  commentId: T:System.IEquatable{Meridian.Contracts.RuleEvaluation.DecisionReason}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DecisionReason>
+  nameWithType: IEquatable<DecisionReason>
+  fullName: System.IEquatable<Meridian.Contracts.RuleEvaluation.DecisionReason>
+  nameWithType.vb: IEquatable(Of DecisionReason)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.RuleEvaluation.DecisionReason)
+  name.vb: IEquatable(Of DecisionReason)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionReason
+    name: DecisionReason
+    href: Meridian.Contracts.RuleEvaluation.DecisionReason.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionReason
+    name: DecisionReason
+    href: Meridian.Contracts.RuleEvaluation.DecisionReason.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.#ctor*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.#ctor
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason__ctor_System_String_System_Double_System_String_System_String_Meridian_Contracts_RuleEvaluation_DecisionSeverity_System_Collections_Generic_IReadOnlyList_System_String__
+  name: DecisionReason
+  nameWithType: DecisionReason.DecisionReason
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.DecisionReason
+  nameWithType.vb: DecisionReason.New
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionReason.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionSeverity
+  parent: Meridian.Contracts.RuleEvaluation
+  href: Meridian.Contracts.RuleEvaluation.DecisionSeverity.html
+  name: DecisionSeverity
+  nameWithType: DecisionSeverity
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionSeverity
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason_RuleId
+  name: RuleId
+  nameWithType: DecisionReason.RuleId
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.RuleId
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.Weight*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.Weight
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason_Weight
+  name: Weight
+  nameWithType: DecisionReason.Weight
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.Weight
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason_ReasonCode
+  name: ReasonCode
+  nameWithType: DecisionReason.ReasonCode
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.ReasonCode
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason_HumanExplanation
+  name: HumanExplanation
+  nameWithType: DecisionReason.HumanExplanation
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.HumanExplanation
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.Severity*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.Severity
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason_Severity
+  name: Severity
+  nameWithType: DecisionReason.Severity
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.Severity
+- uid: Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs
+  href: Meridian.Contracts.RuleEvaluation.DecisionReason.html#Meridian_Contracts_RuleEvaluation_DecisionReason_EvidenceRefs
+  name: EvidenceRefs
+  nameWithType: DecisionReason.EvidenceRefs
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionReason.EvidenceRefs

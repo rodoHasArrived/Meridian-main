@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertPlaybook
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WhatHappened
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Categories
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PossibleCauses
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemediationSteps
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WhatHappensIfIgnored
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs

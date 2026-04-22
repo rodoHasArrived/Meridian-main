@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitInfo
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 716
+    startLine: 735
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 721
+    startLine: 740
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowSeconds
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 727
+    startLine: 746
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -141,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDelayMs
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 733
+    startLine: 752
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -184,11 +184,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 739
+    startLine: 758
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

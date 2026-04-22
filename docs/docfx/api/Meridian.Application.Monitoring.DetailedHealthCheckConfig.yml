@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetailedHealthCheckConfig
     path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DependencyTimeoutSeconds
     path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DetailedHealthCheck.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/DetailedHealthCheck.cs

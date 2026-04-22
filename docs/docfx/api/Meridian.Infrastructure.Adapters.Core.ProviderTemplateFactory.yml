@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTemplateFactory
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromMetadata
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForStreaming
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForBackfill
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForSymbolSearch
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToCatalogEntry
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs

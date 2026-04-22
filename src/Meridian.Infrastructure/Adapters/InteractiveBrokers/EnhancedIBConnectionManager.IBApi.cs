@@ -998,7 +998,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             OrderType = request.Type switch
             {
                 OrderType.Market => "MKT",
+                OrderType.MarketOnOpen => "MKT",
+                OrderType.MarketOnClose => "MKT",
                 OrderType.Limit => "LMT",
+                OrderType.LimitOnOpen => "LMT",
+                OrderType.LimitOnClose => "LMT",
                 OrderType.StopMarket => "STP",
                 OrderType.StopLimit => "STP LMT",
                 _ => "MKT"

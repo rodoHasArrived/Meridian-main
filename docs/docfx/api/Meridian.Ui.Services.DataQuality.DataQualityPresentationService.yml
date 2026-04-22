@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityPresentationService
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderComparisonAsync
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSymbolDrilldown
     path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityPresentationService.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveExportProgress
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesExported
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentFile
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs

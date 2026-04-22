@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyParameterAttribute
     path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs

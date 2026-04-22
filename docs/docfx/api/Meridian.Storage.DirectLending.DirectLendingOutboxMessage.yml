@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOutboxMessage
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutboxMessageId
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Topic
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageKey
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PayloadJson
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeadersJson
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -286,7 +286,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VisibleAfter
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -315,7 +315,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessedAt
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCount
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs

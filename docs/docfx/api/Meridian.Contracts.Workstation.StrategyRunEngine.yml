@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunEngine
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianNative
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lean
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerPaper
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerLive
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs

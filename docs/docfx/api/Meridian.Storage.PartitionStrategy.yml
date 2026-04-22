@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartitionStrategy
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Primary
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Secondary
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tertiary
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateGranularity
     path: ../../src/Meridian.Storage/StorageOptions.cs

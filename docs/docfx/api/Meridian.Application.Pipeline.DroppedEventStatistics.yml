@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DroppedEventStatistics
     path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-    startLine: 137
+    startLine: 122
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-    startLine: 137
+    startLine: 122
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDropped
     path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-    startLine: 138
+    startLine: 123
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -127,11 +127,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DropsBySymbol
     path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-    startLine: 139
+    startLine: 124
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -156,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditFilePath
     path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-    startLine: 140
+    startLine: 125
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -185,11 +185,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs
-    startLine: 141
+    startLine: 126
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline

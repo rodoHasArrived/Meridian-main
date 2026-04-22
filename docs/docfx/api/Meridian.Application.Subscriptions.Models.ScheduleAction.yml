@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleAction
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enable
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disable
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs

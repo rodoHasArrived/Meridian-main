@@ -5,7 +5,7 @@ items:
   id: IBBrokerageGateway
   parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
   children:
-  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway})
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway},Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient)
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.BrokerDisplayName
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.BrokerageCapabilities
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.CancelOrderAsync(System.String,System.Threading.CancellationToken)
@@ -31,39 +31,18 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBBrokerageGateway
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 32
+    startLine: 22
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
   summary: >-
-    Interactive Brokers brokerage gateway for live order execution via the TWS/Gateway API.
+    Interactive Brokers brokerage gateway for live or paper order execution via the TWS/Gateway API.
 
-    Communicates with IB TWS or IB Gateway running locally. Supports equities, options,
-
-    futures, and forex.
-  remarks: >-
-    IB TWS API:
-
-    - Connects to TWS or IB Gateway on localhost (default port 7496 live, 7497 paper)
-
-    - Full order lifecycle: submit, modify, cancel with real-time execution reports
-
-    - Supports market, limit, stop, stop-limit, and many more order types
-
-    - Supports partial fills and order modification
-
-    - Rate limit: 50 messages/sec
-
-
-    This implementation provides the brokerage abstraction layer. The actual TWS API
-
-    communication is delegated to the IB connection infrastructure. When IBAPI is not
-
-    compiled in, this gateway operates in simulation mode using synthetic responses.
+    Uses the native IB socket path when the official vendor SDK is available.
   example: []
   syntax:
     content: >-
@@ -139,40 +118,42 @@ items:
       value: ADR-005
     - type: System.String
       value: Attribute-based provider discovery
-- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway})
-  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway})
-  id: '#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway})'
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway},Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway},Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient)
+  id: '#ctor(Meridian.Application.Config.IBOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway},Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient)'
   parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway
   langs:
   - csharp
   - vb
-  name: IBBrokerageGateway(IBOptions, ILogger<IBBrokerageGateway>)
-  nameWithType: IBBrokerageGateway.IBBrokerageGateway(IBOptions, ILogger<IBBrokerageGateway>)
-  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.IBBrokerageGateway(Meridian.Application.Config.IBOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway>)
+  name: IBBrokerageGateway(IBOptions, ILogger<IBBrokerageGateway>, IIBBrokerageClient?)
+  nameWithType: IBBrokerageGateway.IBBrokerageGateway(IBOptions, ILogger<IBBrokerageGateway>, IIBBrokerageClient?)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.IBBrokerageGateway(Meridian.Application.Config.IBOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway>, Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 50
+    startLine: 52
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
   syntax:
-    content: public IBBrokerageGateway(IBOptions options, ILogger<IBBrokerageGateway> logger)
+    content: public IBBrokerageGateway(IBOptions options, ILogger<IBBrokerageGateway> logger, IIBBrokerageClient? client = null)
     parameters:
     - id: options
       type: Meridian.Application.Config.IBOptions
     - id: logger
       type: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway}
-    content.vb: Public Sub New(options As IBOptions, logger As ILogger(Of IBBrokerageGateway))
+    - id: client
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+    content.vb: Public Sub New(options As IBOptions, logger As ILogger(Of IBBrokerageGateway), client As IIBBrokerageClient = Nothing)
   overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor*
-  nameWithType.vb: IBBrokerageGateway.New(IBOptions, ILogger(Of IBBrokerageGateway))
-  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.New(Meridian.Application.Config.IBOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway))
-  name.vb: New(IBOptions, ILogger(Of IBBrokerageGateway))
+  nameWithType.vb: IBBrokerageGateway.New(IBOptions, ILogger(Of IBBrokerageGateway), IIBBrokerageClient)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.New(Meridian.Application.Config.IBOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway), Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient)
+  name.vb: New(IBOptions, ILogger(Of IBBrokerageGateway), IIBBrokerageClient)
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.GatewayId
   commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.GatewayId
   id: GatewayId
@@ -187,11 +168,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 60
+    startLine: 75
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -220,11 +201,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 63
+    startLine: 78
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -253,11 +234,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 66
+    startLine: 81
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -286,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 69
+    startLine: 84
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -319,11 +300,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 95
+    startLine: 114
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -354,11 +335,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 116
+    startLine: 135
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -389,11 +370,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 124
+    startLine: 147
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -426,11 +407,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 148
+    startLine: 182
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -466,11 +447,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 175
+    startLine: 200
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -508,11 +489,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 204
+    startLine: 226
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -543,11 +524,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 214
+    startLine: 236
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -578,11 +559,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 232
+    startLine: 257
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -613,11 +594,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 242
+    startLine: 282
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -648,11 +629,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 252
+    startLine: 306
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -686,11 +667,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs
-    startLine: 262
+    startLine: 324
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -1014,7 +995,7 @@ references:
     href: Meridian.Execution.Sdk.html
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor*
   commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.#ctor
-  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBBrokerageGateway__ctor_Meridian_Application_Config_IBOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Infrastructure_Adapters_InteractiveBrokers_IBBrokerageGateway__
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBBrokerageGateway__ctor_Meridian_Application_Config_IBOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Infrastructure_Adapters_InteractiveBrokers_IBBrokerageGateway__Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_
   name: IBBrokerageGateway
   nameWithType: IBBrokerageGateway.IBBrokerageGateway
   fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.IBBrokerageGateway
@@ -1061,6 +1042,13 @@ references:
     name: IBBrokerageGateway
     href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBBrokerageGateway.html
   - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html
+  name: IIBBrokerageClient
+  nameWithType: IIBBrokerageClient
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
 - uid: Meridian.Application.Config
   commentId: N:Meridian.Application.Config
   href: Meridian.html

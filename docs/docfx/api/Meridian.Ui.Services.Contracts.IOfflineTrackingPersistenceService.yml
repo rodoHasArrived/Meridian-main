@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IOfflineTrackingPersistenceService
     path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveOfflineDataAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadOfflineDataAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteOfflineDataAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasOfflineDataAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs

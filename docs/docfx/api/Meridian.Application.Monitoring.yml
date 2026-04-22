@@ -15,6 +15,8 @@ items:
   - Meridian.Application.Monitoring.BadTickFilterConfig
   - Meridian.Application.Monitoring.BadTickFilterStats
   - Meridian.Application.Monitoring.BadTickReason
+  - Meridian.Application.Monitoring.CalibrationComparisonSummary
+  - Meridian.Application.Monitoring.CalibrationGateDecision
   - Meridian.Application.Monitoring.CircuitBreakerDashboard
   - Meridian.Application.Monitoring.CircuitBreakerState
   - Meridian.Application.Monitoring.CircuitBreakerStateChange
@@ -54,6 +56,9 @@ items:
   - Meridian.Application.Monitoring.IConnectionHealthMonitor
   - Meridian.Application.Monitoring.IEventMetrics
   - Meridian.Application.Monitoring.IReconnectionMetrics
+  - Meridian.Application.Monitoring.IncidentSeverity
+  - Meridian.Application.Monitoring.KernelPromotionDecision
+  - Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService
   - Meridian.Application.Monitoring.LatencyBucket
   - Meridian.Application.Monitoring.LuldBand
   - Meridian.Application.Monitoring.MemoryInfo
@@ -67,10 +72,19 @@ items:
   - Meridian.Application.Monitoring.PrometheusMetrics
   - Meridian.Application.Monitoring.PrometheusMetricsUpdater
   - Meridian.Application.Monitoring.PrometheusReconnectionMetrics
+  - Meridian.Application.Monitoring.ProviderCalibrationReportWriter
+  - Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner
   - Meridian.Application.Monitoring.ProviderDegradationConfig
+  - Meridian.Application.Monitoring.ProviderDegradationKernelProfile
   - Meridian.Application.Monitoring.ProviderDegradationScore
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta
   - Meridian.Application.Monitoring.ProviderDegradationScorer
   - Meridian.Application.Monitoring.ProviderDegradedEvent
+  - Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset
+  - Meridian.Application.Monitoring.ProviderIncidentWindow
+  - Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy
+  - Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+  - Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
   - Meridian.Application.Monitoring.ProviderLatencyConfig
   - Meridian.Application.Monitoring.ProviderLatencyHistogram
   - Meridian.Application.Monitoring.ProviderLatencyService
@@ -78,13 +92,17 @@ items:
   - Meridian.Application.Monitoring.ProviderLatencySummary
   - Meridian.Application.Monitoring.ProviderMetrics
   - Meridian.Application.Monitoring.ProviderMetricsStatus
+  - Meridian.Application.Monitoring.ProviderReasonCodes
+  - Meridian.Application.Monitoring.ProviderReasonDelta
   - Meridian.Application.Monitoring.ProviderReconciliation
   - Meridian.Application.Monitoring.ProviderRecoveredEvent
+  - Meridian.Application.Monitoring.ProviderScoreReason
   - Meridian.Application.Monitoring.ReconciliationReport
   - Meridian.Application.Monitoring.SchemaCheckResult
   - Meridian.Application.Monitoring.SchemaIncompatibility
   - Meridian.Application.Monitoring.SchemaValidationOptions
   - Meridian.Application.Monitoring.SchemaValidationService
+  - Meridian.Application.Monitoring.SeverityThresholdMetrics
   - Meridian.Application.Monitoring.SpreadMonitor
   - Meridian.Application.Monitoring.SpreadMonitorConfig
   - Meridian.Application.Monitoring.SpreadMonitorStats
@@ -439,6 +457,98 @@ references:
   name: PrometheusMetricsUpdater
   nameWithType: PrometheusMetricsUpdater
   fullName: Meridian.Application.Monitoring.PrometheusMetricsUpdater
+- uid: Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset
+  commentId: T:Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset.html
+  name: ProviderIncidentCalibrationDataset
+  nameWithType: ProviderIncidentCalibrationDataset
+  fullName: Meridian.Application.Monitoring.ProviderIncidentCalibrationDataset
+- uid: Meridian.Application.Monitoring.ProviderIncidentWindow
+  commentId: T:Meridian.Application.Monitoring.ProviderIncidentWindow
+  href: Meridian.Application.Monitoring.ProviderIncidentWindow.html
+  name: ProviderIncidentWindow
+  nameWithType: ProviderIncidentWindow
+  fullName: Meridian.Application.Monitoring.ProviderIncidentWindow
+- uid: Meridian.Application.Monitoring.IncidentSeverity
+  commentId: T:Meridian.Application.Monitoring.IncidentSeverity
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IncidentSeverity.html
+  name: IncidentSeverity
+  nameWithType: IncidentSeverity
+  fullName: Meridian.Application.Monitoring.IncidentSeverity
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+  commentId: T:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot.html
+  name: ProviderKernelCalibrationSnapshot
+  nameWithType: ProviderKernelCalibrationSnapshot
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+- uid: Meridian.Application.Monitoring.SeverityThresholdMetrics
+  commentId: T:Meridian.Application.Monitoring.SeverityThresholdMetrics
+  href: Meridian.Application.Monitoring.SeverityThresholdMetrics.html
+  name: SeverityThresholdMetrics
+  nameWithType: SeverityThresholdMetrics
+  fullName: Meridian.Application.Monitoring.SeverityThresholdMetrics
+- uid: Meridian.Application.Monitoring.CalibrationComparisonSummary
+  commentId: T:Meridian.Application.Monitoring.CalibrationComparisonSummary
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.CalibrationComparisonSummary.html
+  name: CalibrationComparisonSummary
+  nameWithType: CalibrationComparisonSummary
+  fullName: Meridian.Application.Monitoring.CalibrationComparisonSummary
+- uid: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationKernelProfile.html
+  name: ProviderDegradationKernelProfile
+  nameWithType: ProviderDegradationKernelProfile
+  fullName: Meridian.Application.Monitoring.ProviderDegradationKernelProfile
+- uid: Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner
+  href: Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner.html
+  name: ProviderDegradationCalibrationRunner
+  nameWithType: ProviderDegradationCalibrationRunner
+  fullName: Meridian.Application.Monitoring.ProviderDegradationCalibrationRunner
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  commentId: T:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.html
+  name: ProviderKernelCalibrationSnapshotStore
+  nameWithType: ProviderKernelCalibrationSnapshotStore
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy
+  commentId: T:Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy.html
+  name: ProviderKernelCalibrationPolicy
+  nameWithType: ProviderKernelCalibrationPolicy
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationPolicy
+- uid: Meridian.Application.Monitoring.CalibrationGateDecision
+  commentId: T:Meridian.Application.Monitoring.CalibrationGateDecision
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.CalibrationGateDecision.html
+  name: CalibrationGateDecision
+  nameWithType: CalibrationGateDecision
+  fullName: Meridian.Application.Monitoring.CalibrationGateDecision
+- uid: Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService
+  commentId: T:Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService
+  href: Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService.html
+  name: KernelWeightGovernanceWorkflowService
+  nameWithType: KernelWeightGovernanceWorkflowService
+  fullName: Meridian.Application.Monitoring.KernelWeightGovernanceWorkflowService
+- uid: Meridian.Application.Monitoring.KernelPromotionDecision
+  commentId: T:Meridian.Application.Monitoring.KernelPromotionDecision
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.KernelPromotionDecision.html
+  name: KernelPromotionDecision
+  nameWithType: KernelPromotionDecision
+  fullName: Meridian.Application.Monitoring.KernelPromotionDecision
+- uid: Meridian.Application.Monitoring.ProviderCalibrationReportWriter
+  commentId: T:Meridian.Application.Monitoring.ProviderCalibrationReportWriter
+  href: Meridian.Application.Monitoring.ProviderCalibrationReportWriter.html
+  name: ProviderCalibrationReportWriter
+  nameWithType: ProviderCalibrationReportWriter
+  fullName: Meridian.Application.Monitoring.ProviderCalibrationReportWriter
 - uid: Meridian.Application.Monitoring.ProviderDegradationScorer
   commentId: T:Meridian.Application.Monitoring.ProviderDegradationScorer
   href: Meridian.Application.Monitoring.ProviderDegradationScorer.html
@@ -459,6 +569,31 @@ references:
   name: ProviderDegradationScore
   nameWithType: ProviderDegradationScore
   fullName: Meridian.Application.Monitoring.ProviderDegradationScore
+- uid: Meridian.Application.Monitoring.ProviderReasonCodes
+  commentId: T:Meridian.Application.Monitoring.ProviderReasonCodes
+  href: Meridian.Application.Monitoring.ProviderReasonCodes.html
+  name: ProviderReasonCodes
+  nameWithType: ProviderReasonCodes
+  fullName: Meridian.Application.Monitoring.ProviderReasonCodes
+- uid: Meridian.Application.Monitoring.ProviderScoreReason
+  commentId: T:Meridian.Application.Monitoring.ProviderScoreReason
+  href: Meridian.Application.Monitoring.ProviderScoreReason.html
+  name: ProviderScoreReason
+  nameWithType: ProviderScoreReason
+  fullName: Meridian.Application.Monitoring.ProviderScoreReason
+- uid: Meridian.Application.Monitoring.ProviderReasonDelta
+  commentId: T:Meridian.Application.Monitoring.ProviderReasonDelta
+  href: Meridian.Application.Monitoring.ProviderReasonDelta.html
+  name: ProviderReasonDelta
+  nameWithType: ProviderReasonDelta
+  fullName: Meridian.Application.Monitoring.ProviderReasonDelta
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html
+  name: ProviderDegradationScoreDelta
+  nameWithType: ProviderDegradationScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
 - uid: Meridian.Application.Monitoring.ProviderDegradedEvent
   commentId: T:Meridian.Application.Monitoring.ProviderDegradedEvent
   href: Meridian.Application.Monitoring.ProviderDegradedEvent.html

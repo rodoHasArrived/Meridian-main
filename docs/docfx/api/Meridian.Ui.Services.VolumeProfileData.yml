@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeProfileData
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Levels
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PointOfControl
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueAreaHigh
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueAreaLow
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs

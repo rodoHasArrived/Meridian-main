@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationType
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Maintenance
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityCheck
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reporting
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheck
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CacheRefresh
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialRefresh
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexRebuild
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs

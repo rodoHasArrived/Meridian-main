@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderExecutionTranslator
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAcknowledgement
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAcceptedStatus
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToRejectedStatus
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToCancelledStatus
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToExecutionStatus
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs

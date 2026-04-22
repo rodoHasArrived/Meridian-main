@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationBreakCategory
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmountMismatch
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingLedgerCoverage
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingPortfolioCoverage
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClassificationGap
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimingMismatch
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingBankCoverage
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs

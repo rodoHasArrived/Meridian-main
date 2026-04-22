@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorEntryDto
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Level
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExceptionType
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -308,7 +308,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
@@ -390,7 +390,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs

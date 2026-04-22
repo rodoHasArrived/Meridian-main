@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealthService
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthUpdated
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthAlert
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartMonitoring
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopMonitoring
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProviderHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthHistory
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFailoverThresholdsAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFailoverThresholdsAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -388,7 +388,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareProvidersAsync
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs

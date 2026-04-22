@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageSinkAttribute
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledByDefault
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs

@@ -43,7 +43,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalTradeCondition
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Regular
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormT_ExtendedHours
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OddLot
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AveragePrice
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Intermarket_Sweep
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpeningPrint
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosingPrint
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DerivativelyPriced
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossTrade
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StockOption
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Halted
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrectedConsolidated
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -411,7 +411,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SoldOutOfSequence
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -439,7 +439,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contingent
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -467,7 +467,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Acquisition
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -495,7 +495,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bunched
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -523,7 +523,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -551,7 +551,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextDay
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -579,7 +579,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SellerInitiated
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -607,7 +607,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriorReferencePrice
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -635,7 +635,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerLevel1
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -663,7 +663,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerLevel2
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -691,7 +691,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerLevel3
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -719,7 +719,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LuldPause
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -750,7 +750,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegulatoryHalt
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -778,7 +778,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingResumed
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -806,7 +806,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IpoHalt
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
@@ -834,7 +834,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs

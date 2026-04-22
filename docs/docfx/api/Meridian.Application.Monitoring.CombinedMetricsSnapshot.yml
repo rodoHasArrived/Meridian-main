@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CombinedMetricsSnapshot
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Core
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Metrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resubscription
     path: ../../src/Meridian.Application/Monitoring/Metrics.cs

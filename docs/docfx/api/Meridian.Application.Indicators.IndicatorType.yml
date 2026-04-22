@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndicatorType
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SMA
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EMA
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RSI
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MACD
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BollingerBands
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ATR
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stochastic
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VWAP
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ADX
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OBV
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CCI
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -345,7 +345,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Williams
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -371,7 +371,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ichimoku
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -397,7 +397,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Keltner
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -423,7 +423,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Donchian
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -449,7 +449,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParabolicSar
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
@@ -475,7 +475,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuperTrend
     path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs

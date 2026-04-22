@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityMonitoringConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapAnalyzerConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrorConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossProviderConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportOutputDirectory
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityMonitoringService.cs

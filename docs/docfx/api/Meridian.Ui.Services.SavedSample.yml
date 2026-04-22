@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedSample
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strategy
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileSizeBytes
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs

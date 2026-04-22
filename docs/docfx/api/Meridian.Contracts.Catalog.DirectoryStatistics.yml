@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoryStatistics
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesCompressed
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesRaw
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubdirectoryCount
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCountsByType
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCountsBySymbol
     path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs

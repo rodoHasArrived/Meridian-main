@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleDecision
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanExecute
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuggestedDelay
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Allowed
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Denied
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs

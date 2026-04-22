@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportValidationRules
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiskSpaceMultiplier
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireData
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/ExportPreset.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarnCsvComplexTypes
     path: ../../src/Meridian.Contracts/Export/ExportPreset.cs

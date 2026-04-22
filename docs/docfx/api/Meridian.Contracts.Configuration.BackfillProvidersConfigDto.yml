@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProvidersConfigDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 306
+    startLine: 198
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 308
+    startLine: 200
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -100,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 311
+    startLine: 203
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -141,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tiingo
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 314
+    startLine: 206
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -182,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Finnhub
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 317
+    startLine: 209
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stooq
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 320
+    startLine: 212
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -264,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Yahoo
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 323
+    startLine: 215
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -305,11 +305,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlphaVantage
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 326
+    startLine: 218
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -346,11 +346,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NasdaqDataLink
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 329
+    startLine: 221
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

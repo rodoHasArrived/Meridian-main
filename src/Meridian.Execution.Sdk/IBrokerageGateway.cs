@@ -79,7 +79,11 @@ public sealed record BrokerageCapabilities
             OrderType.Market,
             OrderType.Limit,
             OrderType.StopMarket,
-            OrderType.StopLimit
+            OrderType.StopLimit,
+            OrderType.MarketOnOpen,
+            OrderType.MarketOnClose,
+            OrderType.LimitOnOpen,
+            OrderType.LimitOnClose
         },
             SupportedTimeInForce = new HashSet<TimeInForce>
         {
@@ -112,7 +116,11 @@ public sealed record BrokerageCapabilities
             OrderType.Market,
             OrderType.Limit,
             OrderType.StopMarket,
-            OrderType.StopLimit
+            OrderType.StopLimit,
+            OrderType.MarketOnOpen,
+            OrderType.MarketOnClose,
+            OrderType.LimitOnOpen,
+            OrderType.LimitOnClose
         },
             SupportedTimeInForce = new HashSet<TimeInForce>
         {

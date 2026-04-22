@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TieringOptions
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tiers
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationSchedule
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelMigrations
     path: ../../src/Meridian.Storage/StorageOptions.cs

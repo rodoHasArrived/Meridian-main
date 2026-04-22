@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolQualityInfo
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCount
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasGaps
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityGrade
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs

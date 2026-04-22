@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ISchemaService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISchemaService
     path: ../../src/Meridian.Ui.Services/Contracts/ISchemaService.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ISchemaService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJsonSchema
     path: ../../src/Meridian.Ui.Services/Contracts/ISchemaService.cs

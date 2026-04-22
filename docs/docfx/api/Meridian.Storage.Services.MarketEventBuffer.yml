@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/EventBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventBuffer
     path: ../../src/Meridian.Storage/Services/EventBuffer.cs
-    startLine: 211
+    startLine: 230
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -66,11 +66,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/EventBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/EventBuffer.cs
-    startLine: 213
+    startLine: 232
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/EventBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrainBySymbol
     path: ../../src/Meridian.Storage/Services/EventBuffer.cs
-    startLine: 227
+    startLine: 246
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/HtmlTemplateGenerator.Styles.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HtmlTemplateGenerator
     path: ../../src/Meridian.Ui.Shared/HtmlTemplateGenerator.Styles.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/HtmlTemplateGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
     path: ../../src/Meridian.Ui.Shared/HtmlTemplateGenerator.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/HtmlTemplateGenerator.Login.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Login
     path: ../../src/Meridian.Ui.Shared/HtmlTemplateGenerator.Login.cs

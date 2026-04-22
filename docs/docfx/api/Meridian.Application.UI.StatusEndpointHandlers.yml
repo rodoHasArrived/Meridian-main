@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusEndpointHandlers
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighDropRateThreshold
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalDropRateThreshold
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleDataThresholdSeconds
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterExtendedProviders
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uptime
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthCheck
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthStatusCode
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckReadiness
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -388,7 +388,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPrometheusMetrics
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -418,7 +418,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetErrors
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -458,7 +458,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackpressure
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -488,7 +488,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderLatency
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -518,7 +518,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConnectionHealth
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -548,7 +548,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailedHealthAsync
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
@@ -581,7 +581,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProviderInfo
     path: ../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs

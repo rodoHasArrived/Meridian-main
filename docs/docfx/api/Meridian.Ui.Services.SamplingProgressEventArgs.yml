@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SamplingProgressEventArgs
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Progress
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentSymbol
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs

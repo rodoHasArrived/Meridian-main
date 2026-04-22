@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITradingCalendarProvider
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTradingDay
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradingSessions
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextTradingDay
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHolidays
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs

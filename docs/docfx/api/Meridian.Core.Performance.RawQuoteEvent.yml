@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawQuoteEvent
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampTicks
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolHash
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sequence
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs

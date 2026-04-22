@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyHistogramConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BucketBoundaries
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSamples
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs

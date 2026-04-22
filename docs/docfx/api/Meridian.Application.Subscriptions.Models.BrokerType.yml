@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerType
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InteractiveBrokers
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Manual
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs

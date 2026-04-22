@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchUtility
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateMatchScore
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolSearchUtility.cs

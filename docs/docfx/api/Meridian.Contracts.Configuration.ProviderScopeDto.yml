@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderScopeDto
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Workspace
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityId
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveId
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleId
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs

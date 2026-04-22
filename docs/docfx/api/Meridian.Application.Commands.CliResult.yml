@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliResult
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExitCode
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ok
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Commands/ICliCommand.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromBool
     path: ../../src/Meridian.Application/Commands/ICliCommand.cs

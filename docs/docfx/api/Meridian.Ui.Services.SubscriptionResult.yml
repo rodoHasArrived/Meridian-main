@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionResult
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionId
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs

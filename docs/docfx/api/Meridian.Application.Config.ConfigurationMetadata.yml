@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationMetadata
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Section
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Key
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueType
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRequired
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultValue
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentVariable
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationRules
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs
@@ -367,7 +367,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/IConfigurationProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullPath
     path: ../../src/Meridian.Core/Config/IConfigurationProvider.cs

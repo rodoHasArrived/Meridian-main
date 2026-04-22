@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchBacktestRun
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Result
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DurationMs
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs

@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataLossAccounting
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Received
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReceivedDuplicates
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncReceived
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncReceivedDuplicate
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validated
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncValidated
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -289,7 +289,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncRejected
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -315,7 +315,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineAccepted
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -346,7 +346,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineDropped
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncPipelineAccepted
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -403,7 +403,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncPipelineDropped
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -429,7 +429,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stored
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -460,7 +460,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StoreFailed
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -491,7 +491,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncStored
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -517,7 +517,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncStoreFailed
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -543,7 +543,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationReport
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
@@ -576,7 +576,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs

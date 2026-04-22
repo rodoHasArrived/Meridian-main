@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchResult
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ticker
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
     path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs

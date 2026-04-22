@@ -7,6 +7,7 @@ items:
   children:
   - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
   - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
   - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
   - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
   - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
@@ -20,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/DtoExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DtoExtensions
     path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
@@ -61,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/DtoExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
     path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
@@ -95,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/DtoExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
     path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
@@ -129,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/DtoExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
     path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
@@ -148,6 +149,40 @@ items:
       type: Meridian.Application.Config.IBOptions
     content.vb: Public Shared Function ToDomain(dto As IBOptionsDto) As IBOptions
   overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(IBClientPortalOptionsDto)
+  nameWithType: DtoExtensions.ToDomain(IBClientPortalOptionsDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts IBClientPortalOptionsDto to IBClientPortalOptions domain type.
+  example: []
+  syntax:
+    content: public static IBClientPortalOptions ToDomain(this IBClientPortalOptionsDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+    return:
+      type: Meridian.Application.Config.IBClientPortalOptions
+    content.vb: Public Shared Function ToDomain(dto As IBClientPortalOptionsDto) As IBClientPortalOptions
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
 - uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
   commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
   id: ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
@@ -163,11 +198,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/DtoExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
     path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
-    startLine: 50
+    startLine: 59
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared
@@ -197,11 +232,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/DtoExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDomain
     path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
-    startLine: 66
+    startLine: 75
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared
@@ -592,6 +627,20 @@ references:
   name: IBOptions
   nameWithType: IBOptions
   fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBClientPortalOptionsDto.html
+  name: IBClientPortalOptionsDto
+  nameWithType: IBClientPortalOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+- uid: Meridian.Application.Config.IBClientPortalOptions
+  commentId: T:Meridian.Application.Config.IBClientPortalOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBClientPortalOptions.html
+  name: IBClientPortalOptions
+  nameWithType: IBClientPortalOptions
+  fullName: Meridian.Application.Config.IBClientPortalOptions
 - uid: Meridian.Contracts.Configuration.DerivativesConfigDto
   commentId: T:Meridian.Contracts.Configuration.DerivativesConfigDto
   parent: Meridian.Contracts.Configuration

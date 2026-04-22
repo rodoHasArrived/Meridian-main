@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageAnalyticsEventArgs
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 447
+    startLine: 434
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Analytics
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 449
+    startLine: 436
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

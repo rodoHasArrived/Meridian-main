@@ -12,10 +12,18 @@ using Meridian.Ui.Services;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
+/// Read-only watchlist access used by shell surfaces and workstation services.
+/// </summary>
+public interface IWatchlistReader
+{
+    Task<IReadOnlyList<Watchlist>> GetAllWatchlistsAsync(CancellationToken ct = default);
+}
+
+/// <summary>
 /// Service for managing symbol watchlists in the WPF application.
 /// Provides local persistence and optional synchronization with the backend API.
 /// </summary>
-public sealed class WatchlistService
+public sealed class WatchlistService : IWatchlistReader
 {
     private static readonly Lazy<WatchlistService> _instance = new(() => new WatchlistService());
     private static readonly HttpClient _httpClient = new();

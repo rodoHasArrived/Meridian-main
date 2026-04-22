@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestVerificationEventArgs
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 526
+    startLine: 521
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Result
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 528
+    startLine: 523
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

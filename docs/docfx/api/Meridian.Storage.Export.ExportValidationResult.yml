@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportValidationResult
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedRecordCount
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSizeBytes
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailableDiskSpaceBytes
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs

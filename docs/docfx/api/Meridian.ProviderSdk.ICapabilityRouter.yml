@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICapabilityRouter
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RouteAsync
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataStreamHealth
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveStreams
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyStreams
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyStreams
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallLatencyMs
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LiveDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streams
     path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs

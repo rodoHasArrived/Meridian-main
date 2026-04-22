@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/TradeDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeDataCollector
     path: ../../src/Meridian.Domain/Collectors/TradeDataCollector.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/TradeDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Collectors/TradeDataCollector.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/TradeDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTrade
     path: ../../src/Meridian.Domain/Collectors/TradeDataCollector.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/TradeDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentTrades
     path: ../../src/Meridian.Domain/Collectors/TradeDataCollector.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/TradeDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrderFlowSnapshot
     path: ../../src/Meridian.Domain/Collectors/TradeDataCollector.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/TradeDataCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedSymbols
     path: ../../src/Meridian.Domain/Collectors/TradeDataCollector.cs

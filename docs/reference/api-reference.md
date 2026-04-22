@@ -183,12 +183,23 @@ cat <<'JSON' > /tmp/backfill-request.json
   "to": "2024-01-31"
 }
 JSON
-
 curl -X POST http://localhost:8080/api/backfill/run \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: your-key" \
   --data-binary @/tmp/backfill-request.json
 ```
+
+### Fund Structure: `GET /api/fund-structure/cash-flow-view`
+
+For `scopeKind=LedgerGroup`, `ledgerGroupId` now uses the shared `LedgerGroupId` normalization contract:
+
+- leading/trailing whitespace is trimmed before lookup
+- blank values are rejected with HTTP `400`
+- only letters, digits, `-`, `_`, `.`, and `:` are valid characters
+- invalid values are rejected with HTTP `400`
+
+Grouping in application services uses the same normalization path so endpoint filtering and
+accounting-view ledger grouping resolve IDs consistently.
 
 **Check data quality for a symbol:**
 

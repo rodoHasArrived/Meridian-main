@@ -6,21 +6,15 @@ items:
   parent: Meridian.Ui.Services.Services
   children:
   - Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
-  - Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth
-  - Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
-  - Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus
-  - Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData(System.String)
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData(System.String)
   - Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(System.String,System.Int32)
   - Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
-  - Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario
   - Meridian.Ui.Services.Services.FixtureDataService.Instance
-  - Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
   - Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
   - Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
   langs:
@@ -33,11 +27,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FixtureDataService
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 10
+    startLine: 8
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -45,10 +39,6 @@ items:
     Provides canned fixture data for UI development without backend dependency.
 
     Enables offline development and deterministic testing scenarios.
-
-    Supports runtime scenario switching via <xref href="Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)" data-throw-if-not-resolved="false"></xref> so developers can
-
-    cycle through all visual states in a single session without restarting.
   example: []
   syntax:
     content: public sealed class FixtureDataService
@@ -76,11 +66,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 13
+    startLine: 11
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -105,11 +95,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveScenario
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 26
+    startLine: 18
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -122,38 +112,6 @@ items:
       type: Meridian.Ui.Services.Services.FixtureScenario
     content.vb: Public ReadOnly Property ActiveScenario As FixtureScenario
   overload: Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario*
-- uid: Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
-  commentId: E:Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
-  id: ScenarioChanged
-  parent: Meridian.Ui.Services.Services.FixtureDataService
-  langs:
-  - csharp
-  - vb
-  name: ScenarioChanged
-  nameWithType: FixtureDataService.ScenarioChanged
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
-  type: Event
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ScenarioChanged
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 35
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Event raised whenever the active scenario is changed via <xref href="Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)" data-throw-if-not-resolved="false"></xref>.
-
-    Subscribers (e.g., ViewModels) should refresh their displayed data when this fires.
-  example: []
-  syntax:
-    content: public event EventHandler<FixtureScenario>? ScenarioChanged
-    return:
-      type: System.EventHandler{Meridian.Ui.Services.Services.FixtureScenario}
-    content.vb: Public Event ScenarioChanged As EventHandler(Of FixtureScenario)
 - uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
   commentId: M:Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
   id: SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
@@ -168,15 +126,15 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetScenario
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 40
+    startLine: 21
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
-  summary: Switches to the specified fixture scenario and raises <xref href="Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged" data-throw-if-not-resolved="false"></xref>.
+  summary: Sets the active fixture scenario.
   example: []
   syntax:
     content: public void SetScenario(FixtureScenario scenario)
@@ -185,39 +143,6 @@ items:
       type: Meridian.Ui.Services.Services.FixtureScenario
     content.vb: Public Sub SetScenario(scenario As FixtureScenario)
   overload: Meridian.Ui.Services.Services.FixtureDataService.SetScenario*
-- uid: Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario
-  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario
-  id: CycleToNextScenario
-  parent: Meridian.Ui.Services.Services.FixtureDataService
-  langs:
-  - csharp
-  - vb
-  name: CycleToNextScenario()
-  nameWithType: FixtureDataService.CycleToNextScenario()
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: CycleToNextScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 61
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Advances to the next scenario in the cycle and returns the new active scenario.
-
-    Order: Connected → Disconnected → Degraded → Error → Loading → Connected → …
-  example: []
-  syntax:
-    content: public FixtureScenario CycleToNextScenario()
-    return:
-      type: Meridian.Ui.Services.Services.FixtureScenario
-    content.vb: Public Function CycleToNextScenario() As FixtureScenario
-  overload: Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario*
 - uid: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
   commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
   id: GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
@@ -232,15 +157,15 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScenarioLabel
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 77
+    startLine: 27
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
-  summary: Returns a human-readable label for the given scenario suitable for UI display.
+  summary: Returns a human-readable label for the given scenario.
   example: []
   syntax:
     content: public static string GetScenarioLabel(FixtureScenario scenario)
@@ -251,36 +176,6 @@ items:
       type: System.String
     content.vb: Public Shared Function GetScenarioLabel(scenario As FixtureScenario) As String
   overload: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel*
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario
-  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario
-  id: GetStatusForActiveScenario
-  parent: Meridian.Ui.Services.Services.FixtureDataService
-  langs:
-  - csharp
-  - vb
-  name: GetStatusForActiveScenario()
-  nameWithType: FixtureDataService.GetStatusForActiveScenario()
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetStatusForActiveScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 90
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: Returns a status response appropriate for the currently active scenario.
-  example: []
-  syntax:
-    content: public StatusResponse GetStatusForActiveScenario()
-    return:
-      type: Meridian.Contracts.Api.StatusResponse
-    content.vb: Public Function GetStatusForActiveScenario() As StatusResponse
-  overload: Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario*
 - uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
   commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
   id: GetMockStatusResponse
@@ -295,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockStatusResponse
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 103
+    startLine: 40
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -325,11 +220,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockDisconnectedStatus
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 134
+    startLine: 71
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -355,11 +250,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockTradeData
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 146
+    startLine: 83
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -391,11 +286,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockQuoteData
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 160
+    startLine: 97
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -427,11 +322,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockBackfillHealth
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 183
+    startLine: 120
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -457,11 +352,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockSymbols
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 215
+    startLine: 152
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -487,11 +382,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMockTradesResponse
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 224
+    startLine: 161
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -511,102 +406,6 @@ items:
   nameWithType.vb: FixtureDataService.GetMockTradesResponse(String, Integer)
   fullName.vb: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(String, Integer)
   name.vb: GetMockTradesResponse(String, Integer)
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus
-  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus
-  id: GetMockDegradedStatus
-  parent: Meridian.Ui.Services.Services.FixtureDataService
-  langs:
-  - csharp
-  - vb
-  name: GetMockDegradedStatus()
-  nameWithType: FixtureDataService.GetMockDegradedStatus()
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetMockDegradedStatus
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 254
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: Gets a mock status response showing a degraded system (partial provider connectivity).
-  example: []
-  syntax:
-    content: public StatusResponse GetMockDegradedStatus()
-    return:
-      type: Meridian.Contracts.Api.StatusResponse
-    content.vb: Public Function GetMockDegradedStatus() As StatusResponse
-  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus*
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus
-  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus
-  id: GetMockErrorStatus
-  parent: Meridian.Ui.Services.Services.FixtureDataService
-  langs:
-  - csharp
-  - vb
-  name: GetMockErrorStatus()
-  nameWithType: FixtureDataService.GetMockErrorStatus()
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetMockErrorStatus
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 286
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Gets a mock status response showing a system in an error state.
-
-    Useful for testing alert banners, error UI, and recovery flows.
-  example: []
-  syntax:
-    content: public StatusResponse GetMockErrorStatus()
-    return:
-      type: Meridian.Contracts.Api.StatusResponse
-    content.vb: Public Function GetMockErrorStatus() As StatusResponse
-  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus*
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus
-  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus
-  id: GetMockLoadingStatus
-  parent: Meridian.Ui.Services.Services.FixtureDataService
-  langs:
-  - csharp
-  - vb
-  name: GetMockLoadingStatus()
-  nameWithType: FixtureDataService.GetMockLoadingStatus()
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetMockLoadingStatus
-    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 318
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Gets a mock status response showing a system that is still initializing.
-
-    Useful for testing skeleton/loading states and progress indicators.
-  example: []
-  syntax:
-    content: public StatusResponse GetMockLoadingStatus()
-    return:
-      type: Meridian.Contracts.Api.StatusResponse
-    content.vb: Public Function GetMockLoadingStatus() As StatusResponse
-  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus*
 - uid: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
   id: SimulateNetworkDelayAsync(System.Threading.CancellationToken)
@@ -621,11 +420,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SimulateNetworkDelayAsync
     path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
-    startLine: 330
+    startLine: 191
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -641,30 +440,6 @@ items:
     content.vb: Public Function SimulateNetworkDelayAsync(ct As CancellationToken = Nothing) As Task
   overload: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync*
 references:
-- uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
-  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SetScenario_Meridian_Ui_Services_Services_FixtureScenario_
-  name: SetScenario(FixtureScenario)
-  nameWithType: FixtureDataService.SetScenario(FixtureScenario)
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
-  spec.csharp:
-  - uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
-    name: SetScenario
-    href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SetScenario_Meridian_Ui_Services_Services_FixtureScenario_
-  - name: (
-  - uid: Meridian.Ui.Services.Services.FixtureScenario
-    name: FixtureScenario
-    href: Meridian.Ui.Services.Services.FixtureScenario.html
-  - name: )
-  spec.vb:
-  - uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
-    name: SetScenario
-    href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SetScenario_Meridian_Ui_Services_Services_FixtureScenario_
-  - name: (
-  - uid: Meridian.Ui.Services.Services.FixtureScenario
-    name: FixtureScenario
-    href: Meridian.Ui.Services.Services.FixtureScenario.html
-  - name: )
 - uid: Meridian.Ui.Services.Services
   commentId: N:Meridian.Ui.Services.Services
   href: Meridian.html
@@ -942,85 +717,12 @@ references:
   name: FixtureScenario
   nameWithType: FixtureScenario
   fullName: Meridian.Ui.Services.Services.FixtureScenario
-- uid: System.EventHandler{Meridian.Ui.Services.Services.FixtureScenario}
-  commentId: T:System.EventHandler{Meridian.Ui.Services.Services.FixtureScenario}
-  parent: System
-  definition: System.EventHandler`1
-  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
-  name: EventHandler<FixtureScenario>
-  nameWithType: EventHandler<FixtureScenario>
-  fullName: System.EventHandler<Meridian.Ui.Services.Services.FixtureScenario>
-  nameWithType.vb: EventHandler(Of FixtureScenario)
-  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Services.FixtureScenario)
-  name.vb: EventHandler(Of FixtureScenario)
-  spec.csharp:
-  - uid: System.EventHandler`1
-    name: EventHandler
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
-  - name: <
-  - uid: Meridian.Ui.Services.Services.FixtureScenario
-    name: FixtureScenario
-    href: Meridian.Ui.Services.Services.FixtureScenario.html
-  - name: '>'
-  spec.vb:
-  - uid: System.EventHandler`1
-    name: EventHandler
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.Services.FixtureScenario
-    name: FixtureScenario
-    href: Meridian.Ui.Services.Services.FixtureScenario.html
-  - name: )
-- uid: System.EventHandler`1
-  commentId: T:System.EventHandler`1
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
-  name: EventHandler<TEventArgs>
-  nameWithType: EventHandler<TEventArgs>
-  fullName: System.EventHandler<TEventArgs>
-  nameWithType.vb: EventHandler(Of TEventArgs)
-  fullName.vb: System.EventHandler(Of TEventArgs)
-  name.vb: EventHandler(Of TEventArgs)
-  spec.csharp:
-  - uid: System.EventHandler`1
-    name: EventHandler
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
-  - name: <
-  - name: TEventArgs
-  - name: '>'
-  spec.vb:
-  - uid: System.EventHandler`1
-    name: EventHandler
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
-  - name: (
-  - name: Of
-  - name: " "
-  - name: TEventArgs
-  - name: )
-- uid: Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
-  commentId: E:Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_ScenarioChanged
-  name: ScenarioChanged
-  nameWithType: FixtureDataService.ScenarioChanged
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.ScenarioChanged
 - uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario*
   commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.SetScenario
   href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SetScenario_Meridian_Ui_Services_Services_FixtureScenario_
   name: SetScenario
   nameWithType: FixtureDataService.SetScenario
   fullName: Meridian.Ui.Services.Services.FixtureDataService.SetScenario
-- uid: Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_CycleToNextScenario
-  name: CycleToNextScenario
-  nameWithType: FixtureDataService.CycleToNextScenario
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.CycleToNextScenario
 - uid: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel*
   commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel
   href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetScenarioLabel_Meridian_Ui_Services_Services_FixtureScenario_
@@ -1038,12 +740,12 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetStatusForActiveScenario
-  name: GetStatusForActiveScenario
-  nameWithType: FixtureDataService.GetStatusForActiveScenario
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetStatusForActiveScenario
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockStatusResponse
+  name: GetMockStatusResponse
+  nameWithType: FixtureDataService.GetMockStatusResponse
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
 - uid: Meridian.Contracts.Api.StatusResponse
   commentId: T:Meridian.Contracts.Api.StatusResponse
   parent: Meridian.Contracts.Api
@@ -1081,12 +783,6 @@ references:
   - uid: Meridian.Contracts.Api
     name: Api
     href: Meridian.Contracts.Api.html
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockStatusResponse
-  name: GetMockStatusResponse
-  nameWithType: FixtureDataService.GetMockStatusResponse
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
 - uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus*
   commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
   href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockDisconnectedStatus
@@ -1185,24 +881,6 @@ references:
   name: TradesResponse
   nameWithType: TradesResponse
   fullName: Meridian.Contracts.Api.TradesResponse
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockDegradedStatus
-  name: GetMockDegradedStatus
-  nameWithType: FixtureDataService.GetMockDegradedStatus
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockDegradedStatus
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockErrorStatus
-  name: GetMockErrorStatus
-  nameWithType: FixtureDataService.GetMockErrorStatus
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockErrorStatus
-- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus
-  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockLoadingStatus
-  name: GetMockLoadingStatus
-  nameWithType: FixtureDataService.GetMockLoadingStatus
-  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockLoadingStatus
 - uid: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync*
   commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync
   href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SimulateNetworkDelayAsync_System_Threading_CancellationToken_

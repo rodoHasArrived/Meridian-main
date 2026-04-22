@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OperationalScheduler
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWithinTradingHours
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWithinMaintenanceWindow
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanExecuteAsync
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindNextAvailableSlotAsync
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentTradingSession
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextTradingSession
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentMaintenanceWindow
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -371,7 +371,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextMaintenanceWindow
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -404,7 +404,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterMaintenanceWindow
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs
@@ -438,7 +438,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/OperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveMaintenanceWindow
     path: ../../src/Meridian.Application/Scheduling/OperationalScheduler.cs

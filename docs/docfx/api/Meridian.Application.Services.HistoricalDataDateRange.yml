@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataDateRange
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EarliestDate
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatestDate
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs

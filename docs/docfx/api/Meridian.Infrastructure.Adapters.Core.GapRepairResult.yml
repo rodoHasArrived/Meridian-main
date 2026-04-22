@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapRepairResult
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGaps
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairedGaps
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedGaps
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Results
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuration
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessRate
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs

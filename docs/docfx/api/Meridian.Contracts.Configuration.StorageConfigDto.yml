@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageConfigDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 185
+    startLine: 77
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NamingConvention
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 187
+    startLine: 79
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -100,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatePartition
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 190
+    startLine: 82
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -141,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeProvider
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 193
+    startLine: 85
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -182,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePrefix
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 196
+    startLine: 88
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Profile
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 199
+    startLine: 91
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -264,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 202
+    startLine: 94
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -305,11 +305,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxTotalMegabytes
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 205
+    startLine: 97
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -346,11 +346,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sinks
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 212
+    startLine: 104
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

@@ -1,0 +1,1010 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  id: EnvironmentLaneRuntimeDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.#ctor(System.String,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Boolean,System.Boolean)
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentLaneRuntimeDto
+  nameWithType: EnvironmentLaneRuntimeDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentLaneRuntimeDto
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: 'public sealed record EnvironmentLaneRuntimeDto : IEquatable<EnvironmentLaneRuntimeDto>'
+    content.vb: Public NotInheritable Class EnvironmentLaneRuntimeDto Implements IEquatable(Of EnvironmentLaneRuntimeDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.#ctor(System.String,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Boolean,System.Boolean)
+  commentId: M:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.#ctor(System.String,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Boolean,System.Boolean)
+  id: '#ctor(System.String,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Boolean,System.Boolean)'
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentLaneRuntimeDto(string, string, EnvironmentLaneArchetype, string, string, string, string, IReadOnlyList<EnvironmentManagedScopeKind>, IReadOnlyDictionary<string, string>?, bool, bool)
+  nameWithType: EnvironmentLaneRuntimeDto.EnvironmentLaneRuntimeDto(string, string, EnvironmentLaneArchetype, string, string, string, string, IReadOnlyList<EnvironmentManagedScopeKind>, IReadOnlyDictionary<string, string>?, bool, bool)
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.EnvironmentLaneRuntimeDto(string, string, Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype, string, string, string, string, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind>, System.Collections.Generic.IReadOnlyDictionary<string, string>?, bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public EnvironmentLaneRuntimeDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string RootNodeDefinitionId, string DefaultWorkspaceId, string DefaultLandingPageTag, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true)
+    parameters:
+    - id: LaneId
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Archetype
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+    - id: RootNodeDefinitionId
+      type: System.String
+    - id: DefaultWorkspaceId
+      type: System.String
+    - id: DefaultLandingPageTag
+      type: System.String
+    - id: DefaultContextNodeDefinitionId
+      type: System.String
+    - id: AllowedManagedScopeKinds
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind}
+    - id: LabelOverrides
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    - id: ShowInNavigation
+      type: System.Boolean
+    - id: UseForEmptyStates
+      type: System.Boolean
+    content.vb: Public Sub New(LaneId As String, Name As String, Archetype As EnvironmentLaneArchetype, RootNodeDefinitionId As String, DefaultWorkspaceId As String, DefaultLandingPageTag As String, DefaultContextNodeDefinitionId As String, AllowedManagedScopeKinds As IReadOnlyList(Of EnvironmentManagedScopeKind), LabelOverrides As IReadOnlyDictionary(Of String, String) = Nothing, ShowInNavigation As Boolean = True, UseForEmptyStates As Boolean = True)
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.#ctor*
+  nameWithType.vb: EnvironmentLaneRuntimeDto.New(String, String, EnvironmentLaneArchetype, String, String, String, String, IReadOnlyList(Of EnvironmentManagedScopeKind), IReadOnlyDictionary(Of String, String), Boolean, Boolean)
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.New(String, String, Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype, String, String, String, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind), System.Collections.Generic.IReadOnlyDictionary(Of String, String), Boolean, Boolean)
+  name.vb: New(String, String, EnvironmentLaneArchetype, String, String, String, String, IReadOnlyList(Of EnvironmentManagedScopeKind), IReadOnlyDictionary(Of String, String), Boolean, Boolean)
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId
+  id: LaneId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: LaneId
+  nameWithType: EnvironmentLaneRuntimeDto.LaneId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LaneId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string LaneId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LaneId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name
+  id: Name
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: EnvironmentLaneRuntimeDto.Name
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype
+  id: Archetype
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: Archetype
+  nameWithType: EnvironmentLaneRuntimeDto.Archetype
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archetype
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public EnvironmentLaneArchetype Archetype { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+    content.vb: Public Property Archetype As EnvironmentLaneArchetype
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  id: RootNodeDefinitionId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: RootNodeDefinitionId
+  nameWithType: EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RootNodeDefinitionId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string RootNodeDefinitionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RootNodeDefinitionId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  id: DefaultWorkspaceId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: DefaultWorkspaceId
+  nameWithType: EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultWorkspaceId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string DefaultWorkspaceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultWorkspaceId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  id: DefaultLandingPageTag
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: DefaultLandingPageTag
+  nameWithType: EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultLandingPageTag
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string DefaultLandingPageTag { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultLandingPageTag As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  id: DefaultContextNodeDefinitionId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: DefaultContextNodeDefinitionId
+  nameWithType: EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultContextNodeDefinitionId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string DefaultContextNodeDefinitionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultContextNodeDefinitionId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  id: AllowedManagedScopeKinds
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: AllowedManagedScopeKinds
+  nameWithType: EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllowedManagedScopeKinds
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind}
+    content.vb: Public Property AllowedManagedScopeKinds As IReadOnlyList(Of EnvironmentManagedScopeKind)
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides
+  id: LabelOverrides
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: LabelOverrides
+  nameWithType: EnvironmentLaneRuntimeDto.LabelOverrides
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LabelOverrides
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? LabelOverrides { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property LabelOverrides As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation
+  id: ShowInNavigation
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: ShowInNavigation
+  nameWithType: EnvironmentLaneRuntimeDto.ShowInNavigation
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShowInNavigation
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public bool ShowInNavigation { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ShowInNavigation As Boolean
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates
+  id: UseForEmptyStates
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+  langs:
+  - csharp
+  - vb
+  name: UseForEmptyStates
+  nameWithType: EnvironmentLaneRuntimeDto.UseForEmptyStates
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseForEmptyStates
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public bool UseForEmptyStates { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property UseForEmptyStates As Boolean
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates*
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EnvironmentLaneRuntimeDto>
+  nameWithType: IEquatable<EnvironmentLaneRuntimeDto>
+  fullName: System.IEquatable<Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto>
+  nameWithType.vb: IEquatable(Of EnvironmentLaneRuntimeDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto)
+  name.vb: IEquatable(Of EnvironmentLaneRuntimeDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+    name: EnvironmentLaneRuntimeDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto
+    name: EnvironmentLaneRuntimeDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.#ctor*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.#ctor
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto__ctor_System_String_System_String_Meridian_Contracts_EnvironmentDesign_EnvironmentLaneArchetype_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_EnvironmentDesign_EnvironmentManagedScopeKind__System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__System_Boolean_System_Boolean_
+  name: EnvironmentLaneRuntimeDto
+  nameWithType: EnvironmentLaneRuntimeDto.EnvironmentLaneRuntimeDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.EnvironmentLaneRuntimeDto
+  nameWithType.vb: EnvironmentLaneRuntimeDto.New
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.html
+  name: EnvironmentLaneArchetype
+  nameWithType: EnvironmentLaneArchetype
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<EnvironmentManagedScopeKind>
+  nameWithType: IReadOnlyList<EnvironmentManagedScopeKind>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind>
+  nameWithType.vb: IReadOnlyList(Of EnvironmentManagedScopeKind)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind)
+  name.vb: IReadOnlyList(Of EnvironmentManagedScopeKind)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+    name: EnvironmentManagedScopeKind
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+    name: EnvironmentManagedScopeKind
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_LaneId
+  name: LaneId
+  nameWithType: EnvironmentLaneRuntimeDto.LaneId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LaneId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_Name
+  name: Name
+  nameWithType: EnvironmentLaneRuntimeDto.Name
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Name
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_Archetype
+  name: Archetype
+  nameWithType: EnvironmentLaneRuntimeDto.Archetype
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.Archetype
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_RootNodeDefinitionId
+  name: RootNodeDefinitionId
+  nameWithType: EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.RootNodeDefinitionId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_DefaultWorkspaceId
+  name: DefaultWorkspaceId
+  nameWithType: EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultWorkspaceId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_DefaultLandingPageTag
+  name: DefaultLandingPageTag
+  nameWithType: EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultLandingPageTag
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_DefaultContextNodeDefinitionId
+  name: DefaultContextNodeDefinitionId
+  nameWithType: EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.DefaultContextNodeDefinitionId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_AllowedManagedScopeKinds
+  name: AllowedManagedScopeKinds
+  nameWithType: EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.AllowedManagedScopeKinds
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_LabelOverrides
+  name: LabelOverrides
+  nameWithType: EnvironmentLaneRuntimeDto.LabelOverrides
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.LabelOverrides
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_ShowInNavigation
+  name: ShowInNavigation
+  nameWithType: EnvironmentLaneRuntimeDto.ShowInNavigation
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.ShowInNavigation
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentLaneRuntimeDto_UseForEmptyStates
+  name: UseForEmptyStates
+  nameWithType: EnvironmentLaneRuntimeDto.UseForEmptyStates
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto.UseForEmptyStates

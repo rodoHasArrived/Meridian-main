@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterDbMapper
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToSummary
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDetail
     path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs

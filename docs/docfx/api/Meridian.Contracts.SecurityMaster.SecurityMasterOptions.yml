@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterOptions
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionString
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schema
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotIntervalVersions
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectionReplayBatchSize
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreloadProjectionCache
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveInactiveByDefault
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs

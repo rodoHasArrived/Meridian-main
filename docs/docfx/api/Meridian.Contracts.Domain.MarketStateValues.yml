@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketStateValues
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreMarket
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AfterHours
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Closed
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Halted
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Auction
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs

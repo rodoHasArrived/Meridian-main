@@ -1,0 +1,797 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  id: AccountingStructureViewDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.#ctor(Meridian.Contracts.FundStructure.OrganizationSummaryDto,Meridian.Contracts.FundStructure.BusinessSummaryDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto},Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess
+  langs:
+  - csharp
+  - vb
+  name: AccountingStructureViewDto
+  nameWithType: AccountingStructureViewDto
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountingStructureViewDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record AccountingStructureViewDto : IEquatable<AccountingStructureViewDto>'
+    content.vb: Public NotInheritable Class AccountingStructureViewDto Implements IEquatable(Of AccountingStructureViewDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.AccountingStructureViewDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.#ctor(Meridian.Contracts.FundStructure.OrganizationSummaryDto,Meridian.Contracts.FundStructure.BusinessSummaryDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto},Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  commentId: M:Meridian.Contracts.FundStructure.AccountingStructureViewDto.#ctor(Meridian.Contracts.FundStructure.OrganizationSummaryDto,Meridian.Contracts.FundStructure.BusinessSummaryDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto},Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  id: '#ctor(Meridian.Contracts.FundStructure.OrganizationSummaryDto,Meridian.Contracts.FundStructure.BusinessSummaryDto,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto},Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)'
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: AccountingStructureViewDto(OrganizationSummaryDto?, BusinessSummaryDto?, IReadOnlyList<InvestmentPortfolioSummaryDto>, IReadOnlyList<AccountSummaryDto>, IReadOnlyList<LedgerGroupSummaryDto>, FundStructureSharedDataAccessDto?)
+  nameWithType: AccountingStructureViewDto.AccountingStructureViewDto(OrganizationSummaryDto?, BusinessSummaryDto?, IReadOnlyList<InvestmentPortfolioSummaryDto>, IReadOnlyList<AccountSummaryDto>, IReadOnlyList<LedgerGroupSummaryDto>, FundStructureSharedDataAccessDto?)
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.AccountingStructureViewDto(Meridian.Contracts.FundStructure.OrganizationSummaryDto?, Meridian.Contracts.FundStructure.BusinessSummaryDto?, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountSummaryDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.LedgerGroupSummaryDto>, Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public AccountingStructureViewDto(OrganizationSummaryDto? Organization, BusinessSummaryDto? Business, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts, IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups, FundStructureSharedDataAccessDto? SharedDataAccess = null)
+    parameters:
+    - id: Organization
+      type: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+    - id: Business
+      type: Meridian.Contracts.FundStructure.BusinessSummaryDto
+    - id: InvestmentPortfolios
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+    - id: Accounts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}
+    - id: LedgerGroups
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto}
+    - id: SharedDataAccess
+      type: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    content.vb: Public Sub New(Organization As OrganizationSummaryDto, Business As BusinessSummaryDto, InvestmentPortfolios As IReadOnlyList(Of InvestmentPortfolioSummaryDto), Accounts As IReadOnlyList(Of AccountSummaryDto), LedgerGroups As IReadOnlyList(Of LedgerGroupSummaryDto), SharedDataAccess As FundStructureSharedDataAccessDto = Nothing)
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.#ctor*
+  nameWithType.vb: AccountingStructureViewDto.New(OrganizationSummaryDto, BusinessSummaryDto, IReadOnlyList(Of InvestmentPortfolioSummaryDto), IReadOnlyList(Of AccountSummaryDto), IReadOnlyList(Of LedgerGroupSummaryDto), FundStructureSharedDataAccessDto)
+  fullName.vb: Meridian.Contracts.FundStructure.AccountingStructureViewDto.New(Meridian.Contracts.FundStructure.OrganizationSummaryDto, Meridian.Contracts.FundStructure.BusinessSummaryDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountSummaryDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.LedgerGroupSummaryDto), Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  name.vb: New(OrganizationSummaryDto, BusinessSummaryDto, IReadOnlyList(Of InvestmentPortfolioSummaryDto), IReadOnlyList(Of AccountSummaryDto), IReadOnlyList(Of LedgerGroupSummaryDto), FundStructureSharedDataAccessDto)
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization
+  commentId: P:Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization
+  id: Organization
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: Organization
+  nameWithType: AccountingStructureViewDto.Organization
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Organization
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 335
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public OrganizationSummaryDto? Organization { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+    content.vb: Public Property Organization As OrganizationSummaryDto
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization*
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business
+  commentId: P:Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business
+  id: Business
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: Business
+  nameWithType: AccountingStructureViewDto.Business
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Business
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public BusinessSummaryDto? Business { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.BusinessSummaryDto
+    content.vb: Public Property Business As BusinessSummaryDto
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business*
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios
+  commentId: P:Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios
+  id: InvestmentPortfolios
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: InvestmentPortfolios
+  nameWithType: AccountingStructureViewDto.InvestmentPortfolios
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvestmentPortfolios
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 337
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+    content.vb: Public Property InvestmentPortfolios As IReadOnlyList(Of InvestmentPortfolioSummaryDto)
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios*
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts
+  commentId: P:Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts
+  id: Accounts
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: AccountingStructureViewDto.Accounts
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<AccountSummaryDto> Accounts { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}
+    content.vb: Public Property Accounts As IReadOnlyList(Of AccountSummaryDto)
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts*
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups
+  commentId: P:Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups
+  id: LedgerGroups
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: LedgerGroups
+  nameWithType: AccountingStructureViewDto.LedgerGroups
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerGroups
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 339
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto}
+    content.vb: Public Property LedgerGroups As IReadOnlyList(Of LedgerGroupSummaryDto)
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups*
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess
+  commentId: P:Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess
+  id: SharedDataAccess
+  parent: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  langs:
+  - csharp
+  - vb
+  name: SharedDataAccess
+  nameWithType: AccountingStructureViewDto.SharedDataAccess
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharedDataAccess
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public FundStructureSharedDataAccessDto? SharedDataAccess { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    content.vb: Public Property SharedDataAccess As FundStructureSharedDataAccessDto
+  overload: Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.AccountingStructureViewDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.AccountingStructureViewDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AccountingStructureViewDto>
+  nameWithType: IEquatable<AccountingStructureViewDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.AccountingStructureViewDto>
+  nameWithType.vb: IEquatable(Of AccountingStructureViewDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.AccountingStructureViewDto)
+  name.vb: IEquatable(Of AccountingStructureViewDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+    name: AccountingStructureViewDto
+    href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+    name: AccountingStructureViewDto
+    href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.#ctor
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto__ctor_Meridian_Contracts_FundStructure_OrganizationSummaryDto_Meridian_Contracts_FundStructure_BusinessSummaryDto_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_InvestmentPortfolioSummaryDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_AccountSummaryDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_FundStructure_LedgerGroupSummaryDto__Meridian_Contracts_FundStructure_FundStructureSharedDataAccessDto_
+  name: AccountingStructureViewDto
+  nameWithType: AccountingStructureViewDto.AccountingStructureViewDto
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.AccountingStructureViewDto
+  nameWithType.vb: AccountingStructureViewDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.AccountingStructureViewDto.New
+  name.vb: New
+- uid: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.OrganizationSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.OrganizationSummaryDto.html
+  name: OrganizationSummaryDto
+  nameWithType: OrganizationSummaryDto
+  fullName: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+- uid: Meridian.Contracts.FundStructure.BusinessSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.BusinessSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BusinessSummaryDto.html
+  name: BusinessSummaryDto
+  nameWithType: BusinessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.BusinessSummaryDto
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<InvestmentPortfolioSummaryDto>
+  nameWithType: IReadOnlyList<InvestmentPortfolioSummaryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto>
+  nameWithType.vb: IReadOnlyList(Of InvestmentPortfolioSummaryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto)
+  name.vb: IReadOnlyList(Of InvestmentPortfolioSummaryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+    name: InvestmentPortfolioSummaryDto
+    href: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+    name: InvestmentPortfolioSummaryDto
+    href: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.AccountSummaryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AccountSummaryDto>
+  nameWithType: IReadOnlyList<AccountSummaryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.AccountSummaryDto>
+  nameWithType.vb: IReadOnlyList(Of AccountSummaryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.AccountSummaryDto)
+  name.vb: IReadOnlyList(Of AccountSummaryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+    name: AccountSummaryDto
+    href: Meridian.Contracts.FundStructure.AccountSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
+    name: AccountSummaryDto
+    href: Meridian.Contracts.FundStructure.AccountSummaryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.LedgerGroupSummaryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LedgerGroupSummaryDto>
+  nameWithType: IReadOnlyList<LedgerGroupSummaryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.FundStructure.LedgerGroupSummaryDto>
+  nameWithType.vb: IReadOnlyList(Of LedgerGroupSummaryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.LedgerGroupSummaryDto)
+  name.vb: IReadOnlyList(Of LedgerGroupSummaryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
+    name: LedgerGroupSummaryDto
+    href: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
+    name: LedgerGroupSummaryDto
+    href: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto.html
+  - name: )
+- uid: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto.html
+  name: FundStructureSharedDataAccessDto
+  nameWithType: FundStructureSharedDataAccessDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto_Organization
+  name: Organization
+  nameWithType: AccountingStructureViewDto.Organization
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Organization
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto_Business
+  name: Business
+  nameWithType: AccountingStructureViewDto.Business
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Business
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto_InvestmentPortfolios
+  name: InvestmentPortfolios
+  nameWithType: AccountingStructureViewDto.InvestmentPortfolios
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.InvestmentPortfolios
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto_Accounts
+  name: Accounts
+  nameWithType: AccountingStructureViewDto.Accounts
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.Accounts
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto_LedgerGroups
+  name: LedgerGroups
+  nameWithType: AccountingStructureViewDto.LedgerGroups
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.LedgerGroups
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html#Meridian_Contracts_FundStructure_AccountingStructureViewDto_SharedDataAccess
+  name: SharedDataAccess
+  nameWithType: AccountingStructureViewDto.SharedDataAccess
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto.SharedDataAccess

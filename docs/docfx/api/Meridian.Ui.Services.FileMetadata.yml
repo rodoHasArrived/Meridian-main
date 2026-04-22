@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileMetadata
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullPath
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileName
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompressed
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastModified
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checksum
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimestamp
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestamp
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstEventJson
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -382,7 +382,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastEventJson
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs

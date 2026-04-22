@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityMetrics
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityScore
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrors
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicatesFound
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -362,7 +362,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualEvents
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -405,7 +405,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingTradingDays
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -448,7 +448,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutliersDetected
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs

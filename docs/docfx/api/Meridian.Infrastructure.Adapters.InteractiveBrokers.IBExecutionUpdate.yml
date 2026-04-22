@@ -1,0 +1,911 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  id: IBExecutionUpdate
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.#ctor(System.Int32,System.String,System.String,System.Decimal,System.Double,System.Decimal,System.Double,System.String,System.String,System.String,System.Int64,System.DateTimeOffset)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol
+  langs:
+  - csharp
+  - vb
+  name: IBExecutionUpdate
+  nameWithType: IBExecutionUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBExecutionUpdate
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: 'public sealed record IBExecutionUpdate : IEquatable<IBExecutionUpdate>'
+    content.vb: Public NotInheritable Class IBExecutionUpdate Implements IEquatable(Of IBExecutionUpdate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.#ctor(System.Int32,System.String,System.String,System.Decimal,System.Double,System.Decimal,System.Double,System.String,System.String,System.String,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.#ctor(System.Int32,System.String,System.String,System.Decimal,System.Double,System.Decimal,System.Double,System.String,System.String,System.String,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.Int32,System.String,System.String,System.Decimal,System.Double,System.Decimal,System.Double,System.String,System.String,System.String,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: IBExecutionUpdate(int, string, string, decimal, double, decimal, double, string, string?, string?, long, DateTimeOffset)
+  nameWithType: IBExecutionUpdate.IBExecutionUpdate(int, string, string, decimal, double, decimal, double, string, string?, string?, long, DateTimeOffset)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.IBExecutionUpdate(int, string, string, decimal, double, decimal, double, string, string?, string?, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public IBExecutionUpdate(int OrderId, string Symbol, string Side, decimal Shares, double Price, decimal CumulativeQuantity, double AveragePrice, string ExecutionId, string? Account, string? Exchange, long PermId, DateTimeOffset ExecutedAt)
+    parameters:
+    - id: OrderId
+      type: System.Int32
+    - id: Symbol
+      type: System.String
+    - id: Side
+      type: System.String
+    - id: Shares
+      type: System.Decimal
+    - id: Price
+      type: System.Double
+    - id: CumulativeQuantity
+      type: System.Decimal
+    - id: AveragePrice
+      type: System.Double
+    - id: ExecutionId
+      type: System.String
+    - id: Account
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: PermId
+      type: System.Int64
+    - id: ExecutedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(OrderId As Integer, Symbol As String, Side As String, Shares As Decimal, Price As Double, CumulativeQuantity As Decimal, AveragePrice As Double, ExecutionId As String, Account As String, Exchange As String, PermId As Long, ExecutedAt As DateTimeOffset)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.#ctor*
+  nameWithType.vb: IBExecutionUpdate.New(Integer, String, String, Decimal, Double, Decimal, Double, String, String, String, Long, DateTimeOffset)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.New(Integer, String, String, Decimal, Double, Decimal, Double, String, String, String, Long, System.DateTimeOffset)
+  name.vb: New(Integer, String, String, Decimal, Double, Decimal, Double, String, String, String, Long, DateTimeOffset)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId
+  id: OrderId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: IBExecutionUpdate.OrderId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public int OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property OrderId As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: IBExecutionUpdate.Symbol
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side
+  id: Side
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: IBExecutionUpdate.Side
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string Side { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Side As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares
+  id: Shares
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: Shares
+  nameWithType: IBExecutionUpdate.Shares
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Shares
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public decimal Shares { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Shares As Decimal
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price
+  id: Price
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: IBExecutionUpdate.Price
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public double Price { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Price As Double
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity
+  id: CumulativeQuantity
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: CumulativeQuantity
+  nameWithType: IBExecutionUpdate.CumulativeQuantity
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CumulativeQuantity
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public decimal CumulativeQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CumulativeQuantity As Decimal
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice
+  id: AveragePrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: AveragePrice
+  nameWithType: IBExecutionUpdate.AveragePrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AveragePrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public double AveragePrice { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AveragePrice As Double
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId
+  id: ExecutionId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: ExecutionId
+  nameWithType: IBExecutionUpdate.ExecutionId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string ExecutionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExecutionId As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account
+  id: Account
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: Account
+  nameWithType: IBExecutionUpdate.Account
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Account
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string? Account { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Account As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange
+  id: Exchange
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: IBExecutionUpdate.Exchange
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId
+  id: PermId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: PermId
+  nameWithType: IBExecutionUpdate.PermId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PermId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public long PermId { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property PermId As Long
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt
+  id: ExecutedAt
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+  langs:
+  - csharp
+  - vb
+  name: ExecutedAt
+  nameWithType: IBExecutionUpdate.ExecutedAt
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public DateTimeOffset ExecutedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ExecutedAt As DateTimeOffset
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt*
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<IBExecutionUpdate>
+  nameWithType: IEquatable<IBExecutionUpdate>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate>
+  nameWithType.vb: IEquatable(Of IBExecutionUpdate)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate)
+  name.vb: IEquatable(Of IBExecutionUpdate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+    name: IBExecutionUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+    name: IBExecutionUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.#ctor
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate__ctor_System_Int32_System_String_System_String_System_Decimal_System_Double_System_Decimal_System_Double_System_String_System_String_System_String_System_Int64_System_DateTimeOffset_
+  name: IBExecutionUpdate
+  nameWithType: IBExecutionUpdate.IBExecutionUpdate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.IBExecutionUpdate
+  nameWithType.vb: IBExecutionUpdate.New
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_OrderId
+  name: OrderId
+  nameWithType: IBExecutionUpdate.OrderId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.OrderId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_Symbol
+  name: Symbol
+  nameWithType: IBExecutionUpdate.Symbol
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Symbol
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_Side
+  name: Side
+  nameWithType: IBExecutionUpdate.Side
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Side
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_Shares
+  name: Shares
+  nameWithType: IBExecutionUpdate.Shares
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Shares
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_Price
+  name: Price
+  nameWithType: IBExecutionUpdate.Price
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Price
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_CumulativeQuantity
+  name: CumulativeQuantity
+  nameWithType: IBExecutionUpdate.CumulativeQuantity
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.CumulativeQuantity
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_AveragePrice
+  name: AveragePrice
+  nameWithType: IBExecutionUpdate.AveragePrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.AveragePrice
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_ExecutionId
+  name: ExecutionId
+  nameWithType: IBExecutionUpdate.ExecutionId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutionId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_Account
+  name: Account
+  nameWithType: IBExecutionUpdate.Account
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Account
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_Exchange
+  name: Exchange
+  nameWithType: IBExecutionUpdate.Exchange
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.Exchange
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_PermId
+  name: PermId
+  nameWithType: IBExecutionUpdate.PermId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.PermId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBExecutionUpdate_ExecutedAt
+  name: ExecutedAt
+  nameWithType: IBExecutionUpdate.ExecutedAt
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.ExecutedAt

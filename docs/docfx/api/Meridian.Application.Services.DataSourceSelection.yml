@@ -8,6 +8,7 @@ items:
   - Meridian.Application.Services.DataSourceSelection.Alpaca
   - Meridian.Application.Services.DataSourceSelection.DataSource
   - Meridian.Application.Services.DataSourceSelection.IB
+  - Meridian.Application.Services.DataSourceSelection.IBClientPortal
   - Meridian.Application.Services.DataSourceSelection.Polygon
   langs:
   - csharp
@@ -19,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigurationWizard.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceSelection
     path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
@@ -55,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigurationWizard.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSource
     path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
@@ -84,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigurationWizard.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
@@ -113,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigurationWizard.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
@@ -142,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConfigurationWizard.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IB
     path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
@@ -157,6 +158,35 @@ items:
       type: Meridian.Application.Config.IBOptions
     content.vb: Public Property IB As IBOptions
   overload: Meridian.Application.Services.DataSourceSelection.IB*
+- uid: Meridian.Application.Services.DataSourceSelection.IBClientPortal
+  commentId: P:Meridian.Application.Services.DataSourceSelection.IBClientPortal
+  id: IBClientPortal
+  parent: Meridian.Application.Services.DataSourceSelection
+  langs:
+  - csharp
+  - vb
+  name: IBClientPortal
+  nameWithType: DataSourceSelection.IBClientPortal
+  fullName: Meridian.Application.Services.DataSourceSelection.IBClientPortal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationWizard.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBClientPortal
+    path: ../../src/Meridian.Application/Services/ConfigurationWizard.cs
+    startLine: 328
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IBClientPortalOptions? IBClientPortal { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.IBClientPortalOptions
+    content.vb: Public Property IBClientPortal As IBClientPortalOptions
+  overload: Meridian.Application.Services.DataSourceSelection.IBClientPortal*
 references:
 - uid: Meridian.Application.Services
   commentId: N:Meridian.Application.Services
@@ -483,3 +513,16 @@ references:
   name: IBOptions
   nameWithType: IBOptions
   fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Application.Services.DataSourceSelection.IBClientPortal*
+  commentId: Overload:Meridian.Application.Services.DataSourceSelection.IBClientPortal
+  href: Meridian.Application.Services.DataSourceSelection.html#Meridian_Application_Services_DataSourceSelection_IBClientPortal
+  name: IBClientPortal
+  nameWithType: DataSourceSelection.IBClientPortal
+  fullName: Meridian.Application.Services.DataSourceSelection.IBClientPortal
+- uid: Meridian.Application.Config.IBClientPortalOptions
+  commentId: T:Meridian.Application.Config.IBClientPortalOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBClientPortalOptions.html
+  name: IBClientPortalOptions
+  nameWithType: IBClientPortalOptions
+  fullName: Meridian.Application.Config.IBClientPortalOptions

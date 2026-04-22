@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuickActionType
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillGaps
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExtendCoverage
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillNew
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateLatest
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateData
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
     path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs

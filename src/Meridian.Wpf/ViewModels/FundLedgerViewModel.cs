@@ -854,35 +854,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         IReadOnlyList<FundAccountSummary> accounts)
     {
         var previousSelectionKey = SelectedLedgerDimension?.Key;
-        var trialBalanceByAccount = (ledger?.TrialBalance ?? [])
-            .Where(static line => !string.IsNullOrWhiteSpace(line.FinancialAccountId))
-            .GroupBy(static line => line.FinancialAccountId!, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.OrdinalIgnoreCase);
-        var journalByAccount = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var line in ledger?.Journal ?? [])
-        {
-            foreach (var accountId in line.FinancialAccountIds ?? [])
-            {
-                journalByAccount[accountId] = journalByAccount.TryGetValue(accountId, out var count)
-                    ? count + 1
-                    : 1;
-            }
-        }
+        var slices = ledger?.LedgerSlices ?? [];
+        var consolidatedSlice = slices.FirstOrDefault(slice => slice.ScopeKind == FundLedgerScope.Consolidated);
+        var entitySlices = slices.Where(slice => slice.ScopeKind == FundLedgerScope.Entity).ToArray();
+        var sleeveSlices = slices.Where(slice => slice.ScopeKind == FundLedgerScope.Sleeve).ToArray();
+        var vehicleSlices = slices.Where(slice => slice.ScopeKind == FundLedgerScope.Vehicle).ToArray();
 
         var consolidatedAccountIds = accounts
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var entityAccountIds = accounts
-            .Where(static account => account.EntityId.HasValue)
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var sleeveAccountIds = accounts
-            .Where(static account => account.SleeveId.HasValue)
-            .Select(static account => account.AccountId.ToString())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var vehicleAccountIds = accounts
-            .Where(static account => account.VehicleId.HasValue)
             .Select(static account => account.AccountId.ToString())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -899,30 +877,25 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 JournalEntryCount: ledger?.Journal.Count ?? 0,
                 IsConsolidated: true,
                 HasScopedLedgerData: true,
-                FinancialAccountIds: consolidatedAccountIds)
+                FinancialAccountIds: consolidatedAccountIds,
+                LedgerSlices: consolidatedSlice is null ? [] : [consolidatedSlice])
         };
 
         dimensions.Add(CreateLedgerDimensionView(
             key: "entity-linked",
             displayName: "Entity-Linked View",
             expectedScopeCount: activeFund.EntityIds?.Count ?? 0,
-            accountIds: entityAccountIds,
-            trialBalanceByAccount,
-            journalByAccount));
+            slices: entitySlices));
         dimensions.Add(CreateLedgerDimensionView(
             key: "sleeve-linked",
             displayName: "Sleeve-Linked View",
             expectedScopeCount: activeFund.SleeveIds?.Count ?? 0,
-            accountIds: sleeveAccountIds,
-            trialBalanceByAccount,
-            journalByAccount));
+            slices: sleeveSlices));
         dimensions.Add(CreateLedgerDimensionView(
             key: "vehicle-linked",
             displayName: "Vehicle-Linked View",
             expectedScopeCount: activeFund.VehicleIds?.Count ?? 0,
-            accountIds: vehicleAccountIds,
-            trialBalanceByAccount,
-            journalByAccount));
+            slices: vehicleSlices));
 
         LedgerDimensions.Clear();
         foreach (var dimension in dimensions.Where(static dimension =>
@@ -942,12 +915,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         string key,
         string displayName,
         int expectedScopeCount,
-        IReadOnlySet<string> accountIds,
-        IReadOnlyDictionary<string, int> trialBalanceByAccount,
-        IReadOnlyDictionary<string, int> journalByAccount)
+        IReadOnlyList<FundLedgerSliceDto> slices)
     {
-        var trialBalanceLineCount = accountIds.Sum(accountId => trialBalanceByAccount.TryGetValue(accountId, out var count) ? count : 0);
-        var journalEntryCount = accountIds.Sum(accountId => journalByAccount.TryGetValue(accountId, out var count) ? count : 0);
+        var accountIds = slices
+            .SelectMany(static slice => slice.TrialBalance)
+            .Where(static line => !string.IsNullOrWhiteSpace(line.FinancialAccountId))
+            .Select(static line => line.FinancialAccountId!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var trialBalanceLineCount = slices.Sum(static slice => slice.TrialBalance.Count);
+        var journalEntryCount = slices.Sum(static slice => slice.Journal.Count);
         var hasScopedLedgerData = trialBalanceLineCount > 0 || journalEntryCount > 0;
         var coverageText = $"{expectedScopeCount} profile scope(s) · {accountIds.Count} linked account(s) · {trialBalanceLineCount} trial-balance line(s) · {journalEntryCount} journal entry(s)";
         var statusText = accountIds.Count == 0
@@ -967,7 +943,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             JournalEntryCount: journalEntryCount,
             IsConsolidated: false,
             HasScopedLedgerData: hasScopedLedgerData,
-            FinancialAccountIds: accountIds);
+            FinancialAccountIds: accountIds,
+            LedgerSlices: slices);
     }
 
     private void ApplyLedgerDimensionFilter()
@@ -989,15 +966,16 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         var visibleTrialBalance = SelectedLedgerDimension.IsConsolidated
             ? TrialBalance.ToArray()
-            : TrialBalance
-                .Where(line =>
-                    !string.IsNullOrWhiteSpace(line.FinancialAccountId) &&
-                    SelectedLedgerDimension.FinancialAccountIds.Contains(line.FinancialAccountId!))
+            : SelectedLedgerDimension.LedgerSlices
+                .SelectMany(static slice => slice.TrialBalance)
                 .ToArray();
         var visibleJournal = SelectedLedgerDimension.IsConsolidated
             ? Journal.ToArray()
-            : Journal
-                .Where(line => (line.FinancialAccountIds ?? []).Any(SelectedLedgerDimension.FinancialAccountIds.Contains))
+            : SelectedLedgerDimension.LedgerSlices
+                .SelectMany(static slice => slice.Journal)
+                .OrderByDescending(static line => line.Timestamp)
+                .ThenByDescending(static line => line.JournalEntryId)
+                .DistinctBy(static line => line.JournalEntryId)
                 .ToArray();
 
         VisibleTrialBalance.Clear();

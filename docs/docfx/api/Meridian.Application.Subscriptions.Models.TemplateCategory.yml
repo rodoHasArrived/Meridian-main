@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplateCategory
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sector
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCap
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Custom
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Filters/MarketEventFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventFilter
     path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Filters/MarketEventFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Filters/MarketEventFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Filters/MarketEventFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tier
     path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Filters/MarketEventFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Matches
     path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Filters/MarketEventFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
     path: ../../src/Meridian.Application/Filters/MarketEventFilter.cs

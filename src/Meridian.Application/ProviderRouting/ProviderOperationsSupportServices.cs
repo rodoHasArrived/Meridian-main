@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.RuleEvaluation;
 
 namespace Meridian.Application.ProviderRouting;
 
@@ -55,6 +56,9 @@ public sealed class ProviderPresetService
 /// </summary>
 public sealed class ProviderTrustScoringService
 {
+    internal const string DecisionSchemaVersion = "1.0.0";
+    internal const string KernelVersion = "provider-trust-csharp-v1";
+
     private readonly UI.ConfigStore _store;
     private readonly ProviderSdk.IProviderConnectionHealthSource _healthSource;
 
@@ -76,48 +80,96 @@ public sealed class ProviderTrustScoringService
         {
             var health = await _healthSource.GetHealthAsync(connection.ConnectionId, connection.ProviderFamilyId, ct).ConfigureAwait(false);
             certifications.TryGetValue(connection.ConnectionId, out var certification);
-            var signals = new List<string>();
+            var reasons = new List<DecisionReason>();
             var score = 100.0;
 
             if (!connection.Enabled)
             {
                 score -= 60;
-                signals.Add("Connection is disabled.");
+                reasons.Add(new DecisionReason(
+                    RuleId: "provider-trust.connection-enabled",
+                    Weight: -60,
+                    ReasonCode: "CONNECTION_DISABLED",
+                    HumanExplanation: "Connection is disabled.",
+                    Severity: DecisionSeverity.Critical,
+                    EvidenceRefs: [$"connection:{connection.ConnectionId}"]));
             }
 
             if (!health.IsHealthy)
             {
                 score -= 35;
-                signals.Add($"Health check status is {health.Status}.");
+                reasons.Add(new DecisionReason(
+                    RuleId: "provider-trust.health-status",
+                    Weight: -35,
+                    ReasonCode: "HEALTH_NOT_HEALTHY",
+                    HumanExplanation: $"Health check status is {health.Status}.",
+                    Severity: DecisionSeverity.Error,
+                    EvidenceRefs: [$"health-status:{health.Status}"]));
             }
 
             if (!connection.ProductionReady)
             {
                 score -= 10;
-                signals.Add("Connection has not been marked production ready.");
+                reasons.Add(new DecisionReason(
+                    RuleId: "provider-trust.production-ready",
+                    Weight: -10,
+                    ReasonCode: "PRODUCTION_READY_FALSE",
+                    HumanExplanation: "Connection has not been marked production ready.",
+                    Severity: DecisionSeverity.Warning,
+                    EvidenceRefs: [$"connection:{connection.ConnectionId}"]));
             }
 
-            var isCertificationFresh = certification?.ExpiresAt is null || certification.ExpiresAt >= DateTimeOffset.UtcNow;
+            var isCertificationFresh = certification is not null &&
+                                       (certification.ExpiresAt is null || certification.ExpiresAt >= DateTimeOffset.UtcNow);
             if (certification is null)
             {
                 score -= 15;
-                signals.Add("No certification run has been recorded.");
+                reasons.Add(new DecisionReason(
+                    RuleId: "provider-trust.certification-presence",
+                    Weight: -15,
+                    ReasonCode: "CERTIFICATION_MISSING",
+                    HumanExplanation: "No certification run has been recorded.",
+                    Severity: DecisionSeverity.Warning,
+                    EvidenceRefs: [$"connection:{connection.ConnectionId}"]));
             }
             else if (!isCertificationFresh)
             {
                 score -= 20;
-                signals.Add("Certification has expired.");
+                reasons.Add(new DecisionReason(
+                    RuleId: "provider-trust.certification-freshness",
+                    Weight: -20,
+                    ReasonCode: "CERTIFICATION_EXPIRED",
+                    HumanExplanation: "Certification has expired.",
+                    Severity: DecisionSeverity.Error,
+                    EvidenceRefs: [$"certification-expiry:{certification.ExpiresAt:O}"]));
             }
+
+            var clampedScore = Math.Clamp(score, 0, 100);
+            var decision = new DecisionResult<double>(
+                Score: clampedScore,
+                Reasons: reasons,
+                Trace: new DecisionTrace(
+                    SchemaVersion: DecisionSchemaVersion,
+                    KernelVersion: KernelVersion,
+                    EvaluatedAt: DateTimeOffset.UtcNow,
+                    CorrelationId: null,
+                    Metadata: new Dictionary<string, string?>
+                    {
+                        ["kernel"] = "provider-trust",
+                        ["connectionId"] = connection.ConnectionId,
+                        ["providerFamilyId"] = connection.ProviderFamilyId
+                    }));
 
             snapshots.Add(new ProviderTrustSnapshotDto(
                 ConnectionId: connection.ConnectionId,
                 ProviderFamilyId: connection.ProviderFamilyId,
-                Score: Math.Clamp(score, 0, 100),
+                Score: decision.Score,
                 IsHealthy: health.IsHealthy,
                 HealthStatus: health.Status,
                 IsProductionReady: connection.ProductionReady,
                 IsCertificationFresh: isCertificationFresh,
-                Signals: signals.ToArray()));
+                Signals: decision.Reasons.Select(r => r.HumanExplanation).ToArray(),
+                Decision: decision));
         }
 
         return snapshots;

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartnerRecordEnvelope
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartnerSchemaId
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFileName
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFileChecksum
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordIndex
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fields
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawLine
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs

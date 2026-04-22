@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalendarEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCalendarEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs

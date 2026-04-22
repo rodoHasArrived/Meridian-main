@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlgorithmListResult
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 467
+    startLine: 426
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -52,11 +52,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 469
+    startLine: 428
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -81,11 +81,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 470
+    startLine: 429
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -110,11 +110,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Algorithms
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 471
+    startLine: 430
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

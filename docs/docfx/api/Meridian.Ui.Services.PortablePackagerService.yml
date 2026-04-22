@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortablePackagerService
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentPackagesAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePackageAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportPackageAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatePackageAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPackageInfoAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
@@ -305,11 +305,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePackageAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 243
+    startLine: 246
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -345,11 +345,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyPackageAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 334
+    startLine: 340
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -385,11 +385,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExtractPackageAsync
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 387
+    startLine: 396
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

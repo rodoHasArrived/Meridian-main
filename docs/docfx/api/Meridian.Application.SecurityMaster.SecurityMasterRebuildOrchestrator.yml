@@ -5,7 +5,7 @@ items:
   id: SecurityMasterRebuildOrchestrator
   parent: Meridian.Application.SecurityMaster
   children:
-  - Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator})
+  - Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
   - Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.RebuildAsync(System.Threading.CancellationToken)
   langs:
   - csharp
@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterRebuildOrchestrator
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
@@ -37,30 +37,30 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator})
-  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator})
-  id: '#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator})'
+- uid: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  id: '#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterStore,Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache,Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder,Meridian.Application.SecurityMaster.SecurityMasterProjectionService,Meridian.Contracts.SecurityMaster.SecurityMasterOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)'
   parent: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator
   langs:
   - csharp
   - vb
-  name: SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger<SecurityMasterRebuildOrchestrator>)
-  nameWithType: SecurityMasterRebuildOrchestrator.SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger<SecurityMasterRebuildOrchestrator>)
-  fullName: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.SecurityMasterRebuildOrchestrator(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore, Meridian.Storage.SecurityMaster.ISecurityMasterStore, Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache, Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder, Meridian.Application.SecurityMaster.SecurityMasterProjectionService, Meridian.Contracts.SecurityMaster.SecurityMasterOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator>)
+  name: SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger<SecurityMasterRebuildOrchestrator>, ISecurityMasterConflictService?)
+  nameWithType: SecurityMasterRebuildOrchestrator.SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger<SecurityMasterRebuildOrchestrator>, ISecurityMasterConflictService?)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.SecurityMasterRebuildOrchestrator(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore, Meridian.Storage.SecurityMaster.ISecurityMasterStore, Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache, Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder, Meridian.Application.SecurityMaster.SecurityMasterProjectionService, Meridian.Contracts.SecurityMaster.SecurityMasterOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator>, Meridian.Application.SecurityMaster.ISecurityMasterConflictService?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
-    startLine: 18
+    startLine: 19
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster
   syntax:
-    content: public SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore eventStore, ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterProjectionService projectionService, SecurityMasterOptions options, ILogger<SecurityMasterRebuildOrchestrator> logger)
+    content: public SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore eventStore, ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterProjectionService projectionService, SecurityMasterOptions options, ILogger<SecurityMasterRebuildOrchestrator> logger, ISecurityMasterConflictService? conflictService = null)
     parameters:
     - id: eventStore
       type: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
@@ -76,11 +76,13 @@ items:
       type: Meridian.Contracts.SecurityMaster.SecurityMasterOptions
     - id: logger
       type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator}
-    content.vb: Public Sub New(eventStore As ISecurityMasterEventStore, store As ISecurityMasterStore, cache As SecurityMasterProjectionCache, rebuilder As SecurityMasterAggregateRebuilder, projectionService As SecurityMasterProjectionService, options As SecurityMasterOptions, logger As ILogger(Of SecurityMasterRebuildOrchestrator))
+    - id: conflictService
+      type: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+    content.vb: Public Sub New(eventStore As ISecurityMasterEventStore, store As ISecurityMasterStore, cache As SecurityMasterProjectionCache, rebuilder As SecurityMasterAggregateRebuilder, projectionService As SecurityMasterProjectionService, options As SecurityMasterOptions, logger As ILogger(Of SecurityMasterRebuildOrchestrator), conflictService As ISecurityMasterConflictService = Nothing)
   overload: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor*
-  nameWithType.vb: SecurityMasterRebuildOrchestrator.New(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger(Of SecurityMasterRebuildOrchestrator))
-  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.New(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore, Meridian.Storage.SecurityMaster.ISecurityMasterStore, Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache, Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder, Meridian.Application.SecurityMaster.SecurityMasterProjectionService, Meridian.Contracts.SecurityMaster.SecurityMasterOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator))
-  name.vb: New(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger(Of SecurityMasterRebuildOrchestrator))
+  nameWithType.vb: SecurityMasterRebuildOrchestrator.New(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger(Of SecurityMasterRebuildOrchestrator), ISecurityMasterConflictService)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.New(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore, Meridian.Storage.SecurityMaster.ISecurityMasterStore, Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache, Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder, Meridian.Application.SecurityMaster.SecurityMasterProjectionService, Meridian.Contracts.SecurityMaster.SecurityMasterOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator), Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  name.vb: New(ISecurityMasterEventStore, ISecurityMasterStore, SecurityMasterProjectionCache, SecurityMasterAggregateRebuilder, SecurityMasterProjectionService, SecurityMasterOptions, ILogger(Of SecurityMasterRebuildOrchestrator), ISecurityMasterConflictService)
 - uid: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.RebuildAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.RebuildAsync(System.Threading.CancellationToken)
   id: RebuildAsync(System.Threading.CancellationToken)
@@ -95,11 +97,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs
-    startLine: 36
+    startLine: 39
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster
@@ -358,7 +360,7 @@ references:
   fullName: System
 - uid: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor*
   commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.#ctor
-  href: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.html#Meridian_Application_SecurityMaster_SecurityMasterRebuildOrchestrator__ctor_Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_Meridian_Storage_SecurityMaster_ISecurityMasterStore_Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder_Meridian_Application_SecurityMaster_SecurityMasterProjectionService_Meridian_Contracts_SecurityMaster_SecurityMasterOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Application_SecurityMaster_SecurityMasterRebuildOrchestrator__
+  href: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.html#Meridian_Application_SecurityMaster_SecurityMasterRebuildOrchestrator__ctor_Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_Meridian_Storage_SecurityMaster_ISecurityMasterStore_Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder_Meridian_Application_SecurityMaster_SecurityMasterProjectionService_Meridian_Contracts_SecurityMaster_SecurityMasterOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Application_SecurityMaster_SecurityMasterRebuildOrchestrator__Meridian_Application_SecurityMaster_ISecurityMasterConflictService_
   name: SecurityMasterRebuildOrchestrator
   nameWithType: SecurityMasterRebuildOrchestrator.SecurityMasterRebuildOrchestrator
   fullName: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.SecurityMasterRebuildOrchestrator
@@ -440,6 +442,13 @@ references:
     name: SecurityMasterRebuildOrchestrator
     href: Meridian.Application.SecurityMaster.SecurityMasterRebuildOrchestrator.html
   - name: )
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterConflictService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterConflictService.html
+  name: ISecurityMasterConflictService
+  nameWithType: ISecurityMasterConflictService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterConflictService
 - uid: Meridian.Storage.SecurityMaster
   commentId: N:Meridian.Storage.SecurityMaster
   href: Meridian.html

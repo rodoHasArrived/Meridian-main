@@ -12,10 +12,10 @@ items:
   - Meridian.Contracts.Configuration.AppConfigDto.DataSource
   - Meridian.Contracts.Configuration.AppConfigDto.DataSources
   - Meridian.Contracts.Configuration.AppConfigDto.Derivatives
+  - Meridian.Contracts.Configuration.AppConfigDto.IB
+  - Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal
   - Meridian.Contracts.Configuration.AppConfigDto.Polygon
-  - Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections
   - Meridian.Contracts.Configuration.AppConfigDto.Settings
-  - Meridian.Contracts.Configuration.AppConfigDto.StockSharp
   - Meridian.Contracts.Configuration.AppConfigDto.Storage
   - Meridian.Contracts.Configuration.AppConfigDto.SymbolGroups
   - Meridian.Contracts.Configuration.AppConfigDto.Symbols
@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppConfigDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataRoot
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compress
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSource
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -215,6 +215,88 @@ items:
     arguments:
     - type: System.String
       value: alpaca
+- uid: Meridian.Contracts.Configuration.AppConfigDto.IB
+  commentId: P:Meridian.Contracts.Configuration.AppConfigDto.IB
+  id: IB
+  parent: Meridian.Contracts.Configuration.AppConfigDto
+  langs:
+  - csharp
+  - vb
+  name: IB
+  nameWithType: AppConfigDto.IB
+  fullName: Meridian.Contracts.Configuration.AppConfigDto.IB
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IB
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("ib")]
+
+      public IBOptionsDto? IB { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.IBOptionsDto
+    content.vb: >-
+      <JsonPropertyName("ib")>
+
+      Public Property IB As IBOptionsDto
+  overload: Meridian.Contracts.Configuration.AppConfigDto.IB*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ib
+- uid: Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal
+  commentId: P:Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal
+  id: IBClientPortal
+  parent: Meridian.Contracts.Configuration.AppConfigDto
+  langs:
+  - csharp
+  - vb
+  name: IBClientPortal
+  nameWithType: AppConfigDto.IBClientPortal
+  fullName: Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBClientPortal
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("ibClientPortal")]
+
+      public IBClientPortalOptionsDto? IBClientPortal { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+    content.vb: >-
+      <JsonPropertyName("ibClientPortal")>
+
+      Public Property IBClientPortal As IBClientPortalOptionsDto
+  overload: Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ibClientPortal
 - uid: Meridian.Contracts.Configuration.AppConfigDto.Polygon
   commentId: P:Meridian.Contracts.Configuration.AppConfigDto.Polygon
   id: Polygon
@@ -229,11 +311,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 22
+    startLine: 28
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -256,47 +338,6 @@ items:
     arguments:
     - type: System.String
       value: polygon
-- uid: Meridian.Contracts.Configuration.AppConfigDto.StockSharp
-  commentId: P:Meridian.Contracts.Configuration.AppConfigDto.StockSharp
-  id: StockSharp
-  parent: Meridian.Contracts.Configuration.AppConfigDto
-  langs:
-  - csharp
-  - vb
-  name: StockSharp
-  nameWithType: AppConfigDto.StockSharp
-  fullName: Meridian.Contracts.Configuration.AppConfigDto.StockSharp
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StockSharp
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 25
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.Configuration
-  syntax:
-    content: >-
-      [JsonPropertyName("stockSharp")]
-
-      public StockSharpOptionsDto? StockSharp { get; set; }
-    parameters: []
-    return:
-      type: Meridian.Contracts.Configuration.StockSharpOptionsDto
-    content.vb: >-
-      <JsonPropertyName("stockSharp")>
-
-      Public Property StockSharp As StockSharpOptionsDto
-  overload: Meridian.Contracts.Configuration.AppConfigDto.StockSharp*
-  attributes:
-  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
-    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
-    arguments:
-    - type: System.String
-      value: stockSharp
 - uid: Meridian.Contracts.Configuration.AppConfigDto.Storage
   commentId: P:Meridian.Contracts.Configuration.AppConfigDto.Storage
   id: Storage
@@ -311,11 +352,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Storage
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 28
+    startLine: 31
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -352,11 +393,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 31
+    startLine: 34
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -393,11 +434,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 34
+    startLine: 37
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -434,11 +475,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSources
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 37
+    startLine: 40
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -461,47 +502,6 @@ items:
     arguments:
     - type: System.String
       value: dataSources
-- uid: Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections
-  commentId: P:Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections
-  id: ProviderConnections
-  parent: Meridian.Contracts.Configuration.AppConfigDto
-  langs:
-  - csharp
-  - vb
-  name: ProviderConnections
-  nameWithType: AppConfigDto.ProviderConnections
-  fullName: Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ProviderConnections
-    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 40
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.Configuration
-  syntax:
-    content: >-
-      [JsonPropertyName("providerConnections")]
-
-      public ProviderConnectionsConfigDto? ProviderConnections { get; set; }
-    parameters: []
-    return:
-      type: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
-    content.vb: >-
-      <JsonPropertyName("providerConnections")>
-
-      Public Property ProviderConnections As ProviderConnectionsConfigDto
-  overload: Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections*
-  attributes:
-  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
-    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
-    arguments:
-    - type: System.String
-      value: providerConnections
 - uid: Meridian.Contracts.Configuration.AppConfigDto.SymbolGroups
   commentId: P:Meridian.Contracts.Configuration.AppConfigDto.SymbolGroups
   id: SymbolGroups
@@ -516,7 +516,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGroups
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -557,7 +557,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Settings
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -598,7 +598,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Derivatives
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
@@ -922,6 +922,32 @@ references:
   name: AlpacaOptionsDto
   nameWithType: AlpacaOptionsDto
   fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
+- uid: Meridian.Contracts.Configuration.AppConfigDto.IB*
+  commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.IB
+  href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_IB
+  name: IB
+  nameWithType: AppConfigDto.IB
+  fullName: Meridian.Contracts.Configuration.AppConfigDto.IB
+- uid: Meridian.Contracts.Configuration.IBOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBOptionsDto.html
+  name: IBOptionsDto
+  nameWithType: IBOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBOptionsDto
+- uid: Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal*
+  commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal
+  href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_IBClientPortal
+  name: IBClientPortal
+  nameWithType: AppConfigDto.IBClientPortal
+  fullName: Meridian.Contracts.Configuration.AppConfigDto.IBClientPortal
+- uid: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBClientPortalOptionsDto.html
+  name: IBClientPortalOptionsDto
+  nameWithType: IBClientPortalOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
 - uid: Meridian.Contracts.Configuration.AppConfigDto.Polygon*
   commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.Polygon
   href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_Polygon
@@ -935,19 +961,6 @@ references:
   name: PolygonOptionsDto
   nameWithType: PolygonOptionsDto
   fullName: Meridian.Contracts.Configuration.PolygonOptionsDto
-- uid: Meridian.Contracts.Configuration.AppConfigDto.StockSharp*
-  commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.StockSharp
-  href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_StockSharp
-  name: StockSharp
-  nameWithType: AppConfigDto.StockSharp
-  fullName: Meridian.Contracts.Configuration.AppConfigDto.StockSharp
-- uid: Meridian.Contracts.Configuration.StockSharpOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.StockSharpOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.StockSharpOptionsDto.html
-  name: StockSharpOptionsDto
-  nameWithType: StockSharpOptionsDto
-  fullName: Meridian.Contracts.Configuration.StockSharpOptionsDto
 - uid: Meridian.Contracts.Configuration.AppConfigDto.Storage*
   commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.Storage
   href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_Storage
@@ -1014,19 +1027,6 @@ references:
   name: DataSourcesConfigDto
   nameWithType: DataSourcesConfigDto
   fullName: Meridian.Contracts.Configuration.DataSourcesConfigDto
-- uid: Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections*
-  commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections
-  href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_ProviderConnections
-  name: ProviderConnections
-  nameWithType: AppConfigDto.ProviderConnections
-  fullName: Meridian.Contracts.Configuration.AppConfigDto.ProviderConnections
-- uid: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
-  commentId: T:Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto.html
-  name: ProviderConnectionsConfigDto
-  nameWithType: ProviderConnectionsConfigDto
-  fullName: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
 - uid: Meridian.Contracts.Configuration.AppConfigDto.SymbolGroups*
   commentId: Overload:Meridian.Contracts.Configuration.AppConfigDto.SymbolGroups
   href: Meridian.Contracts.Configuration.AppConfigDto.html#Meridian_Contracts_Configuration_AppConfigDto_SymbolGroups

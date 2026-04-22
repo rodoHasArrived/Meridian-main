@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessStatus
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinorGaps
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantGaps
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MajorIssues
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NonTradingDay
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs

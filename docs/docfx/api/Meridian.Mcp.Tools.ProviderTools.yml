@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTools
     path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderTemplate
     path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListProviders
     path: ../../src/Meridian.Mcp/Tools/ProviderTools.cs

@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelfHealingFix
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
-    startLine: 975
+    startLine: 976
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
-    startLine: 975
+    startLine: 976
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -100,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
-    startLine: 975
+    startLine: 976
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -131,11 +131,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
-    startLine: 975
+    startLine: 976
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config

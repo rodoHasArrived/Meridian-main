@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeSeriesAlignmentService
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressChanged
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlignDataAsync
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAlignmentIntervalsAsync
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregationMethodsAsync
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapStrategiesAsync
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAlignmentPresetsAsync
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -288,7 +288,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviewAlignmentAsync
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOptions
     path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs

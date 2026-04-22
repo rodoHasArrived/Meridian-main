@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FutureDetails
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractMonth
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSize
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickValue
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractMultiplier
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -278,7 +278,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -309,7 +309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PnlForPriceMove
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TicksBetween
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DaysToExpiry
     path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs

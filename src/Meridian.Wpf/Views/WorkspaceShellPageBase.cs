@@ -13,18 +13,16 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     where TViewModel : WorkspaceShellViewModelBase
 {
     private readonly NavigationService _navigationService;
-    private readonly WorkspaceService _workspaceService;
+    private readonly WorkspaceService _workspaceService = WorkspaceService.Instance;
     private readonly TStateProvider _stateProvider;
     private WorkspaceShellState? _lastState;
 
     protected WorkspaceShellPageBase(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         TStateProvider stateProvider,
         TViewModel viewModel)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-        _workspaceService = workspaceService ?? throw new ArgumentNullException(nameof(workspaceService));
         _stateProvider = stateProvider ?? throw new ArgumentNullException(nameof(stateProvider));
         ViewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = viewModel;
@@ -212,10 +210,9 @@ public class ResearchWorkspaceShellPageBase : WorkspaceShellPageBase<ResearchWor
 {
     protected ResearchWorkspaceShellPageBase(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         ResearchWorkspaceShellStateProvider stateProvider,
         ResearchWorkspaceShellViewModel viewModel)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
     }
 }
@@ -224,10 +221,9 @@ public class TradingWorkspaceShellPageBase : WorkspaceShellPageBase<TradingWorks
 {
     protected TradingWorkspaceShellPageBase(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         TradingWorkspaceShellStateProvider stateProvider,
         TradingWorkspaceShellViewModel viewModel)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
     }
 }
@@ -236,10 +232,9 @@ public class DataOperationsWorkspaceShellPageBase : WorkspaceShellPageBase<DataO
 {
     protected DataOperationsWorkspaceShellPageBase(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         DataOperationsWorkspaceShellStateProvider stateProvider,
         DataOperationsWorkspaceShellViewModel viewModel)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
     }
 }
@@ -248,10 +243,9 @@ public class GovernanceWorkspaceShellPageBase : WorkspaceShellPageBase<Governanc
 {
     protected GovernanceWorkspaceShellPageBase(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         GovernanceWorkspaceShellStateProvider stateProvider,
         GovernanceWorkspaceShellViewModel viewModel)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
     }
 }

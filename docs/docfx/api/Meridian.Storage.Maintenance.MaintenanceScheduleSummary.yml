@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceScheduleSummary
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSchedules
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnabledSchedules
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisabledSchedules
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByTaskType
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextDueSchedule
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextDueScheduleName
     path: ../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs

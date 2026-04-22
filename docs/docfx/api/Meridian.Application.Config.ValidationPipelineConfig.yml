@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationPipelineConfig
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 151
+    startLine: 150
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -63,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 151
+    startLine: 150
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -116,11 +116,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 152
+    startLine: 151
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -150,11 +150,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseRealTimeMode
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 153
+    startLine: 152
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config

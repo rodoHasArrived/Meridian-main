@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IExecutionContext
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gateway
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTime
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
     path: ../../src/Meridian.Execution/Interfaces/IExecutionContext.cs

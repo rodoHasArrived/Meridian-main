@@ -5,18 +5,21 @@ items:
   id: ExecutionAccountDetailSnapshot
   parent: Meridian.Execution.Interfaces
   children:
-  - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)
+  - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset,Meridian.Execution.Margin.MarginAccountType,System.Decimal,System.Decimal)
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AccountId
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AsOf
+  - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.Cash
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.DisplayName
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.GrossExposure
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.Kind
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.LongMarketValue
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginBalance
+  - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.NetExposure
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.Positions
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.RealisedPnl
+  - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarketValue
   - Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.UnrealisedPnl
   langs:
@@ -29,11 +32,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionAccountDetailSnapshot
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 66
+    startLine: 105
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -56,25 +59,25 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)
-  commentId: M:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)
-  id: '#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset)'
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset,Meridian.Execution.Margin.MarginAccountType,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset,Meridian.Execution.Margin.MarginAccountType,System.Decimal,System.Decimal)
+  id: '#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Models.ExecutionPosition},System.DateTimeOffset,Meridian.Execution.Margin.MarginAccountType,System.Decimal,System.Decimal)'
   parent: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
   langs:
   - csharp
   - vb
-  name: ExecutionAccountDetailSnapshot(string, string, AccountKind, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<ExecutionPosition>, DateTimeOffset)
-  nameWithType: ExecutionAccountDetailSnapshot.ExecutionAccountDetailSnapshot(string, string, AccountKind, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<ExecutionPosition>, DateTimeOffset)
-  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ExecutionAccountDetailSnapshot(string, string, Meridian.Execution.Models.AccountKind, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Models.ExecutionPosition>, System.DateTimeOffset)
+  name: ExecutionAccountDetailSnapshot(string, string, AccountKind, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<ExecutionPosition>, DateTimeOffset, MarginAccountType, decimal, decimal)
+  nameWithType: ExecutionAccountDetailSnapshot.ExecutionAccountDetailSnapshot(string, string, AccountKind, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<ExecutionPosition>, DateTimeOffset, MarginAccountType, decimal, decimal)
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ExecutionAccountDetailSnapshot(string, string, Meridian.Execution.Models.AccountKind, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Models.ExecutionPosition>, System.DateTimeOffset, Meridian.Execution.Margin.MarginAccountType, decimal, decimal)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 66
+    startLine: 105
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -84,7 +87,7 @@ items:
     Returned by <xref href="Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot" data-throw-if-not-resolved="false"></xref> and the per-account REST endpoint.
   example: []
   syntax:
-    content: public ExecutionAccountDetailSnapshot(string AccountId, string DisplayName, AccountKind Kind, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal UnrealisedPnl, decimal RealisedPnl, IReadOnlyList<ExecutionPosition> Positions, DateTimeOffset AsOf)
+    content: public ExecutionAccountDetailSnapshot(string AccountId, string DisplayName, AccountKind Kind, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal UnrealisedPnl, decimal RealisedPnl, IReadOnlyList<ExecutionPosition> Positions, DateTimeOffset AsOf, MarginAccountType MarginType = MarginAccountType.Cash, decimal BuyingPower = 0, decimal ShortMarginCollateral = 0)
     parameters:
     - id: AccountId
       type: System.String
@@ -100,7 +103,7 @@ items:
       description: Available cash.
     - id: MarginBalance
       type: System.Decimal
-      description: Margin used (0 for cash accounts).
+      description: Total amount borrowed from the broker for long positions (0 for cash accounts).
     - id: LongMarketValue
       type: System.Decimal
       description: Sum of long position market values.
@@ -125,11 +128,28 @@ items:
     - id: AsOf
       type: System.DateTimeOffset
       description: UTC timestamp of the snapshot.
-    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As AccountKind, Cash As Decimal, MarginBalance As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, GrossExposure As Decimal, NetExposure As Decimal, UnrealisedPnl As Decimal, RealisedPnl As Decimal, Positions As IReadOnlyList(Of ExecutionPosition), AsOf As DateTimeOffset)
+    - id: MarginType
+      type: Meridian.Execution.Margin.MarginAccountType
+      description: Margin regime. Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref>.
+    - id: BuyingPower
+      type: System.Decimal
+      description: >-
+        Available buying power. For Reg T accounts this is up to 2× available cash equity;
+
+        for cash accounts it equals <code class="paramref">Cash</code>. Defaults to 0 when not supplied
+
+        (legacy construction paths).
+    - id: ShortMarginCollateral
+      type: System.Decimal
+      description: >-
+        Total collateral held by the broker against short positions. 0 for cash accounts
+
+        and accounts with no open shorts.
+    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As AccountKind, Cash As Decimal, MarginBalance As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, GrossExposure As Decimal, NetExposure As Decimal, UnrealisedPnl As Decimal, RealisedPnl As Decimal, Positions As IReadOnlyList(Of ExecutionPosition), AsOf As DateTimeOffset, MarginType As MarginAccountType = MarginAccountType.Cash, BuyingPower As Decimal = 0, ShortMarginCollateral As Decimal = 0)
   overload: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor*
-  nameWithType.vb: ExecutionAccountDetailSnapshot.New(String, String, AccountKind, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of ExecutionPosition), DateTimeOffset)
-  fullName.vb: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.New(String, String, Meridian.Execution.Models.AccountKind, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Models.ExecutionPosition), System.DateTimeOffset)
-  name.vb: New(String, String, AccountKind, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of ExecutionPosition), DateTimeOffset)
+  nameWithType.vb: ExecutionAccountDetailSnapshot.New(String, String, AccountKind, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of ExecutionPosition), DateTimeOffset, MarginAccountType, Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.New(String, String, Meridian.Execution.Models.AccountKind, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Models.ExecutionPosition), System.DateTimeOffset, Meridian.Execution.Margin.MarginAccountType, Decimal, Decimal)
+  name.vb: New(String, String, AccountKind, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of ExecutionPosition), DateTimeOffset, MarginAccountType, Decimal, Decimal)
 - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AccountId
   commentId: P:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AccountId
   id: AccountId
@@ -144,11 +164,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 67
+    startLine: 106
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -175,11 +195,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 68
+    startLine: 107
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -206,11 +226,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 69
+    startLine: 108
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -237,11 +257,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 70
+    startLine: 109
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -268,15 +288,15 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 71
+    startLine: 110
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
-  summary: Margin used (0 for cash accounts).
+  summary: Total amount borrowed from the broker for long positions (0 for cash accounts).
   example: []
   syntax:
     content: public decimal MarginBalance { get; init; }
@@ -299,11 +319,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMarketValue
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 72
+    startLine: 111
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -330,11 +350,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarketValue
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 73
+    startLine: 112
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -361,11 +381,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GrossExposure
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 74
+    startLine: 113
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -392,11 +412,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetExposure
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 75
+    startLine: 114
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -423,11 +443,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 76
+    startLine: 115
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -454,11 +474,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 77
+    startLine: 116
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -485,11 +505,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 78
+    startLine: 117
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -516,11 +536,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 79
+    startLine: 118
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -533,6 +553,107 @@ items:
       type: System.DateTimeOffset
     content.vb: Public Property AsOf As DateTimeOffset
   overload: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AsOf*
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType
+  commentId: P:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType
+  id: MarginType
+  parent: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MarginType
+  nameWithType: ExecutionAccountDetailSnapshot.MarginType
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginType
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: Margin regime. Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public MarginAccountType MarginType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+    content.vb: Public Property MarginType As MarginAccountType
+  overload: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType*
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower
+  commentId: P:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower
+  id: BuyingPower
+  parent: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BuyingPower
+  nameWithType: ExecutionAccountDetailSnapshot.BuyingPower
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuyingPower
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Available buying power. For Reg T accounts this is up to 2× available cash equity;
+
+    for cash accounts it equals <code class="paramref">Cash</code>. Defaults to 0 when not supplied
+
+    (legacy construction paths).
+  example: []
+  syntax:
+    content: public decimal BuyingPower { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BuyingPower As Decimal
+  overload: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower*
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral
+  commentId: P:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral
+  id: ShortMarginCollateral
+  parent: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ShortMarginCollateral
+  nameWithType: ExecutionAccountDetailSnapshot.ShortMarginCollateral
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarginCollateral
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Total collateral held by the broker against short positions. 0 for cash accounts
+
+    and accounts with no open shorts.
+  example: []
+  syntax:
+    content: public decimal ShortMarginCollateral { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ShortMarginCollateral As Decimal
+  overload: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral*
 references:
 - uid: Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
   commentId: M:Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
@@ -552,6 +673,12 @@ references:
     href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_TakeSnapshot
   - name: (
   - name: )
+- uid: Meridian.Execution.Margin.MarginAccountType.Cash
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.Cash
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_Cash
+  name: Cash
+  nameWithType: MarginAccountType.Cash
+  fullName: Meridian.Execution.Margin.MarginAccountType.Cash
 - uid: Meridian.Execution.Interfaces
   commentId: N:Meridian.Execution.Interfaces
   href: Meridian.html
@@ -858,7 +985,7 @@ references:
   - name: )
 - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor*
   commentId: Overload:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.#ctor
-  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html#Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot__ctor_System_String_System_String_Meridian_Execution_Models_AccountKind_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Models_ExecutionPosition__System_DateTimeOffset_
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html#Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot__ctor_System_String_System_String_Meridian_Execution_Models_AccountKind_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Models_ExecutionPosition__System_DateTimeOffset_Meridian_Execution_Margin_MarginAccountType_System_Decimal_System_Decimal_
   name: ExecutionAccountDetailSnapshot
   nameWithType: ExecutionAccountDetailSnapshot.ExecutionAccountDetailSnapshot
   fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ExecutionAccountDetailSnapshot
@@ -935,6 +1062,13 @@ references:
   name: DateTimeOffset
   nameWithType: DateTimeOffset
   fullName: System.DateTimeOffset
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginAccountType.html
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType
 - uid: Meridian.Execution.Models
   commentId: N:Meridian.Execution.Models
   href: Meridian.html
@@ -1030,6 +1164,36 @@ references:
     name: Generic
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
 - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AccountId*
   commentId: Overload:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AccountId
   href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html#Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot_AccountId
@@ -1108,3 +1272,21 @@ references:
   name: AsOf
   nameWithType: ExecutionAccountDetailSnapshot.AsOf
   fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.AsOf
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType*
+  commentId: Overload:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html#Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot_MarginType
+  name: MarginType
+  nameWithType: ExecutionAccountDetailSnapshot.MarginType
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.MarginType
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower*
+  commentId: Overload:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html#Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot_BuyingPower
+  name: BuyingPower
+  nameWithType: ExecutionAccountDetailSnapshot.BuyingPower
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.BuyingPower
+- uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral*
+  commentId: Overload:Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral
+  href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html#Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot_ShortMarginCollateral
+  name: ShortMarginCollateral
+  nameWithType: ExecutionAccountDetailSnapshot.ShortMarginCollateral
+  fullName: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.ShortMarginCollateral

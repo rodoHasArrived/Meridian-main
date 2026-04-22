@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderMetrics
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradesReceived
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdatesReceived
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuotesReceived
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -308,7 +308,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionAttempts
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -337,7 +337,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionFailures
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessagesDropped
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -395,7 +395,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSubscriptions
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -424,7 +424,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyMs
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -453,7 +453,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinLatencyMs
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -482,7 +482,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyMs
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -511,7 +511,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityScore
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -540,7 +540,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionSuccessRate
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
@@ -569,7 +569,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs

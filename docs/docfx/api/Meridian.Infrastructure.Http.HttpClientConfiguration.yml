@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientConfiguration
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 74
+    startLine: 78
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -86,11 +86,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddMarketDataHttpClients
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 81
+    startLine: 85
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http
@@ -120,11 +120,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddMarketDataHttpClientsTracked
     path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
-    startLine: 409
+    startLine: 401
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Http

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderAvailabilitySummary
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailableProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingAvailable
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillAvailable
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchAvailable
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasStreamingCapability
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasBackfillCapability
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasSymbolSearchCapability
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailabilityRate
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs

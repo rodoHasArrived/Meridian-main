@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionSessionsConfig
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sessions
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSessionId
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoCreateDailySessions
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionNamingPattern
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateManifestOnComplete
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Session/CollectionSession.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetainSessionHistory
     path: ../../src/Meridian.Contracts/Session/CollectionSession.cs

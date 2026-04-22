@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBrokerageGateway
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -34,7 +34,7 @@ items:
 
     Adds account querying, position sync, and connection lifecycle on top of
 
-    <xref href="Meridian.Execution.Sdk.IExecutionGateway" data-throw-if-not-resolved="false"></xref>. Each broker (Alpaca, IB, StockSharp, etc.)
+    <xref href="Meridian.Execution.Sdk.IExecutionGateway" data-throw-if-not-resolved="false"></xref>. Each broker (Alpaca, IB, etc.)
 
     implements this interface to expose its full trading capabilities.
   example: []
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs

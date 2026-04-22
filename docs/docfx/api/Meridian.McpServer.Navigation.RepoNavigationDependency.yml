@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoNavigationDependency
     path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.McpServer/Navigation/RepoNavigationCatalog.cs

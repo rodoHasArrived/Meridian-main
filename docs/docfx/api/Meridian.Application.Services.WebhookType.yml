@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookType
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Generic
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Slack
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Discord
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Teams
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs

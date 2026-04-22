@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderReplace
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldOrderId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewOrderId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewDisplayedSize
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewHiddenSize
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LosesPriority
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -333,7 +333,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
@@ -362,7 +362,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs

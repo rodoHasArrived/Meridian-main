@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuotaEnforcementService
     path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckQuota
     path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordUsage
     path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScanAndUpdateAsync
     path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
     path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs

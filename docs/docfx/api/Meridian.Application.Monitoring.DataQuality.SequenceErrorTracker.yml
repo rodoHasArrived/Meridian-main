@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrorTracker
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnSequenceError
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckSequence
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordError
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetErrorsForDate
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolsWithMostErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -394,7 +394,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -424,7 +424,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbolState
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -462,7 +462,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGapErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalOutOfOrderErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -522,7 +522,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuplicateErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -551,7 +551,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalResetErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -580,7 +580,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsChecked
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
@@ -609,7 +609,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/DataQuality/SequenceErrorTracker.cs

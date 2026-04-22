@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionCheckpointToken
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSymbol
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastDate
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastOffset
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapFillWindowStart
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapturedAt
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs

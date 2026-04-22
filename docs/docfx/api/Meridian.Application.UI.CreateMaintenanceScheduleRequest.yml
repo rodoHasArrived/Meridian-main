@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateMaintenanceScheduleRequest
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Preset
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronExpression
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeZoneId
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskType
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDurationMinutes
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetPaths
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -441,7 +441,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
@@ -470,7 +470,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Options
     path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs

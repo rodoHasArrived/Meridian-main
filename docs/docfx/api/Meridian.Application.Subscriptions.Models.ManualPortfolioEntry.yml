@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualPortfolioEntry
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
@@ -153,7 +153,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
     path: ../../src/Meridian.Core/Subscriptions/Models/PortfolioImport.cs

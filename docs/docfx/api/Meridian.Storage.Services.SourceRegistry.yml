@@ -24,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceRegistry
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 10
+    startLine: 11
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -62,11 +62,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 17
+    startLine: 19
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -94,11 +94,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourceInfo
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 31
+    startLine: 49
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -132,11 +132,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolInfo
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 36
+    startLine: 54
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -170,11 +170,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSources
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 49
+    startLine: 67
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -202,11 +202,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbols
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 54
+    startLine: 72
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -234,11 +234,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSource
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 59
+    startLine: 77
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -267,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbol
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 65
+    startLine: 82
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -300,11 +300,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAlias
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 81
+    startLine: 87
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -338,11 +338,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/SourceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSourcePriorityOrder
     path: ../../src/Meridian.Storage/Services/SourceRegistry.cs
-    startLine: 89
+    startLine: 95
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

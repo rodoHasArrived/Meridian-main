@@ -6,6 +6,8 @@
 
 This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
 
+Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-readiness-addendum.md) when assigning owners, sequencing dependencies, or checking workstream-level exit criteria inside the active Waves 2-4 path.
+
 ---
 
 ## Summary

@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterImportRequest
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 41
+    startLine: 54
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 41
+    startLine: 54
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileContent
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 42
+    startLine: 55
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -121,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileExtension
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 43
+    startLine: 56
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster

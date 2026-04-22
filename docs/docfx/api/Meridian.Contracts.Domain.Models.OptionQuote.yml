@@ -39,7 +39,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionQuote
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contract
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -359,7 +359,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImpliedVolatility
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -390,7 +390,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delta
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gamma
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -452,7 +452,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Theta
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -483,7 +483,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vega
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -514,7 +514,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterest
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -545,7 +545,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -576,7 +576,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -607,7 +607,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -638,7 +638,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -706,7 +706,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -737,7 +737,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -771,7 +771,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -802,7 +802,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInTheMoney
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs
@@ -833,7 +833,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Moneyness
     path: ../../src/Meridian.Contracts/Domain/Models/OptionQuote.cs

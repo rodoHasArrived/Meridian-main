@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGapInfo
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartDate
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndDate
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingBars
     path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs

@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDepthCollector
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbolStream
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSymbolStreamStale
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentIntegrityEvents
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentSnapshot
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedSymbols
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/MarketDepthCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDepth
     path: ../../src/Meridian.Domain/Collectors/MarketDepthCollector.cs

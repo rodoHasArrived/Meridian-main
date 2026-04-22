@@ -24,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundStructureNodeDto
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 129
+    startLine: 71
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 129
+    startLine: 71
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -106,11 +106,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NodeId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 130
+    startLine: 72
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -135,11 +135,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 131
+    startLine: 73
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -164,11 +164,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 132
+    startLine: 74
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -193,11 +193,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 133
+    startLine: 75
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -222,11 +222,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 134
+    startLine: 76
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -251,11 +251,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 135
+    startLine: 77
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -280,11 +280,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 136
+    startLine: 78
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -309,11 +309,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 137
+    startLine: 79
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure

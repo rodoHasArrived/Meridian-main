@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorporateActionCommand
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActionType
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExDate
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordDate
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PayableDate
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Amount
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitFromFactor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitToFactor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs

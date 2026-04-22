@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapType
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Single
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consecutive
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartOfRange
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndOfRange
     path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs

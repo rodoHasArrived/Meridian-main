@@ -26,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCostEstimate
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 221
+    startLine: 313
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -64,11 +64,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 221
+    startLine: 313
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -116,11 +116,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 222
+    startLine: 314
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -145,11 +145,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 223
+    startLine: 315
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -174,11 +174,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 224
+    startLine: 316
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -203,11 +203,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedApiCalls
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 225
+    startLine: 317
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -232,11 +232,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedWallClockTime
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 226
+    startLine: 318
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -261,11 +261,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 227
+    startLine: 319
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -290,11 +290,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 228
+    startLine: 320
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -319,11 +319,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 229
+    startLine: 321
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -348,11 +348,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WouldExceedFreeQuota
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 230
+    startLine: 322
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -377,11 +377,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDateRange
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 231
+    startLine: 323
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill

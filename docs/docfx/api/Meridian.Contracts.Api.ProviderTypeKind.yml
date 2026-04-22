@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTypeKind
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 581
+    startLine: 600
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -46,11 +46,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streaming
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 584
+    startLine: 603
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -74,11 +74,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 587
+    startLine: 606
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -102,11 +102,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearch
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 590
+    startLine: 609
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -130,11 +130,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hybrid
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 593
+    startLine: 612
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

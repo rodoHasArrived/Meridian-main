@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteResponse
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs

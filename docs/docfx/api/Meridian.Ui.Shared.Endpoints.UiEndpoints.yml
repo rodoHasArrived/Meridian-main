@@ -7,10 +7,7 @@ items:
   children:
   - Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.UI.StatusEndpointHandlers,System.String)
   - Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
-  - Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,Meridian.Application.UI.StatusEndpointHandlers,System.String)
-  - Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)
-  - Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)
-  - Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard(Microsoft.AspNetCore.Builder.WebApplication)
+  - Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions(System.Boolean)
   - Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)
   - Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication,System.Text.Json.JsonSerializerOptions,System.Text.Json.JsonSerializerOptions)
   - Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpointsWithStatus(Microsoft.AspNetCore.Builder.WebApplication,Meridian.Application.UI.StatusEndpointHandlers)
@@ -25,18 +22,16 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UiEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 26
+    startLine: 25
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
   summary: >-
-    Master extension methods for registering all UI API endpoints.
-
-    Provides a single entry point for mapping all shared endpoints.
+    Master extension methods for registering shared desktop/local API endpoints.
 
     Uses ServiceCompositionRoot for centralized service registration.
   example: []
@@ -53,101 +48,6 @@ items:
   - System.Object.MemberwiseClone
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)
-  commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)
-  id: BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)
-  isExtensionMethod: true
-  parent: Meridian.Ui.Shared.Endpoints.UiEndpoints
-  langs:
-  - csharp
-  - vb
-  name: BuildUiHost(WebApplicationBuilder, string?)
-  nameWithType: UiEndpoints.BuildUiHost(WebApplicationBuilder, string?)
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder, string?)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: BuildUiHost
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 37
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  summary: >-
-    Configures the application with all UI services and endpoints.
-
-    This is the single entry point for setting up the UI host and should be used
-
-    instead of calling AddUiSharedServices and MapAllUiEndpoints separately.
-  example: []
-  syntax:
-    content: public static WebApplication BuildUiHost(this WebApplicationBuilder builder, string? configPath = null)
-    parameters:
-    - id: builder
-      type: Microsoft.AspNetCore.Builder.WebApplicationBuilder
-      description: The web application builder.
-    - id: configPath
-      type: System.String
-      description: Optional path to configuration file.
-    return:
-      type: Microsoft.AspNetCore.Builder.WebApplication
-      description: A configured WebApplication ready to run.
-    content.vb: Public Shared Function BuildUiHost(builder As WebApplicationBuilder, configPath As String = Nothing) As WebApplication
-  overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost*
-  nameWithType.vb: UiEndpoints.BuildUiHost(WebApplicationBuilder, String)
-  fullName.vb: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder, String)
-  name.vb: BuildUiHost(WebApplicationBuilder, String)
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,Meridian.Application.UI.StatusEndpointHandlers,System.String)
-  commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,Meridian.Application.UI.StatusEndpointHandlers,System.String)
-  id: BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder,Meridian.Application.UI.StatusEndpointHandlers,System.String)
-  isExtensionMethod: true
-  parent: Meridian.Ui.Shared.Endpoints.UiEndpoints
-  langs:
-  - csharp
-  - vb
-  name: BuildUiHost(WebApplicationBuilder, StatusEndpointHandlers, string?)
-  nameWithType: UiEndpoints.BuildUiHost(WebApplicationBuilder, StatusEndpointHandlers, string?)
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder, Meridian.Application.UI.StatusEndpointHandlers, string?)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: BuildUiHost
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 80
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  summary: >-
-    Configures the application with UI services, endpoints, and shared status handlers.
-
-    This overload allows sharing StatusEndpointHandlers with StatusHttpServer.
-  example: []
-  syntax:
-    content: public static WebApplication BuildUiHost(this WebApplicationBuilder builder, StatusEndpointHandlers statusHandlers, string? configPath = null)
-    parameters:
-    - id: builder
-      type: Microsoft.AspNetCore.Builder.WebApplicationBuilder
-      description: The web application builder.
-    - id: statusHandlers
-      type: Meridian.Application.UI.StatusEndpointHandlers
-      description: Pre-configured status endpoint handlers to share.
-    - id: configPath
-      type: System.String
-      description: Optional path to configuration file.
-    return:
-      type: Microsoft.AspNetCore.Builder.WebApplication
-      description: A configured WebApplication ready to run.
-    content.vb: Public Shared Function BuildUiHost(builder As WebApplicationBuilder, statusHandlers As StatusEndpointHandlers, configPath As String = Nothing) As WebApplication
-  overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost*
-  nameWithType.vb: UiEndpoints.BuildUiHost(WebApplicationBuilder, StatusEndpointHandlers, String)
-  fullName.vb: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost(Microsoft.AspNetCore.Builder.WebApplicationBuilder, Meridian.Application.UI.StatusEndpointHandlers, String)
-  name.vb: BuildUiHost(WebApplicationBuilder, StatusEndpointHandlers, String)
 - uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
   commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
   id: AddUiSharedServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
@@ -163,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddUiSharedServices
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 104
+    startLine: 33
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -207,11 +107,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddUiSharedServices
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 140
+    startLine: 69
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -254,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapUiEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 195
+    startLine: 128
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -273,6 +173,48 @@ items:
       type: Microsoft.AspNetCore.Builder.WebApplication
     content.vb: Public Shared Function MapUiEndpoints(app As WebApplication) As WebApplication
   overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints*
+- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions(System.Boolean)
+  commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions(System.Boolean)
+  id: CreateEndpointJsonOptions(System.Boolean)
+  parent: Meridian.Ui.Shared.Endpoints.UiEndpoints
+  langs:
+  - csharp
+  - vb
+  name: CreateEndpointJsonOptions(bool)
+  nameWithType: UiEndpoints.CreateEndpointJsonOptions(bool)
+  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateEndpointJsonOptions
+    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Creates the standard <xref href="System.Text.Json.JsonSerializerOptions" data-throw-if-not-resolved="false"></xref> used by UI API endpoints.
+
+    Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the
+
+    type-info chain without reflection falling back to a null resolver.
+  example: []
+  syntax:
+    content: public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false)
+    parameters:
+    - id: writeIndented
+      type: System.Boolean
+      description: When <code>true</code> the output is pretty-printed.
+    return:
+      type: System.Text.Json.JsonSerializerOptions
+    content.vb: Public Shared Function CreateEndpointJsonOptions(writeIndented As Boolean = False) As JsonSerializerOptions
+  overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions*
+  nameWithType.vb: UiEndpoints.CreateEndpointJsonOptions(Boolean)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions(Boolean)
+  name.vb: CreateEndpointJsonOptions(Boolean)
 - uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication,System.Text.Json.JsonSerializerOptions,System.Text.Json.JsonSerializerOptions)
   commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication,System.Text.Json.JsonSerializerOptions,System.Text.Json.JsonSerializerOptions)
   id: MapUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication,System.Text.Json.JsonSerializerOptions,System.Text.Json.JsonSerializerOptions)
@@ -288,11 +230,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapUiEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 210
+    startLine: 153
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -329,11 +271,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapUiEndpointsWithStatus
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 319
+    startLine: 265
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -353,77 +295,6 @@ items:
       type: Microsoft.AspNetCore.Builder.WebApplication
     content.vb: Public Shared Function MapUiEndpointsWithStatus(app As WebApplication, statusHandlers As StatusEndpointHandlers) As WebApplication
   overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpointsWithStatus*
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard(Microsoft.AspNetCore.Builder.WebApplication)
-  commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard(Microsoft.AspNetCore.Builder.WebApplication)
-  id: MapDashboard(Microsoft.AspNetCore.Builder.WebApplication)
-  isExtensionMethod: true
-  parent: Meridian.Ui.Shared.Endpoints.UiEndpoints
-  langs:
-  - csharp
-  - vb
-  name: MapDashboard(WebApplication)
-  nameWithType: UiEndpoints.MapDashboard(WebApplication)
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard(Microsoft.AspNetCore.Builder.WebApplication)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: MapDashboard
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 431
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  summary: Maps the dashboard HTML endpoint at the root path.
-  example: []
-  syntax:
-    content: public static WebApplication MapDashboard(this WebApplication app)
-    parameters:
-    - id: app
-      type: Microsoft.AspNetCore.Builder.WebApplication
-    return:
-      type: Microsoft.AspNetCore.Builder.WebApplication
-    content.vb: Public Shared Function MapDashboard(app As WebApplication) As WebApplication
-  overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard*
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)
-  commentId: M:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)
-  id: MapAllUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)
-  isExtensionMethod: true
-  parent: Meridian.Ui.Shared.Endpoints.UiEndpoints
-  langs:
-  - csharp
-  - vb
-  name: MapAllUiEndpoints(WebApplication)
-  nameWithType: UiEndpoints.MapAllUiEndpoints(WebApplication)
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: MapAllUiEndpoints
-    path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 446
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  summary: >-
-    Maps all UI endpoints including the dashboard.
-
-    Convenience method that combines MapUiEndpoints and MapDashboard.
-  example: []
-  syntax:
-    content: public static WebApplication MapAllUiEndpoints(this WebApplication app)
-    parameters:
-    - id: app
-      type: Microsoft.AspNetCore.Builder.WebApplication
-    return:
-      type: Microsoft.AspNetCore.Builder.WebApplication
-    content.vb: Public Shared Function MapAllUiEndpoints(app As WebApplication) As WebApplication
-  overload: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints*
 - uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MutationRateLimitPolicy
   commentId: F:Meridian.Ui.Shared.Endpoints.UiEndpoints.MutationRateLimitPolicy
   id: MutationRateLimitPolicy
@@ -438,11 +309,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MutationRateLimitPolicy
     path: ../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs
-    startLine: 458
+    startLine: 380
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -729,20 +600,20 @@ references:
   name: System
   nameWithType: System
   fullName: System
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost
-  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_BuildUiHost_Microsoft_AspNetCore_Builder_WebApplicationBuilder_System_String_
-  name: BuildUiHost
-  nameWithType: UiEndpoints.BuildUiHost
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.BuildUiHost
-- uid: Microsoft.AspNetCore.Builder.WebApplicationBuilder
-  commentId: T:Microsoft.AspNetCore.Builder.WebApplicationBuilder
-  parent: Microsoft.AspNetCore.Builder
+- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices
+  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_AddUiSharedServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_System_String_
+  name: AddUiSharedServices
+  nameWithType: UiEndpoints.AddUiSharedServices
+  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
   isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder.webapplicationbuilder
-  name: WebApplicationBuilder
-  nameWithType: WebApplicationBuilder
-  fullName: Microsoft.AspNetCore.Builder.WebApplicationBuilder
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
 - uid: System.String
   commentId: T:System.String
   parent: System
@@ -754,6 +625,86 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+- uid: Meridian.Application.UI.StatusEndpointHandlers
+  commentId: T:Meridian.Application.UI.StatusEndpointHandlers
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.StatusEndpointHandlers.html
+  name: StatusEndpointHandlers
+  nameWithType: StatusEndpointHandlers
+  fullName: Meridian.Application.UI.StatusEndpointHandlers
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints
+  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_MapUiEndpoints_Microsoft_AspNetCore_Builder_WebApplication_
+  name: MapUiEndpoints
+  nameWithType: UiEndpoints.MapUiEndpoints
+  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints
 - uid: Microsoft.AspNetCore.Builder.WebApplication
   commentId: T:Microsoft.AspNetCore.Builder.WebApplication
   parent: Microsoft.AspNetCore.Builder
@@ -799,100 +750,6 @@ references:
     name: Builder
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.builder
-- uid: Meridian.Application.UI.StatusEndpointHandlers
-  commentId: T:Meridian.Application.UI.StatusEndpointHandlers
-  parent: Meridian.Application.UI
-  href: Meridian.Application.UI.StatusEndpointHandlers.html
-  name: StatusEndpointHandlers
-  nameWithType: StatusEndpointHandlers
-  fullName: Meridian.Application.UI.StatusEndpointHandlers
-- uid: Meridian.Application.UI
-  commentId: N:Meridian.Application.UI
-  href: Meridian.html
-  name: Meridian.Application.UI
-  nameWithType: Meridian.Application.UI
-  fullName: Meridian.Application.UI
-  spec.csharp:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Application
-    name: Application
-    href: Meridian.Application.html
-  - name: .
-  - uid: Meridian.Application.UI
-    name: UI
-    href: Meridian.Application.UI.html
-  spec.vb:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Application
-    name: Application
-    href: Meridian.Application.html
-  - name: .
-  - uid: Meridian.Application.UI
-    name: UI
-    href: Meridian.Application.UI.html
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices
-  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_AddUiSharedServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_System_String_
-  name: AddUiSharedServices
-  nameWithType: UiEndpoints.AddUiSharedServices
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.AddUiSharedServices
-- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
-  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
-  parent: Microsoft.Extensions.DependencyInjection
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
-  name: IServiceCollection
-  nameWithType: IServiceCollection
-  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
-- uid: Microsoft.Extensions.DependencyInjection
-  commentId: N:Microsoft.Extensions.DependencyInjection
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/microsoft
-  name: Microsoft.Extensions.DependencyInjection
-  nameWithType: Microsoft.Extensions.DependencyInjection
-  fullName: Microsoft.Extensions.DependencyInjection
-  spec.csharp:
-  - uid: Microsoft
-    name: Microsoft
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/microsoft
-  - name: .
-  - uid: Microsoft.Extensions
-    name: Extensions
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
-  - name: .
-  - uid: Microsoft.Extensions.DependencyInjection
-    name: DependencyInjection
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
-  spec.vb:
-  - uid: Microsoft
-    name: Microsoft
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/microsoft
-  - name: .
-  - uid: Microsoft.Extensions
-    name: Extensions
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
-  - name: .
-  - uid: Microsoft.Extensions.DependencyInjection
-    name: DependencyInjection
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints
-  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_MapUiEndpoints_Microsoft_AspNetCore_Builder_WebApplication_
-  name: MapUiEndpoints
-  nameWithType: UiEndpoints.MapUiEndpoints
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpoints
 - uid: System.Text.Json.JsonSerializerOptions
   commentId: T:System.Text.Json.JsonSerializerOptions
   parent: System.Text.Json
@@ -901,6 +758,23 @@ references:
   name: JsonSerializerOptions
   nameWithType: JsonSerializerOptions
   fullName: System.Text.Json.JsonSerializerOptions
+- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions
+  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_CreateEndpointJsonOptions_System_Boolean_
+  name: CreateEndpointJsonOptions
+  nameWithType: UiEndpoints.CreateEndpointJsonOptions
+  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.CreateEndpointJsonOptions
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
 - uid: System.Text.Json
   commentId: N:System.Text.Json
   isExternal: true
@@ -944,15 +818,3 @@ references:
   name: MapUiEndpointsWithStatus
   nameWithType: UiEndpoints.MapUiEndpointsWithStatus
   fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapUiEndpointsWithStatus
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard
-  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_MapDashboard_Microsoft_AspNetCore_Builder_WebApplication_
-  name: MapDashboard
-  nameWithType: UiEndpoints.MapDashboard
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapDashboard
-- uid: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints
-  href: Meridian.Ui.Shared.Endpoints.UiEndpoints.html#Meridian_Ui_Shared_Endpoints_UiEndpoints_MapAllUiEndpoints_Microsoft_AspNetCore_Builder_WebApplication_
-  name: MapAllUiEndpoints
-  nameWithType: UiEndpoints.MapAllUiEndpoints
-  fullName: Meridian.Ui.Shared.Endpoints.UiEndpoints.MapAllUiEndpoints

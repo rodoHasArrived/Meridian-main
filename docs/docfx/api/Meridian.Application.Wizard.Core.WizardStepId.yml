@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardStepId
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectProviders
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialGuidance
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectUseCase
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureDataSource
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateCredentials
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureSymbols
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureStorage
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureBackfill
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewConfiguration
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfiguration
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs

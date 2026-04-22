@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-04-16
+**Date:** 2026-04-17
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -517,10 +517,10 @@ This section inventories the workflow-centric product model that now sits above 
 | Surface | Status | Notes |
 |---------|--------|-------|
 | Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the remaining gap is deeper workspace-native shells and operator flows |
-| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`; cockpit-grade execution UX remains pending |
+| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, and the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`; cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently; further cross-links and workflow shells remain |
 | Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, and Security Master/reconciliation drill-ins are live; broader governance-first product flows remain incomplete |
-| Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open |
+| Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open. Guardrail: Security Master is the sole instrument source, and governance DTOs with instrument terms must carry Security Master identity/provenance references. Trial-balance and reconciliation symbol metadata now reuse canonical `WorkstationSecurityReference` records (same layer already used by run portfolio/ledger surfaces) rather than a separate classification-only projection. |
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
@@ -536,7 +536,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, and promotion flows; cockpit hardening, broader broker validation, and stronger acceptance criteria remain |
+| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, and in-shell portfolio/accounting drill-ins; cockpit hardening, broader broker validation, and stronger acceptance criteria remain |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Endpoint layer and dashboard flows exist; safety-gated lifecycle hardening, broader operator acceptance, and full live-readiness remain open |
 
 ### Additional governance and platform tracks
@@ -544,6 +544,8 @@ This section inventories the workflow-centric product model that now sits above 
 - **Cash-flow modeling surfaces:** governance-oriented cash-movement and projection views are not yet productized.
 - **Multi-ledger tracking:** governance workflows do not yet expose multiple ledgers, ledger groups, or cross-ledger consolidation explicitly.
 - **Reconciliation engine expansion:** run-scoped reconciliation now exists for recorded strategy runs, but broader position, cash, NAV, external statement, and exception-queue workflows remain incomplete.
+- **Governance architecture review check:** flag governance-local instrument definitions unless they are adapter-only intermediates with explicit mapping to Security Master IDs/provenance before downstream DTO/service exposure.
+- **Reviewer search guidance:** for governance DTO/service diffs, search for instrument terms (`Symbol`, `Cusip`, `Isin`, `Coupon`, `Maturity`, `Issuer`, `Venue`, `AssetClass`) and confirm paired Security Master reference/provenance fields.
 - **Report generation tools:** export infrastructure exists and fund-scoped report-pack preview APIs now expose the first governed slice, but full investor, board, compliance, and fund-ops artifact generation is not yet productized.
 
 ### Remaining work
@@ -632,7 +634,6 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-04-16*
-
+*Last Updated: 2026-04-17*
 
 

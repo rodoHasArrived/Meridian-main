@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistry
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs

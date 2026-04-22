@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptimizationType
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveDuplicates
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PotentialDuplicates
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Compress
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recompress
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MergeSmallFiles
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MoveToColdTier
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MoveToWarmTier
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteStale
     path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs

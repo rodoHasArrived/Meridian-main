@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderFlowStatistics
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuyVolume
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SellVolume
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnknownVolume
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VWAP
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imbalance
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs

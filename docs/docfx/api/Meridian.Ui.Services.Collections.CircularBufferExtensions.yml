@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircularBufferExtensions
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sum
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Average
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Max
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Min
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateRate
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatePercentageChange
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs

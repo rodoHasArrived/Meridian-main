@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModuleValidationResult
     path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailureReason
     path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Valid
     path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderModule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
     path: ../../src/Meridian.ProviderSdk/IProviderModule.cs

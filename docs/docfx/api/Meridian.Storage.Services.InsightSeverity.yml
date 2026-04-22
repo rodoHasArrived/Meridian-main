@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InsightSeverity
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 340
+    startLine: 463
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -46,11 +46,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 342
+    startLine: 465
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -72,11 +72,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notable
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 343
+    startLine: 466
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 344
+    startLine: 467
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -124,11 +124,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 345
+    startLine: 468
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

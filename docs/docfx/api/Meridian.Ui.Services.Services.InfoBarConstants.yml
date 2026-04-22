@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoBarConstants
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoDurationMs
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessDurationMs
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningDurationMs
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorDurationMs
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalDurationMs
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDurationForSeverity
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs

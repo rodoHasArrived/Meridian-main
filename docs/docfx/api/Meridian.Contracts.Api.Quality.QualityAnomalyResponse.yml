@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityAnomalyResponse
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedValue
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualValue
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeviationPercent
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ZScore
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAcknowledged
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedAt
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs

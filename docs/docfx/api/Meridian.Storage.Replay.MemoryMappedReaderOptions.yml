@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryMappedReaderOptions
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChunkSize
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSize
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinFileSizeForMapping
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseParallelDeserialization
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelDeserializationThreshold
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughput
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowMemory
     path: ../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs

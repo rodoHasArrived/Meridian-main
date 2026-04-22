@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: L2SnapshotPayload
     path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
     path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/L2SnapshotPayload.cs

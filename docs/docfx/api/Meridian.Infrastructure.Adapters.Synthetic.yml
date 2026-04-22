@@ -6,6 +6,7 @@ items:
   children:
   - Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider
   langs:
   - csharp
   - vb
@@ -28,3 +29,9 @@ references:
   name: SyntheticMarketDataClient
   nameWithType: SyntheticMarketDataClient
   fullName: Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider.html
+  name: SyntheticOptionsChainProvider
+  nameWithType: SyntheticOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider

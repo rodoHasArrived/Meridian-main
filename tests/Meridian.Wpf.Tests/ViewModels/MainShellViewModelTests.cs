@@ -21,6 +21,7 @@ public sealed class MainShellViewModelTests
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -35,6 +36,7 @@ public sealed class MainShellViewModelTests
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -81,6 +83,20 @@ public sealed class MainShellViewModelTests
             vm.CommandPalettePages.Select(page => page.PageTag).Should().NotContain("Dashboard");
             vm.SelectedCommandPalettePage.Should().NotBeNull();
             vm.SelectedCommandPalettePage!.PageTag.Should().Be("Symbols");
+        });
+    }
+
+    [Fact]
+    public void CommandPaletteQuery_UsesTierOrderingWithinMatchingResults()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "workspace";
+
+            vm.CommandPalettePages.Should().NotBeEmpty();
+            vm.CommandPalettePages.First().PageTag.Should().Be("ResearchShell");
         });
     }
 
@@ -134,6 +150,20 @@ public sealed class MainShellViewModelTests
             vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["GovernanceShell", "FundLedger", "FundReconciliation"]);
             vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
             vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
+        });
+    }
+
+    [Fact]
+    public void WorkspaceNavigation_UsesFriendlyContextTagsInsteadOfRawTierNames()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.SelectWorkspaceCommand.Execute("governance");
+
+            vm.SecondaryNavigationItems.Should().OnlyContain(item => item.VisibilityLabel != "Secondary");
+            vm.OverflowNavigationItems.Should().OnlyContain(item => item.VisibilityLabel == "Admin");
         });
     }
 
@@ -204,6 +234,7 @@ public sealed class MainShellViewModelTests
         WpfTestThread.Run(() =>
         {
             NavigationService.Instance.ResetForTests();
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
             WorkspaceService.Instance.ResetForTests();
             var detector = FixtureModeDetector.Instance;
             detector.SetFixtureMode(false);
@@ -329,12 +360,12 @@ public sealed class MainShellViewModelTests
             var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
             using var vm = CreateMainPageViewModel(fundContext, operatingContextService);
 
-            await Task.Run(() => operatingContextService.SetWindowModeAsync(BoundedWindowMode.WorkbenchPreset, "accounting-review"));
+            await Task.Run(() => operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review"));
             await WaitForConditionAsync(
-                () => vm.SelectedWindowMode == BoundedWindowMode.WorkbenchPreset
+                () => vm.SelectedWindowMode == Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
                       && vm.CurrentModeName.Contains("Accounting Review", StringComparison.Ordinal));
 
-            vm.SelectedWindowMode.Should().Be(BoundedWindowMode.WorkbenchPreset);
+            vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
             vm.CurrentModeName.Should().Contain("Accounting Review");
         });
     }

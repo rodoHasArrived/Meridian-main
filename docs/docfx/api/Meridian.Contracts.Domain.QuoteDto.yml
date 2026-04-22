@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteDto
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -363,7 +363,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -406,7 +406,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -449,7 +449,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
@@ -492,7 +492,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/MarketDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs

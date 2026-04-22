@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobManager
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnJobStatusChanged
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnJobProgressUpdated
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadJobsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateJobAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartJobAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -289,7 +289,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseJobAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -329,7 +329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumeJobAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -367,7 +367,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelJobAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -405,7 +405,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateJobProgressAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -440,7 +440,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetJobRateLimitedAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -480,7 +480,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJob
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -516,7 +516,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllJobs
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -546,7 +546,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJobsByStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -579,7 +579,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteJobAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
@@ -617,7 +617,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs

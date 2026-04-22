@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlDestinationDefinition
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Location
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Username
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecretRef
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TransferMode
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageFormat
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -306,7 +306,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverwriteIfExists
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -347,7 +347,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeliveryWindowStartUtc
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -388,7 +388,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeliveryWindowEndUtc
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -429,7 +429,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeliverySlaMinutes
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -470,7 +470,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresRemoteAck
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs

@@ -5,13 +5,20 @@ items:
   id: SecurityIdentifierKind
   parent: Meridian.Contracts.SecurityMaster
   children:
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Bbgid
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Cusip
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Figi
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.InternalCode
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Isin
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Lei
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermId
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermTicker
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ProviderSymbol
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ric
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Sedol
   - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Valoren
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Wkn
   langs:
   - csharp
   - vb
@@ -22,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityIdentifierKind
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -59,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ticker
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -85,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Isin
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -111,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cusip
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -137,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sedol
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -163,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -189,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSymbol
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -215,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InternalCode
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
@@ -225,6 +232,202 @@ items:
   namespace: Meridian.Contracts.SecurityMaster
   syntax:
     content: InternalCode = 6
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Lei
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Lei
+  id: Lei
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Lei
+  nameWithType: SecurityIdentifierKind.Lei
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Lei
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lei
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting.
+  example: []
+  syntax:
+    content: Lei = 7
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermId
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermId
+  id: PermId
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: PermId
+  nameWithType: SecurityIdentifierKind.PermId
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermId
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PermId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Refinitiv/LSEG PermID — stable cross-asset persistent identifier.
+  example: []
+  syntax:
+    content: PermId = 8
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Bbgid
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Bbgid
+  id: Bbgid
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Bbgid
+  nameWithType: SecurityIdentifierKind.Bbgid
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Bbgid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bbgid
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Bloomberg Global Identifier (BBGID) — stable across corporate actions; distinct from ticker.
+  example: []
+  syntax:
+    content: Bbgid = 9
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Wkn
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Wkn
+  id: Wkn
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Wkn
+  nameWithType: SecurityIdentifierKind.Wkn
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Wkn
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Wkn
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Wertpapierkennnummer — German/Austrian exchange standard (6 alphanumeric chars).
+  example: []
+  syntax:
+    content: Wkn = 10
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Valoren
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Valoren
+  id: Valoren
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Valoren
+  nameWithType: SecurityIdentifierKind.Valoren
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Valoren
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Valoren
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Valoren — Swiss SIX exchange security number.
+  example: []
+  syntax:
+    content: Valoren = 11
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermTicker
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermTicker
+  id: PermTicker
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: PermTicker
+  nameWithType: SecurityIdentifierKind.PermTicker
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.PermTicker
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PermTicker
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Meridian-stable ticker that survives corporate actions (Bloomberg PermTicker convention).
+  example: []
+  syntax:
+    content: PermTicker = 12
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ric
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ric
+  id: Ric
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Ric
+  nameWithType: SecurityIdentifierKind.Ric
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ric
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ric
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds.
+  example: []
+  syntax:
+    content: Ric = 13
     return:
       type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
 references:

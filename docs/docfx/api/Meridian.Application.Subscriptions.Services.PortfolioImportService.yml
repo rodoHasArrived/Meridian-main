@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImportService
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromBrokerAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromAlpacaAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromInteractiveBrokersAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
@@ -202,11 +202,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportManualAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-    startLine: 109
+    startLine: 116
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Subscriptions.Services
@@ -242,11 +242,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPortfolioSummaryAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-    startLine: 143
+    startLine: 150
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Subscriptions.Services
@@ -280,11 +280,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableBrokers
     path: ../../src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs
-    startLine: 158
+    startLine: 165
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Subscriptions.Services

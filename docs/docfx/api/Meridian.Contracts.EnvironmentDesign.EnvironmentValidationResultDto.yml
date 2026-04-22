@@ -1,0 +1,569 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  id: EnvironmentValidationResultDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.#ctor(System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto})
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentValidationResultDto
+  nameWithType: EnvironmentValidationResultDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentValidationResultDto
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: 'public sealed record EnvironmentValidationResultDto : IEquatable<EnvironmentValidationResultDto>'
+    content.vb: Public NotInheritable Class EnvironmentValidationResultDto Implements IEquatable(Of EnvironmentValidationResultDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.#ctor(System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto})
+  commentId: M:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.#ctor(System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto})
+  id: '#ctor(System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto})'
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentValidationResultDto(bool, IReadOnlyList<EnvironmentValidationIssueDto>)
+  nameWithType: EnvironmentValidationResultDto.EnvironmentValidationResultDto(bool, IReadOnlyList<EnvironmentValidationIssueDto>)
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.EnvironmentValidationResultDto(bool, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public EnvironmentValidationResultDto(bool IsValid, IReadOnlyList<EnvironmentValidationIssueDto> Issues)
+    parameters:
+    - id: IsValid
+      type: System.Boolean
+    - id: Issues
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto}
+    content.vb: Public Sub New(IsValid As Boolean, Issues As IReadOnlyList(Of EnvironmentValidationIssueDto))
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.#ctor*
+  nameWithType.vb: EnvironmentValidationResultDto.New(Boolean, IReadOnlyList(Of EnvironmentValidationIssueDto))
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.New(Boolean, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto))
+  name.vb: New(Boolean, IReadOnlyList(Of EnvironmentValidationIssueDto))
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid
+  id: IsValid
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  langs:
+  - csharp
+  - vb
+  name: IsValid
+  nameWithType: EnvironmentValidationResultDto.IsValid
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public bool IsValid { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsValid As Boolean
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues
+  id: Issues
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: EnvironmentValidationResultDto.Issues
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyList<EnvironmentValidationIssueDto> Issues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto}
+    content.vb: Public Property Issues As IReadOnlyList(Of EnvironmentValidationIssueDto)
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues*
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EnvironmentValidationResultDto>
+  nameWithType: IEquatable<EnvironmentValidationResultDto>
+  fullName: System.IEquatable<Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto>
+  nameWithType.vb: IEquatable(Of EnvironmentValidationResultDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto)
+  name.vb: IEquatable(Of EnvironmentValidationResultDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.#ctor*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.#ctor
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentValidationResultDto__ctor_System_Boolean_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_EnvironmentDesign_EnvironmentValidationIssueDto__
+  name: EnvironmentValidationResultDto
+  nameWithType: EnvironmentValidationResultDto.EnvironmentValidationResultDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.EnvironmentValidationResultDto
+  nameWithType.vb: EnvironmentValidationResultDto.New
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<EnvironmentValidationIssueDto>
+  nameWithType: IReadOnlyList<EnvironmentValidationIssueDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto>
+  nameWithType.vb: IReadOnlyList(Of EnvironmentValidationIssueDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto)
+  name.vb: IReadOnlyList(Of EnvironmentValidationIssueDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto
+    name: EnvironmentValidationIssueDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto
+    name: EnvironmentValidationIssueDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentValidationResultDto_IsValid
+  name: IsValid
+  nameWithType: EnvironmentValidationResultDto.IsValid
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.IsValid
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentValidationResultDto_Issues
+  name: Issues
+  nameWithType: EnvironmentValidationResultDto.Issues
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.Issues

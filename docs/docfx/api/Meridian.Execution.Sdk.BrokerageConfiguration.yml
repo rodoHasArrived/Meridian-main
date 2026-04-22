@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageConfiguration
     path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gateway
     path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
@@ -70,7 +70,7 @@ items:
   summary: >-
     The brokerage gateway to use. Must match a registered gateway ID
 
-    (e.g., "alpaca", "ib", "stocksharp-rithmic", "paper").
+    (e.g., "alpaca", "ib", "paper").
 
     Default is "paper" for safety.
   example: []
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveExecutionEnabled
     path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxPositionSize
     path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxOrderNotional
     path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/BrokerageConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxOpenOrders
     path: ../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs

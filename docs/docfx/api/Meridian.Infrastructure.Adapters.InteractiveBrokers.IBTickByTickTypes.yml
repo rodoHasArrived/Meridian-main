@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBTickByTickTypes
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Last
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllLast
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidAsk
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPoint
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs

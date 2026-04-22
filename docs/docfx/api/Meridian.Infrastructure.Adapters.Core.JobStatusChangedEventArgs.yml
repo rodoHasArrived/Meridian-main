@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobStatusChangedEventArgs
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Job
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs

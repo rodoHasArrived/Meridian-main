@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/StorageTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageTools
     path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/StorageTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/StorageTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageStats
     path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/StorageTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListStoredSymbols
     path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/StorageTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryStoredData
     path: ../../src/Meridian.McpServer/Tools/StorageTools.cs

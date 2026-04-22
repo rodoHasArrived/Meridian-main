@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionRight
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Call
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Put
     path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs

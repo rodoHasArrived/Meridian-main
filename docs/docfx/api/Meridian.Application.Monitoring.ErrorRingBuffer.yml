@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorRingBuffer
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultCapacity
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Record
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Record
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordWarning
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCritical
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecent
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByLevel
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBySymbol
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -410,7 +410,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSince
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -443,7 +443,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStats
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -501,7 +501,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
@@ -532,7 +532,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capacity
     path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs

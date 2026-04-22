@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationScheduleConfig
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyVerificationTime
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyVerificationScope
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WeeklyFullVerificationDay
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MonthlyFullVerificationDay
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseDuringMarketHours
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentVerifications
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs

@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrometheusMetricsUpdater
     path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 563
+    startLine: 654
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 569
+    startLine: 660
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -87,11 +87,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Monitoring/PrometheusMetrics.cs
-    startLine: 590
+    startLine: 681
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring

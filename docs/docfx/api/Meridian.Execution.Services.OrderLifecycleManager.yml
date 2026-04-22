@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderLifecycleManager
     path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
     path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllOrders
     path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/OrderLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Execution/Services/OrderLifecycleManager.cs

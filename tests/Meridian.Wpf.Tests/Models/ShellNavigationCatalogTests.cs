@@ -6,6 +6,32 @@ namespace Meridian.Wpf.Tests.Models;
 public sealed class ShellNavigationCatalogTests
 {
     [Fact]
+    public void NavigationText_ShouldAvoidBannedJargon_AndKeepSubtitlesConcise()
+    {
+        foreach (var page in ShellNavigationCatalog.Pages)
+        {
+            page.Subtitle.Length.Should().BeLessThanOrEqualTo(
+                ShellNavigationTextStyleGuide.SubtitleMaxLength,
+                $"{page.PageTag} subtitle should stay concise for shell navigation");
+            AssertDoesNotContainBannedTerms(page.Subtitle, $"{page.PageTag} subtitle");
+            AssertDoesNotContainBannedTerms(page.Title, $"{page.PageTag} title");
+        }
+
+        foreach (var workspace in ShellNavigationCatalog.Workspaces)
+        {
+            workspace.Description.Length.Should().BeLessThanOrEqualTo(
+                ShellNavigationTextStyleGuide.SubtitleMaxLength,
+                $"{workspace.Id} description should stay concise for workspace selection");
+            workspace.Summary.Length.Should().BeLessThanOrEqualTo(
+                ShellNavigationTextStyleGuide.SubtitleMaxLength,
+                $"{workspace.Id} summary should stay concise for workspace selection");
+            AssertDoesNotContainBannedTerms(workspace.Description, $"{workspace.Id} description");
+            AssertDoesNotContainBannedTerms(workspace.Summary, $"{workspace.Id} summary");
+            AssertDoesNotContainBannedTerms(workspace.Title, $"{workspace.Id} title");
+        }
+    }
+
+    [Fact]
     public void Aliases_ShouldResolveBackToCanonicalDescriptors()
     {
         foreach (var page in ShellNavigationCatalog.Pages)
@@ -85,8 +111,29 @@ public sealed class ShellNavigationCatalogTests
         panes.Last().OpenWithoutBoundParameter.Should().BeTrue();
     }
 
+    [Fact]
+    public void TradingShellRelatedPages_ShouldExposePortfolioContinuity()
+    {
+        var relatedPages = ShellNavigationCatalog
+            .GetRelatedPages("TradingShell")
+            .Select(static page => page.PageTag)
+            .ToArray();
+
+        relatedPages.Should().ContainInOrder("RunPortfolio", "PositionBlotter", "RunRisk");
+        relatedPages.Should().Contain("FundPortfolio");
+    }
+
     private static IEnumerable<WorkspacePaneDefinition> EnumeratePanes(WorkspaceShellDefinition shell)
         => shell.DefaultPanes
             .Concat(shell.ContextlessPanes)
             .Concat(shell.PresetPanes.Values.SelectMany(static panes => panes));
+
+    private static void AssertDoesNotContainBannedTerms(string value, string scope)
+    {
+        foreach (var term in ShellNavigationTextStyleGuide.BannedJargonTerms)
+        {
+            value.Contains(term, StringComparison.OrdinalIgnoreCase)
+                .Should().BeFalse($"{scope} should not include banned jargon '{term}'");
+        }
+    }
 }

@@ -96,6 +96,50 @@ public sealed class SecurityMasterReferenceLookupTests
         result.Should().NotBeNull();
         // Falls back to first identifier value
         result!.PrimaryIdentifier.Should().Be("AAPL");
+        result.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Resolved);
+        result.MatchedIdentifierKind.Should().Be(SecurityIdentifierKind.Ticker.ToString());
+        result.MatchedIdentifierValue.Should().Be("AAPL");
+    }
+
+    [Fact]
+    public async Task GetBySymbolAsync_WithDegradedMetadata_PreservesDeterministicResolvedLabeling()
+    {
+        var securityId = Guid.NewGuid();
+        var identifiers = new[]
+        {
+            new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "594918104", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+        };
+        var detail = new SecurityDetailDto(
+            SecurityId: securityId,
+            AssetClass: "",
+            Status: SecurityStatusDto.Active,
+            DisplayName: "",
+            Currency: null,
+            CommonTerms: JsonSerializer.SerializeToElement(new { }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
+            Identifiers: identifiers,
+            Aliases: Array.Empty<SecurityAliasDto>(),
+            Version: 1,
+            EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
+            EffectiveTo: null);
+
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService
+            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "MSFT", null, Arg.Any<CancellationToken>())
+            .Returns(detail);
+
+        var lookup = new SecurityMasterSecurityReferenceLookup(queryService);
+
+        var result = await lookup.GetBySymbolAsync("MSFT");
+
+        result.Should().NotBeNull();
+        result!.CoverageStatus.Should().Be(WorkstationSecurityCoverageStatus.Resolved);
+        result.MatchedIdentifierKind.Should().Be(SecurityIdentifierKind.Ticker.ToString());
+        result.MatchedIdentifierValue.Should().Be("MSFT");
+        result.PrimaryIdentifier.Should().Be("594918104");
+        result.AssetClass.Should().BeEmpty();
+        result.Currency.Should().BeNull();
+        result.SubType.Should().BeNull();
     }
 
     // -----------------------------------------------------------------------

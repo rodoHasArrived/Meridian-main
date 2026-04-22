@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchBacktestSummary
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Runs
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuration
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs

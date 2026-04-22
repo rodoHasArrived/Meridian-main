@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscription
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/SubscriptionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs

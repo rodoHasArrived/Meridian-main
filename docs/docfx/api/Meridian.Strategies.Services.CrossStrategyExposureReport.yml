@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CrossStrategyExposureReport
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GrossExposure
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetExposure
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Top5Concentrations
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs

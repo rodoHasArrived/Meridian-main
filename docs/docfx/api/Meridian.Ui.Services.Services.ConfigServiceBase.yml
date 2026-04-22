@@ -36,7 +36,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigServiceBase
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedJsonOptions
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfigCoreAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfigCoreAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogError
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfigDetailAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourcesConfigDtoAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOrUpdateDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -345,7 +345,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetDefaultDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -423,7 +423,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFailoverSettingsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -463,7 +463,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProvidersConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -496,7 +496,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProviderOptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -534,7 +534,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetBackfillProviderOptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -577,7 +577,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetBackfillProviderOptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -620,7 +620,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConfiguredSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -653,7 +653,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -691,7 +691,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -726,7 +726,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -764,7 +764,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnumerateProviders
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -795,7 +795,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeProviderId
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs

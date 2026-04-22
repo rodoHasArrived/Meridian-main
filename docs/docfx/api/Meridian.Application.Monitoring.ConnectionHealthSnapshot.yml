@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthSnapshot
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connections
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalConnections
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthyConnections
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnhealthyConnections
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalAverageLatencyMs
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalMinLatencyMs
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalMaxLatencyMs
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs

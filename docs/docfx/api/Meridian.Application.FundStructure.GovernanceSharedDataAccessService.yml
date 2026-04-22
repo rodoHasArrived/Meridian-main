@@ -1,0 +1,654 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  commentId: T:Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  id: GovernanceSharedDataAccessService
+  parent: Meridian.Application.FundStructure
+  children:
+  - Meridian.Application.FundStructure.GovernanceSharedDataAccessService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.UI.BackfillCoordinator)
+  - Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: GovernanceSharedDataAccessService
+  nameWithType: GovernanceSharedDataAccessService
+  fullName: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceSharedDataAccessService
+    path: ../../src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  summary: >-
+    Summarizes shared governance access to Security Master, historical prices,
+
+    and backfill state so structure/account/ledger views can surface the same
+
+    operator-facing availability picture without deriving it from positions.
+  example: []
+  syntax:
+    content: 'public sealed class GovernanceSharedDataAccessService : IGovernanceSharedDataAccessService'
+    content.vb: Public NotInheritable Class GovernanceSharedDataAccessService Implements IGovernanceSharedDataAccessService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.UI.BackfillCoordinator)
+  commentId: M:Meridian.Application.FundStructure.GovernanceSharedDataAccessService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.UI.BackfillCoordinator)
+  id: '#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,Meridian.Application.Services.HistoricalDataQueryService,Meridian.Application.UI.BackfillCoordinator)'
+  parent: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  langs:
+  - csharp
+  - vb
+  name: GovernanceSharedDataAccessService(ISecurityMasterQueryService?, HistoricalDataQueryService?, BackfillCoordinator?)
+  nameWithType: GovernanceSharedDataAccessService.GovernanceSharedDataAccessService(ISecurityMasterQueryService?, HistoricalDataQueryService?, BackfillCoordinator?)
+  fullName: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GovernanceSharedDataAccessService(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService?, Meridian.Application.Services.HistoricalDataQueryService?, Meridian.Application.UI.BackfillCoordinator?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  syntax:
+    content: public GovernanceSharedDataAccessService(ISecurityMasterQueryService? securityMasterQueryService, HistoricalDataQueryService? historicalDataQueryService, BackfillCoordinator? backfillCoordinator)
+    parameters:
+    - id: securityMasterQueryService
+      type: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+    - id: historicalDataQueryService
+      type: Meridian.Application.Services.HistoricalDataQueryService
+    - id: backfillCoordinator
+      type: Meridian.Application.UI.BackfillCoordinator
+    content.vb: Public Sub New(securityMasterQueryService As ISecurityMasterQueryService, historicalDataQueryService As HistoricalDataQueryService, backfillCoordinator As BackfillCoordinator)
+  overload: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.#ctor*
+  nameWithType.vb: GovernanceSharedDataAccessService.New(ISecurityMasterQueryService, HistoricalDataQueryService, BackfillCoordinator)
+  fullName.vb: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.New(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, Meridian.Application.Services.HistoricalDataQueryService, Meridian.Application.UI.BackfillCoordinator)
+  name.vb: New(ISecurityMasterQueryService, HistoricalDataQueryService, BackfillCoordinator)
+- uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  id: GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  langs:
+  - csharp
+  - vb
+  name: GetSharedDataAccessAsync(CancellationToken)
+  nameWithType: GovernanceSharedDataAccessService.GetSharedDataAccessAsync(CancellationToken)
+  fullName: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSharedDataAccessAsync
+    path: ../../src/Meridian.Application/FundStructure/GovernanceSharedDataAccessService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<FundStructureSharedDataAccessDto> GetSharedDataAccessAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto}
+    content.vb: Public Function GetSharedDataAccessAsync(ct As CancellationToken = Nothing) As Task(Of FundStructureSharedDataAccessDto)
+  overload: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync*
+  implements:
+  - Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.FundStructure
+  commentId: N:Meridian.Application.FundStructure
+  href: Meridian.html
+  name: Meridian.Application.FundStructure
+  nameWithType: Meridian.Application.FundStructure
+  fullName: Meridian.Application.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundStructure
+    name: FundStructure
+    href: Meridian.Application.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundStructure
+    name: FundStructure
+    href: Meridian.Application.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  commentId: T:Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  parent: Meridian.Application.FundStructure
+  href: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.html
+  name: IGovernanceSharedDataAccessService
+  nameWithType: IGovernanceSharedDataAccessService
+  fullName: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.#ctor*
+  commentId: Overload:Meridian.Application.FundStructure.GovernanceSharedDataAccessService.#ctor
+  href: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.html#Meridian_Application_FundStructure_GovernanceSharedDataAccessService__ctor_Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService_Meridian_Application_Services_HistoricalDataQueryService_Meridian_Application_UI_BackfillCoordinator_
+  name: GovernanceSharedDataAccessService
+  nameWithType: GovernanceSharedDataAccessService.GovernanceSharedDataAccessService
+  fullName: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GovernanceSharedDataAccessService
+  nameWithType.vb: GovernanceSharedDataAccessService.New
+  fullName.vb: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.New
+  name.vb: New
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Application.Services.HistoricalDataQueryService
+  commentId: T:Meridian.Application.Services.HistoricalDataQueryService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.HistoricalDataQueryService.html
+  name: HistoricalDataQueryService
+  nameWithType: HistoricalDataQueryService
+  fullName: Meridian.Application.Services.HistoricalDataQueryService
+- uid: Meridian.Application.UI.BackfillCoordinator
+  commentId: T:Meridian.Application.UI.BackfillCoordinator
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.BackfillCoordinator.html
+  name: BackfillCoordinator
+  nameWithType: BackfillCoordinator
+  fullName: Meridian.Application.UI.BackfillCoordinator
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync*
+  commentId: Overload:Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync
+  href: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.html#Meridian_Application_FundStructure_GovernanceSharedDataAccessService_GetSharedDataAccessAsync_System_Threading_CancellationToken_
+  name: GetSharedDataAccessAsync
+  nameWithType: GovernanceSharedDataAccessService.GetSharedDataAccessAsync
+  fullName: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.GetSharedDataAccessAsync
+- uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.html#Meridian_Application_FundStructure_IGovernanceSharedDataAccessService_GetSharedDataAccessAsync_System_Threading_CancellationToken_
+  name: GetSharedDataAccessAsync(CancellationToken)
+  nameWithType: IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(CancellationToken)
+  fullName: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+    name: GetSharedDataAccessAsync
+    href: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.html#Meridian_Application_FundStructure_IGovernanceSharedDataAccessService_GetSharedDataAccessAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.GetSharedDataAccessAsync(System.Threading.CancellationToken)
+    name: GetSharedDataAccessAsync
+    href: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.html#Meridian_Application_FundStructure_IGovernanceSharedDataAccessService_GetSharedDataAccessAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FundStructureSharedDataAccessDto>
+  nameWithType: Task<FundStructureSharedDataAccessDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto>
+  nameWithType.vb: Task(Of FundStructureSharedDataAccessDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  name.vb: Task(Of FundStructureSharedDataAccessDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    name: FundStructureSharedDataAccessDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    name: FundStructureSharedDataAccessDto
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

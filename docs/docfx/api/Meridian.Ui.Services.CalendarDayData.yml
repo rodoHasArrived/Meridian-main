@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalendarDayData
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DayOfWeek
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWeekend
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHoliday
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTradingDay
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasData
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedEvents
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasGaps
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapCount
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessLevel
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolBreakdown
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs

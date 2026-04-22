@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GracefulShutdownConfig
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeoutSeconds
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushTimeoutPerComponentSeconds
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeTimeoutPerComponentSeconds
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForceExitOnTimeout
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForceExitOnSecondSignal
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs

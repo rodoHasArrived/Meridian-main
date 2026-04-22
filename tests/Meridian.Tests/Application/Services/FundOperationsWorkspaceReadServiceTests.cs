@@ -126,9 +126,41 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.CashFinancing.PendingSettlement.Should().Be(150m);
         workspace.Ledger.JournalEntryCount.Should().BeGreaterThan(0);
         workspace.Ledger.TrialBalance.Should().NotBeEmpty();
+        workspace.LedgerReconciliationSnapshot.AsOf.Should().Be(new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero));
+        workspace.LedgerReconciliationSnapshot.Consolidated.JournalEntryCount.Should().BeGreaterThan(0);
+        workspace.LedgerReconciliationSnapshot.Consolidated.LedgerEntryCount.Should().BeGreaterThan(0);
+        workspace.LedgerReconciliationSnapshot.Consolidated.Balances.Should().NotBeEmpty();
+        workspace.LedgerReconciliationSnapshot.Entities.Should().BeEmpty();
+        workspace.LedgerReconciliationSnapshot.Sleeves.Should().BeEmpty();
+        workspace.LedgerReconciliationSnapshot.Vehicles.Should().BeEmpty();
         workspace.Nav.ComponentCount.Should().BeGreaterThan(0);
         workspace.Reporting.ProfileCount.Should().BeGreaterThan(0);
         workspace.Workspace.TotalAccounts.Should().Be(2);
+    }
+
+    [Fact]
+    public void ProjectReconciliationSnapshot_MapsConsolidatedAndPerDimensionSnapshots()
+    {
+        var asOf = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
+        var book = new FundLedgerBook("fund-projection");
+
+        book.EntityLedger("entity-a").PostLines(asOf, "entity-sale", [(cash, 70m, 0m), (revenue, 0m, 70m)]);
+        book.SleeveLedger("sleeve-core").PostLines(asOf, "sleeve-sale", [(cash, 20m, 0m), (revenue, 0m, 20m)]);
+        book.VehicleLedger("vehicle-master").PostLines(asOf, "vehicle-sale", [(cash, 10m, 0m), (revenue, 0m, 10m)]);
+
+        var projected = FundOperationsWorkspaceReadService.ProjectReconciliationSnapshot(
+            book.ReconciliationSnapshot(asOf));
+
+        projected.FundProfileId.Should().Be("fund-projection");
+        projected.Consolidated.JournalEntryCount.Should().Be(3);
+        projected.Consolidated.LedgerEntryCount.Should().Be(6);
+        projected.Consolidated.Balances.Should().ContainSingle(line => line.AccountName == "Cash" && line.Balance == 100m);
+        projected.Entities.Should().ContainKey("entity-a");
+        projected.Entities["entity-a"].Balances.Should().ContainSingle(line => line.AccountName == "Cash" && line.Balance == 70m);
+        projected.Sleeves.Should().ContainKey("sleeve-core");
+        projected.Vehicles.Should().ContainKey("vehicle-master");
     }
 
     [Fact]
@@ -148,6 +180,74 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         var act = () => service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(" "));
 
         await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithSelectedLedgerIds_ConstrainsWorkspaceToSelection()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var repository = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            repository,
+            portfolioReadService,
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster));
+
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-selection-001",
+            strategyId: "carry-1",
+            strategyName: "Carry Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-selection-002",
+            strategyId: "carry-2",
+            strategyName: "Carry Strategy 2",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            SelectedLedgerIds: ["run-selection-001"]));
+
+        workspace.RecordedRunCount.Should().Be(1);
+        workspace.RelatedRunIds.Should().ContainSingle().Which.Should().Be("run-selection-001");
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithUnknownSelectedLedgerIds_ReturnsEmptyLedgerProjection()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var repository = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            repository,
+            portfolioReadService,
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster));
+
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-known-001",
+            strategyId: "carry-1",
+            strategyName: "Carry Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            SelectedLedgerIds: ["run-does-not-exist"]));
+
+        workspace.RecordedRunCount.Should().Be(0);
+        workspace.RelatedRunIds.Should().BeEmpty();
+        workspace.Ledger.JournalEntryCount.Should().Be(0);
+        workspace.Ledger.TrialBalance.Should().BeEmpty();
     }
 
     [Fact]

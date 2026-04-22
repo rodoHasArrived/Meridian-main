@@ -26,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountReconciliationResultDto
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 38
+    startLine: 121
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -63,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 38
+    startLine: 121
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -114,11 +114,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResultId
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 39
+    startLine: 122
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -143,11 +143,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationRunId
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 40
+    startLine: 123
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -172,11 +172,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckLabel
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 41
+    startLine: 124
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -201,11 +201,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsMatch
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 42
+    startLine: 125
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -230,11 +230,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 43
+    startLine: 126
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -259,11 +259,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 44
+    startLine: 127
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -288,11 +288,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedAmount
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 45
+    startLine: 128
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -317,11 +317,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualAmount
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 46
+    startLine: 129
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -346,11 +346,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Variance
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 47
+    startLine: 130
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -375,11 +375,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
-    startLine: 48
+    startLine: 131
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure

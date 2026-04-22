@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCertificationService
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 129
+    startLine: 180
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 135
+    startLine: 186
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting
@@ -90,11 +90,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCertificationsAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 145
+    startLine: 196
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting
@@ -121,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 154
+    startLine: 205
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting

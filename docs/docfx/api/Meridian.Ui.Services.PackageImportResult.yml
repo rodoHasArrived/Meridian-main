@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageImportResult
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 868
+    startLine: 877
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -52,11 +52,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 870
+    startLine: 879
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -81,11 +81,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesImported
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 871
+    startLine: 880
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -110,11 +110,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
-    startLine: 872
+    startLine: 881
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

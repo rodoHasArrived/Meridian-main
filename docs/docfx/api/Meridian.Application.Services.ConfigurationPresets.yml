@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationPresets
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvailablePresets
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PresetDescriptions
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/AutoConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPreset
     path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs

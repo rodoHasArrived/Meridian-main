@@ -1,0 +1,606 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  id: FundReportPackPreviewRequestDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.#ctor(System.String,Meridian.Contracts.Workstation.GovernanceReportKindDto,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf
+  - Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency
+  - Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId
+  - Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind
+  langs:
+  - csharp
+  - vb
+  name: FundReportPackPreviewRequestDto
+  nameWithType: FundReportPackPreviewRequestDto
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundReportPackPreviewRequestDto
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Request to build a preview of a governance report pack for one fund profile.
+  example: []
+  syntax:
+    content: 'public sealed record FundReportPackPreviewRequestDto : IEquatable<FundReportPackPreviewRequestDto>'
+    content.vb: Public NotInheritable Class FundReportPackPreviewRequestDto Implements IEquatable(Of FundReportPackPreviewRequestDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.#ctor(System.String,Meridian.Contracts.Workstation.GovernanceReportKindDto,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.#ctor(System.String,Meridian.Contracts.Workstation.GovernanceReportKindDto,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.String,Meridian.Contracts.Workstation.GovernanceReportKindDto,System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  langs:
+  - csharp
+  - vb
+  name: FundReportPackPreviewRequestDto(string, GovernanceReportKindDto, DateTimeOffset?, string?)
+  nameWithType: FundReportPackPreviewRequestDto.FundReportPackPreviewRequestDto(string, GovernanceReportKindDto, DateTimeOffset?, string?)
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundReportPackPreviewRequestDto(string, Meridian.Contracts.Workstation.GovernanceReportKindDto, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Request to build a preview of a governance report pack for one fund profile.
+  example: []
+  syntax:
+    content: public FundReportPackPreviewRequestDto(string FundProfileId, GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance, DateTimeOffset? AsOf = null, string? Currency = null)
+    parameters:
+    - id: FundProfileId
+      type: System.String
+    - id: ReportKind
+      type: Meridian.Contracts.Workstation.GovernanceReportKindDto
+    - id: AsOf
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Currency
+      type: System.String
+    content.vb: Public Sub New(FundProfileId As String, ReportKind As GovernanceReportKindDto = GovernanceReportKindDto.TrialBalance, AsOf As DateTimeOffset? = Nothing, Currency As String = Nothing)
+  overload: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.#ctor*
+  nameWithType.vb: FundReportPackPreviewRequestDto.New(String, GovernanceReportKindDto, DateTimeOffset?, String)
+  fullName.vb: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.New(String, Meridian.Contracts.Workstation.GovernanceReportKindDto, System.DateTimeOffset?, String)
+  name.vb: New(String, GovernanceReportKindDto, DateTimeOffset?, String)
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId
+  commentId: P:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId
+  id: FundProfileId
+  parent: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: FundReportPackPreviewRequestDto.FundProfileId
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string FundProfileId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundProfileId As String
+  overload: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId*
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind
+  commentId: P:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind
+  id: ReportKind
+  parent: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  langs:
+  - csharp
+  - vb
+  name: ReportKind
+  nameWithType: FundReportPackPreviewRequestDto.ReportKind
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportKind
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public GovernanceReportKindDto ReportKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.GovernanceReportKindDto
+    content.vb: Public Property ReportKind As GovernanceReportKindDto
+  overload: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind*
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf
+  commentId: P:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: FundReportPackPreviewRequestDto.AsOf
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property AsOf As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf*
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency
+  commentId: P:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: FundReportPackPreviewRequestDto.Currency
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundReportPackPreviewRequestDto>
+  nameWithType: IEquatable<FundReportPackPreviewRequestDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto>
+  nameWithType.vb: IEquatable(Of FundReportPackPreviewRequestDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto)
+  name.vb: IEquatable(Of FundReportPackPreviewRequestDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+    name: FundReportPackPreviewRequestDto
+    href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+    name: FundReportPackPreviewRequestDto
+    href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.#ctor
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html#Meridian_Contracts_Workstation_FundReportPackPreviewRequestDto__ctor_System_String_Meridian_Contracts_Workstation_GovernanceReportKindDto_System_Nullable_System_DateTimeOffset__System_String_
+  name: FundReportPackPreviewRequestDto
+  nameWithType: FundReportPackPreviewRequestDto.FundReportPackPreviewRequestDto
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundReportPackPreviewRequestDto
+  nameWithType.vb: FundReportPackPreviewRequestDto.New
+  fullName.vb: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  commentId: T:Meridian.Contracts.Workstation.GovernanceReportKindDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.GovernanceReportKindDto.html
+  name: GovernanceReportKindDto
+  nameWithType: GovernanceReportKindDto
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html#Meridian_Contracts_Workstation_FundReportPackPreviewRequestDto_FundProfileId
+  name: FundProfileId
+  nameWithType: FundReportPackPreviewRequestDto.FundProfileId
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.FundProfileId
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html#Meridian_Contracts_Workstation_FundReportPackPreviewRequestDto_ReportKind
+  name: ReportKind
+  nameWithType: FundReportPackPreviewRequestDto.ReportKind
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.ReportKind
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html#Meridian_Contracts_Workstation_FundReportPackPreviewRequestDto_AsOf
+  name: AsOf
+  nameWithType: FundReportPackPreviewRequestDto.AsOf
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.AsOf
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html#Meridian_Contracts_Workstation_FundReportPackPreviewRequestDto_Currency
+  name: Currency
+  nameWithType: FundReportPackPreviewRequestDto.Currency
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.Currency

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivalStorageOptions
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalOptions
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushThreshold
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFlushDelay
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackgroundFlushInterval
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoTruncateWal
     path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs

@@ -11,8 +11,11 @@ items:
   - Meridian.Ui.Services.WorkstationLayoutState.FloatingWindows
   - Meridian.Ui.Services.WorkstationLayoutState.LayoutContext
   - Meridian.Ui.Services.WorkstationLayoutState.LayoutId
+  - Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId
+  - Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey
   - Meridian.Ui.Services.WorkstationLayoutState.Panes
   - Meridian.Ui.Services.WorkstationLayoutState.SavedAt
+  - Meridian.Ui.Services.WorkstationLayoutState.WindowMode
   langs:
   - csharp
   - vb
@@ -23,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationLayoutState
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 117
+    startLine: 114
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -59,11 +62,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LayoutId
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 119
+    startLine: 116
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -88,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 120
+    startLine: 117
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -117,11 +120,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivePaneId
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 121
+    startLine: 118
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -132,6 +135,93 @@ items:
       type: System.String
     content.vb: Public Property ActivePaneId As String
   overload: Meridian.Ui.Services.WorkstationLayoutState.ActivePaneId*
+- uid: Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey
+  commentId: P:Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey
+  id: OperatingContextKey
+  parent: Meridian.Ui.Services.WorkstationLayoutState
+  langs:
+  - csharp
+  - vb
+  name: OperatingContextKey
+  nameWithType: WorkstationLayoutState.OperatingContextKey
+  fullName: Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OperatingContextKey
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? OperatingContextKey { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OperatingContextKey As String
+  overload: Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey*
+- uid: Meridian.Ui.Services.WorkstationLayoutState.WindowMode
+  commentId: P:Meridian.Ui.Services.WorkstationLayoutState.WindowMode
+  id: WindowMode
+  parent: Meridian.Ui.Services.WorkstationLayoutState
+  langs:
+  - csharp
+  - vb
+  name: WindowMode
+  nameWithType: WorkstationLayoutState.WindowMode
+  fullName: Meridian.Ui.Services.WorkstationLayoutState.WindowMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowMode
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public BoundedWindowMode WindowMode { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.BoundedWindowMode
+    content.vb: Public Property WindowMode As BoundedWindowMode
+  overload: Meridian.Ui.Services.WorkstationLayoutState.WindowMode*
+- uid: Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId
+  commentId: P:Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId
+  id: LayoutPresetId
+  parent: Meridian.Ui.Services.WorkstationLayoutState
+  langs:
+  - csharp
+  - vb
+  name: LayoutPresetId
+  nameWithType: WorkstationLayoutState.LayoutPresetId
+  fullName: Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LayoutPresetId
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? LayoutPresetId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LayoutPresetId As String
+  overload: Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId*
 - uid: Meridian.Ui.Services.WorkstationLayoutState.DockLayoutXml
   commentId: P:Meridian.Ui.Services.WorkstationLayoutState.DockLayoutXml
   id: DockLayoutXml
@@ -146,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DockLayoutXml
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -175,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Panes
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -204,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FloatingWindows
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -233,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LayoutContext
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -262,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedAt
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
@@ -550,6 +640,31 @@ references:
   name: ActivePaneId
   nameWithType: WorkstationLayoutState.ActivePaneId
   fullName: Meridian.Ui.Services.WorkstationLayoutState.ActivePaneId
+- uid: Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey*
+  commentId: Overload:Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey
+  href: Meridian.Ui.Services.WorkstationLayoutState.html#Meridian_Ui_Services_WorkstationLayoutState_OperatingContextKey
+  name: OperatingContextKey
+  nameWithType: WorkstationLayoutState.OperatingContextKey
+  fullName: Meridian.Ui.Services.WorkstationLayoutState.OperatingContextKey
+- uid: Meridian.Ui.Services.WorkstationLayoutState.WindowMode*
+  commentId: Overload:Meridian.Ui.Services.WorkstationLayoutState.WindowMode
+  href: Meridian.Ui.Services.WorkstationLayoutState.html#Meridian_Ui_Services_WorkstationLayoutState_WindowMode
+  name: WindowMode
+  nameWithType: WorkstationLayoutState.WindowMode
+  fullName: Meridian.Ui.Services.WorkstationLayoutState.WindowMode
+- uid: Meridian.Ui.Services.BoundedWindowMode
+  commentId: T:Meridian.Ui.Services.BoundedWindowMode
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BoundedWindowMode.html
+  name: BoundedWindowMode
+  nameWithType: BoundedWindowMode
+  fullName: Meridian.Ui.Services.BoundedWindowMode
+- uid: Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId*
+  commentId: Overload:Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId
+  href: Meridian.Ui.Services.WorkstationLayoutState.html#Meridian_Ui_Services_WorkstationLayoutState_LayoutPresetId
+  name: LayoutPresetId
+  nameWithType: WorkstationLayoutState.LayoutPresetId
+  fullName: Meridian.Ui.Services.WorkstationLayoutState.LayoutPresetId
 - uid: Meridian.Ui.Services.WorkstationLayoutState.DockLayoutXml*
   commentId: Overload:Meridian.Ui.Services.WorkstationLayoutState.DockLayoutXml
   href: Meridian.Ui.Services.WorkstationLayoutState.html#Meridian_Ui_Services_WorkstationLayoutState_DockLayoutXml

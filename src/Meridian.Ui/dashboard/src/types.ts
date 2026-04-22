@@ -71,6 +71,11 @@ export interface PromotionRecord {
   strategyName: string;
   sourceRunType: string;
   targetRunType: string;
+  runId?: string;
+  approvedBy?: string | null;
+  approvalReason?: string | null;
+  reviewNotes?: string | null;
+  manualOverrideId?: string | null;
   qualifyingSharpe: number;
   qualifyingMaxDrawdownPercent: number;
   qualifyingTotalReturn: number;
@@ -137,6 +142,12 @@ export interface PaperSessionReplayVerification {
   currentPortfolio: ExecutionPortfolioSnapshot | null;
   replayPortfolio: ExecutionPortfolioSnapshot;
   verifiedAt: string;
+  comparedFillCount: number;
+  comparedOrderCount: number;
+  comparedLedgerEntryCount: number;
+  lastPersistedFillAt: string | null;
+  lastPersistedOrderUpdateAt: string | null;
+  verificationAuditId: string | null;
 }
 
 export interface ExecutionAuditEntry {
@@ -153,6 +164,43 @@ export interface ExecutionAuditEntry {
   correlationId: string | null;
   message: string | null;
   metadata: Record<string, string> | null;
+}
+
+export interface ExecutionCircuitBreakerState {
+  isOpen: boolean;
+  reason: string | null;
+  changedBy: string | null;
+  changedAt: string | null;
+}
+
+export interface ExecutionManualOverride {
+  overrideId: string;
+  kind: string;
+  reason: string;
+  createdBy: string;
+  createdAt: string;
+  expiresAt: string | null;
+  symbol: string | null;
+  strategyId: string | null;
+  runId: string | null;
+}
+
+export interface ExecutionControlSnapshot {
+  circuitBreaker: ExecutionCircuitBreakerState;
+  defaultMaxPositionSize: number | null;
+  symbolPositionLimits: Record<string, number>;
+  manualOverrides: ExecutionManualOverride[];
+  asOf: string;
+}
+
+export interface CreateExecutionManualOverrideRequest {
+  kind: string;
+  reason: string;
+  createdBy?: string | null;
+  symbol?: string | null;
+  strategyId?: string | null;
+  runId?: string | null;
+  expiresAt?: string | null;
 }
 
 export interface ReplayFileRecord {
@@ -621,6 +669,9 @@ export interface SecurityClassificationSummary {
   subType: string | null;
   primaryIdentifierKind: string | null;
   primaryIdentifierValue: string | null;
+  matchedIdentifierKind?: string | null;
+  matchedIdentifierValue?: string | null;
+  matchedProvider?: string | null;
 }
 
 export interface SecurityEconomicDefinitionSummary {
@@ -650,6 +701,21 @@ export interface SecurityIdentifierEntry {
   provider: string | null;
 }
 
+export interface SecurityAliasEntry {
+  aliasId: string;
+  securityId: string;
+  aliasKind: string;
+  aliasValue: string;
+  provider: string | null;
+  scope: "Operations" | "Collector" | "Execution" | "Migration";
+  reason: string | null;
+  createdBy: string;
+  createdAt: string;
+  validFrom: string;
+  validTo: string | null;
+  isEnabled: boolean;
+}
+
 export interface SecurityIdentityDrillIn {
   securityId: string;
   displayName: string;
@@ -659,6 +725,7 @@ export interface SecurityIdentityDrillIn {
   effectiveFrom: string;
   effectiveTo: string | null;
   identifiers: SecurityIdentifierEntry[];
+  aliases: SecurityAliasEntry[];
 }
 
 export interface SecurityMasterConflict {

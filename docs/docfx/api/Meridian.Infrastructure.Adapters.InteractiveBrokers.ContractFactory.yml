@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContractFactory
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
-    startLine: 11
+    startLine: 22
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -31,6 +31,27 @@ items:
     This is split with conditional compilation so the project still builds without IBApi.
 
     Define compilation constant IBAPI and reference IBApi to enable the real builder.
+
+
+    <p>
+
+    <strong>Fixed income / bond contracts:</strong><br />
+
+    Set <xref href="Meridian.Contracts.Configuration.SymbolConfig.InstrumentType" data-throw-if-not-resolved="false"></xref> to <code>InstrumentType.Bond</code> for corporate bonds
+
+    (IB SecType = <code>"BOND"</code>).  For US Treasuries and other government securities use
+
+    <code>SecurityType = "GOVT"</code> explicitly — IB routes these to a dedicated government-bond
+
+    desk and the <code>"BOND"</code> SecType does not apply.<br />
+
+    For both cases, set <xref href="Meridian.Contracts.Configuration.SymbolConfig.Symbol" data-throw-if-not-resolved="false"></xref> to the nine-character CUSIP, e.g.
+
+    <code>"912828YY0"</code>, and <code>Exchange = "SMART"</code>.  The TWS API uses face-value in number of
+
+    bonds as the order quantity: 1 bond = $1,000 par, so <code>Quantity = 5</code> submits $5,000 face value.
+
+    </p>
   example: []
   syntax:
     content: public static class ContractFactory
@@ -59,11 +80,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs
-    startLine: 120
+    startLine: 136
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -77,6 +98,16 @@ items:
     content.vb: Public Shared Function Create(cfg As SymbolConfig) As Object
   overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.ContractFactory.Create*
 references:
+- uid: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  name: InstrumentType
+  nameWithType: SymbolConfig.InstrumentType
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  name: Symbol
+  nameWithType: SymbolConfig.Symbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Symbol
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
   commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
   href: Meridian.html

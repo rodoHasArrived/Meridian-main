@@ -46,8 +46,8 @@ public sealed class PaperTradingGateway : IExecutionGateway
     {
         var fillSeq = Interlocked.Increment(ref _fillSequence);
 
-        // Market orders fill immediately at a simulated price
-        if (request.Type == OrderType.Market)
+        // Market-style orders fill immediately at a simulated price
+        if (request.Type is OrderType.Market or OrderType.MarketOnOpen or OrderType.MarketOnClose)
         {
             var report = new ExecutionReport
             {

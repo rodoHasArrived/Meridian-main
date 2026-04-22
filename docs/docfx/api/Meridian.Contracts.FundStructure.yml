@@ -11,38 +11,76 @@ items:
   - Meridian.Contracts.FundStructure.AccountStructureQuery
   - Meridian.Contracts.FundStructure.AccountSummaryDto
   - Meridian.Contracts.FundStructure.AccountTypeDto
+  - Meridian.Contracts.FundStructure.AccountingStructureQuery
+  - Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  - Meridian.Contracts.FundStructure.AdvisoryClientViewDto
+  - Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+  - Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
   - Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
   - Meridian.Contracts.FundStructure.BankAccountDetailsDto
   - Meridian.Contracts.FundStructure.BankStatementBatchDto
   - Meridian.Contracts.FundStructure.BankStatementLineDto
+  - Meridian.Contracts.FundStructure.BusinessKindDto
+  - Meridian.Contracts.FundStructure.BusinessSummaryDto
+  - Meridian.Contracts.FundStructure.ClientSegmentKind
+  - Meridian.Contracts.FundStructure.ClientSummaryDto
   - Meridian.Contracts.FundStructure.CreateAccountRequest
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest
+  - Meridian.Contracts.FundStructure.CreateClientRequest
   - Meridian.Contracts.FundStructure.CreateFundRequest
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
   - Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+  - Meridian.Contracts.FundStructure.CreateOrganizationRequest
   - Meridian.Contracts.FundStructure.CreateSleeveRequest
   - Meridian.Contracts.FundStructure.CreateVehicleRequest
   - Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto
   - Meridian.Contracts.FundStructure.CustodianStatementBatchDto
   - Meridian.Contracts.FundStructure.FundAccountsDto
+  - Meridian.Contracts.FundStructure.FundOperatingSliceDto
+  - Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+  - Meridian.Contracts.FundStructure.FundOperatingViewDto
+  - Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto
   - Meridian.Contracts.FundStructure.FundStructureAssignmentDto
   - Meridian.Contracts.FundStructure.FundStructureAssignmentQuery
   - Meridian.Contracts.FundStructure.FundStructureGraphDto
   - Meridian.Contracts.FundStructure.FundStructureNodeDto
   - Meridian.Contracts.FundStructure.FundStructureNodeKindDto
   - Meridian.Contracts.FundStructure.FundStructureQuery
+  - Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
   - Meridian.Contracts.FundStructure.FundSummaryDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
+  - Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto
   - Meridian.Contracts.FundStructure.IngestBankStatementRequest
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
+  - Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+  - Meridian.Contracts.FundStructure.LedgerGroupId
+  - Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
   - Meridian.Contracts.FundStructure.LegalEntitySummaryDto
   - Meridian.Contracts.FundStructure.LegalEntityTypeDto
   - Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+  - Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+  - Meridian.Contracts.FundStructure.OrganizationStructureQuery
+  - Meridian.Contracts.FundStructure.OrganizationSummaryDto
   - Meridian.Contracts.FundStructure.OwnershipLinkDto
   - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
   - Meridian.Contracts.FundStructure.ReconcileAccountRequest
   - Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
+  - Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto
   - Meridian.Contracts.FundStructure.SleeveSummaryDto
   - Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
   - Meridian.Contracts.FundStructure.UpdateCustodianAccountDetailsRequest
+  - Meridian.Contracts.FundStructure.VehicleOperatingViewDto
   - Meridian.Contracts.FundStructure.VehicleSummaryDto
   langs:
   - csharp
@@ -54,6 +92,46 @@ items:
   assemblies:
   - Meridian.Contracts
 references:
+- uid: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto.html
+  name: AccountBalanceSnapshotDto
+  nameWithType: AccountBalanceSnapshotDto
+  fullName: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto
+  commentId: T:Meridian.Contracts.FundStructure.CustodianPositionLineDto
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html
+  name: CustodianPositionLineDto
+  nameWithType: CustodianPositionLineDto
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto
+- uid: Meridian.Contracts.FundStructure.BankStatementLineDto
+  commentId: T:Meridian.Contracts.FundStructure.BankStatementLineDto
+  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html
+  name: BankStatementLineDto
+  nameWithType: BankStatementLineDto
+  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto
+- uid: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
+  commentId: T:Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest.html
+  name: RecordAccountBalanceSnapshotRequest
+  nameWithType: RecordAccountBalanceSnapshotRequest
+  fullName: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
+- uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
+  commentId: T:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.html
+  name: IngestCustodianStatementRequest
+  nameWithType: IngestCustodianStatementRequest
+  fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
+- uid: Meridian.Contracts.FundStructure.IngestBankStatementRequest
+  commentId: T:Meridian.Contracts.FundStructure.IngestBankStatementRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.IngestBankStatementRequest.html
+  name: IngestBankStatementRequest
+  nameWithType: IngestBankStatementRequest
+  fullName: Meridian.Contracts.FundStructure.IngestBankStatementRequest
 - uid: Meridian.Contracts.FundStructure.CustodianStatementBatchDto
   commentId: T:Meridian.Contracts.FundStructure.CustodianStatementBatchDto
   parent: Meridian.Contracts.FundStructure
@@ -81,36 +159,20 @@ references:
   name: AccountReconciliationResultDto
   nameWithType: AccountReconciliationResultDto
   fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
-- uid: Meridian.Contracts.FundStructure.AccountManagementOptions
-  commentId: T:Meridian.Contracts.FundStructure.AccountManagementOptions
-  href: Meridian.Contracts.FundStructure.AccountManagementOptions.html
-  name: AccountManagementOptions
-  nameWithType: AccountManagementOptions
-  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions
-- uid: Meridian.Contracts.FundStructure.CreateFundRequest
-  commentId: T:Meridian.Contracts.FundStructure.CreateFundRequest
-  href: Meridian.Contracts.FundStructure.CreateFundRequest.html
-  name: CreateFundRequest
-  nameWithType: CreateFundRequest
-  fullName: Meridian.Contracts.FundStructure.CreateFundRequest
-- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
-  commentId: T:Meridian.Contracts.FundStructure.CreateSleeveRequest
-  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html
-  name: CreateSleeveRequest
-  nameWithType: CreateSleeveRequest
-  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest
-- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
-  commentId: T:Meridian.Contracts.FundStructure.CreateVehicleRequest
-  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html
-  name: CreateVehicleRequest
-  nameWithType: CreateVehicleRequest
-  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest
-- uid: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
-  commentId: T:Meridian.Contracts.FundStructure.CreateLegalEntityRequest
-  href: Meridian.Contracts.FundStructure.CreateLegalEntityRequest.html
-  name: CreateLegalEntityRequest
-  nameWithType: CreateLegalEntityRequest
-  fullName: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html
+  name: CustodianAccountDetailsDto
+  nameWithType: CustodianAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html
+  name: BankAccountDetailsDto
+  nameWithType: BankAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto
 - uid: Meridian.Contracts.FundStructure.CreateAccountRequest
   commentId: T:Meridian.Contracts.FundStructure.CreateAccountRequest
   parent: Meridian.Contracts.FundStructure
@@ -132,27 +194,6 @@ references:
   name: UpdateBankAccountDetailsRequest
   nameWithType: UpdateBankAccountDetailsRequest
   fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
-- uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
-  commentId: T:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
-  parent: Meridian.Contracts.FundStructure
-  href: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.html
-  name: IngestCustodianStatementRequest
-  nameWithType: IngestCustodianStatementRequest
-  fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
-- uid: Meridian.Contracts.FundStructure.IngestBankStatementRequest
-  commentId: T:Meridian.Contracts.FundStructure.IngestBankStatementRequest
-  parent: Meridian.Contracts.FundStructure
-  href: Meridian.Contracts.FundStructure.IngestBankStatementRequest.html
-  name: IngestBankStatementRequest
-  nameWithType: IngestBankStatementRequest
-  fullName: Meridian.Contracts.FundStructure.IngestBankStatementRequest
-- uid: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
-  commentId: T:Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
-  parent: Meridian.Contracts.FundStructure
-  href: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest.html
-  name: RecordAccountBalanceSnapshotRequest
-  nameWithType: RecordAccountBalanceSnapshotRequest
-  fullName: Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest
 - uid: Meridian.Contracts.FundStructure.ReconcileAccountRequest
   commentId: T:Meridian.Contracts.FundStructure.ReconcileAccountRequest
   parent: Meridian.Contracts.FundStructure
@@ -160,14 +201,84 @@ references:
   name: ReconcileAccountRequest
   nameWithType: ReconcileAccountRequest
   fullName: Meridian.Contracts.FundStructure.ReconcileAccountRequest
+- uid: Meridian.Contracts.FundStructure.FundAccountsDto
+  commentId: T:Meridian.Contracts.FundStructure.FundAccountsDto
+  href: Meridian.Contracts.FundStructure.FundAccountsDto.html
+  name: FundAccountsDto
+  nameWithType: FundAccountsDto
+  fullName: Meridian.Contracts.FundStructure.FundAccountsDto
+- uid: Meridian.Contracts.FundStructure.AccountManagementOptions
+  commentId: T:Meridian.Contracts.FundStructure.AccountManagementOptions
+  href: Meridian.Contracts.FundStructure.AccountManagementOptions.html
+  name: AccountManagementOptions
+  nameWithType: AccountManagementOptions
+  fullName: Meridian.Contracts.FundStructure.AccountManagementOptions
+- uid: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateOrganizationRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateOrganizationRequest.html
+  name: CreateOrganizationRequest
+  nameWithType: CreateOrganizationRequest
+  fullName: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateBusinessRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html
+  name: CreateBusinessRequest
+  nameWithType: CreateBusinessRequest
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest
+- uid: Meridian.Contracts.FundStructure.CreateClientRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateClientRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateClientRequest.html
+  name: CreateClientRequest
+  nameWithType: CreateClientRequest
+  fullName: Meridian.Contracts.FundStructure.CreateClientRequest
+- uid: Meridian.Contracts.FundStructure.CreateFundRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateFundRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateFundRequest.html
+  name: CreateFundRequest
+  nameWithType: CreateFundRequest
+  fullName: Meridian.Contracts.FundStructure.CreateFundRequest
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateSleeveRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html
+  name: CreateSleeveRequest
+  nameWithType: CreateSleeveRequest
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateVehicleRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html
+  name: CreateVehicleRequest
+  nameWithType: CreateVehicleRequest
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest
+- uid: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateLegalEntityRequest.html
+  name: CreateLegalEntityRequest
+  nameWithType: CreateLegalEntityRequest
+  fullName: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html
+  name: CreateInvestmentPortfolioRequest
+  nameWithType: CreateInvestmentPortfolioRequest
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
 - uid: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
   commentId: T:Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest.html
   name: LinkFundStructureNodesRequest
   nameWithType: LinkFundStructureNodesRequest
   fullName: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
 - uid: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
   commentId: T:Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest.html
   name: AssignFundStructureNodeRequest
   nameWithType: AssignFundStructureNodeRequest
@@ -179,6 +290,20 @@ references:
   name: FundStructureNodeKindDto
   nameWithType: FundStructureNodeKindDto
   fullName: Meridian.Contracts.FundStructure.FundStructureNodeKindDto
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto
+  commentId: T:Meridian.Contracts.FundStructure.BusinessKindDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BusinessKindDto.html
+  name: BusinessKindDto
+  nameWithType: BusinessKindDto
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind
+  commentId: T:Meridian.Contracts.FundStructure.ClientSegmentKind
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.ClientSegmentKind.html
+  name: ClientSegmentKind
+  nameWithType: ClientSegmentKind
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind
 - uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto
   commentId: T:Meridian.Contracts.FundStructure.LegalEntityTypeDto
   parent: Meridian.Contracts.FundStructure
@@ -200,75 +325,67 @@ references:
   name: OwnershipRelationshipTypeDto
   nameWithType: OwnershipRelationshipTypeDto
   fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
-- uid: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
-  commentId: T:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
-  parent: Meridian.Contracts.FundStructure
-  href: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto.html
-  name: CustodianAccountDetailsDto
-  nameWithType: CustodianAccountDetailsDto
-  fullName: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
-- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
-  commentId: T:Meridian.Contracts.FundStructure.BankAccountDetailsDto
-  parent: Meridian.Contracts.FundStructure
-  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html
-  name: BankAccountDetailsDto
-  nameWithType: BankAccountDetailsDto
-  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto
-- uid: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
-  commentId: T:Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
-  parent: Meridian.Contracts.FundStructure
-  href: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto.html
-  name: AccountBalanceSnapshotDto
-  nameWithType: AccountBalanceSnapshotDto
-  fullName: Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto
-- uid: Meridian.Contracts.FundStructure.FundAccountsDto
-  commentId: T:Meridian.Contracts.FundStructure.FundAccountsDto
-  href: Meridian.Contracts.FundStructure.FundAccountsDto.html
-  name: FundAccountsDto
-  nameWithType: FundAccountsDto
-  fullName: Meridian.Contracts.FundStructure.FundAccountsDto
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto
-  commentId: T:Meridian.Contracts.FundStructure.CustodianPositionLineDto
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html
-  name: CustodianPositionLineDto
-  nameWithType: CustodianPositionLineDto
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto
-- uid: Meridian.Contracts.FundStructure.BankStatementLineDto
-  commentId: T:Meridian.Contracts.FundStructure.BankStatementLineDto
-  href: Meridian.Contracts.FundStructure.BankStatementLineDto.html
-  name: BankStatementLineDto
-  nameWithType: BankStatementLineDto
-  fullName: Meridian.Contracts.FundStructure.BankStatementLineDto
 - uid: Meridian.Contracts.FundStructure.FundStructureNodeDto
   commentId: T:Meridian.Contracts.FundStructure.FundStructureNodeDto
   href: Meridian.Contracts.FundStructure.FundStructureNodeDto.html
   name: FundStructureNodeDto
   nameWithType: FundStructureNodeDto
   fullName: Meridian.Contracts.FundStructure.FundStructureNodeDto
+- uid: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.OrganizationSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.OrganizationSummaryDto.html
+  name: OrganizationSummaryDto
+  nameWithType: OrganizationSummaryDto
+  fullName: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+- uid: Meridian.Contracts.FundStructure.BusinessSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.BusinessSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BusinessSummaryDto.html
+  name: BusinessSummaryDto
+  nameWithType: BusinessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.BusinessSummaryDto
+- uid: Meridian.Contracts.FundStructure.ClientSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.ClientSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.ClientSummaryDto.html
+  name: ClientSummaryDto
+  nameWithType: ClientSummaryDto
+  fullName: Meridian.Contracts.FundStructure.ClientSummaryDto
 - uid: Meridian.Contracts.FundStructure.FundSummaryDto
   commentId: T:Meridian.Contracts.FundStructure.FundSummaryDto
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.FundSummaryDto.html
   name: FundSummaryDto
   nameWithType: FundSummaryDto
   fullName: Meridian.Contracts.FundStructure.FundSummaryDto
 - uid: Meridian.Contracts.FundStructure.SleeveSummaryDto
   commentId: T:Meridian.Contracts.FundStructure.SleeveSummaryDto
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.SleeveSummaryDto.html
   name: SleeveSummaryDto
   nameWithType: SleeveSummaryDto
   fullName: Meridian.Contracts.FundStructure.SleeveSummaryDto
 - uid: Meridian.Contracts.FundStructure.VehicleSummaryDto
   commentId: T:Meridian.Contracts.FundStructure.VehicleSummaryDto
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.VehicleSummaryDto.html
   name: VehicleSummaryDto
   nameWithType: VehicleSummaryDto
   fullName: Meridian.Contracts.FundStructure.VehicleSummaryDto
 - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
   commentId: T:Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html
   name: LegalEntitySummaryDto
   nameWithType: LegalEntitySummaryDto
   fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+- uid: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+  href: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto.html
+  name: InvestmentPortfolioSummaryDto
+  nameWithType: InvestmentPortfolioSummaryDto
+  fullName: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
 - uid: Meridian.Contracts.FundStructure.AccountSummaryDto
   commentId: T:Meridian.Contracts.FundStructure.AccountSummaryDto
   parent: Meridian.Contracts.FundStructure
@@ -276,6 +393,34 @@ references:
   name: AccountSummaryDto
   nameWithType: AccountSummaryDto
   fullName: Meridian.Contracts.FundStructure.AccountSummaryDto
+- uid: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto.html
+  name: FundStructureSharedDataAccessDto
+  nameWithType: FundStructureSharedDataAccessDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+- uid: Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto.html
+  name: SecurityMasterAccessSummaryDto
+  nameWithType: SecurityMasterAccessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.SecurityMasterAccessSummaryDto
+- uid: Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto.html
+  name: HistoricalPriceAccessSummaryDto
+  nameWithType: HistoricalPriceAccessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html
+  name: BackfillAccessSummaryDto
+  nameWithType: BackfillAccessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
 - uid: Meridian.Contracts.FundStructure.OwnershipLinkDto
   commentId: T:Meridian.Contracts.FundStructure.OwnershipLinkDto
   href: Meridian.Contracts.FundStructure.OwnershipLinkDto.html
@@ -288,18 +433,160 @@ references:
   name: FundStructureAssignmentDto
   nameWithType: FundStructureAssignmentDto
   fullName: Meridian.Contracts.FundStructure.FundStructureAssignmentDto
+- uid: Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+  commentId: T:Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.OrganizationStructureGraphDto.html
+  name: OrganizationStructureGraphDto
+  nameWithType: OrganizationStructureGraphDto
+  fullName: Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+- uid: Meridian.Contracts.FundStructure.AdvisoryClientViewDto
+  commentId: T:Meridian.Contracts.FundStructure.AdvisoryClientViewDto
+  href: Meridian.Contracts.FundStructure.AdvisoryClientViewDto.html
+  name: AdvisoryClientViewDto
+  nameWithType: AdvisoryClientViewDto
+  fullName: Meridian.Contracts.FundStructure.AdvisoryClientViewDto
+- uid: Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
+  commentId: T:Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
+  href: Meridian.Contracts.FundStructure.AdvisoryStructureViewDto.html
+  name: AdvisoryStructureViewDto
+  nameWithType: AdvisoryStructureViewDto
+  fullName: Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
+- uid: Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto
+  commentId: T:Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto
+  href: Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto.html
+  name: FundSleeveOperatingViewDto
+  nameWithType: FundSleeveOperatingViewDto
+  fullName: Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto
+- uid: Meridian.Contracts.FundStructure.VehicleOperatingViewDto
+  commentId: T:Meridian.Contracts.FundStructure.VehicleOperatingViewDto
+  href: Meridian.Contracts.FundStructure.VehicleOperatingViewDto.html
+  name: VehicleOperatingViewDto
+  nameWithType: VehicleOperatingViewDto
+  fullName: Meridian.Contracts.FundStructure.VehicleOperatingViewDto
+- uid: Meridian.Contracts.FundStructure.FundOperatingSliceDto
+  commentId: T:Meridian.Contracts.FundStructure.FundOperatingSliceDto
+  href: Meridian.Contracts.FundStructure.FundOperatingSliceDto.html
+  name: FundOperatingSliceDto
+  nameWithType: FundOperatingSliceDto
+  fullName: Meridian.Contracts.FundStructure.FundOperatingSliceDto
+- uid: Meridian.Contracts.FundStructure.FundOperatingViewDto
+  commentId: T:Meridian.Contracts.FundStructure.FundOperatingViewDto
+  href: Meridian.Contracts.FundStructure.FundOperatingViewDto.html
+  name: FundOperatingViewDto
+  nameWithType: FundOperatingViewDto
+  fullName: Meridian.Contracts.FundStructure.FundOperatingViewDto
+- uid: Meridian.Contracts.FundStructure.LedgerGroupId
+  commentId: T:Meridian.Contracts.FundStructure.LedgerGroupId
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.LedgerGroupId.html
+  name: LedgerGroupId
+  nameWithType: LedgerGroupId
+  fullName: Meridian.Contracts.FundStructure.LedgerGroupId
+- uid: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
+  href: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto.html
+  name: LedgerGroupSummaryDto
+  nameWithType: LedgerGroupSummaryDto
+  fullName: Meridian.Contracts.FundStructure.LedgerGroupSummaryDto
+- uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountingStructureViewDto
+  href: Meridian.Contracts.FundStructure.AccountingStructureViewDto.html
+  name: AccountingStructureViewDto
+  nameWithType: AccountingStructureViewDto
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureViewDto
 - uid: Meridian.Contracts.FundStructure.FundStructureGraphDto
   commentId: T:Meridian.Contracts.FundStructure.FundStructureGraphDto
   href: Meridian.Contracts.FundStructure.FundStructureGraphDto.html
   name: FundStructureGraphDto
   nameWithType: FundStructureGraphDto
   fullName: Meridian.Contracts.FundStructure.FundStructureGraphDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto.html
+  name: GovernanceCashFlowScopeKindDto
+  nameWithType: GovernanceCashFlowScopeKindDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeKindDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto.html
+  name: GovernanceCashFlowScopeDto
+  nameWithType: GovernanceCashFlowScopeDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowScopeDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto.html
+  name: GovernanceCashFlowAccountViewDto
+  nameWithType: GovernanceCashFlowAccountViewDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowAccountViewDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto.html
+  name: GovernanceCashFlowEntryDto
+  nameWithType: GovernanceCashFlowEntryDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto.html
+  name: GovernanceCashFlowBucketDto
+  nameWithType: GovernanceCashFlowBucketDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto.html
+  name: GovernanceCashFlowLadderDto
+  nameWithType: GovernanceCashFlowLadderDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowLadderDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html
+  name: GovernanceCashFlowVarianceBucketDto
+  nameWithType: GovernanceCashFlowVarianceBucketDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html
+  name: GovernanceCashFlowVarianceSummaryDto
+  nameWithType: GovernanceCashFlowVarianceSummaryDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto.html
+  name: GovernanceCashFlowViewDto
+  nameWithType: GovernanceCashFlowViewDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
 - uid: Meridian.Contracts.FundStructure.FundStructureQuery
   commentId: T:Meridian.Contracts.FundStructure.FundStructureQuery
+  parent: Meridian.Contracts.FundStructure
   href: Meridian.Contracts.FundStructure.FundStructureQuery.html
   name: FundStructureQuery
   nameWithType: FundStructureQuery
   fullName: Meridian.Contracts.FundStructure.FundStructureQuery
+- uid: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.OrganizationStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.OrganizationStructureQuery.html
+  name: OrganizationStructureQuery
+  nameWithType: OrganizationStructureQuery
+  fullName: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+- uid: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AdvisoryStructureQuery.html
+  name: AdvisoryStructureQuery
+  nameWithType: AdvisoryStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+- uid: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundOperatingStructureQuery.html
+  name: FundOperatingStructureQuery
+  nameWithType: FundOperatingStructureQuery
+  fullName: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
 - uid: Meridian.Contracts.FundStructure.FundStructureAssignmentQuery
   commentId: T:Meridian.Contracts.FundStructure.FundStructureAssignmentQuery
   href: Meridian.Contracts.FundStructure.FundStructureAssignmentQuery.html
@@ -313,6 +600,20 @@ references:
   name: AccountStructureQuery
   nameWithType: AccountStructureQuery
   fullName: Meridian.Contracts.FundStructure.AccountStructureQuery
+- uid: Meridian.Contracts.FundStructure.AccountingStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.AccountingStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountingStructureQuery.html
+  name: AccountingStructureQuery
+  nameWithType: AccountingStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureQuery
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery.html
+  name: GovernanceCashFlowQuery
+  nameWithType: GovernanceCashFlowQuery
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
 - uid: Meridian.Contracts.FundStructure
   commentId: N:Meridian.Contracts.FundStructure
   href: Meridian.html

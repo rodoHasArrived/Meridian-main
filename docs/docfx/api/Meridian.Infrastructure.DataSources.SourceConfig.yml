@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceConfig
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connection
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -288,7 +288,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Credentials
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimits
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -350,7 +350,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryPolicy
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -381,7 +381,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheck
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -443,7 +443,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -474,7 +474,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IB
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -505,7 +505,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSE
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs

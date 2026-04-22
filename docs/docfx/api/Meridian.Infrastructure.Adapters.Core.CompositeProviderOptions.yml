@@ -21,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeProviderOptions
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 529
+    startLine: 658
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailureBackoffDuration
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 534
+    startLine: 663
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -90,11 +90,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableCrossValidation
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 539
+    startLine: 668
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -121,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetriesPerProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 544
+    startLine: 673
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -152,11 +152,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreferAdjustedPrices
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 549
+    startLine: 678
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -183,11 +183,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableRateLimitRotation
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 556
+    startLine: 685
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -219,11 +219,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitRotationThreshold
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 563
+    startLine: 692
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core

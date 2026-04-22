@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CashLadderBucketDto
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 385
+    startLine: 401
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 385
+    startLine: 401
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -107,11 +107,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BucketStart
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 386
+    startLine: 402
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -136,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BucketEnd
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 387
+    startLine: 403
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -165,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectedInflows
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 388
+    startLine: 404
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -194,11 +194,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectedOutflows
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 389
+    startLine: 405
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetFlow
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 390
+    startLine: 406
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -252,11 +252,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 391
+    startLine: 407
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -281,11 +281,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 392
+    startLine: 408
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation

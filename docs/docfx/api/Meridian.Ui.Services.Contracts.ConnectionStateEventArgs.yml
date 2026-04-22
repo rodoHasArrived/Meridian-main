@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStateEventArgs
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs

@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderSessionDiagnostic
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionKind
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastHeartbeat
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFault
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs

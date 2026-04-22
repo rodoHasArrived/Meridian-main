@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConnectivityTestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityTestService
     path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConnectivityTestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConnectivityTestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestAllAsync
     path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConnectivityTestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplaySummary
     path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ConnectivityTestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Services/ConnectivityTestService.cs

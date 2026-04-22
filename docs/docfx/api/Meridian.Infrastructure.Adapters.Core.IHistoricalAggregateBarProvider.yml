@@ -1,0 +1,480 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  id: IHistoricalAggregateBarProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  langs:
+  - csharp
+  - vb
+  name: IHistoricalAggregateBarProvider
+  nameWithType: IHistoricalAggregateBarProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IHistoricalAggregateBarProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Optional historical-provider seam for intraday aggregate bars.
+
+    Providers that only support daily bars do not need to implement this contract.
+  example: []
+  syntax:
+    content: public interface IHistoricalAggregateBarProvider
+    content.vb: Public Interface IHistoricalAggregateBarProvider
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  id: SupportedGranularities
+  parent: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedGranularities
+  nameWithType: IHistoricalAggregateBarProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedGranularities
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Granularities the provider can serve for aggregate-bar backfill.
+  example: []
+  syntax:
+    content: IReadOnlyList<DataGranularity> SupportedGranularities { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+    content.vb: ReadOnly Property SupportedGranularities As IReadOnlyList(Of DataGranularity)
+  overload: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities*
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  langs:
+  - csharp
+  - vb
+  name: GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalAggregateBarProvider.GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregateBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Fetch aggregate bars for the requested symbol and granularity.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+    content.vb: Function GetAggregateBarsAsync(symbol As String, granularity As DataGranularity, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AggregateBar))
+  overload: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync*
+  nameWithType.vb: IHistoricalAggregateBarProvider.GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_SupportedGranularities
+  name: SupportedGranularities
+  nameWithType: IHistoricalAggregateBarProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataGranularity>
+  nameWithType: IReadOnlyList<DataGranularity>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.DataGranularity>
+  nameWithType.vb: IReadOnlyList(Of DataGranularity)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  name.vb: IReadOnlyList(Of DataGranularity)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAggregateBarsAsync
+  nameWithType: IHistoricalAggregateBarProvider.GetAggregateBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AggregateBar>>
+  nameWithType: Task<IReadOnlyList<AggregateBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Domain.Models.AggregateBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AggregateBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Domain.Models.AggregateBar))
+  name.vb: Task(Of IReadOnlyList(Of AggregateBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Domain.Models.AggregateBar
+    name: AggregateBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Models.AggregateBar
+    name: AggregateBar
+  - name: )
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

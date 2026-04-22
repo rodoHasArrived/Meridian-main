@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GracefulShutdownService
     path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian.Application/Services/GracefulShutdownService.cs

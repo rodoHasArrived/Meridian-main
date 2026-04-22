@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostgresSecurityMasterEventStore
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadSinceSequenceAsync
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestSequenceAsync
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendCorporateActionAsync
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadCorporateActionsAsync
     path: ../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterEventStore.cs

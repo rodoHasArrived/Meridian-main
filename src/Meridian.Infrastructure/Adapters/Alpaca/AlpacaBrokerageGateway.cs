@@ -414,7 +414,11 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     private static string MapOrderType(OrderType type) => type switch
     {
         OrderType.Market => "market",
+        OrderType.MarketOnOpen => "market",
+        OrderType.MarketOnClose => "market",
         OrderType.Limit => "limit",
+        OrderType.LimitOnOpen => "limit",
+        OrderType.LimitOnClose => "limit",
         OrderType.StopMarket => "stop",
         OrderType.StopLimit => "stop_limit",
         _ => "market"

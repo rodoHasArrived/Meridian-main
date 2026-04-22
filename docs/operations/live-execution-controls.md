@@ -36,6 +36,23 @@ If `MERIDIAN_EXECUTION_LIVE_ENABLED` is missing or `MERIDIAN_EXECUTION_GATEWAY` 
 
 Existing order/account seams remain in `/api/execution/*`.
 
+Current execution SDK order types available through `/api/execution/orders/submit`:
+
+- `Market`
+- `Limit`
+- `StopMarket`
+- `StopLimit`
+- `MarketOnOpen`
+- `MarketOnClose`
+- `LimitOnOpen`
+- `LimitOnClose`
+
+Broker adapters that do not offer native exchange-session qualifiers currently route the `*OnOpen`/`*OnClose`
+variants using their nearest base type (`Market` or `Limit`) so strategies can stay portable while provider
+capabilities evolve. This fallback does **not** preserve the session-scoped timing semantics of “on open” or
+“on close”: on gateways without native qualifier support, these orders may execute immediately like a normal
+`Market` or `Limit` order instead of waiting for the opening or closing auction.
+
 New live-readiness endpoints:
 
 - `GET /api/execution/audit`

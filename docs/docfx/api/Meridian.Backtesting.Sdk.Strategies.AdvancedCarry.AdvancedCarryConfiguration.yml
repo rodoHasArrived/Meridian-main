@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdvancedCarryConfiguration
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 52
+    startLine: 77
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 52
+    startLine: 77
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -99,11 +99,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptimizationMethod
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 53
+    startLine: 78
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -128,11 +128,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskAversion
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 54
+    startLine: 79
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -157,11 +157,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskFreeRate
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 55
+    startLine: 80
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -186,11 +186,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Risk
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 56
+    startLine: 81
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -215,11 +215,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Execution
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 57
+    startLine: 82
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -244,11 +244,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveRisk
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 59
+    startLine: 84
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -273,11 +273,11 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveExecution
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
-    startLine: 60
+    startLine: 85
   assemblies:
   - Meridian.Backtesting.Sdk
   namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry

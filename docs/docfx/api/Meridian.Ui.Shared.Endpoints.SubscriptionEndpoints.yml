@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSubscriptionEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs

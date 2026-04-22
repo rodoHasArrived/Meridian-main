@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.FundStructure
+  commentId: N:Meridian.Application.FundStructure
+  id: Meridian.Application.FundStructure
+  children:
+  - Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  - Meridian.Application.FundStructure.IFundStructureService
+  - Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  - Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.FundStructure
+  nameWithType: Meridian.Application.FundStructure
+  fullName: Meridian.Application.FundStructure
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  commentId: T:Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+  href: Meridian.Application.FundStructure.GovernanceSharedDataAccessService.html
+  name: GovernanceSharedDataAccessService
+  nameWithType: GovernanceSharedDataAccessService
+  fullName: Meridian.Application.FundStructure.GovernanceSharedDataAccessService
+- uid: Meridian.Application.FundStructure.IFundStructureService
+  commentId: T:Meridian.Application.FundStructure.IFundStructureService
+  parent: Meridian.Application.FundStructure
+  href: Meridian.Application.FundStructure.IFundStructureService.html
+  name: IFundStructureService
+  nameWithType: IFundStructureService
+  fullName: Meridian.Application.FundStructure.IFundStructureService
+- uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  commentId: T:Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  parent: Meridian.Application.FundStructure
+  href: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.html
+  name: IGovernanceSharedDataAccessService
+  nameWithType: IGovernanceSharedDataAccessService
+  fullName: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService
+  commentId: T:Meridian.Application.FundStructure.InMemoryFundStructureService
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html
+  name: InMemoryFundStructureService
+  nameWithType: InMemoryFundStructureService
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService
+- uid: Meridian.Application.FundStructure
+  commentId: N:Meridian.Application.FundStructure
+  href: Meridian.html
+  name: Meridian.Application.FundStructure
+  nameWithType: Meridian.Application.FundStructure
+  fullName: Meridian.Application.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundStructure
+    name: FundStructure
+    href: Meridian.Application.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundStructure
+    name: FundStructure
+    href: Meridian.Application.FundStructure.html

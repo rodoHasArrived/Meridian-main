@@ -26,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerOrder
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 155
+    startLine: 220
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -64,11 +64,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 158
+    startLine: 223
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -95,11 +95,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 161
+    startLine: 226
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -126,11 +126,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 164
+    startLine: 229
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -157,11 +157,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 167
+    startLine: 232
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -188,11 +188,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 170
+    startLine: 235
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -219,11 +219,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 173
+    startLine: 238
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -250,11 +250,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 176
+    startLine: 241
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -281,11 +281,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 179
+    startLine: 244
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -312,11 +312,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 182
+    startLine: 247
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -343,11 +343,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 185
+    startLine: 250
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk
@@ -374,11 +374,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-    startLine: 188
+    startLine: 253
   assemblies:
   - Meridian.Execution.Sdk
   namespace: Meridian.Execution.Sdk

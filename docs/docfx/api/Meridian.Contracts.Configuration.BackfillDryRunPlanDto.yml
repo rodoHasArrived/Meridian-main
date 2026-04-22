@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillDryRunPlanDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 434
+    startLine: 329
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 436
+    startLine: 331
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -95,11 +95,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 439
+    startLine: 334
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -136,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationErrors
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 442
+    startLine: 337
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

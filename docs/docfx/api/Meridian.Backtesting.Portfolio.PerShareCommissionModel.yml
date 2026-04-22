@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerShareCommissionModel
     path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Calculate
     path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs

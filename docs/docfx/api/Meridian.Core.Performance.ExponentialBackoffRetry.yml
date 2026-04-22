@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExponentialBackoffRetry
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentRetryCount
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanRetry
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextDelay
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WaitAsync
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs

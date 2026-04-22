@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfNavigationEventArgs = System.Windows.Navigation.NavigationEventArgs;
@@ -54,6 +55,21 @@ public partial class MainPage : Page
         }
 
         _viewModel.OpenSelectedCommandPalettePageCommand.Execute(null);
+    }
+
+    private void WorkspaceNavigationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ListBox { SelectedItem: ShellNavigationItem item })
+        {
+            return;
+        }
+
+        if (string.Equals(_viewModel.CurrentPageTag, item.PageTag, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _viewModel.NavigateToPageCommand.Execute(item.PageTag);
     }
 
     private void OnOpenCommandPaletteClick(object sender, RoutedEventArgs e)

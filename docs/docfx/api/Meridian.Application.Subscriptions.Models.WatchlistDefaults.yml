@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WatchlistDefaults
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/Watchlist.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Core/Subscriptions/Models/Watchlist.cs

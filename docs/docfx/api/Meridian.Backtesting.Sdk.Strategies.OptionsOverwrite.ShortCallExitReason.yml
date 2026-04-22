@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortCallExitReason
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiredWorthless
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Assigned
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeProfitRoll
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskRoll
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DividendRiskRoll
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForcedClose
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs

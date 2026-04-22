@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataFileInfo
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastModified
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checksum
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs

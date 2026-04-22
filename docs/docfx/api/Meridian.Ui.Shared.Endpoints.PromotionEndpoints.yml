@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapPromotionEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs

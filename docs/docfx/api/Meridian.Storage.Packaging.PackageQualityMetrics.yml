@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageQualityMetrics
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityScore
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExpectedEvents
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalActualEvents
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -308,7 +308,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceErrors
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DuplicatesFound
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -390,7 +390,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutliersDetected
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -431,7 +431,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Grade
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -472,7 +472,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs

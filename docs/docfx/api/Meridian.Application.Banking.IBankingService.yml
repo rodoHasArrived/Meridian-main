@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Banking/IBankingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBankingService
     path: ../../src/Meridian.Application/Banking/IBankingService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Banking/IBankingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitiatePaymentAsync
     path: ../../src/Meridian.Application/Banking/IBankingService.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Banking/IBankingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApprovePaymentAsync
     path: ../../src/Meridian.Application/Banking/IBankingService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Banking/IBankingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectPaymentAsync
     path: ../../src/Meridian.Application/Banking/IBankingService.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Banking/IBankingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPendingPaymentsAsync
     path: ../../src/Meridian.Application/Banking/IBankingService.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Banking/IBankingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SeedBankTransactionsAsync
     path: ../../src/Meridian.Application/Banking/IBankingService.cs

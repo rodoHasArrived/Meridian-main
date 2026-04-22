@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ILiveFeedAdapter
     path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedSymbols
     path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastTrade
     path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastQuote
     path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastOrderBook
     path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
