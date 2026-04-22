@@ -26,9 +26,21 @@ public sealed record FundLedgerQuery(
     string FundProfileId,
     DateTimeOffset? AsOf = null,
     FundLedgerScope ScopeKind = FundLedgerScope.Consolidated,
-    string? ScopeId = null,
-    IReadOnlyList<string>? SelectedLedgerIds = null);
+    string? ScopeId = null)
+{
+    public IReadOnlyList<string>? SelectedLedgerIds { get; init; }
 
+    public FundLedgerQuery(
+        string FundProfileId,
+        DateTimeOffset? AsOf,
+        FundLedgerScope ScopeKind,
+        string? ScopeId,
+        IReadOnlyList<string>? SelectedLedgerIds)
+        : this(FundProfileId, AsOf, ScopeKind, ScopeId)
+    {
+        this.SelectedLedgerIds = SelectedLedgerIds;
+    }
+}
 /// <summary>
 /// Trial-balance row for a fund ledger view.
 /// </summary>
