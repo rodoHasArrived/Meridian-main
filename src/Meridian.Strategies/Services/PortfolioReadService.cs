@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 
@@ -30,12 +31,8 @@ public sealed class PortfolioReadService
             return summary;
         }
 
-        var lookup = await ResolveSecuritiesAsync(
-                summary.Positions
-                    .Select(static position => position.Symbol)
-                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol)),
-                ct)
-            .ConfigureAwait(false);
+        var lookupRequests = BuildLookupRequests(entry, summary);
+        var lookup = await ResolveSecuritiesAsync(lookupRequests, ct).ConfigureAwait(false);
 
         var positions = summary.Positions
             .Select(position => position with
@@ -102,8 +99,52 @@ public sealed class PortfolioReadService
             Positions: positions);
     }
 
+    private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(
+        StrategyRunEntry entry,
+        PortfolioSummary summary)
+    {
+        var symbolsToSecurityId = entry.Metrics?.Ledger?.Journal
+            .Where(static item => !string.IsNullOrWhiteSpace(item.Metadata.Symbol))
+            .GroupBy(
+                static item => item.Metadata.Symbol!,
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group =>
+                {
+                    var candidates = group
+                        .Select(static entry => entry.Metadata.SecurityId)
+                        .Where(static id => id.HasValue)
+                        .Select(static id => id!.Value)
+                        .Distinct()
+                        .ToArray();
+                    return candidates.Length == 1 ? candidates[0] : (Guid?)null;
+                },
+                StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, Guid?>(StringComparer.OrdinalIgnoreCase);
+
+        return summary.Positions
+            .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
+            .GroupBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                group =>
+                {
+                    var symbol = group.Key;
+                    var resolvedSecurityId = symbolsToSecurityId.GetValueOrDefault(symbol);
+                    var source = resolvedSecurityId is null ? "portfolio-position-symbol" : "ledger-metadata-security-id";
+                    return new SecurityReferenceLookupRequest(
+                        SecurityId: resolvedSecurityId,
+                        IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                        IdentifierValue: symbol,
+                        Symbol: symbol,
+                        Source: source);
+                },
+                StringComparer.OrdinalIgnoreCase);
+    }
+
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(
-        IEnumerable<string> symbols,
+        IReadOnlyDictionary<string, SecurityReferenceLookupRequest> requests,
         CancellationToken ct)
     {
         var lookup = new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
@@ -112,11 +153,19 @@ public sealed class PortfolioReadService
             return lookup;
         }
 
-        foreach (var symbol in symbols.Distinct(StringComparer.OrdinalIgnoreCase))
+        foreach (var (symbol, request) in requests)
         {
-            lookup[symbol] = await _securityReferenceLookup
-                .GetBySymbolAsync(symbol, ct)
-                .ConfigureAwait(false);
+            var resolved = await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false)
+                ?? await _securityReferenceLookup.GetBySymbolAsync(symbol, ct).ConfigureAwait(false);
+
+            lookup[symbol] = resolved is null
+                ? null
+                : resolved with
+                {
+                    LookupSource = request.Source,
+                    LookupPath = resolved.LookupPath ?? (request.SecurityId is null ? "symbol" : "security-id"),
+                    IsInferredMatch = request.SecurityId is null && string.IsNullOrWhiteSpace(request.IdentifierValue)
+                };
         }
 
         return lookup;

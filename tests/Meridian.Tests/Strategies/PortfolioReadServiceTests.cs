@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Moq;
@@ -237,6 +238,81 @@ public sealed class PortfolioReadServiceTests
         summary.Should().NotBeNull();
         summary!.SecurityResolvedCount.Should().Be(1);
         summary.SecurityMissingCount.Should().Be(1);
+    }
+
+
+    [Fact]
+    public async Task BuildSummaryAsync_WithAmbiguousSymbol_PrefersSecurityIdFromLedgerMetadata()
+    {
+        var entry = BuildCompletedRun(finalEquity: 120_000m, realizedPnl: 9_000m, unrealizedPnl: 4_000m);
+        var expectedSecurityId = Guid.NewGuid();
+
+        var ledger = new LedgerImpl();
+        var cash = new LedgerAccount("Cash", Meridian.Ledger.LedgerAccountType.Asset);
+        var gains = new LedgerAccount("Trading Gains", Meridian.Ledger.LedgerAccountType.Revenue, Symbol: "AAPL");
+        ledger.PostLines(
+            timestamp: new DateTimeOffset(2026, 3, 1, 16, 0, 0, TimeSpan.Zero),
+            description: "close-run",
+            lines:
+            [
+                (cash, 100m, 0m),
+                (gains, 0m, 100m)
+            ],
+            metadata: new JournalEntryMetadata(Symbol: "AAPL", SecurityId: expectedSecurityId, Institution: "XNAS"));
+
+        entry = entry with { Metrics = entry.Metrics! with { Ledger = ledger } };
+
+        var resolved = new WorkstationSecurityReference(
+            SecurityId: expectedSecurityId,
+            DisplayName: "Apple Inc. NASDAQ",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL");
+
+        var lookup = new Mock<ISecurityReferenceLookup>();
+        lookup
+            .Setup(l => l.GetByCanonicalAsync(
+                It.Is<SecurityReferenceLookupRequest>(r =>
+                    r.Symbol == "AAPL"
+                    && r.SecurityId == expectedSecurityId
+                    && r.Source == "ledger-metadata-security-id"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(resolved);
+
+        var service = new PortfolioReadService(lookup.Object);
+        var summary = await service.BuildSummaryAsync(entry);
+
+        summary.Should().NotBeNull();
+        summary!.Positions.Single(static p => p.Symbol == "AAPL").Security!.SecurityId.Should().Be(expectedSecurityId);
+    }
+
+    [Fact]
+    public async Task BuildSummaryAsync_WithCanonicalMiss_FallsBackToSymbolLookup()
+    {
+        var entry = BuildCompletedRun(finalEquity: 120_000m, realizedPnl: 9_000m, unrealizedPnl: 4_000m);
+
+        var fallback = new WorkstationSecurityReference(
+            SecurityId: Guid.NewGuid(),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL");
+
+        var lookup = new Mock<ISecurityReferenceLookup>();
+        lookup
+            .Setup(l => l.GetByCanonicalAsync(It.IsAny<SecurityReferenceLookupRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((WorkstationSecurityReference?)null);
+        lookup
+            .Setup(l => l.GetBySymbolAsync("AAPL", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(fallback);
+
+        var service = new PortfolioReadService(lookup.Object);
+        var summary = await service.BuildSummaryAsync(entry);
+
+        summary.Should().NotBeNull();
+        summary!.Positions.Single(static p => p.Symbol == "AAPL").Security!.DisplayName.Should().Be("Apple Inc.");
     }
 
     [Fact]
