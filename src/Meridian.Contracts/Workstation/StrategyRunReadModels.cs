@@ -164,7 +164,10 @@ public sealed record WorkstationSecurityReference(
     string? MatchedIdentifierKind = null,
     string? MatchedIdentifierValue = null,
     string? MatchedProvider = null,
-    string? ResolutionReason = null);
+    string? ResolutionReason = null,
+    string? LookupPath = null,
+    string? LookupSource = null,
+    bool IsInferredMatch = false);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.

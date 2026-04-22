@@ -1,3 +1,4 @@
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Strategies.Models;
@@ -31,18 +32,15 @@ public sealed class LedgerReadService
             return summary;
         }
 
-        var lookup = await ResolveSecuritiesAsync(
-                summary.TrialBalance
-                    .Select(static line => line.Symbol)
-                    .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))!
-                    .Select(static symbol => symbol!),
-                ct)
-            .ConfigureAwait(false);
+        var requests = BuildLookupRequests(entry, summary.TrialBalance);
+        var lookup = await ResolveSecuritiesAsync(requests, ct).ConfigureAwait(false);
 
         var trialBalance = summary.TrialBalance
             .Select(line => line with
             {
-                Security = line.Symbol is not null ? lookup.GetValueOrDefault(line.Symbol) : null
+                Security = line.Symbol is not null
+                    ? lookup.GetValueOrDefault(ComposeLineKey(line.Symbol, line.FinancialAccountId))
+                    : null
             })
             .ToArray();
 
@@ -141,8 +139,61 @@ public sealed class LedgerReadService
             .Where(summary => summary.Account.AccountType == accountType)
             .Sum(static summary => summary.Balance);
 
+    private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(
+        StrategyRunEntry entry,
+        IReadOnlyList<LedgerTrialBalanceLine> trialBalance)
+    {
+        var metadataByKey = entry.Metrics?.Ledger?.Journal
+            .Where(static item => !string.IsNullOrWhiteSpace(item.Metadata.Symbol))
+            .GroupBy(
+                static item => ComposeLineKey(item.Metadata.Symbol!, item.Metadata.FinancialAccountId),
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group =>
+                {
+                    var securityIds = group
+                        .Select(static item => item.Metadata.SecurityId)
+                        .Where(static id => id.HasValue)
+                        .Select(static id => id!.Value)
+                        .Distinct()
+                        .ToArray();
+                    var venues = group
+                        .Select(static item => item.Metadata.Institution)
+                        .Where(static venue => !string.IsNullOrWhiteSpace(venue))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+
+                    return (
+                        SecurityId: securityIds.Length == 1 ? securityIds[0] : (Guid?)null,
+                        Venue: venues.Length == 1 ? venues[0] : null);
+                },
+                StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, (Guid? SecurityId, string? Venue)>(StringComparer.OrdinalIgnoreCase);
+
+        return trialBalance
+            .Where(static line => !string.IsNullOrWhiteSpace(line.Symbol))
+            .GroupBy(static line => ComposeLineKey(line.Symbol!, line.FinancialAccountId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                group =>
+                {
+                    var representative = group.First();
+                    var key = group.Key;
+                    var meta = metadataByKey.GetValueOrDefault(key);
+                    return new SecurityReferenceLookupRequest(
+                        SecurityId: meta.SecurityId,
+                        IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                        IdentifierValue: representative.Symbol,
+                        Symbol: representative.Symbol,
+                        Venue: meta.Venue ?? representative.FinancialAccountId,
+                        Source: meta.SecurityId is null ? "ledger-trial-balance" : "ledger-journal-metadata");
+                },
+                StringComparer.OrdinalIgnoreCase);
+    }
+
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(
-        IEnumerable<string> symbols,
+        IReadOnlyDictionary<string, SecurityReferenceLookupRequest> requests,
         CancellationToken ct)
     {
         var lookup = new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
@@ -151,13 +202,27 @@ public sealed class LedgerReadService
             return lookup;
         }
 
-        foreach (var symbol in symbols.Distinct(StringComparer.OrdinalIgnoreCase))
+        foreach (var (key, request) in requests)
         {
-            lookup[symbol] = await _securityReferenceLookup
-                .GetBySymbolAsync(symbol, ct)
-                .ConfigureAwait(false);
+            var resolved = await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false)
+                ?? (request.Symbol is null
+                    ? null
+                    : await _securityReferenceLookup.GetBySymbolAsync(request.Symbol, ct).ConfigureAwait(false));
+
+            lookup[key] = resolved is null
+                ? null
+                : resolved with
+                {
+                    LookupSource = request.Source,
+                    LookupPath = resolved.LookupPath ?? (request.SecurityId is null ? "symbol" : "security-id")
+                };
         }
 
         return lookup;
     }
+
+    private static string ComposeLineKey(string symbol, string? financialAccountId)
+        => string.IsNullOrWhiteSpace(financialAccountId)
+            ? symbol.Trim()
+            : $"{symbol.Trim()}::{financialAccountId.Trim()}";
 }

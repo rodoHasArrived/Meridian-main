@@ -16,16 +16,61 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
     }
 
-    public async Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
+    public Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
+        => GetByCanonicalAsync(
+            new SecurityReferenceLookupRequest(
+                IdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+                IdentifierValue: symbol,
+                Symbol: symbol,
+                Source: "symbol"),
+            ct);
+
+    public async Task<WorkstationSecurityReference?> GetByCanonicalAsync(
+        SecurityReferenceLookupRequest request,
+        CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(symbol))
+        ArgumentNullException.ThrowIfNull(request);
+
+        var normalizedIdentifierKind = request.IdentifierKind;
+        var normalizedIdentifierValue = request.IdentifierValue;
+        var lookupPath = "none";
+        SecurityDetailDto? detail = null;
+
+        if (request.SecurityId is Guid securityId)
         {
-            return null;
+            detail = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            lookupPath = "security-id";
         }
 
-        var detail = await _queryService
-            .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, provider: null, ct)
-            .ConfigureAwait(false);
+        if (detail is null)
+        {
+            var identifierValue = normalizedIdentifierValue;
+            if (string.IsNullOrWhiteSpace(identifierValue))
+            {
+                identifierValue = string.IsNullOrWhiteSpace(request.Symbol) ? null : request.Symbol;
+                if (identifierValue is not null && string.IsNullOrWhiteSpace(normalizedIdentifierKind))
+                {
+                    normalizedIdentifierKind = SecurityIdentifierKind.Ticker.ToString();
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(identifierValue))
+            {
+                if (!Enum.TryParse<SecurityIdentifierKind>(normalizedIdentifierKind, ignoreCase: true, out var kind))
+                {
+                    kind = SecurityIdentifierKind.Ticker;
+                }
+
+                detail = await _queryService
+                    .GetByIdentifierAsync(kind, identifierValue, request.Venue, ct)
+                    .ConfigureAwait(false);
+
+                normalizedIdentifierKind = kind.ToString();
+                normalizedIdentifierValue = identifierValue;
+                lookupPath = request.Venue is null ? "identifier" : "identifier+venue";
+            }
+        }
+
         if (detail is null)
         {
             return null;
@@ -34,6 +79,10 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
         var primaryIdentifier = detail.Identifiers
             .FirstOrDefault(static identifier => identifier.IsPrimary)?.Value
             ?? detail.Identifiers.FirstOrDefault()?.Value;
+
+        var inferred = request.SecurityId is null
+            && !string.IsNullOrWhiteSpace(request.Symbol)
+            && !string.Equals(normalizedIdentifierValue, request.Symbol, StringComparison.OrdinalIgnoreCase);
 
         return new WorkstationSecurityReference(
             SecurityId: detail.SecurityId,
@@ -44,10 +93,13 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             PrimaryIdentifier: primaryIdentifier,
             SubType: DeriveSubType(detail.AssetClass),
             CoverageStatus: WorkstationSecurityCoverageStatus.Resolved,
-            MatchedIdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
-            MatchedIdentifierValue: symbol,
-            MatchedProvider: null,
-            ResolutionReason: null);
+            MatchedIdentifierKind: normalizedIdentifierKind,
+            MatchedIdentifierValue: normalizedIdentifierValue,
+            MatchedProvider: request.Venue,
+            ResolutionReason: request.Source,
+            LookupPath: lookupPath,
+            LookupSource: request.Source,
+            IsInferredMatch: inferred);
     }
 
     /// <summary>
