@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-22 16:50:38 UTC. Do not edit manually.
+> Auto-generated on 2026-04-22 23:13:30 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -6162,7 +6162,8 @@ Meridian-main
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
-│   │   │   └── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunReadService.cs
+│   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   ├── Storage
 │   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── JsonlPromotionRecordStore.cs
