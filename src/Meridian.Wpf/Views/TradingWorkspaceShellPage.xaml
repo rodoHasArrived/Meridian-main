@@ -4,13 +4,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Trading Cockpit"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellTitle}"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
 
     <Grid Margin="20">
@@ -41,9 +42,9 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Trading Cockpit"
+                            <TextBlock Text="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellTitle}"
                                        Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Paper and live execution, active positions, and fund-aware risk posture from a single cockpit shell."
+                            <TextBlock Text="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellSubtitle}"
                                        Margin="0,6,0,0"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -123,9 +124,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Trading Cockpit",
-                WorkspaceSubtitle = "Risk-aware trading shell for live posture, blotter review, safe staging, and docked execution detail.",
-                PrimaryScopeLabel = "Desk",
+                WorkspaceTitle = WorkspaceCopyCatalog.Trading.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.Trading.ShellSubtitle,
+                PrimaryScopeLabel = WorkspaceCopyCatalog.Trading.PrimaryScopeLabel,
                 PrimaryScopeValue = summary.ActiveRunContext?.StrategyName ?? (_fundContextService.CurrentFundProfile?.DisplayName ?? "No active trading run"),
                 AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = summary.ActiveRunContext is null ? "Awaiting active run" : $"{summary.ActiveRunContext.ModeLabel} · {summary.ActiveRunContext.StatusLabel}",

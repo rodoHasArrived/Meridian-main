@@ -55,7 +55,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
         _runHandles[handle.RunId] = handle;
 
-        var monitorCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token, ct);
+        var monitorCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
         var monitorTask = MonitorRunCompletionAsync(entry, handle, engine, monitorCts);
         if (!_monitorTasks.TryAdd(handle.RunId, monitorTask))
         {
@@ -95,6 +95,18 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         var handle = ResolveHandle(runId);
         var engine = ResolveEngine(handle.Engine);
         return engine.GetCanonicalResultAsync(handle.EngineRunHandle, ct);
+    }
+
+    /// <summary>
+    /// Requests cancellation for a previously started Backtest Studio run.
+    /// </summary>
+    public Task CancelAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+
+        var handle = ResolveHandle(runId);
+        var engine = ResolveEngine(handle.Engine);
+        return engine.CancelAsync(handle.EngineRunHandle, ct);
     }
 
     public async ValueTask DisposeAsync()
