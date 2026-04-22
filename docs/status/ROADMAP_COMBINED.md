@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
 **Last Updated:** 2026-04-20
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 17 roadmap
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 

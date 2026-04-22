@@ -17,7 +17,8 @@
 ## Program Cadence and Operating Window
 
 - **Cadence:** weekly subsystem review (Mon), cross-subsystem interop review (Wed), operator-readiness review (Fri)
-- **Current operating window:** 2026-04-20 through 2026-06-26
+- **Operating window:** 2026-04-20 through 2026-06-26
+- **Current commitment window:** 2026-04-20 through 2026-05-29
 - **Status publication rule:** update this dashboard at least once per week; release-governance decisions reference this file plus `provider-validation-matrix.md`
 
 ---
@@ -48,32 +49,32 @@
 
 ## Entry/Exit Gate Checklist by Wave
 
-## DK1 - Data quality + provider trust
+### DK1 - Data quality + provider trust
 
-### Entry checklist
+#### Entry checklist
 
 - [x] **Parity entry:** Wave 1 closure evidence remains current and reproducible.
 - [ ] **Explainability entry:** trust signals have operator-visible source and rationale.
 - [ ] **Calibration entry:** baseline trust thresholds are declared for pilot operations.
 - [ ] **Operator entry:** Data Ops + Trading approve DK1 pilot scope.
 
-### Exit checklist
+#### Exit checklist
 
 - [ ] **Parity pass:** cockpit views match validated provider/replay results for pilot scenarios.
 - [ ] **Explainability pass:** every trust alert maps to source, reason code, and operator action.
 - [ ] **Calibration pass:** thresholds tuned with documented false-positive/false-negative review.
 - [ ] **Operator sign-off:** Data Ops + Trading owners approve DK1 completion.
 
-## DK2 - Promotion + export + reconciliation
+### DK2 - Promotion + export + reconciliation
 
-### Entry checklist
+#### Entry checklist
 
 - [ ] **Parity entry:** DK1 is signed and shared contract seams are active.
 - [ ] **Explainability entry:** promotion/export flows emit audit rationale.
 - [ ] **Calibration entry:** reconciliation tolerances and severities are defined.
 - [ ] **Operator entry:** Trading + Governance approve DK2 pilot playbook.
 
-### Exit checklist
+#### Exit checklist
 
 - [ ] **Parity pass:** promoted run, export, and reconciliation outputs agree across workstation/API/governance views.
 - [ ] **Explainability pass:** end-to-end trace from trusted input to governed output is operator-visible.
