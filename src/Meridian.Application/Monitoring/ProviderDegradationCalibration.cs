@@ -394,10 +394,23 @@ public static class ProviderCalibrationReportWriter
         builder.AppendLine("| Severity | Baseline precision | Candidate precision | Baseline recall | Candidate recall | Threshold (candidate) |");
         builder.AppendLine("|---|---:|---:|---:|---:|---:|");
 
-        foreach (var candidate in snapshot.CandidateMetrics.OrderBy(m => m.Severity))
+        static string FormatMetric(double? value) => value.HasValue ? value.Value.ToString("F3") : "N/A";
+
+        var baselineBySeverity = snapshot.BaselineMetrics.ToDictionary(m => m.Severity);
+        var candidateBySeverity = snapshot.CandidateMetrics.ToDictionary(m => m.Severity);
+        var severities = snapshot.BaselineMetrics
+            .Select(m => m.Severity)
+            .Concat(snapshot.CandidateMetrics.Select(m => m.Severity))
+            .Distinct()
+            .OrderBy(severity => severity);
+
+        foreach (var severity in severities)
         {
-            var baseline = snapshot.BaselineMetrics.Single(m => m.Severity == candidate.Severity);
-            builder.AppendLine($"| {candidate.Severity} | {baseline.Precision:F3} | {candidate.Precision:F3} | {baseline.Recall:F3} | {candidate.Recall:F3} | {candidate.Threshold:F3} |");
+            baselineBySeverity.TryGetValue(severity, out var baseline);
+            candidateBySeverity.TryGetValue(severity, out var candidate);
+
+            builder.AppendLine(
+                $"| {severity} | {FormatMetric(baseline?.Precision)} | {FormatMetric(candidate?.Precision)} | {FormatMetric(baseline?.Recall)} | {FormatMetric(candidate?.Recall)} | {FormatMetric(candidate?.Threshold)} |");
         }
 
         builder.AppendLine();
