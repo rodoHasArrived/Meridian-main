@@ -43,7 +43,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
     private string _currentPageTitle = "Research Workspace";
-    private string _currentPageSubtitle = "Backtest studio shell with active run context, compare lanes, and promotion rails.";
+    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor research outcomes.";
     private bool _tickerStripVisible;
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
