@@ -58,7 +58,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
         // Track which check IDs originated from the banking/cash layer.
         var bankCheckIds = new HashSet<string>(
-            ["bank-net-vs-ledger-cash", "bank-ledger-coverage-missing", "bank-coverage-missing"],
+            ["bank-net-vs-ledger-cash", "bank-ledger-coverage-missing", "bank-coverage-missing", "external-statement-vs-internal-cash"],
             StringComparer.Ordinal);
 
         var matches = new List<ReconciliationMatchDto>(results.Length);
