@@ -66,6 +66,31 @@ public sealed record FundJournalLine(
     IReadOnlyList<string>? FinancialAccountIds = null);
 
 /// <summary>
+/// Aggregated ledger totals for a ledger scope or slice.
+/// </summary>
+public sealed record FundLedgerTotalsDto(
+    int JournalEntryCount,
+    int LedgerEntryCount,
+    decimal AssetBalance,
+    decimal LiabilityBalance,
+    decimal EquityBalance,
+    decimal RevenueBalance,
+    decimal ExpenseBalance);
+
+/// <summary>
+/// Slice-level ledger projection that supports governance drill-in by scope/group.
+/// </summary>
+public sealed record FundLedgerSliceDto(
+    string SliceKey,
+    FundLedgerScope ScopeKind,
+    string? ScopeId,
+    string DisplayName,
+    FundLedgerTotalsDto Totals,
+    IReadOnlyList<FundTrialBalanceLine> TrialBalance,
+    IReadOnlyList<FundJournalLine> Journal,
+    IReadOnlyDictionary<string, string>? Metadata = null);
+
+/// <summary>
 /// Governance-facing fund ledger summary.
 /// </summary>
 public sealed record FundLedgerSummary(
