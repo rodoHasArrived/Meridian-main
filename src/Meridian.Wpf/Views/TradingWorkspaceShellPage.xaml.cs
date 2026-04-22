@@ -19,6 +19,7 @@ namespace Meridian.Wpf.Views;
 public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 {
     internal readonly record struct TradingPortfolioNavigationTarget(string PageTag, PaneDropAction Action, string? RunId);
+    internal readonly record struct TradingRunReviewNavigationTarget(string PageTag, PaneDropAction Action, string? RunId, string StatusMessage);
 
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
@@ -408,16 +409,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private async void OpenRunReview_Click(object sender, RoutedEventArgs e)
     {
-        var activeRun = await _runService.GetActiveRunContextAsync().ConfigureAwait(true);
-        if (activeRun is null)
-        {
-            DeskActionStatusText.Text = "No active trading run is selected. Opened strategy runs so a review target can be chosen.";
-            NavigationService.NavigateTo("StrategyRuns");
-            return;
-        }
-
-        DeskActionStatusText.Text = $"Run review opened for {activeRun.StrategyName}.";
-        OpenWorkspacePage(TradingDockManager, "RunDetail", PaneDropAction.SplitRight, activeRun.RunId);
+        var target = ResolveRunReviewNavigationTarget(await _runService.GetActiveRunContextAsync().ConfigureAwait(true));
+        DeskActionStatusText.Text = target.StatusMessage;
+        OpenWorkspacePage(TradingDockManager, target.PageTag, target.Action, target.RunId);
     }
 
     private async void OpenPortfolio_Click(object sender, RoutedEventArgs e)
@@ -542,4 +536,17 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         => activeRun is null
             ? new TradingPortfolioNavigationTarget("AccountPortfolio", PaneDropAction.Replace, null)
             : new TradingPortfolioNavigationTarget("RunPortfolio", PaneDropAction.SplitLeft, activeRun.RunId);
+
+    internal static TradingRunReviewNavigationTarget ResolveRunReviewNavigationTarget(ActiveRunContext? activeRun)
+        => activeRun is null
+            ? new TradingRunReviewNavigationTarget(
+                "AccountPortfolio",
+                PaneDropAction.SplitRight,
+                null,
+                "No active trading run is selected. Opened account portfolio to keep run-review context inside Trading.")
+            : new TradingRunReviewNavigationTarget(
+                "RunDetail",
+                PaneDropAction.SplitRight,
+                activeRun.RunId,
+                $"Run review opened for {activeRun.StrategyName}.");
 }

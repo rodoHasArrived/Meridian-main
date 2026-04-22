@@ -29,4 +29,30 @@ public sealed class TradingWorkspaceShellPageTests
         target.Action.Should().Be(PaneDropAction.Replace);
         target.RunId.Should().BeNull();
     }
+
+    [Fact]
+    public void ResolveRunReviewNavigationTarget_WithActiveRun_UsesRunDetailInsideTradingShell()
+    {
+        var target = TradingWorkspaceShellPage.ResolveRunReviewNavigationTarget(new ActiveRunContext
+        {
+            RunId = "paper-run-42",
+            StrategyName = "Alpha Mean Reversion"
+        });
+
+        target.PageTag.Should().Be("RunDetail");
+        target.Action.Should().Be(PaneDropAction.SplitRight);
+        target.RunId.Should().Be("paper-run-42");
+        target.StatusMessage.Should().Be("Run review opened for Alpha Mean Reversion.");
+    }
+
+    [Fact]
+    public void ResolveRunReviewNavigationTarget_WithoutActiveRun_FallsBackToAccountPortfolioInsideTradingShell()
+    {
+        var target = TradingWorkspaceShellPage.ResolveRunReviewNavigationTarget(null);
+
+        target.PageTag.Should().Be("AccountPortfolio");
+        target.Action.Should().Be(PaneDropAction.SplitRight);
+        target.RunId.Should().BeNull();
+        target.StatusMessage.Should().Contain("inside Trading");
+    }
 }
