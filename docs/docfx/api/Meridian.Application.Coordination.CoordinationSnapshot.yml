@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoordinationSnapshot
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeldLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -301,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeaderLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConflictCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -359,7 +359,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeoverCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -388,7 +388,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewalFailureCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -417,7 +417,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -446,7 +446,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedLeaseCount
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -475,7 +475,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeldLeases
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -504,7 +504,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedResources
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -533,7 +533,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptedLeaseFiles
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs
@@ -562,7 +562,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/CoordinationSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapturedAtUtc
     path: ../../src/Meridian.Application/Coordination/CoordinationSnapshot.cs

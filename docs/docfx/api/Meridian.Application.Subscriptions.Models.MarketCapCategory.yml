@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCapCategory
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nano
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Micro
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Small
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mid
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Large
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mega
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs

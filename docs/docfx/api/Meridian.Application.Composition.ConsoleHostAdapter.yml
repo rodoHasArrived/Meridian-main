@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsoleHostAdapter
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 110
+    startLine: 34
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 115
+    startLine: 39
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -91,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureServices
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 120
+    startLine: 44
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -127,11 +127,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureApplication
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 125
+    startLine: 49
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition

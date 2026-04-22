@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  id: EnvironmentValidationSeverity
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Error
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Info
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentValidationSeverity
+  nameWithType: EnvironmentValidationSeverity
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentValidationSeverity
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<EnvironmentValidationSeverity>))]
+
+      public enum EnvironmentValidationSeverity
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of EnvironmentValidationSeverity)))>
+
+      Public Enum EnvironmentValidationSeverity
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity}
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Info
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Info
+  id: Info
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: EnvironmentValidationSeverity.Info
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Warning
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Warning
+  id: Warning
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: EnvironmentValidationSeverity.Warning
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Error
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Error
+  id: Error
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: EnvironmentValidationSeverity.Error
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity.html
+  name: EnvironmentValidationSeverity
+  nameWithType: EnvironmentValidationSeverity
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampMonotonicityConfig
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToleranceMs
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownMs
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectTimeGaps
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeGapThresholdSeconds
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapAlertCooldownMs
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs

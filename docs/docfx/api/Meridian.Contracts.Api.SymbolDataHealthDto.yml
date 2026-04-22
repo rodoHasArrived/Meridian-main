@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolDataHealthDto
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasQuotes
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasDepth
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDepthStale
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastQuoteTimestamp
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastOrderBookTimestamp
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs

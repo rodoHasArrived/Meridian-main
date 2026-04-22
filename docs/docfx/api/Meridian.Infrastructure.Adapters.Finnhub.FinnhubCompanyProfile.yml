@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinnhubCompanyProfile
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Industry
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IpoDate
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogoUrl
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCap
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -393,7 +393,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Phone
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -434,7 +434,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharesOutstanding
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -475,7 +475,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ticker
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
@@ -516,7 +516,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebUrl
     path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs

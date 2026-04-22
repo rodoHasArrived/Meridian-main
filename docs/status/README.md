@@ -1,7 +1,7 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-17
-**Current Delivery Theme:** Preserving the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
+**Last Reviewed:** 2026-04-21
+**Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
 
@@ -24,10 +24,13 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md) | Concise description of Meridian's intended finished product |
 | [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | Current-vs-target capability inventory across platform and product areas |
 | [provider-validation-matrix.md](provider-validation-matrix.md) | Evidence-backed provider readiness matrix used by readiness docs |
+| [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | Compatibility, deprecation, and migration policy for workstation/strategy/ledger contracts |
 | [production-status.md](production-status.md) | Current production and pilot-readiness caveats |
+| [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md) | Single hand-authored DK program status dashboard for subsystem readiness, gate state, and rollback posture |
 | [IMPROVEMENTS.md](IMPROVEMENTS.md) | Tracked implementation themes and recommended focus areas |
 | [FULL_IMPLEMENTATION_TODO_2026_03_20.md](FULL_IMPLEMENTATION_TODO_2026_03_20.md) | Normalized broader implementation backlog |
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
+| [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
 
 ## Generated Status Reports
 
@@ -60,13 +63,25 @@ These dated snapshots remain useful for history, but they no longer act as activ
 
 1. [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md)
 2. [ROADMAP.md](ROADMAP.md)
-3. [production-status.md](production-status.md)
-4. [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
-5. [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
-6. [../plans/README.md](../plans/README.md)
-7. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
-8. [provider-validation-matrix.md](provider-validation-matrix.md)
-9. [IMPROVEMENTS.md](IMPROVEMENTS.md)
+3. [kernel-readiness-dashboard.md](kernel-readiness-dashboard.md)
+4. [production-status.md](production-status.md)
+5. [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
+6. [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
+7. [../plans/README.md](../plans/README.md)
+8. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+9. [provider-validation-matrix.md](provider-validation-matrix.md)
+10. [contract-compatibility-matrix.md](contract-compatibility-matrix.md)
+11. [IMPROVEMENTS.md](IMPROVEMENTS.md)
+
+## Contributor Checklist (Required Headings)
+
+When authoring or editing these doc categories, include the required section headers so docs lint passes:
+
+- **Runbooks** (for example `docs/operations/operator-runbook.md`):
+  - `## Troubleshooting`
+- **Provider setup guides** (`docs/providers/*-setup.md`):
+  - `## Prerequisites`
+  - `## Configuration`
 
 ## Current Status Summary
 
@@ -76,6 +91,7 @@ These dated snapshots remain useful for history, but they no longer act as activ
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
 - **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans
+- **DK program state:** Active implementation window (2026-04-20 to 2026-06-26) with weekly dashboard updates and subsystem milestones
 
 ## Related Documentation
 

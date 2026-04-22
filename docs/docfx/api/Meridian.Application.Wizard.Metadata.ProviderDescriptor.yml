@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescriptor
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiredEnvVars
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlternativeEnvVars
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -269,7 +269,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -303,7 +303,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignupUrl
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -365,7 +365,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocsUrl
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
@@ -396,7 +396,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreeTierDescription
     path: ../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs

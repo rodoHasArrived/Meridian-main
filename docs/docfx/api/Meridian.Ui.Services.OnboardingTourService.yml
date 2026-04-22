@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnboardingTourService
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepChanged
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TourCompleted
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTourActive
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSession
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableTours
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTourForPage
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTour
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextStep
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousStep
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DismissTour
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -406,7 +406,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetTour
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -440,7 +440,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAllTours
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs

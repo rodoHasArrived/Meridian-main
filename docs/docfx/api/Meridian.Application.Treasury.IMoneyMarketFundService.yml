@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMoneyMarketFundService
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLiquidityAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSweepProfileAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundFamilyAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRebuildCheckpointsAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Treasury/IMoneyMarketFundService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildProjectionsAsync
     path: ../../src/Meridian.Application/Treasury/IMoneyMarketFundService.cs

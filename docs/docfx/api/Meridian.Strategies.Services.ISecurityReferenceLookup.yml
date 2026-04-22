@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityReferenceLookup
     path: ../../src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBySymbolAsync
     path: ../../src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityAlert
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issue
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentScore
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Threshold
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recommendation
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs

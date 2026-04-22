@@ -155,6 +155,24 @@ public sealed class BrokerageGatewayAdapterTests
         result.IsValid.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task ValidateOrderAsync_RejectsLimitOnCloseWithoutLimitPrice()
+    {
+        await using var adapter = CreateAdapter();
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = SdkOrderType.LimitOnClose,
+            Quantity = 10
+        };
+
+        var result = await adapter.ValidateOrderAsync(request);
+
+        result.IsValid.Should().BeFalse();
+        result.Reason.Should().Contain("limit price");
+    }
+
     // ── SubmitAsync ────────────────────────────────────────────────────
 
     [Fact]

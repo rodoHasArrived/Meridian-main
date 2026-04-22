@@ -82,12 +82,12 @@ let ``Promotion policy returns eligible for qualifying backtest`` () =
     let decision = PromotionInterop.EvaluateBacktestPromotion(createBacktestResult 0.8 0.10m 0.15m, 0.5, 0.25m, 0.0m)
 
     decision.Eligible |> should equal true
-    decision.RequiresManualReview |> should equal false
+    decision.Outcome |> should equal "approved"
 
 [<Fact>]
 let ``Promotion policy returns ineligible for material threshold miss`` () =
     let decision = PromotionInterop.EvaluateBacktestPromotion(createBacktestResult 0.2 0.40m -0.05m, 0.5, 0.25m, 0.0m)
 
     decision.Eligible |> should equal false
-    decision.RequiresManualReview |> should equal false
+    decision.Outcome |> should equal "requires_human_review"
     decision.Reasons.Length |> should equal 3

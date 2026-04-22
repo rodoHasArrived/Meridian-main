@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionHealthConfig
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatTimeoutSeconds
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMissedHeartbeats
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighLatencyThresholdMs
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/ConnectionHealthMonitor.cs

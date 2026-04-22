@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolTcaSummary
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBuyNotional
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSellNotional
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvgBuyPrice
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AvgSellPrice
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCommission
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommissionRateBps
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFills
     path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/JsonlReplayer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlReplayer
     path: ../../src/Meridian.Storage/Replay/JsonlReplayer.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/JsonlReplayer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Replay/JsonlReplayer.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Replay/JsonlReplayer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadEventsAsync
     path: ../../src/Meridian.Storage/Replay/JsonlReplayer.cs

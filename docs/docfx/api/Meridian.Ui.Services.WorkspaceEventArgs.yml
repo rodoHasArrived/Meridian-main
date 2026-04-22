@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspaceEventArgs
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 171
+    startLine: 181
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Workspace
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 173
+    startLine: 183
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

@@ -14,8 +14,9 @@ items:
   - Meridian.Execution.Services.PaperSessionPersistenceService.GetSessions
   - Meridian.Execution.Services.PaperSessionPersistenceService.InitialiseAsync(System.Threading.CancellationToken)
   - Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
-  - Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
   - Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync(System.String,System.Threading.CancellationToken)
   langs:
   - csharp
   - vb
@@ -26,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionPersistenceService
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -79,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -113,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialiseAsync
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -153,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSessionAsync
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -188,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloseSessionAsync
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -226,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessions
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -256,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSession
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
@@ -292,11 +293,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActivePortfolio
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 210
+    startLine: 211
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -328,11 +329,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLedger
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 222
+    startLine: 223
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -355,42 +356,49 @@ items:
   nameWithType.vb: PaperSessionPersistenceService.GetLedger(String)
   fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.GetLedger(String)
   name.vb: GetLedger(String)
-- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
-  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
-  id: RecordOrderUpdate(System.String,Meridian.Execution.Sdk.OrderState)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
+  id: RecordOrderUpdateAsync(System.String,Meridian.Execution.Sdk.OrderState,System.Threading.CancellationToken)
   parent: Meridian.Execution.Services.PaperSessionPersistenceService
   langs:
   - csharp
   - vb
-  name: RecordOrderUpdate(string, OrderState)
-  nameWithType: PaperSessionPersistenceService.RecordOrderUpdate(string, OrderState)
-  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(string, Meridian.Execution.Sdk.OrderState)
+  name: RecordOrderUpdateAsync(string, OrderState, CancellationToken)
+  nameWithType: PaperSessionPersistenceService.RecordOrderUpdateAsync(string, OrderState, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync(string, Meridian.Execution.Sdk.OrderState, System.Threading.CancellationToken)
   type: Method
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: RecordOrderUpdate
+    id: RecordOrderUpdateAsync
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 232
+    startLine: 236
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
-  summary: Records an order status update for a session.
+  summary: >-
+    Records an order status update for a session and does not complete until
+
+    the durable order-history append finishes.
   example: []
   syntax:
-    content: public void RecordOrderUpdate(string sessionId, OrderState orderState)
+    content: public Task RecordOrderUpdateAsync(string sessionId, OrderState orderState, CancellationToken ct = default)
     parameters:
     - id: sessionId
       type: System.String
     - id: orderState
       type: Meridian.Execution.Sdk.OrderState
-    content.vb: Public Sub RecordOrderUpdate(sessionId As String, orderState As OrderState)
-  overload: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate*
-  nameWithType.vb: PaperSessionPersistenceService.RecordOrderUpdate(String, OrderState)
-  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate(String, Meridian.Execution.Sdk.OrderState)
-  name.vb: RecordOrderUpdate(String, OrderState)
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordOrderUpdateAsync(sessionId As String, orderState As OrderState, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync*
+  nameWithType.vb: PaperSessionPersistenceService.RecordOrderUpdateAsync(String, OrderState, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync(String, Meridian.Execution.Sdk.OrderState, System.Threading.CancellationToken)
+  name.vb: RecordOrderUpdateAsync(String, OrderState, CancellationToken)
 - uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
   commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
   id: RecordFillAsync(System.String,Meridian.Execution.Sdk.ExecutionReport,System.Threading.CancellationToken)
@@ -405,11 +413,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordFillAsync
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 256
+    startLine: 257
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -450,11 +458,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaySessionAsync
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 281
+    startLine: 282
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -485,6 +493,49 @@ items:
   nameWithType.vb: PaperSessionPersistenceService.ReplaySessionAsync(String, CancellationToken)
   fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.ReplaySessionAsync(String, System.Threading.CancellationToken)
   name.vb: ReplaySessionAsync(String, CancellationToken)
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync(System.String,System.Threading.CancellationToken)
+  id: VerifyReplayAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.PaperSessionPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: VerifyReplayAsync(string, CancellationToken)
+  nameWithType: PaperSessionPersistenceService.VerifyReplayAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyReplayAsync
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Verifies that the current session portfolio matches the replayed fill-log state.
+
+    This gives operators an explicit continuity check for paper sessions that are
+
+    expected to survive restarts and replay cleanly from durable fills.
+  example: []
+  syntax:
+    content: public Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Services.PaperSessionReplayVerificationDto}
+    content.vb: Public Function VerifyReplayAsync(sessionId As String, ct As CancellationToken = Nothing) As Task(Of PaperSessionReplayVerificationDto)
+  overload: Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync*
+  nameWithType.vb: PaperSessionPersistenceService.VerifyReplayAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync(String, System.Threading.CancellationToken)
+  name.vb: VerifyReplayAsync(String, CancellationToken)
 references:
 - uid: Meridian.Execution.Services.IPaperSessionStore
   commentId: T:Meridian.Execution.Services.IPaperSessionStore
@@ -1247,12 +1298,12 @@ references:
   - uid: Meridian.Ledger
     name: Ledger
     href: Meridian.Ledger.html
-- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate*
-  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate
-  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_RecordOrderUpdate_System_String_Meridian_Execution_Sdk_OrderState_
-  name: RecordOrderUpdate
-  nameWithType: PaperSessionPersistenceService.RecordOrderUpdate
-  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdate
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_RecordOrderUpdateAsync_System_String_Meridian_Execution_Sdk_OrderState_System_Threading_CancellationToken_
+  name: RecordOrderUpdateAsync
+  nameWithType: PaperSessionPersistenceService.RecordOrderUpdateAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.RecordOrderUpdateAsync
 - uid: Meridian.Execution.Sdk.OrderState
   commentId: T:Meridian.Execution.Sdk.OrderState
   parent: Meridian.Execution.Sdk
@@ -1341,4 +1392,43 @@ references:
   - uid: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
     name: ExecutionPortfolioSnapshotDto
     href: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto.html
+  - name: )
+- uid: Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync
+  href: Meridian.Execution.Services.PaperSessionPersistenceService.html#Meridian_Execution_Services_PaperSessionPersistenceService_VerifyReplayAsync_System_String_System_Threading_CancellationToken_
+  name: VerifyReplayAsync
+  nameWithType: PaperSessionPersistenceService.VerifyReplayAsync
+  fullName: Meridian.Execution.Services.PaperSessionPersistenceService.VerifyReplayAsync
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Services.PaperSessionReplayVerificationDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Services.PaperSessionReplayVerificationDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PaperSessionReplayVerificationDto>
+  nameWithType: Task<PaperSessionReplayVerificationDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Services.PaperSessionReplayVerificationDto>
+  nameWithType.vb: Task(Of PaperSessionReplayVerificationDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Services.PaperSessionReplayVerificationDto)
+  name.vb: Task(Of PaperSessionReplayVerificationDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+    name: PaperSessionReplayVerificationDto
+    href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+    name: PaperSessionReplayVerificationDto
+    href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html
   - name: )

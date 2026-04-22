@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportPriority
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 685
+    startLine: 738
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -43,11 +43,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 687
+    startLine: 740
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -69,11 +69,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 688
+    startLine: 741
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -95,11 +95,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 689
+    startLine: 742
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

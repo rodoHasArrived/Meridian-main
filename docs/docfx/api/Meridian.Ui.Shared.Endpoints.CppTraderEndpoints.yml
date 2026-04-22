@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCppTraderEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CppTraderEndpoints.cs

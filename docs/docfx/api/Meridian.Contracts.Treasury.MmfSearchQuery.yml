@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MmfSearchQuery
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundFamily
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSweepEligible
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasLiquidityFee
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidityState
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxWamDays
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveOnly
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skip
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Take
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs

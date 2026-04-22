@@ -1,0 +1,710 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  id: GovernanceCashFlowVarianceSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String)
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  langs:
+  - csharp
+  - vb
+  name: GovernanceCashFlowVarianceSummaryDto
+  nameWithType: GovernanceCashFlowVarianceSummaryDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceCashFlowVarianceSummaryDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record GovernanceCashFlowVarianceSummaryDto : IEquatable<GovernanceCashFlowVarianceSummaryDto>'
+    content.vb: Public NotInheritable Class GovernanceCashFlowVarianceSummaryDto Implements IEquatable(Of GovernanceCashFlowVarianceSummaryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: GovernanceCashFlowVarianceSummaryDto(decimal, decimal, decimal, decimal, decimal, decimal, decimal, string)
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.GovernanceCashFlowVarianceSummaryDto(decimal, decimal, decimal, decimal, decimal, decimal, decimal, string)
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.GovernanceCashFlowVarianceSummaryDto(decimal, decimal, decimal, decimal, decimal, decimal, decimal, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public GovernanceCashFlowVarianceSummaryDto(decimal RealizedInflows, decimal RealizedOutflows, decimal RealizedNetFlow, decimal ProjectedInflows, decimal ProjectedOutflows, decimal ProjectedNetFlow, decimal VarianceAmount, string ComparisonBasis)
+    parameters:
+    - id: RealizedInflows
+      type: System.Decimal
+    - id: RealizedOutflows
+      type: System.Decimal
+    - id: RealizedNetFlow
+      type: System.Decimal
+    - id: ProjectedInflows
+      type: System.Decimal
+    - id: ProjectedOutflows
+      type: System.Decimal
+    - id: ProjectedNetFlow
+      type: System.Decimal
+    - id: VarianceAmount
+      type: System.Decimal
+    - id: ComparisonBasis
+      type: System.String
+    content.vb: Public Sub New(RealizedInflows As Decimal, RealizedOutflows As Decimal, RealizedNetFlow As Decimal, ProjectedInflows As Decimal, ProjectedOutflows As Decimal, ProjectedNetFlow As Decimal, VarianceAmount As Decimal, ComparisonBasis As String)
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.#ctor*
+  nameWithType.vb: GovernanceCashFlowVarianceSummaryDto.New(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, String)
+  fullName.vb: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.New(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, String)
+  name.vb: New(Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, String)
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  id: RealizedInflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedInflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedInflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 446
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal RealizedInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedInflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  id: RealizedOutflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedOutflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedOutflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 447
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal RealizedOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedOutflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  id: RealizedNetFlow
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedNetFlow
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedNetFlow
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal RealizedNetFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedNetFlow As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  id: ProjectedInflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedInflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedInflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 449
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal ProjectedInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedInflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  id: ProjectedOutflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedOutflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedOutflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 450
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal ProjectedOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedOutflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  id: ProjectedNetFlow
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedNetFlow
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedNetFlow
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 451
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal ProjectedNetFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedNetFlow As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  id: VarianceAmount
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: VarianceAmount
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VarianceAmount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 452
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal VarianceAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property VarianceAmount As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  id: ComparisonBasis
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: ComparisonBasis
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComparisonBasis
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 453
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string ComparisonBasis { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ComparisonBasis As String
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<GovernanceCashFlowVarianceSummaryDto>
+  nameWithType: IEquatable<GovernanceCashFlowVarianceSummaryDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto>
+  nameWithType.vb: IEquatable(Of GovernanceCashFlowVarianceSummaryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto)
+  name.vb: IEquatable(Of GovernanceCashFlowVarianceSummaryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+    name: GovernanceCashFlowVarianceSummaryDto
+    href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto
+    name: GovernanceCashFlowVarianceSummaryDto
+    href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.#ctor
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto__ctor_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_String_
+  name: GovernanceCashFlowVarianceSummaryDto
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.GovernanceCashFlowVarianceSummaryDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.GovernanceCashFlowVarianceSummaryDto
+  nameWithType.vb: GovernanceCashFlowVarianceSummaryDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_RealizedInflows
+  name: RealizedInflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedInflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_RealizedOutflows
+  name: RealizedOutflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedOutflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_RealizedNetFlow
+  name: RealizedNetFlow
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.RealizedNetFlow
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_ProjectedInflows
+  name: ProjectedInflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedInflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_ProjectedOutflows
+  name: ProjectedOutflows
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedOutflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_ProjectedNetFlow
+  name: ProjectedNetFlow
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ProjectedNetFlow
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_VarianceAmount
+  name: VarianceAmount
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.VarianceAmount
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceSummaryDto_ComparisonBasis
+  name: ComparisonBasis
+  nameWithType: GovernanceCashFlowVarianceSummaryDto.ComparisonBasis
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceSummaryDto.ComparisonBasis

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckAggregator
     path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unregister
     path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAllAsync
     path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAsync
     path: ../../src/Meridian.Application/Monitoring/Core/HealthCheckAggregator.cs

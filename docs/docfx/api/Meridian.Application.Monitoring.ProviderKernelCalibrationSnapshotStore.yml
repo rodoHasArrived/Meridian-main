@@ -1,0 +1,587 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  commentId: T:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  id: ProviderKernelCalibrationSnapshotStore
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.#ctor(System.String)
+  - Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync(Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ProviderKernelCalibrationSnapshotStore
+  nameWithType: ProviderKernelCalibrationSnapshotStore
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderKernelCalibrationSnapshotStore
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public sealed class ProviderKernelCalibrationSnapshotStore
+    content.vb: Public NotInheritable Class ProviderKernelCalibrationSnapshotStore
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.#ctor(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: ProviderKernelCalibrationSnapshotStore(string)
+  nameWithType: ProviderKernelCalibrationSnapshotStore.ProviderKernelCalibrationSnapshotStore(string)
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.ProviderKernelCalibrationSnapshotStore(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ProviderKernelCalibrationSnapshotStore(string rootPath)
+    parameters:
+    - id: rootPath
+      type: System.String
+    content.vb: Public Sub New(rootPath As String)
+  overload: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.#ctor*
+  nameWithType.vb: ProviderKernelCalibrationSnapshotStore.New(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.New(String)
+  name.vb: New(String)
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync(Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync(Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot,System.Threading.CancellationToken)
+  id: SaveAsync(Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: SaveAsync(ProviderKernelCalibrationSnapshot, CancellationToken)
+  nameWithType: ProviderKernelCalibrationSnapshotStore.SaveAsync(ProviderKernelCalibrationSnapshot, CancellationToken)
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync(Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAsync
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public Task<string> SaveAsync(ProviderKernelCalibrationSnapshot snapshot, CancellationToken ct = default)
+    parameters:
+    - id: snapshot
+      type: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function SaveAsync(snapshot As ProviderKernelCalibrationSnapshot, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync*
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync(System.Threading.CancellationToken)
+  id: GetLatestAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestAsync(CancellationToken)
+  nameWithType: ProviderKernelCalibrationSnapshotStore.GetLatestAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestAsync
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public Task<ProviderKernelCalibrationSnapshot?> GetLatestAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot}
+    content.vb: Public Function GetLatestAsync(ct As CancellationToken = Nothing) As Task(Of ProviderKernelCalibrationSnapshot)
+  overload: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.#ctor
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.html#Meridian_Application_Monitoring_ProviderKernelCalibrationSnapshotStore__ctor_System_String_
+  name: ProviderKernelCalibrationSnapshotStore
+  nameWithType: ProviderKernelCalibrationSnapshotStore.ProviderKernelCalibrationSnapshotStore
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.ProviderKernelCalibrationSnapshotStore
+  nameWithType.vb: ProviderKernelCalibrationSnapshotStore.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.html#Meridian_Application_Monitoring_ProviderKernelCalibrationSnapshotStore_SaveAsync_Meridian_Application_Monitoring_ProviderKernelCalibrationSnapshot_System_Threading_CancellationToken_
+  name: SaveAsync
+  nameWithType: ProviderKernelCalibrationSnapshotStore.SaveAsync
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.SaveAsync
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+  commentId: T:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot.html
+  name: ProviderKernelCalibrationSnapshot
+  nameWithType: ProviderKernelCalibrationSnapshot
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync
+  href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.html#Meridian_Application_Monitoring_ProviderKernelCalibrationSnapshotStore_GetLatestAsync_System_Threading_CancellationToken_
+  name: GetLatestAsync
+  nameWithType: ProviderKernelCalibrationSnapshotStore.GetLatestAsync
+  fullName: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshotStore.GetLatestAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderKernelCalibrationSnapshot>
+  nameWithType: Task<ProviderKernelCalibrationSnapshot>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot>
+  nameWithType.vb: Task(Of ProviderKernelCalibrationSnapshot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot)
+  name.vb: Task(Of ProviderKernelCalibrationSnapshot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+    name: ProviderKernelCalibrationSnapshot
+    href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot
+    name: ProviderKernelCalibrationSnapshot
+    href: Meridian.Application.Monitoring.ProviderKernelCalibrationSnapshot.html
+  - name: )

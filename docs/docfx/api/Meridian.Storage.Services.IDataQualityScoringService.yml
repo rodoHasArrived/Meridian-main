@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDataQualityScoringService
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 416
+    startLine: 443
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -47,11 +47,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreFileAsync
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 418
+    startLine: 445
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -83,11 +83,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectBestSourceAsync
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 419
+    startLine: 446
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -123,11 +123,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityScoringService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateReportAsync
     path: ../../src/Meridian.Storage/Services/DataQualityScoringService.cs
-    startLine: 420
+    startLine: 447
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

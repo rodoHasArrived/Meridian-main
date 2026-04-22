@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountSnapshotRecord
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountDisplayName
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountKind
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -380,7 +380,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
@@ -411,7 +411,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs

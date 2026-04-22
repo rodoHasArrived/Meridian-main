@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCostEstimator
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Estimate
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs

@@ -1,0 +1,621 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  commentId: T:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  id: OptionsTrackedUnderlyingsResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.DateTimeOffset)
+  - Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count
+  - Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp
+  - Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings
+  langs:
+  - csharp
+  - vb
+  name: OptionsTrackedUnderlyingsResponse
+  nameWithType: OptionsTrackedUnderlyingsResponse
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsTrackedUnderlyingsResponse
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for tracked option underlyings.
+  example: []
+  syntax:
+    content: 'public sealed record OptionsTrackedUnderlyingsResponse : IEquatable<OptionsTrackedUnderlyingsResponse>'
+    content.vb: Public NotInheritable Class OptionsTrackedUnderlyingsResponse Implements IEquatable(Of OptionsTrackedUnderlyingsResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.DateTimeOffset)
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.DateTimeOffset)'
+  parent: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  langs:
+  - csharp
+  - vb
+  name: OptionsTrackedUnderlyingsResponse(IReadOnlyList<string>, int, DateTimeOffset)
+  nameWithType: OptionsTrackedUnderlyingsResponse.OptionsTrackedUnderlyingsResponse(IReadOnlyList<string>, int, DateTimeOffset)
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.OptionsTrackedUnderlyingsResponse(System.Collections.Generic.IReadOnlyList<string>, int, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for tracked option underlyings.
+  example: []
+  syntax:
+    content: public OptionsTrackedUnderlyingsResponse(IReadOnlyList<string> Underlyings, int Count, DateTimeOffset Timestamp)
+    parameters:
+    - id: Underlyings
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: Count
+      type: System.Int32
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Underlyings As IReadOnlyList(Of String), Count As Integer, Timestamp As DateTimeOffset)
+  overload: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.#ctor*
+  nameWithType.vb: OptionsTrackedUnderlyingsResponse.New(IReadOnlyList(Of String), Integer, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.New(System.Collections.Generic.IReadOnlyList(Of String), Integer, System.DateTimeOffset)
+  name.vb: New(IReadOnlyList(Of String), Integer, DateTimeOffset)
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings
+  commentId: P:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings
+  id: Underlyings
+  parent: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  langs:
+  - csharp
+  - vb
+  name: Underlyings
+  nameWithType: OptionsTrackedUnderlyingsResponse.Underlyings
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Underlyings
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public IReadOnlyList<string> Underlyings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Underlyings As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings*
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count
+  commentId: P:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count
+  id: Count
+  parent: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: OptionsTrackedUnderlyingsResponse.Count
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int Count { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Count As Integer
+  overload: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count*
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OptionsTrackedUnderlyingsResponse.Timestamp
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionsTrackedUnderlyingsResponse>
+  nameWithType: IEquatable<OptionsTrackedUnderlyingsResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse>
+  nameWithType.vb: IEquatable(Of OptionsTrackedUnderlyingsResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse)
+  name.vb: IEquatable(Of OptionsTrackedUnderlyingsResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+    name: OptionsTrackedUnderlyingsResponse
+    href: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse
+    name: OptionsTrackedUnderlyingsResponse
+    href: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.#ctor
+  href: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.html#Meridian_Contracts_Api_OptionsTrackedUnderlyingsResponse__ctor_System_Collections_Generic_IReadOnlyList_System_String__System_Int32_System_DateTimeOffset_
+  name: OptionsTrackedUnderlyingsResponse
+  nameWithType: OptionsTrackedUnderlyingsResponse.OptionsTrackedUnderlyingsResponse
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.OptionsTrackedUnderlyingsResponse
+  nameWithType.vb: OptionsTrackedUnderlyingsResponse.New
+  fullName.vb: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings*
+  commentId: Overload:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings
+  href: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.html#Meridian_Contracts_Api_OptionsTrackedUnderlyingsResponse_Underlyings
+  name: Underlyings
+  nameWithType: OptionsTrackedUnderlyingsResponse.Underlyings
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Underlyings
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count*
+  commentId: Overload:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count
+  href: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.html#Meridian_Contracts_Api_OptionsTrackedUnderlyingsResponse_Count
+  name: Count
+  nameWithType: OptionsTrackedUnderlyingsResponse.Count
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Count
+- uid: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp
+  href: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.html#Meridian_Contracts_Api_OptionsTrackedUnderlyingsResponse_Timestamp
+  name: Timestamp
+  nameWithType: OptionsTrackedUnderlyingsResponse.Timestamp
+  fullName: Meridian.Contracts.Api.OptionsTrackedUnderlyingsResponse.Timestamp

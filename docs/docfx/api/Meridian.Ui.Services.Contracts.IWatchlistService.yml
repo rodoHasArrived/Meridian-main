@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IWatchlistService
     path: ../../src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadWatchlistAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IWatchlistService.cs

@@ -7,6 +7,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -17,7 +18,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -130,6 +133,102 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnTypedResearchBriefing()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-latest",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-prior",
+            strategyId: "meanrev-1",
+            strategyName: "Mean Reversion",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities"));
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+
+        briefing.Should().NotBeNull();
+        briefing!.Workspace.TotalRuns.Should().Be(2);
+        briefing.Workspace.LatestRunId.Should().Be("run-latest");
+        briefing.Workspace.HasLedgerCoverage.Should().BeTrue();
+        briefing.InsightFeed.Widgets.Should().HaveCount(2);
+        briefing.RecentRuns.Should().HaveCount(2);
+        briefing.RecentRuns[0].RunId.Should().Be("run-latest");
+        briefing.RecentRuns[0].DrillIn.Continuity.Should().Be("/api/workstation/runs/run-latest/continuity");
+        briefing.SavedComparisons.Should().NotBeEmpty();
+        briefing.Alerts.Should().NotBeEmpty();
+        briefing.Watchlists.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackResearchBriefing()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+
+        briefing.Should().NotBeNull();
+        briefing!.Workspace.TotalRuns.Should().Be(24);
+        briefing.Workspace.LatestRunId.Should().Be("run-research-001");
+        briefing.InsightFeed.Widgets.Should().HaveCount(3);
+        briefing.Watchlists.Should().HaveCount(2);
+        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-research-001");
+        briefing.Alerts.Should().NotBeEmpty();
+        briefing.WhatChanged.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingPayload_ShouldSurfacePaperGatewayBrokerGap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-paper-live-review",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var brokerage = trading.RootElement.GetProperty("brokerage");
+        brokerage.GetProperty("provider").GetString().Should().Be("Paper trading");
+        brokerage.GetProperty("notes").GetString().Should().Contain("blocked");
+        brokerage.GetProperty("notes").GetString().Should().Contain("paper trading");
     }
 
     [Fact]
@@ -501,6 +600,61 @@ public sealed class WorkstationEndpointsTests
         updated!.RunId.Should().Be(runId);
         updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         updated.AssignedTo.Should().Be("ops-review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueResolveRoute_ShouldRequireReviewBeforeResolve()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-resolve-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+
+        var invalidResolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Skipping review should fail."));
+        invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var review = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating."));
+        review.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Issue resolved."));
+        resolve.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        resolved.Should().NotBeNull();
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved.ResolvedBy.Should().Be("qa-resolve");
     }
 
     [Fact]
@@ -880,6 +1034,10 @@ public sealed class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
 
         var app = builder.Build();
         app.MapWorkstationEndpoints(new JsonSerializerOptions
@@ -900,6 +1058,10 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
         services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         services.AddSingleton<ReconciliationProjectionService>();
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();

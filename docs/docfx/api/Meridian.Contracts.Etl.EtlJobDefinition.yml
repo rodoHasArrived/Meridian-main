@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlJobDefinition
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobId
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlowDirection
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartnerSchemaId
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LogicalSourceName
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Destination
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -396,7 +396,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDateUtc
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -437,7 +437,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDateUtc
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -478,7 +478,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishPortablePackage
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -519,7 +519,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishNormalizedExtract
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -560,7 +560,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ContinueOnRecordError
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -601,7 +601,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateChecksums
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -642,7 +642,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailRoundTripOnExportError
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -683,7 +683,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointEveryRecords
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -724,7 +724,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectSampleLimit
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -765,7 +765,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedBy
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -806,7 +806,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAtUtc
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs

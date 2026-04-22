@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderStatus
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingNew
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accepted
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartiallyFilled
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filled
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingCancel
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expired
     path: ../../src/Meridian.Execution.Sdk/Models.cs

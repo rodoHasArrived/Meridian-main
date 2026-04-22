@@ -10,9 +10,9 @@ items:
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.AsOfDate
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.BatchId
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.CustodianName
-  - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Lines
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.LoadedBy
+  - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes
   - Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.SourceFormat
   langs:
   - csharp
@@ -23,15 +23,17 @@ items:
   type: Class
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestCustodianStatementRequest
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 67
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 65
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: Request to ingest a custodian position statement.
+  example: []
   syntax:
     content: 'public sealed record IngestCustodianStatementRequest : IEquatable<IngestCustodianStatementRequest>'
     content.vb: Public NotInheritable Class IngestCustodianStatementRequest Implements IEquatable(Of IngestCustodianStatementRequest)
@@ -59,17 +61,19 @@ items:
   type: Constructor
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 67
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 65
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: Request to ingest a custodian position statement.
+  example: []
   syntax:
-    content: public IngestCustodianStatementRequest(Guid BatchId, Guid AccountId, DateOnly AsOfDate, string CustodianName, string SourceFormat, string? FileName, IReadOnlyList<CustodianPositionLineDto> Lines, string LoadedBy)
+    content: public IngestCustodianStatementRequest(Guid BatchId, Guid AccountId, DateOnly AsOfDate, string CustodianName, string SourceFormat, string? Notes, IReadOnlyList<CustodianPositionLineDto> Lines, string LoadedBy)
     parameters:
     - id: BatchId
       type: System.Guid
@@ -81,13 +85,13 @@ items:
       type: System.String
     - id: SourceFormat
       type: System.String
-    - id: FileName
+    - id: Notes
       type: System.String
     - id: Lines
       type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.FundStructure.CustodianPositionLineDto}
     - id: LoadedBy
       type: System.String
-    content.vb: Public Sub New(BatchId As Guid, AccountId As Guid, AsOfDate As DateOnly, CustodianName As String, SourceFormat As String, FileName As String, Lines As IReadOnlyList(Of CustodianPositionLineDto), LoadedBy As String)
+    content.vb: Public Sub New(BatchId As Guid, AccountId As Guid, AsOfDate As DateOnly, CustodianName As String, SourceFormat As String, Notes As String, Lines As IReadOnlyList(Of CustodianPositionLineDto), LoadedBy As String)
   overload: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.#ctor*
   nameWithType.vb: IngestCustodianStatementRequest.New(Guid, Guid, DateOnly, String, String, String, IReadOnlyList(Of CustodianPositionLineDto), String)
   fullName.vb: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.New(System.Guid, System.Guid, System.DateOnly, String, String, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.FundStructure.CustodianPositionLineDto), String)
@@ -105,12 +109,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 68
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 66
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -134,12 +138,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 69
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 67
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -163,12 +167,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOfDate
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 70
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 68
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -192,12 +196,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodianName
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 71
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 69
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -221,12 +225,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFormat
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 72
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 70
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -237,35 +241,35 @@ items:
       type: System.String
     content.vb: Public Property SourceFormat As String
   overload: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.SourceFormat*
-- uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName
-  commentId: P:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName
-  id: FileName
+- uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes
+  commentId: P:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes
+  id: Notes
   parent: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest
   langs:
   - csharp
   - vb
-  name: FileName
-  nameWithType: IngestCustodianStatementRequest.FileName
-  fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName
+  name: Notes
+  nameWithType: IngestCustodianStatementRequest.Notes
+  fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: FileName
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 73
+    id: Notes
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 71
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public string? FileName { get; init; }
+    content: public string? Notes { get; init; }
     parameters: []
     return:
       type: System.String
-    content.vb: Public Property FileName As String
-  overload: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName*
+    content.vb: Public Property Notes As String
+  overload: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes*
 - uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Lines
   commentId: P:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Lines
   id: Lines
@@ -279,12 +283,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lines
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 74
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 72
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -308,12 +312,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadedBy
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 75
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 73
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -793,12 +797,12 @@ references:
   name: SourceFormat
   nameWithType: IngestCustodianStatementRequest.SourceFormat
   fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.SourceFormat
-- uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName*
-  commentId: Overload:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName
-  href: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.html#Meridian_Contracts_FundStructure_IngestCustodianStatementRequest_FileName
-  name: FileName
-  nameWithType: IngestCustodianStatementRequest.FileName
-  fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.FileName
+- uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes*
+  commentId: Overload:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes
+  href: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.html#Meridian_Contracts_FundStructure_IngestCustodianStatementRequest_Notes
+  name: Notes
+  nameWithType: IngestCustodianStatementRequest.Notes
+  fullName: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Notes
 - uid: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Lines*
   commentId: Overload:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.Lines
   href: Meridian.Contracts.FundStructure.IngestCustodianStatementRequest.html#Meridian_Contracts_FundStructure_IngestCustodianStatementRequest_Lines

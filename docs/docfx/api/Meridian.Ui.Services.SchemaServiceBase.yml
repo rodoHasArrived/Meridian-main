@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaServiceBase
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJsonSchema
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateDataDictionary
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateTradeSchema
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateQuoteSchema
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBboQuoteSchema
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateL2DepthSchema
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBarSchema
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExchangeCodes
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTradeConditions
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQuoteConditions
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -369,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsJson
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -400,7 +400,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsMarkdown
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -431,7 +431,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsCsv
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs

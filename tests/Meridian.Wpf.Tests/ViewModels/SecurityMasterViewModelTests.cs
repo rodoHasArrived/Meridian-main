@@ -127,6 +127,42 @@ public sealed class SecurityMasterViewModelTests
         });
     }
 
+    [Fact]
+    public void SearchAsync_WhenRuntimeIsUnavailable_ShouldExposeConfigurationStatus()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            using var viewModel = new SecurityMasterViewModel(
+                LoggingService.Instance,
+                NotificationService.Instance,
+                Mock.Of<ITradingParametersBackfillService>(),
+                Mock.Of<ISecurityMasterImportService>(),
+                new StubSecurityMasterRuntimeStatus(
+                    isAvailable: false,
+                    availabilityDescription: "Security Master is not configured for this workstation."),
+                new StubSecurityMasterOperatorWorkflowClient(new SecurityMasterIngestStatusResponse
+                {
+                    RetrievedAtUtc = DateTimeOffset.UtcNow
+                }, []),
+                navigation,
+                Mock.Of<ISmQueryService>(),
+                Mock.Of<ISmService>());
+
+            viewModel.SearchQuery = "AAPL";
+
+            await viewModel.SearchAsync();
+
+            viewModel.StatusText.Should().Be("Security Master is not configured for this workstation.");
+            viewModel.Results.Should().BeEmpty();
+            viewModel.SelectedSecurity.Should().BeNull();
+            viewModel.IsLoading.Should().BeFalse();
+        });
+    }
+
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)
     {
         for (var index = 0; index < attempts; index++)
@@ -144,9 +180,17 @@ public sealed class SecurityMasterViewModelTests
 
     private sealed class StubSecurityMasterRuntimeStatus : ISecurityMasterRuntimeStatus
     {
-        public bool IsAvailable => true;
+        public StubSecurityMasterRuntimeStatus(
+            bool isAvailable = true,
+            string availabilityDescription = "Security Master runtime is available.")
+        {
+            IsAvailable = isAvailable;
+            AvailabilityDescription = availabilityDescription;
+        }
 
-        public string AvailabilityDescription => "Security Master runtime is available.";
+        public bool IsAvailable { get; }
+
+        public string AvailabilityDescription { get; }
     }
 
     private sealed class StubSecurityMasterOperatorWorkflowClient : ISecurityMasterOperatorWorkflowClient

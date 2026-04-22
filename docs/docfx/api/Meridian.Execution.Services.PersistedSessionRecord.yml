@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistedSessionRecord
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosedAt
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/IPaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs

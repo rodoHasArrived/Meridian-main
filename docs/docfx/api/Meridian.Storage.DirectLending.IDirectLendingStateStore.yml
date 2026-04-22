@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDirectLendingStateStore
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadContractProjectionAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadTermsVersionProjectionsAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadServicingProjectionAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadDrawdownLotProjectionsAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadServicingRevisionProjectionsAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAccrualEntryProjectionsAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveStateAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
     path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs

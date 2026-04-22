@@ -5,11 +5,16 @@ items:
   id: WorkstationSecurityReference
   parent: Meridian.Contracts.Workstation
   children:
-  - Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String)
+  - Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus,System.String,System.String,System.String,System.String)
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.AssetClass
+  - Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.Currency
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.DisplayName
+  - Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind
+  - Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue
+  - Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.PrimaryIdentifier
+  - Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.SecurityId
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.Status
   - Meridian.Contracts.Workstation.WorkstationSecurityReference.SubType
@@ -23,11 +28,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkstationSecurityReference
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 141
+    startLine: 154
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -55,25 +60,25 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String)
-  commentId: M:Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String)
-  id: '#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String)'
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus,System.String,System.String,System.String,System.String)'
   parent: Meridian.Contracts.Workstation.WorkstationSecurityReference
   langs:
   - csharp
   - vb
-  name: WorkstationSecurityReference(Guid, string, string, string, SecurityStatusDto, string?, string?)
-  nameWithType: WorkstationSecurityReference.WorkstationSecurityReference(Guid, string, string, string, SecurityStatusDto, string?, string?)
-  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.WorkstationSecurityReference(System.Guid, string, string, string, Meridian.Contracts.SecurityMaster.SecurityStatusDto, string?, string?)
+  name: WorkstationSecurityReference(Guid, string, string, string, SecurityStatusDto, string?, string?, WorkstationSecurityCoverageStatus, string?, string?, string?, string?)
+  nameWithType: WorkstationSecurityReference.WorkstationSecurityReference(Guid, string, string, string, SecurityStatusDto, string?, string?, WorkstationSecurityCoverageStatus, string?, string?, string?, string?)
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.WorkstationSecurityReference(System.Guid, string, string, string, Meridian.Contracts.SecurityMaster.SecurityStatusDto, string?, string?, Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus, string?, string?, string?, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 141
+    startLine: 154
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -88,7 +93,7 @@ items:
     class and is null when the asset class does not map to a unique sub-type.</p>
   example: []
   syntax:
-    content: public WorkstationSecurityReference(Guid SecurityId, string DisplayName, string AssetClass, string Currency, SecurityStatusDto Status, string? PrimaryIdentifier, string? SubType = null)
+    content: public WorkstationSecurityReference(Guid SecurityId, string DisplayName, string AssetClass, string Currency, SecurityStatusDto Status, string? PrimaryIdentifier, string? SubType = null, WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved, string? MatchedIdentifierKind = null, string? MatchedIdentifierValue = null, string? MatchedProvider = null, string? ResolutionReason = null)
     parameters:
     - id: SecurityId
       type: System.Guid
@@ -104,11 +109,21 @@ items:
       type: System.String
     - id: SubType
       type: System.String
-    content.vb: Public Sub New(SecurityId As Guid, DisplayName As String, AssetClass As String, Currency As String, Status As SecurityStatusDto, PrimaryIdentifier As String, SubType As String = Nothing)
+    - id: CoverageStatus
+      type: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+    - id: MatchedIdentifierKind
+      type: System.String
+    - id: MatchedIdentifierValue
+      type: System.String
+    - id: MatchedProvider
+      type: System.String
+    - id: ResolutionReason
+      type: System.String
+    content.vb: Public Sub New(SecurityId As Guid, DisplayName As String, AssetClass As String, Currency As String, Status As SecurityStatusDto, PrimaryIdentifier As String, SubType As String = Nothing, CoverageStatus As WorkstationSecurityCoverageStatus = WorkstationSecurityCoverageStatus.Resolved, MatchedIdentifierKind As String = Nothing, MatchedIdentifierValue As String = Nothing, MatchedProvider As String = Nothing, ResolutionReason As String = Nothing)
   overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor*
-  nameWithType.vb: WorkstationSecurityReference.New(Guid, String, String, String, SecurityStatusDto, String, String)
-  fullName.vb: Meridian.Contracts.Workstation.WorkstationSecurityReference.New(System.Guid, String, String, String, Meridian.Contracts.SecurityMaster.SecurityStatusDto, String, String)
-  name.vb: New(Guid, String, String, String, SecurityStatusDto, String, String)
+  nameWithType.vb: WorkstationSecurityReference.New(Guid, String, String, String, SecurityStatusDto, String, String, WorkstationSecurityCoverageStatus, String, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.WorkstationSecurityReference.New(System.Guid, String, String, String, Meridian.Contracts.SecurityMaster.SecurityStatusDto, String, String, Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus, String, String, String, String)
+  name.vb: New(Guid, String, String, String, SecurityStatusDto, String, String, WorkstationSecurityCoverageStatus, String, String, String, String)
 - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.SecurityId
   commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.SecurityId
   id: SecurityId
@@ -123,11 +138,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 142
+    startLine: 155
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -152,11 +167,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 143
+    startLine: 156
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -181,11 +196,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 144
+    startLine: 157
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -210,11 +225,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 145
+    startLine: 158
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -239,11 +254,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 146
+    startLine: 159
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -268,11 +283,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryIdentifier
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 147
+    startLine: 160
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -297,11 +312,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubType
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 148
+    startLine: 161
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -312,6 +327,151 @@ items:
       type: System.String
     content.vb: Public Property SubType As String
   overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.SubType*
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus
+  commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus
+  id: CoverageStatus
+  parent: Meridian.Contracts.Workstation.WorkstationSecurityReference
+  langs:
+  - csharp
+  - vb
+  name: CoverageStatus
+  nameWithType: WorkstationSecurityReference.CoverageStatus
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoverageStatus
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public WorkstationSecurityCoverageStatus CoverageStatus { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+    content.vb: Public Property CoverageStatus As WorkstationSecurityCoverageStatus
+  overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus*
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind
+  commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind
+  id: MatchedIdentifierKind
+  parent: Meridian.Contracts.Workstation.WorkstationSecurityReference
+  langs:
+  - csharp
+  - vb
+  name: MatchedIdentifierKind
+  nameWithType: WorkstationSecurityReference.MatchedIdentifierKind
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MatchedIdentifierKind
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? MatchedIdentifierKind { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MatchedIdentifierKind As String
+  overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind*
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue
+  commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue
+  id: MatchedIdentifierValue
+  parent: Meridian.Contracts.Workstation.WorkstationSecurityReference
+  langs:
+  - csharp
+  - vb
+  name: MatchedIdentifierValue
+  nameWithType: WorkstationSecurityReference.MatchedIdentifierValue
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MatchedIdentifierValue
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? MatchedIdentifierValue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MatchedIdentifierValue As String
+  overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue*
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider
+  commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider
+  id: MatchedProvider
+  parent: Meridian.Contracts.Workstation.WorkstationSecurityReference
+  langs:
+  - csharp
+  - vb
+  name: MatchedProvider
+  nameWithType: WorkstationSecurityReference.MatchedProvider
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MatchedProvider
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? MatchedProvider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MatchedProvider As String
+  overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider*
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason
+  commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason
+  id: ResolutionReason
+  parent: Meridian.Contracts.Workstation.WorkstationSecurityReference
+  langs:
+  - csharp
+  - vb
+  name: ResolutionReason
+  nameWithType: WorkstationSecurityReference.ResolutionReason
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolutionReason
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ResolutionReason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ResolutionReason As String
+  overload: Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason*
 references:
 - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.SubType
   commentId: P:Meridian.Contracts.Workstation.WorkstationSecurityReference.SubType
@@ -625,7 +785,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor*
   commentId: Overload:Meridian.Contracts.Workstation.WorkstationSecurityReference.#ctor
-  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference__ctor_System_Guid_System_String_System_String_System_String_Meridian_Contracts_SecurityMaster_SecurityStatusDto_System_String_System_String_
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference__ctor_System_Guid_System_String_System_String_System_String_Meridian_Contracts_SecurityMaster_SecurityStatusDto_System_String_System_String_Meridian_Contracts_Workstation_WorkstationSecurityCoverageStatus_System_String_System_String_System_String_System_String_
   name: WorkstationSecurityReference
   nameWithType: WorkstationSecurityReference.WorkstationSecurityReference
   fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.WorkstationSecurityReference
@@ -658,6 +818,13 @@ references:
   name: SecurityStatusDto
   nameWithType: SecurityStatusDto
   fullName: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+  commentId: T:Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus.html
+  name: WorkstationSecurityCoverageStatus
+  nameWithType: WorkstationSecurityCoverageStatus
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
 - uid: Meridian.Contracts.SecurityMaster
   commentId: N:Meridian.Contracts.SecurityMaster
   href: Meridian.html
@@ -730,3 +897,33 @@ references:
   name: SubType
   nameWithType: WorkstationSecurityReference.SubType
   fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.SubType
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus*
+  commentId: Overload:Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference_CoverageStatus
+  name: CoverageStatus
+  nameWithType: WorkstationSecurityReference.CoverageStatus
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.CoverageStatus
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind*
+  commentId: Overload:Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference_MatchedIdentifierKind
+  name: MatchedIdentifierKind
+  nameWithType: WorkstationSecurityReference.MatchedIdentifierKind
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierKind
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue*
+  commentId: Overload:Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference_MatchedIdentifierValue
+  name: MatchedIdentifierValue
+  nameWithType: WorkstationSecurityReference.MatchedIdentifierValue
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedIdentifierValue
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider*
+  commentId: Overload:Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference_MatchedProvider
+  name: MatchedProvider
+  nameWithType: WorkstationSecurityReference.MatchedProvider
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.MatchedProvider
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason*
+  commentId: Overload:Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason
+  href: Meridian.Contracts.Workstation.WorkstationSecurityReference.html#Meridian_Contracts_Workstation_WorkstationSecurityReference_ResolutionReason
+  name: ResolutionReason
+  nameWithType: WorkstationSecurityReference.ResolutionReason
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityReference.ResolutionReason

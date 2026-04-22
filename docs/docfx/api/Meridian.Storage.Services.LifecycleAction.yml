@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LifecycleAction
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActionType
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTier
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetTier
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSizeBytes
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Policy
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs

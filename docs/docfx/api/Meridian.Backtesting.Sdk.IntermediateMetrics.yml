@@ -1,0 +1,584 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+  commentId: T:Meridian.Backtesting.Sdk.IntermediateMetrics
+  id: IntermediateMetrics
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.IntermediateMetrics.#ctor(System.Double,System.Double,System.Int32,System.Int32)
+  - Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct
+  - Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe
+  - Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount
+  - Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar
+  langs:
+  - csharp
+  - vb
+  name: IntermediateMetrics
+  nameWithType: IntermediateMetrics
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntermediateMetrics
+    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Lightweight snapshot of rolling performance metrics emitted with each
+
+    <xref href="Meridian.Backtesting.Sdk.BacktestProgressEvent" data-throw-if-not-resolved="false"></xref> while a backtest is in progress.
+
+    All values are approximate (computed from a running window) and are
+
+    finalized when the engine completes.
+  example: []
+  syntax:
+    content: 'public readonly record struct IntermediateMetrics : IEquatable<IntermediateMetrics>'
+    content.vb: Public Structure IntermediateMetrics Implements IEquatable(Of IntermediateMetrics)
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.#ctor(System.Double,System.Double,System.Int32,System.Int32)
+  commentId: M:Meridian.Backtesting.Sdk.IntermediateMetrics.#ctor(System.Double,System.Double,System.Int32,System.Int32)
+  id: '#ctor(System.Double,System.Double,System.Int32,System.Int32)'
+  parent: Meridian.Backtesting.Sdk.IntermediateMetrics
+  langs:
+  - csharp
+  - vb
+  name: IntermediateMetrics(double, double, int, int)
+  nameWithType: IntermediateMetrics.IntermediateMetrics(double, double, int, int)
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.IntermediateMetrics(double, double, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Lightweight snapshot of rolling performance metrics emitted with each
+
+    <xref href="Meridian.Backtesting.Sdk.BacktestProgressEvent" data-throw-if-not-resolved="false"></xref> while a backtest is in progress.
+
+    All values are approximate (computed from a running window) and are
+
+    finalized when the engine completes.
+  example: []
+  syntax:
+    content: public IntermediateMetrics(double RollingSharpe, double CurrentDrawdownPct, int TradeCount, int TradingDaysSoFar)
+    parameters:
+    - id: RollingSharpe
+      type: System.Double
+    - id: CurrentDrawdownPct
+      type: System.Double
+    - id: TradeCount
+      type: System.Int32
+    - id: TradingDaysSoFar
+      type: System.Int32
+    content.vb: Public Sub New(RollingSharpe As Double, CurrentDrawdownPct As Double, TradeCount As Integer, TradingDaysSoFar As Integer)
+  overload: Meridian.Backtesting.Sdk.IntermediateMetrics.#ctor*
+  nameWithType.vb: IntermediateMetrics.New(Double, Double, Integer, Integer)
+  fullName.vb: Meridian.Backtesting.Sdk.IntermediateMetrics.New(Double, Double, Integer, Integer)
+  name.vb: New(Double, Double, Integer, Integer)
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe
+  commentId: P:Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe
+  id: RollingSharpe
+  parent: Meridian.Backtesting.Sdk.IntermediateMetrics
+  langs:
+  - csharp
+  - vb
+  name: RollingSharpe
+  nameWithType: IntermediateMetrics.RollingSharpe
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RollingSharpe
+    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double RollingSharpe { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property RollingSharpe As Double
+  overload: Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe*
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct
+  commentId: P:Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct
+  id: CurrentDrawdownPct
+  parent: Meridian.Backtesting.Sdk.IntermediateMetrics
+  langs:
+  - csharp
+  - vb
+  name: CurrentDrawdownPct
+  nameWithType: IntermediateMetrics.CurrentDrawdownPct
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentDrawdownPct
+    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double CurrentDrawdownPct { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CurrentDrawdownPct As Double
+  overload: Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct*
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount
+  commentId: P:Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount
+  id: TradeCount
+  parent: Meridian.Backtesting.Sdk.IntermediateMetrics
+  langs:
+  - csharp
+  - vb
+  name: TradeCount
+  nameWithType: IntermediateMetrics.TradeCount
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCount
+    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int TradeCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradeCount As Integer
+  overload: Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount*
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar
+  commentId: P:Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar
+  id: TradingDaysSoFar
+  parent: Meridian.Backtesting.Sdk.IntermediateMetrics
+  langs:
+  - csharp
+  - vb
+  name: TradingDaysSoFar
+  nameWithType: IntermediateMetrics.TradingDaysSoFar
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingDaysSoFar
+    path: ../../src/Meridian.Backtesting.Sdk/IntermediateMetrics.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public int TradingDaysSoFar { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradingDaysSoFar As Integer
+  overload: Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar*
+references:
+- uid: Meridian.Backtesting.Sdk.BacktestProgressEvent
+  commentId: T:Meridian.Backtesting.Sdk.BacktestProgressEvent
+  href: Meridian.Backtesting.Sdk.BacktestProgressEvent.html
+  name: BacktestProgressEvent
+  nameWithType: BacktestProgressEvent
+  fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<IntermediateMetrics>
+  nameWithType: IEquatable<IntermediateMetrics>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.IntermediateMetrics>
+  nameWithType.vb: IEquatable(Of IntermediateMetrics)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.IntermediateMetrics)
+  name.vb: IEquatable(Of IntermediateMetrics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+    name: IntermediateMetrics
+    href: Meridian.Backtesting.Sdk.IntermediateMetrics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+    name: IntermediateMetrics
+    href: Meridian.Backtesting.Sdk.IntermediateMetrics.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.IntermediateMetrics.#ctor
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html#Meridian_Backtesting_Sdk_IntermediateMetrics__ctor_System_Double_System_Double_System_Int32_System_Int32_
+  name: IntermediateMetrics
+  nameWithType: IntermediateMetrics.IntermediateMetrics
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.IntermediateMetrics
+  nameWithType.vb: IntermediateMetrics.New
+  fullName.vb: Meridian.Backtesting.Sdk.IntermediateMetrics.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe*
+  commentId: Overload:Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html#Meridian_Backtesting_Sdk_IntermediateMetrics_RollingSharpe
+  name: RollingSharpe
+  nameWithType: IntermediateMetrics.RollingSharpe
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.RollingSharpe
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct*
+  commentId: Overload:Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html#Meridian_Backtesting_Sdk_IntermediateMetrics_CurrentDrawdownPct
+  name: CurrentDrawdownPct
+  nameWithType: IntermediateMetrics.CurrentDrawdownPct
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.CurrentDrawdownPct
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount*
+  commentId: Overload:Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html#Meridian_Backtesting_Sdk_IntermediateMetrics_TradeCount
+  name: TradeCount
+  nameWithType: IntermediateMetrics.TradeCount
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.TradeCount
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar*
+  commentId: Overload:Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html#Meridian_Backtesting_Sdk_IntermediateMetrics_TradingDaysSoFar
+  name: TradingDaysSoFar
+  nameWithType: IntermediateMetrics.TradingDaysSoFar
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics.TradingDaysSoFar

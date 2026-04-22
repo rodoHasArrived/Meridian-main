@@ -1,0 +1,752 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.OpenLotSummary
+  commentId: T:Meridian.Contracts.Workstation.OpenLotSummary
+  id: OpenLotSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.OpenLotSummary.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Decimal,System.Boolean,System.String)
+  - Meridian.Contracts.Workstation.OpenLotSummary.AccountId
+  - Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl
+  - Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice
+  - Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm
+  - Meridian.Contracts.Workstation.OpenLotSummary.LotId
+  - Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt
+  - Meridian.Contracts.Workstation.OpenLotSummary.Quantity
+  - Meridian.Contracts.Workstation.OpenLotSummary.Symbol
+  langs:
+  - csharp
+  - vb
+  name: OpenLotSummary
+  nameWithType: OpenLotSummary
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenLotSummary
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Workstation-facing summary of a single open lot for a strategy run.
+  example: []
+  syntax:
+    content: 'public sealed record OpenLotSummary : IEquatable<OpenLotSummary>'
+    content.vb: Public NotInheritable Class OpenLotSummary Implements IEquatable(Of OpenLotSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.OpenLotSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Decimal,System.Boolean,System.String)
+  commentId: M:Meridian.Contracts.Workstation.OpenLotSummary.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Decimal,System.Boolean,System.String)
+  id: '#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Decimal,System.Boolean,System.String)'
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: OpenLotSummary(Guid, string, long, decimal, DateTimeOffset, decimal, bool, string?)
+  nameWithType: OpenLotSummary.OpenLotSummary(Guid, string, long, decimal, DateTimeOffset, decimal, bool, string?)
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.OpenLotSummary(System.Guid, string, long, decimal, System.DateTimeOffset, decimal, bool, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Workstation-facing summary of a single open lot for a strategy run.
+  example: []
+  syntax:
+    content: public OpenLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, DateTimeOffset OpenedAt, decimal CurrentUnrealizedPnl, bool IsLongTerm, string? AccountId = null)
+    parameters:
+    - id: LotId
+      type: System.Guid
+    - id: Symbol
+      type: System.String
+    - id: Quantity
+      type: System.Int64
+    - id: EntryPrice
+      type: System.Decimal
+    - id: OpenedAt
+      type: System.DateTimeOffset
+    - id: CurrentUnrealizedPnl
+      type: System.Decimal
+    - id: IsLongTerm
+      type: System.Boolean
+    - id: AccountId
+      type: System.String
+    content.vb: Public Sub New(LotId As Guid, Symbol As String, Quantity As Long, EntryPrice As Decimal, OpenedAt As DateTimeOffset, CurrentUnrealizedPnl As Decimal, IsLongTerm As Boolean, AccountId As String = Nothing)
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.#ctor*
+  nameWithType.vb: OpenLotSummary.New(Guid, String, Long, Decimal, DateTimeOffset, Decimal, Boolean, String)
+  fullName.vb: Meridian.Contracts.Workstation.OpenLotSummary.New(System.Guid, String, Long, Decimal, System.DateTimeOffset, Decimal, Boolean, String)
+  name.vb: New(Guid, String, Long, Decimal, DateTimeOffset, Decimal, Boolean, String)
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.LotId
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.LotId
+  id: LotId
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: LotId
+  nameWithType: OpenLotSummary.LotId
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.LotId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid LotId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LotId As Guid
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.LotId*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.Symbol
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OpenLotSummary.Symbol
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.Symbol*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.Quantity
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.Quantity
+  id: Quantity
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: OpenLotSummary.Quantity
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public long Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quantity As Long
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.Quantity*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice
+  id: EntryPrice
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: EntryPrice
+  nameWithType: OpenLotSummary.EntryPrice
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryPrice
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal EntryPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property EntryPrice As Decimal
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt
+  id: OpenedAt
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: OpenedAt
+  nameWithType: OpenLotSummary.OpenedAt
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenedAt
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset OpenedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OpenedAt As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl
+  id: CurrentUnrealizedPnl
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: CurrentUnrealizedPnl
+  nameWithType: OpenLotSummary.CurrentUnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentUnrealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal CurrentUnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CurrentUnrealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm
+  id: IsLongTerm
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: IsLongTerm
+  nameWithType: OpenLotSummary.IsLongTerm
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsLongTerm
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public bool IsLongTerm { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsLongTerm As Boolean
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm*
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.AccountId
+  commentId: P:Meridian.Contracts.Workstation.OpenLotSummary.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.Workstation.OpenLotSummary
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: OpenLotSummary.AccountId
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Contracts.Workstation.OpenLotSummary.AccountId*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.OpenLotSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.OpenLotSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OpenLotSummary>
+  nameWithType: IEquatable<OpenLotSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.OpenLotSummary>
+  nameWithType.vb: IEquatable(Of OpenLotSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.OpenLotSummary)
+  name.vb: IEquatable(Of OpenLotSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.OpenLotSummary
+    name: OpenLotSummary
+    href: Meridian.Contracts.Workstation.OpenLotSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.OpenLotSummary
+    name: OpenLotSummary
+    href: Meridian.Contracts.Workstation.OpenLotSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.#ctor
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary__ctor_System_Guid_System_String_System_Int64_System_Decimal_System_DateTimeOffset_System_Decimal_System_Boolean_System_String_
+  name: OpenLotSummary
+  nameWithType: OpenLotSummary.OpenLotSummary
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.OpenLotSummary
+  nameWithType.vb: OpenLotSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.OpenLotSummary.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.LotId*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.LotId
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_LotId
+  name: LotId
+  nameWithType: OpenLotSummary.LotId
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.LotId
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.Symbol*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.Symbol
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_Symbol
+  name: Symbol
+  nameWithType: OpenLotSummary.Symbol
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.Symbol
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.Quantity*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.Quantity
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_Quantity
+  name: Quantity
+  nameWithType: OpenLotSummary.Quantity
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.Quantity
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_EntryPrice
+  name: EntryPrice
+  nameWithType: OpenLotSummary.EntryPrice
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.EntryPrice
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_OpenedAt
+  name: OpenedAt
+  nameWithType: OpenLotSummary.OpenedAt
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.OpenedAt
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_CurrentUnrealizedPnl
+  name: CurrentUnrealizedPnl
+  nameWithType: OpenLotSummary.CurrentUnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.CurrentUnrealizedPnl
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_IsLongTerm
+  name: IsLongTerm
+  nameWithType: OpenLotSummary.IsLongTerm
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.IsLongTerm
+- uid: Meridian.Contracts.Workstation.OpenLotSummary.AccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.OpenLotSummary.AccountId
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html#Meridian_Contracts_Workstation_OpenLotSummary_AccountId
+  name: AccountId
+  nameWithType: OpenLotSummary.AccountId
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary.AccountId

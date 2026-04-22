@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthIntegrityKind
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ok
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gap
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutOfOrder
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InvalidPosition
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stale
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingSession
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Market
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionType
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenTime
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CloseTime
     path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs

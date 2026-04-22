@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionModel
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Auto
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarMidpoint
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBook
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketImpact
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs

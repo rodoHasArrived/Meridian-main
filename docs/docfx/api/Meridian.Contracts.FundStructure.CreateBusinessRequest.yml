@@ -1,0 +1,760 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateBusinessRequest
+  id: CreateBusinessRequest
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.#ctor(System.Guid,System.Guid,Meridian.Contracts.FundStructure.BusinessKindDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.Code
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.Description
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.Name
+  - Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId
+  langs:
+  - csharp
+  - vb
+  name: CreateBusinessRequest
+  nameWithType: CreateBusinessRequest
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateBusinessRequest
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record CreateBusinessRequest : IEquatable<CreateBusinessRequest>'
+    content.vb: Public NotInheritable Class CreateBusinessRequest Implements IEquatable(Of CreateBusinessRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.CreateBusinessRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.#ctor(System.Guid,System.Guid,Meridian.Contracts.FundStructure.BusinessKindDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.CreateBusinessRequest.#ctor(System.Guid,System.Guid,Meridian.Contracts.FundStructure.BusinessKindDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  id: '#ctor(System.Guid,System.Guid,Meridian.Contracts.FundStructure.BusinessKindDto,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)'
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateBusinessRequest(Guid, Guid, BusinessKindDto, string, string, string, DateTimeOffset, string, string?)
+  nameWithType: CreateBusinessRequest.CreateBusinessRequest(Guid, Guid, BusinessKindDto, string, string, string, DateTimeOffset, string, string?)
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreateBusinessRequest(System.Guid, System.Guid, Meridian.Contracts.FundStructure.BusinessKindDto, string, string, string, System.DateTimeOffset, string, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public CreateBusinessRequest(Guid BusinessId, Guid OrganizationId, BusinessKindDto BusinessKind, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null)
+    parameters:
+    - id: BusinessId
+      type: System.Guid
+    - id: OrganizationId
+      type: System.Guid
+    - id: BusinessKind
+      type: Meridian.Contracts.FundStructure.BusinessKindDto
+    - id: Code
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: CreatedBy
+      type: System.String
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(BusinessId As Guid, OrganizationId As Guid, BusinessKind As BusinessKindDto, Code As String, Name As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, Description As String = Nothing)
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.#ctor*
+  nameWithType.vb: CreateBusinessRequest.New(Guid, Guid, BusinessKindDto, String, String, String, DateTimeOffset, String, String)
+  fullName.vb: Meridian.Contracts.FundStructure.CreateBusinessRequest.New(System.Guid, System.Guid, Meridian.Contracts.FundStructure.BusinessKindDto, String, String, String, System.DateTimeOffset, String, String)
+  name.vb: New(Guid, Guid, BusinessKindDto, String, String, String, DateTimeOffset, String, String)
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId
+  id: BusinessId
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: BusinessId
+  nameWithType: CreateBusinessRequest.BusinessId
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid BusinessId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property BusinessId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId
+  id: OrganizationId
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: OrganizationId
+  nameWithType: CreateBusinessRequest.OrganizationId
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid OrganizationId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OrganizationId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind
+  id: BusinessKind
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: BusinessKind
+  nameWithType: CreateBusinessRequest.BusinessKind
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessKind
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public BusinessKindDto BusinessKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.BusinessKindDto
+    content.vb: Public Property BusinessKind As BusinessKindDto
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.Code
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.Code
+  id: Code
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: CreateBusinessRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.Code*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.Name
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.Name
+  id: Name
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CreateBusinessRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.Name*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: CreateBusinessRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: CreateBusinessRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: CreateBusinessRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy*
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.Description
+  commentId: P:Meridian.Contracts.FundStructure.CreateBusinessRequest.Description
+  id: Description
+  parent: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CreateBusinessRequest.Description
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.FundStructure.CreateBusinessRequest.Description*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.CreateBusinessRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.CreateBusinessRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateBusinessRequest>
+  nameWithType: IEquatable<CreateBusinessRequest>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.CreateBusinessRequest>
+  nameWithType.vb: IEquatable(Of CreateBusinessRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.CreateBusinessRequest)
+  name.vb: IEquatable(Of CreateBusinessRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+    name: CreateBusinessRequest
+    href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+    name: CreateBusinessRequest
+    href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.#ctor
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest__ctor_System_Guid_System_Guid_Meridian_Contracts_FundStructure_BusinessKindDto_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_String_
+  name: CreateBusinessRequest
+  nameWithType: CreateBusinessRequest.CreateBusinessRequest
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreateBusinessRequest
+  nameWithType.vb: CreateBusinessRequest.New
+  fullName.vb: Meridian.Contracts.FundStructure.CreateBusinessRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto
+  commentId: T:Meridian.Contracts.FundStructure.BusinessKindDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BusinessKindDto.html
+  name: BusinessKindDto
+  nameWithType: BusinessKindDto
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_BusinessId
+  name: BusinessId
+  nameWithType: CreateBusinessRequest.BusinessId
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessId
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_OrganizationId
+  name: OrganizationId
+  nameWithType: CreateBusinessRequest.OrganizationId
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.OrganizationId
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_BusinessKind
+  name: BusinessKind
+  nameWithType: CreateBusinessRequest.BusinessKind
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.BusinessKind
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.Code*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.Code
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_Code
+  name: Code
+  nameWithType: CreateBusinessRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.Code
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.Name*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.Name
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_Name
+  name: Name
+  nameWithType: CreateBusinessRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.Name
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_BaseCurrency
+  name: BaseCurrency
+  nameWithType: CreateBusinessRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.BaseCurrency
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: CreateBusinessRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.EffectiveFrom
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_CreatedBy
+  name: CreatedBy
+  nameWithType: CreateBusinessRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.CreatedBy
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest.Description*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateBusinessRequest.Description
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html#Meridian_Contracts_FundStructure_CreateBusinessRequest_Description
+  name: Description
+  nameWithType: CreateBusinessRequest.Description
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest.Description

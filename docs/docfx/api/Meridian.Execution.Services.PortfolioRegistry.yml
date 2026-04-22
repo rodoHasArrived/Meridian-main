@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PortfolioRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioRegistry
     path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PortfolioRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PortfolioRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deregister
     path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PortfolioRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PortfolioRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
     path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PortfolioRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Execution/Services/PortfolioRegistry.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDepthSource
     path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthUpdates
     path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
     path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs

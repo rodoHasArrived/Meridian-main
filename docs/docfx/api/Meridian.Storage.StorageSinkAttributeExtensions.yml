@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageSinkAttributeExtensions
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageSinkAttribute
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageSinkMetadata
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsStorageSinkPlugin
     path: ../../src/Meridian.Storage/StorageSinkAttribute.cs

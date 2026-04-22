@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoPathService
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Root
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocsPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AiDocsPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GithubPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstructionsPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AgentsPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AiClaudePath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplatesPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdaptersPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -363,7 +363,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditScriptPath
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -392,7 +392,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -421,7 +421,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KnownErrorsFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CSharpInstructionsFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -479,7 +479,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CodeReviewAgentFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -508,7 +508,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProvidersGuideFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -537,7 +537,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestingGuideFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -566,7 +566,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageGuideFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs
@@ -595,7 +595,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Services/RepoPathService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FSharpGuideFile
     path: ../../src/Meridian.Mcp/Services/RepoPathService.cs

@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionSummaryDto
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 447
+    startLine: 557
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 447
+    startLine: 557
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -107,11 +107,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionId
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 448
+    startLine: 558
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -136,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 449
+    startLine: 559
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -165,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 450
+    startLine: 560
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -194,11 +194,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialCash
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 451
+    startLine: 561
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 452
+    startLine: 562
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -252,11 +252,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClosedAt
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 453
+    startLine: 563
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -281,11 +281,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 454
+    startLine: 564
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services

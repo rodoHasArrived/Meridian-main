@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBOptions
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -72,7 +72,7 @@ items:
   summary: Interactive Brokers connection options.
   example: []
   syntax:
-    content: public IBOptions(string Host = "127.0.0.1", int Port = 7496, int ClientId = 0, bool UsePaperTrading = false, bool SubscribeDepth = true, int DepthLevels = 10, bool TickByTick = true)
+    content: public IBOptions(string Host = "127.0.0.1", int Port = 7497, int ClientId = 1, bool UsePaperTrading = true, bool SubscribeDepth = true, int DepthLevels = 10, bool TickByTick = true)
     parameters:
     - id: Host
       type: System.String
@@ -88,7 +88,7 @@ items:
       type: System.Int32
     - id: TickByTick
       type: System.Boolean
-    content.vb: Public Sub New(Host As String = "127.0.0.1", Port As Integer = 7496, ClientId As Integer = 0, UsePaperTrading As Boolean = False, SubscribeDepth As Boolean = True, DepthLevels As Integer = 10, TickByTick As Boolean = True)
+    content.vb: Public Sub New(Host As String = "127.0.0.1", Port As Integer = 7497, ClientId As Integer = 1, UsePaperTrading As Boolean = True, SubscribeDepth As Boolean = True, DepthLevels As Integer = 10, TickByTick As Boolean = True)
   overload: Meridian.Application.Config.IBOptions.#ctor*
   nameWithType.vb: IBOptions.New(String, Integer, Integer, Boolean, Boolean, Integer, Boolean)
   fullName.vb: Meridian.Application.Config.IBOptions.New(String, Integer, Integer, Boolean, Boolean, Integer, Boolean)
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Host
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Port
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientId
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsePaperTrading
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickByTick
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs

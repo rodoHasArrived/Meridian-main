@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApprovePaymentRequest
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewNotes
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewedBy
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs

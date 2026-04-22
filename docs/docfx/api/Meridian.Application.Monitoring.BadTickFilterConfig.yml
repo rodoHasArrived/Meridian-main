@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BadTickFilterConfig
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDeviationPercent
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinValidPrice
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxValidPrice
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSpreadPercent
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequirePositiveSize
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnforceLuldBands
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnforceTradingHalts
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -294,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownMs
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strict
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -385,7 +385,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lenient
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs

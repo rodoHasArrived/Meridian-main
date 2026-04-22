@@ -85,6 +85,18 @@ public sealed class ShellNavigationCatalogTests
         panes.Last().OpenWithoutBoundParameter.Should().BeTrue();
     }
 
+    [Fact]
+    public void TradingShellRelatedPages_ShouldExposePortfolioContinuity()
+    {
+        var relatedPages = ShellNavigationCatalog
+            .GetRelatedPages("TradingShell")
+            .Select(static page => page.PageTag)
+            .ToArray();
+
+        relatedPages.Should().ContainInOrder("RunPortfolio", "PositionBlotter", "RunRisk");
+        relatedPages.Should().Contain("FundPortfolio");
+    }
+
     private static IEnumerable<WorkspacePaneDefinition> EnumeratePanes(WorkspaceShellDefinition shell)
         => shell.DefaultPanes
             .Concat(shell.ContextlessPanes)

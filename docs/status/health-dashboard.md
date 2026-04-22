@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-20T04:11:12.111883+00:00
+> Last updated: 2026-04-22T15:47:27.078760+00:00
 
 ## Overall Health Score
 
 ```
-  [##########################----] 88/100
+  [###########################---] 89/100
   Rating: Good
 ```
 
@@ -14,14 +14,14 @@
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 387 |
-| Total lines | 137,488 |
-| Average file size (lines) | 355.3 |
-| Orphaned files | 125 |
+| Total documentation files | 405 |
+| Total lines | 140,505 |
+| Average file size (lines) | 346.9 |
+| Orphaned files | 128 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 185 |
-| **Health score** | **88/100** |
+| TODO/FIXME markers | 184 |
+| **Health score** | **89/100** |
 
 ### Score Breakdown
 
@@ -39,6 +39,7 @@
 
 These files are not linked from any other Markdown file in the repository:
 
+- `.artifacts/link-repair-report.md`
 - `.claude/agents/meridian-blueprint.md`
 - `.claude/agents/meridian-cleanup.md`
 - `.claude/agents/meridian-docs.md`
@@ -58,8 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
 - `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
 - `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
-- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
-- ... and 105 more
+- ... and 108 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-20 | 88 | 387 | 125 | 0 |
+| 2026-04-22 | 89 | 405 | 128 | 0 |
 
 ---
 

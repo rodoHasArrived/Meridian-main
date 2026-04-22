@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolTable
     path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrAdd
     path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetSymbol
     path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SymbolTable.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Core/Performance/Performance/SymbolTable.cs

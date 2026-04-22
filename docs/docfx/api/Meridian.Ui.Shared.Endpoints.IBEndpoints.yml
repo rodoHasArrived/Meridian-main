@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs
-    startLine: 12
+    startLine: 13
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapIBEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs
-    startLine: 17
+    startLine: 18
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

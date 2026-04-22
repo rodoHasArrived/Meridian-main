@@ -28,11 +28,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDegradationConfig
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 343
+    startLine: 476
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -66,11 +66,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluationIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 346
+    startLine: 479
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -97,11 +97,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DegradationThreshold
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 349
+    startLine: 482
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -128,11 +128,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyThresholdMs
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 352
+    startLine: 485
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -159,11 +159,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMaxMs
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 355
+    startLine: 488
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -190,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorRateThreshold
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 358
+    startLine: 491
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -221,11 +221,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorWindowSeconds
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 361
+    startLine: 494
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -252,11 +252,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectsPerHour
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 364
+    startLine: 497
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -283,11 +283,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMissedHeartbeatsForFullDegradation
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 367
+    startLine: 500
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -314,11 +314,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionWeight
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 371
+    startLine: 504
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -345,11 +345,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyWeight
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 374
+    startLine: 507
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -376,11 +376,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorRateWeight
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 377
+    startLine: 510
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -407,11 +407,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectWeight
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 380
+    startLine: 513
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -438,11 +438,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 382
+    startLine: 515
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring

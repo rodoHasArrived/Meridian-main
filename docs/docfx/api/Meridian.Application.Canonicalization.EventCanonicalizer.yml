@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCanonicalizer
     path: ../../src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/EventCanonicalizer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Canonicalize
     path: ../../src/Meridian.Application/Canonicalization/EventCanonicalizer.cs

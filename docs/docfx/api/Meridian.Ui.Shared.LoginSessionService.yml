@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoginSessionService
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConfigured
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSession
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSession
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessionProfile
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LoginSessionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSession
     path: ../../src/Meridian.Ui.Shared/LoginSessionService.cs

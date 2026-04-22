@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InfoBarSeverityLevel
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Informational
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerValidationException
     path: ../../src/Meridian.Ledger/LedgerValidationException.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/LedgerValidationException.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerValidationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/LedgerValidationException.cs

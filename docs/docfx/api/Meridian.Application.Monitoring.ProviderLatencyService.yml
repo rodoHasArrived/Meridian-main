@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderLatencyService
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistogram
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllHistograms
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHighLatencyProviders
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -309,7 +309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetAll
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -371,7 +371,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToJson
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -401,7 +401,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs

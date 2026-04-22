@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDailyBarSource
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -43,7 +43,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs

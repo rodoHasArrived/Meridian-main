@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCronEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CronEndpoints.cs

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverRuleSnapshot
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RuleId
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupProviderIds
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentActiveProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInFailoverState
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFailoverTime
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverCount
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverThreshold
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoveryThreshold
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs

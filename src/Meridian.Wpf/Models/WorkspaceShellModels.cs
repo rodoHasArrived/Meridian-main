@@ -5,6 +5,26 @@ namespace Meridian.Wpf.Models;
 // ── Trading Workspace ───────────────────────────────────────────────────────
 
 /// <summary>
+/// Visual tone for promotion, audit, and validation status shown in the Trading shell.
+/// </summary>
+public enum TradingWorkspaceStatusTone : byte
+{
+    Info,
+    Success,
+    Warning
+}
+
+/// <summary>
+/// Compact status item used by the Trading workspace promotion and control card.
+/// </summary>
+public sealed class TradingWorkspaceStatusItem
+{
+    public string Label { get; set; } = "Status unavailable";
+    public string Detail { get; set; } = "Status detail unavailable.";
+    public TradingWorkspaceStatusTone Tone { get; set; } = TradingWorkspaceStatusTone.Info;
+}
+
+/// <summary>
 /// Active run context shared by the workstation shell pages.
 /// </summary>
 public sealed class ActiveRunContext
@@ -14,9 +34,19 @@ public sealed class ActiveRunContext
     public string ModeLabel { get; set; } = string.Empty;
     public string StatusLabel { get; set; } = string.Empty;
     public string FundScopeLabel { get; set; } = "Global scope";
+    public string? ParentRunId { get; set; }
     public string PortfolioPreview { get; set; } = "Portfolio preview unavailable.";
     public string LedgerPreview { get; set; } = "Ledger preview unavailable.";
     public string RiskSummary { get; set; } = "Risk summary unavailable.";
+    public TradingWorkspaceStatusItem PromotionStatus { get; set; } = new();
+    public TradingWorkspaceStatusItem AuditStatus { get; set; } = new();
+    public TradingWorkspaceStatusItem ValidationStatus { get; set; } = new();
+    public string PromotionStatusLabel => PromotionStatus.Label;
+    public string PromotionStatusDetail => PromotionStatus.Detail;
+    public string AuditStatusLabel => AuditStatus.Label;
+    public string AuditStatusDetail => AuditStatus.Detail;
+    public string ValidationStatusLabel => ValidationStatus.Label;
+    public string ValidationStatusDetail => ValidationStatus.Detail;
     public bool CanPromoteToPaper { get; set; }
 }
 
@@ -47,8 +77,18 @@ public sealed class TradingWorkspaceSummary
     public string MaxDrawdownFormatted { get; set; } = "—";
     public string PositionLimitLabel { get; set; } = "—";
     public string OrderRateLabel { get; set; } = "—";
+    public TradingWorkspaceStatusItem PromotionStatus { get; set; } = new();
+    public TradingWorkspaceStatusItem AuditStatus { get; set; } = new();
+    public TradingWorkspaceStatusItem ValidationStatus { get; set; } = new();
+    public string PromotionStatusLabel => PromotionStatus.Label;
+    public string PromotionStatusDetail => PromotionStatus.Detail;
+    public string AuditStatusLabel => AuditStatus.Label;
+    public string AuditStatusDetail => AuditStatus.Detail;
+    public string ValidationStatusLabel => ValidationStatus.Label;
+    public string ValidationStatusDetail => ValidationStatus.Detail;
     public ActiveRunContext? ActiveRunContext { get; set; }
     public IReadOnlyList<TradingActivePositionItem> ActivePositions { get; set; } = [];
+    public WorkspaceQueueRegionState ActivePositionsQueueState { get; set; } = WorkspaceQueueRegionState.None;
 }
 
 // ── Research Workspace ──────────────────────────────────────────────────────

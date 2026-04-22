@@ -77,7 +77,7 @@ public sealed class BacktestStudioRunOrchestratorTests
     }
 
     [Fact]
-    public async Task StartAsync_WhenCallerCancels_RecordsCancelledRun()
+    public async Task StartAsync_WhenCallerCancelsAfterScheduling_RunCanStillComplete()
     {
         var store = new StrategyRunStore();
         var engine = new StubBacktestStudioEngine();
@@ -97,10 +97,41 @@ public sealed class BacktestStudioRunOrchestratorTests
         await engine.WaitForMonitorAsync(handle.EngineRunHandle);
 
         cts.Cancel();
+        engine.Complete(handle.EngineRunHandle, BuildResult(request.NativeRequest));
+
+        var completed = await WaitForRunAsync(
+            store,
+            "strategy-3",
+            run => run.EndedAt.HasValue);
+
+        completed.RunId.Should().Be(handle.RunId);
+        completed.TerminalStatus.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CancelAsync_WhenCalled_RecordsCancelledRun()
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "strategy-cancel",
+            StrategyName: "Momentum",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: BuildRequest());
+
+        var handle = await orchestrator.StartAsync(request, CancellationToken.None);
+        await engine.WaitForMonitorAsync(handle.EngineRunHandle);
+
+        await orchestrator.CancelAsync(handle.RunId, CancellationToken.None);
 
         var cancelled = await WaitForRunAsync(
             store,
-            "strategy-3",
+            "strategy-cancel",
             run => run.TerminalStatus == StrategyRunStatus.Cancelled);
 
         cancelled.RunId.Should().Be(handle.RunId);
@@ -234,6 +265,14 @@ public sealed class BacktestStudioRunOrchestratorTests
                 _monitorCancelled[runHandle].TrySetResult(true);
                 throw;
             }
+        }
+
+        public Task CancelAsync(string runHandle, CancellationToken ct)
+        {
+            var status = _statuses[runHandle];
+            _statuses[runHandle] = status with { Status = StrategyRunStatus.Cancelled, Message = "Cancelled" };
+            _results[runHandle].TrySetCanceled(ct.IsCancellationRequested ? ct : new CancellationToken(canceled: true));
+            return Task.CompletedTask;
         }
 
         public void Complete(string runHandle, BacktestResult result)

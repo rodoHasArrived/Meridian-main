@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsBackfill
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSymbolSearch
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOptionsChain
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsBrokerage
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -259,7 +259,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsRealtimeTrades
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsRealtimeQuotes
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarketDepth
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSymbolsPerSubscription
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -445,7 +445,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -476,7 +476,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -507,7 +507,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -538,7 +538,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistoricalQuotes
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -569,7 +569,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistoricalTrades
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -600,7 +600,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistoricalAuctions
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -631,7 +631,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinBarResolution
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -662,7 +662,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedBarIntervals
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -693,7 +693,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAssetTypeFilter
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -724,7 +724,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsExchangeFilter
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -755,7 +755,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetTypes
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -786,7 +786,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExchanges
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -817,7 +817,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -848,7 +848,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -879,7 +879,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -910,7 +910,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinRequestDelay
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -941,7 +941,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -972,7 +972,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streaming
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1014,7 +1014,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillBarsOnly
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1045,7 +1045,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillFullFeatured
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1076,7 +1076,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearch
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1107,7 +1107,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchFilterable
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1145,7 +1145,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsChain
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1185,7 +1185,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brokerage
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1227,7 +1227,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hybrid
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1271,7 +1271,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromHistoricalCapabilities
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1313,7 +1313,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDictionary
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1343,7 +1343,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryType
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1374,7 +1374,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasTickData
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1405,7 +1405,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCorporateActions
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -1436,7 +1436,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarket
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs

@@ -29,7 +29,8 @@ public sealed record FundTrialBalanceLine(
     string? Symbol,
     string? FinancialAccountId,
     decimal Balance,
-    int EntryCount);
+    int EntryCount,
+    WorkstationSecurityReference? Security = null);
 
 /// <summary>
 /// Journal row for a fund ledger view.
@@ -64,3 +65,34 @@ public sealed record FundLedgerSummary(
     int EntityCount,
     int SleeveCount,
     int VehicleCount);
+
+/// <summary>
+/// Balance row captured in a reconciliation snapshot.
+/// </summary>
+public sealed record FundLedgerSnapshotBalanceLine(
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal Balance,
+    WorkstationSecurityReference? Security = null);
+
+/// <summary>
+/// Point-in-time ledger snapshot used by reconciliation views.
+/// </summary>
+public sealed record FundLedgerDimensionSnapshot(
+    DateTimeOffset Timestamp,
+    int JournalEntryCount,
+    int LedgerEntryCount,
+    IReadOnlyList<FundLedgerSnapshotBalanceLine> Balances);
+
+/// <summary>
+/// Reconciliation snapshot of one fund ledger book, including consolidated totals and per-dimension breakdowns.
+/// </summary>
+public sealed record FundLedgerReconciliationSnapshot(
+    string FundProfileId,
+    DateTimeOffset AsOf,
+    FundLedgerDimensionSnapshot Consolidated,
+    IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Entities,
+    IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Sleeves,
+    IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Vehicles);

@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitInfo
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExDate
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitFrom
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitTo
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SplitRatio
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs

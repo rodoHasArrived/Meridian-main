@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthOperation
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Insert
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Update
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/DepthOperation.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delete
     path: ../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs

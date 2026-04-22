@@ -14,11 +14,7 @@ items:
   - Meridian.Application.Config.BackfillConfig
   - Meridian.Application.Config.BackfillJobsConfig
   - Meridian.Application.Config.BackfillProvidersConfig
-  - Meridian.Application.Config.BinanceConfig
-  - Meridian.Application.Config.CQGConfig
-  - Meridian.Application.Config.CQGConfigValidator
   - Meridian.Application.Config.CanonicalizationConfig
-  - Meridian.Application.Config.CoinbaseConfig
   - Meridian.Application.Config.ConfigDtoMapper
   - Meridian.Application.Config.ConfigJsonSchemaGenerator
   - Meridian.Application.Config.ConfigValidationPipeline
@@ -52,14 +48,14 @@ items:
   - Meridian.Application.Config.FieldValidationStage
   - Meridian.Application.Config.FinnhubConfig
   - Meridian.Application.Config.FredConfig
+  - Meridian.Application.Config.IBClientPortalOptions
+  - Meridian.Application.Config.IBClientPortalOptionsValidator
   - Meridian.Application.Config.IBOptions
+  - Meridian.Application.Config.IBOptionsValidator
   - Meridian.Application.Config.IConfigValidationStage
   - Meridian.Application.Config.IConfigValidator
   - Meridian.Application.Config.IConfigurationProvider
-  - Meridian.Application.Config.IQFeedConfig
-  - Meridian.Application.Config.IQFeedConfigValidator
   - Meridian.Application.Config.IndexOptionsConfig
-  - Meridian.Application.Config.KrakenConfig
   - Meridian.Application.Config.NasdaqDataLinkConfig
   - Meridian.Application.Config.OpenFigiConfig
   - Meridian.Application.Config.PipelineOptions
@@ -73,8 +69,6 @@ items:
   - Meridian.Application.Config.ProviderPolicyConfig
   - Meridian.Application.Config.ProviderPresetConfig
   - Meridian.Application.Config.ProviderRegistryConfig
-  - Meridian.Application.Config.RithmicConfig
-  - Meridian.Application.Config.RithmicConfigValidator
   - Meridian.Application.Config.RobinhoodConfig
   - Meridian.Application.Config.ScheduledBackfillConfig
   - Meridian.Application.Config.SelfHealingFix
@@ -83,10 +77,6 @@ items:
   - Meridian.Application.Config.SemanticValidationStage
   - Meridian.Application.Config.SensitiveValueMasker
   - Meridian.Application.Config.SourceRegistryConfig
-  - Meridian.Application.Config.StockSharpConfig
-  - Meridian.Application.Config.StockSharpConfigValidator
-  - Meridian.Application.Config.StockSharpIBConfig
-  - Meridian.Application.Config.StockSharpIBConfigValidator
   - Meridian.Application.Config.StooqConfig
   - Meridian.Application.Config.StorageConfig
   - Meridian.Application.Config.StorageConfigExtensions
@@ -173,36 +163,18 @@ references:
   name: AlpacaOptionsValidator
   nameWithType: AlpacaOptionsValidator
   fullName: Meridian.Application.Config.AlpacaOptionsValidator
-- uid: Meridian.Application.Config.StockSharpConfigValidator
-  commentId: T:Meridian.Application.Config.StockSharpConfigValidator
-  href: Meridian.Application.Config.StockSharpConfigValidator.html
-  name: StockSharpConfigValidator
-  nameWithType: StockSharpConfigValidator
-  fullName: Meridian.Application.Config.StockSharpConfigValidator
-- uid: Meridian.Application.Config.RithmicConfigValidator
-  commentId: T:Meridian.Application.Config.RithmicConfigValidator
-  href: Meridian.Application.Config.RithmicConfigValidator.html
-  name: RithmicConfigValidator
-  nameWithType: RithmicConfigValidator
-  fullName: Meridian.Application.Config.RithmicConfigValidator
-- uid: Meridian.Application.Config.IQFeedConfigValidator
-  commentId: T:Meridian.Application.Config.IQFeedConfigValidator
-  href: Meridian.Application.Config.IQFeedConfigValidator.html
-  name: IQFeedConfigValidator
-  nameWithType: IQFeedConfigValidator
-  fullName: Meridian.Application.Config.IQFeedConfigValidator
-- uid: Meridian.Application.Config.CQGConfigValidator
-  commentId: T:Meridian.Application.Config.CQGConfigValidator
-  href: Meridian.Application.Config.CQGConfigValidator.html
-  name: CQGConfigValidator
-  nameWithType: CQGConfigValidator
-  fullName: Meridian.Application.Config.CQGConfigValidator
-- uid: Meridian.Application.Config.StockSharpIBConfigValidator
-  commentId: T:Meridian.Application.Config.StockSharpIBConfigValidator
-  href: Meridian.Application.Config.StockSharpIBConfigValidator.html
-  name: StockSharpIBConfigValidator
-  nameWithType: StockSharpIBConfigValidator
-  fullName: Meridian.Application.Config.StockSharpIBConfigValidator
+- uid: Meridian.Application.Config.IBOptionsValidator
+  commentId: T:Meridian.Application.Config.IBOptionsValidator
+  href: Meridian.Application.Config.IBOptionsValidator.html
+  name: IBOptionsValidator
+  nameWithType: IBOptionsValidator
+  fullName: Meridian.Application.Config.IBOptionsValidator
+- uid: Meridian.Application.Config.IBClientPortalOptionsValidator
+  commentId: T:Meridian.Application.Config.IBClientPortalOptionsValidator
+  href: Meridian.Application.Config.IBClientPortalOptionsValidator.html
+  name: IBClientPortalOptionsValidator
+  nameWithType: IBClientPortalOptionsValidator
+  fullName: Meridian.Application.Config.IBClientPortalOptionsValidator
 - uid: Meridian.Application.Config.StorageConfigValidator
   commentId: T:Meridian.Application.Config.StorageConfigValidator
   href: Meridian.Application.Config.StorageConfigValidator.html
@@ -509,6 +481,13 @@ references:
   name: IBOptions
   nameWithType: IBOptions
   fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Application.Config.IBClientPortalOptions
+  commentId: T:Meridian.Application.Config.IBClientPortalOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBClientPortalOptions.html
+  name: IBClientPortalOptions
+  nameWithType: IBClientPortalOptions
+  fullName: Meridian.Application.Config.IBClientPortalOptions
 - uid: Meridian.Application.Config.DataSourcesConfig
   commentId: T:Meridian.Application.Config.DataSourcesConfig
   parent: Meridian.Application.Config
@@ -640,95 +619,34 @@ references:
   fullName: Meridian.Application.Config.ProviderConnectionsConfig
 - uid: Meridian.Application.Config.ProviderConnectionConfig
   commentId: T:Meridian.Application.Config.ProviderConnectionConfig
-  parent: Meridian.Application.Config
   href: Meridian.Application.Config.ProviderConnectionConfig.html
   name: ProviderConnectionConfig
   nameWithType: ProviderConnectionConfig
   fullName: Meridian.Application.Config.ProviderConnectionConfig
 - uid: Meridian.Application.Config.ProviderBindingConfig
   commentId: T:Meridian.Application.Config.ProviderBindingConfig
-  parent: Meridian.Application.Config
   href: Meridian.Application.Config.ProviderBindingConfig.html
   name: ProviderBindingConfig
   nameWithType: ProviderBindingConfig
   fullName: Meridian.Application.Config.ProviderBindingConfig
 - uid: Meridian.Application.Config.ProviderPolicyConfig
   commentId: T:Meridian.Application.Config.ProviderPolicyConfig
-  parent: Meridian.Application.Config
   href: Meridian.Application.Config.ProviderPolicyConfig.html
   name: ProviderPolicyConfig
   nameWithType: ProviderPolicyConfig
   fullName: Meridian.Application.Config.ProviderPolicyConfig
 - uid: Meridian.Application.Config.ProviderPresetConfig
   commentId: T:Meridian.Application.Config.ProviderPresetConfig
-  parent: Meridian.Application.Config
   href: Meridian.Application.Config.ProviderPresetConfig.html
   name: ProviderPresetConfig
   nameWithType: ProviderPresetConfig
   fullName: Meridian.Application.Config.ProviderPresetConfig
 - uid: Meridian.Application.Config.ProviderCertificationConfig
   commentId: T:Meridian.Application.Config.ProviderCertificationConfig
-  parent: Meridian.Application.Config
   href: Meridian.Application.Config.ProviderCertificationConfig.html
   name: ProviderCertificationConfig
   nameWithType: ProviderCertificationConfig
   fullName: Meridian.Application.Config.ProviderCertificationConfig
-- uid: Meridian.Application.Config.StockSharpConfig
-  commentId: T:Meridian.Application.Config.StockSharpConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.StockSharpConfig.html
-  name: StockSharpConfig
-  nameWithType: StockSharpConfig
-  fullName: Meridian.Application.Config.StockSharpConfig
-- uid: Meridian.Application.Config.RithmicConfig
-  commentId: T:Meridian.Application.Config.RithmicConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.RithmicConfig.html
-  name: RithmicConfig
-  nameWithType: RithmicConfig
-  fullName: Meridian.Application.Config.RithmicConfig
-- uid: Meridian.Application.Config.IQFeedConfig
-  commentId: T:Meridian.Application.Config.IQFeedConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.IQFeedConfig.html
-  name: IQFeedConfig
-  nameWithType: IQFeedConfig
-  fullName: Meridian.Application.Config.IQFeedConfig
-- uid: Meridian.Application.Config.CQGConfig
-  commentId: T:Meridian.Application.Config.CQGConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.CQGConfig.html
-  name: CQGConfig
-  nameWithType: CQGConfig
-  fullName: Meridian.Application.Config.CQGConfig
-- uid: Meridian.Application.Config.StockSharpIBConfig
-  commentId: T:Meridian.Application.Config.StockSharpIBConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.StockSharpIBConfig.html
-  name: StockSharpIBConfig
-  nameWithType: StockSharpIBConfig
-  fullName: Meridian.Application.Config.StockSharpIBConfig
-- uid: Meridian.Application.Config.BinanceConfig
-  commentId: T:Meridian.Application.Config.BinanceConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.BinanceConfig.html
-  name: BinanceConfig
-  nameWithType: BinanceConfig
-  fullName: Meridian.Application.Config.BinanceConfig
-- uid: Meridian.Application.Config.CoinbaseConfig
-  commentId: T:Meridian.Application.Config.CoinbaseConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.CoinbaseConfig.html
-  name: CoinbaseConfig
-  nameWithType: CoinbaseConfig
-  fullName: Meridian.Application.Config.CoinbaseConfig
-- uid: Meridian.Application.Config.KrakenConfig
-  commentId: T:Meridian.Application.Config.KrakenConfig
-  parent: Meridian.Application.Config
-  href: Meridian.Application.Config.KrakenConfig.html
-  name: KrakenConfig
-  nameWithType: KrakenConfig
-  fullName: Meridian.Application.Config.KrakenConfig
 - uid: Meridian.Application.Config.SyntheticMarketDataConfig
   commentId: T:Meridian.Application.Config.SyntheticMarketDataConfig
   parent: Meridian.Application.Config

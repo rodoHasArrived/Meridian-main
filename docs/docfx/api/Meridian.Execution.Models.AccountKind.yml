@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/AccountKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountKind
     path: ../../src/Meridian.Execution/Models/AccountKind.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/AccountKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Brokerage
     path: ../../src/Meridian.Execution/Models/AccountKind.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/AccountKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bank
     path: ../../src/Meridian.Execution/Models/AccountKind.cs

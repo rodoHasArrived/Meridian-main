@@ -387,6 +387,7 @@ def _extract_headings(content: str) -> list[str]:
 def evaluate_rule(  # noqa: C901
     rule: Rule,
     root: Path,
+    include_paths: set[str] | None = None,
 ) -> tuple[list[Violation], list[PassedCheck]]:
     """Evaluate a single *rule* against matching files under *root*.
 
@@ -396,6 +397,8 @@ def evaluate_rule(  # noqa: C901
     passes: list[PassedCheck] = []
 
     files = resolve_files(rule.applies_to, root)
+    if include_paths is not None:
+        files = [f for f in files if str(f.relative_to(root)).replace("\\", "/") in include_paths]
     if not files:
         return violations, passes
 
@@ -633,6 +636,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=False,
         help="Print a concise summary to stdout (for GITHUB_STEP_SUMMARY).",
     )
+    parser.add_argument(
+        "--paths-file",
+        type=Path,
+        default=None,
+        help=(
+            "Optional newline-delimited file containing repository-relative file paths "
+            "to evaluate. When provided, only matching files are checked."
+        ),
+    )
     return parser
 
 
@@ -655,6 +667,25 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
         print(f"Error: root directory not found: {root}", file=sys.stderr)
         return 1
 
+    include_paths: set[str] | None = None
+    if args.paths_file is not None:
+        paths_file: Path = args.paths_file
+        if not paths_file.is_absolute():
+            paths_file = root / paths_file
+        paths_file = paths_file.resolve()
+        if not paths_file.is_file():
+            print(f"Error: paths file not found: {paths_file}", file=sys.stderr)
+            return 1
+        try:
+            include_paths = {
+                line.strip().replace("\\", "/")
+                for line in paths_file.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            }
+        except OSError as exc:
+            print(f"Error: could not read paths file {paths_file}: {exc}", file=sys.stderr)
+            return 1
+
     # Load rules
     rules = load_rules(rules_path)
     if not rules:
@@ -665,7 +696,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901
     all_passes: list[PassedCheck] = []
 
     for rule in rules:
-        violations, passes = evaluate_rule(rule, root)
+        violations, passes = evaluate_rule(rule, root, include_paths=include_paths)
         all_violations.extend(violations)
         all_passes.extend(passes)
 

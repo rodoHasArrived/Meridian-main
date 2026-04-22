@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetadataEnrichmentService
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMetadataAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMetadataBatchAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilterSymbolsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableSectorsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableIndustriesAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMetadataAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMetadataBatchAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CategorizeMarketCap
     path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs

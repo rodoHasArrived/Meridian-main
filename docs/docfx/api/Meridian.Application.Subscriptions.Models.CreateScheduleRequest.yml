@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateScheduleRequest
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Action
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timing
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs

@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyDetectionConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceSpikeThresholdPercent
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeSpikeThresholdMultiplier
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeDropThresholdMultiplier
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadThresholdPercent
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleDataThresholdSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RapidChangeThresholdPercent
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RapidChangeWindowSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ZScoreThreshold
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -300,7 +300,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSamplesForStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -329,7 +329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnablePriceAnomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableVolumeAnomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -387,7 +387,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableSpreadAnomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -416,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableStaleDataDetection
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -445,7 +445,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -474,7 +474,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs

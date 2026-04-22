@@ -1,0 +1,169 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  id: ISecurityMasterRuntimeStatus
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterRuntimeStatus
+  nameWithType: ISecurityMasterRuntimeStatus
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterRuntimeStatus
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: >-
+    Exposes whether Security Master-backed query workflows are currently available.
+
+    This lets workstation surfaces degrade gracefully instead of treating missing
+
+    infrastructure as an unknown lookup miss.
+  example: []
+  syntax:
+    content: public interface ISecurityMasterRuntimeStatus
+    content.vb: Public Interface ISecurityMasterRuntimeStatus
+  derivedClasses:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  commentId: P:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  id: IsAvailable
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  langs:
+  - csharp
+  - vb
+  name: IsAvailable
+  nameWithType: ISecurityMasterRuntimeStatus.IsAvailable
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailable
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: bool IsAvailable { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsAvailable As Boolean
+  overload: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable*
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  commentId: P:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  id: AvailabilityDescription
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  langs:
+  - csharp
+  - vb
+  name: AvailabilityDescription
+  nameWithType: ISecurityMasterRuntimeStatus.AvailabilityDescription
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailabilityDescription
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: string AvailabilityDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property AvailabilityDescription As String
+  overload: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.html#Meridian_Contracts_SecurityMaster_ISecurityMasterRuntimeStatus_IsAvailable
+  name: IsAvailable
+  nameWithType: ISecurityMasterRuntimeStatus.IsAvailable
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.IsAvailable
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.html#Meridian_Contracts_SecurityMaster_ISecurityMasterRuntimeStatus_AvailabilityDescription
+  name: AvailabilityDescription
+  nameWithType: ISecurityMasterRuntimeStatus.AvailabilityDescription
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.AvailabilityDescription
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

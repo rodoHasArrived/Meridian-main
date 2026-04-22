@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingEventRebuilder
     path: ../../src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rebuild
     path: ../../src/Meridian.Application/DirectLending/DirectLendingEventRebuilder.cs

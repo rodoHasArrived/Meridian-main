@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestFileEntry
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -153,7 +153,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumSha256
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressedSizeBytes
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -411,7 +411,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -454,7 +454,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstTimestamp
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -497,7 +497,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTimestamp
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -540,7 +540,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaVersion
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -583,7 +583,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCompressed
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -626,7 +626,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionType
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -669,7 +669,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerificationStatus
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -712,7 +712,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastVerifiedAt
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs

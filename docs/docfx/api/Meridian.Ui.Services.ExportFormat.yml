@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportFormat
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 677
+    startLine: 730
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -44,11 +44,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Raw
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 679
+    startLine: 732
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -70,11 +70,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonLines
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 680
+    startLine: 733
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -96,11 +96,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Csv
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 681
+    startLine: 734
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -122,11 +122,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parquet
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 682
+    startLine: 735
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

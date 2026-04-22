@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: L3OrderBookCollector
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentSnapshot
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedSymbols
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderAdd
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderModify
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderCancel
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -315,7 +315,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderExecute
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
@@ -356,7 +356,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/L3OrderBookCollector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderReplace
     path: ../../src/Meridian.Domain/Collectors/L3OrderBookCollector.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStrategyRepository
     path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRunAsync
     path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunsAsync
     path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestRunAsync
     path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Interfaces/IStrategyRepository.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllRunsAsync
     path: ../../src/Meridian.Strategies/Interfaces/IStrategyRepository.cs

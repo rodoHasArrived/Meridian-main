@@ -18,6 +18,7 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
 
         services.TryAddSingleton<ProviderConnectionService>();
         services.TryAddSingleton<ProviderBindingService>();
+        services.TryAddSingleton<KernelObservabilityService>();
         services.TryAddSingleton<ProviderRoutingService>();
         services.TryAddSingleton<ICapabilityRouter>(sp => sp.GetRequiredService<ProviderRoutingService>());
         services.TryAddSingleton<ProviderRouteExplainabilityService>();

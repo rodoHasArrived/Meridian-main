@@ -26,7 +26,11 @@ public enum OrderType
     Market,
     Limit,
     StopMarket,
-    StopLimit
+    StopLimit,
+    MarketOnOpen,
+    MarketOnClose,
+    LimitOnOpen,
+    LimitOnClose
 }
 
 /// <summary>Order time-in-force.</summary>

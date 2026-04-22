@@ -8,7 +8,6 @@ items:
   - Meridian.Application.Composition.Startup.ModeRunners.CollectorModeRunner
   - Meridian.Application.Composition.Startup.ModeRunners.CommandModeRunner
   - Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
-  - Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
   langs:
   - csharp
   - vb
@@ -43,9 +42,3 @@ references:
   name: DesktopModeRunner
   nameWithType: DesktopModeRunner
   fullName: Meridian.Application.Composition.Startup.ModeRunners.DesktopModeRunner
-- uid: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
-  commentId: T:Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner
-  href: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner.html
-  name: WebModeRunner
-  nameWithType: WebModeRunner
-  fullName: Meridian.Application.Composition.Startup.ModeRunners.WebModeRunner

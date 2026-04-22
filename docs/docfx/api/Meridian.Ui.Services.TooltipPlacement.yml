@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TooltipPlacement
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Top
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bottom
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Left
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Center
     path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs

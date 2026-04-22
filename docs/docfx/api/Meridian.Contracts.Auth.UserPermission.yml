@@ -38,7 +38,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UserPermission
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewMarketData
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewHistoricalData
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TriggerBackfill
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageProviders
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewTrades
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteTrades
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageOrders
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewAnalytics
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportData
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewConfig
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyConfig
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageCredentials
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -442,7 +442,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewDiagnostics
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -470,7 +470,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageStorage
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -498,7 +498,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdminMaintenance
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -526,7 +526,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageUsers
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -554,7 +554,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewStrategies
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -582,7 +582,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageStrategies
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -610,7 +610,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewSecurityMaster
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -638,7 +638,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifySecurityMaster
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -666,7 +666,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ViewDirectLending
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
@@ -694,7 +694,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/UserPermission.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManageDirectLending
     path: ../../src/Meridian.Contracts/Auth/UserPermission.cs

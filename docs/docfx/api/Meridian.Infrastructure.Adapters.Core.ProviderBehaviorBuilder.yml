@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderBehaviorBuilder
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithDescription
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithPriority
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -294,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithRateLimit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -376,7 +376,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithDailyBars
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -417,7 +417,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAdjustedDailyBars
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -462,7 +462,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAvailabilityCheck
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
@@ -503,7 +503,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Build
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs

@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitHistoryResponse
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 784
+    startLine: 566
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -50,11 +50,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: History
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 786
+    startLine: 568
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

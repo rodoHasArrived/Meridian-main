@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnomalyDetector
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnAnomalyDetected
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolLiquidity
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessTrade
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProcessQuote
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesForDate
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -332,7 +332,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentAnomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesByType
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -406,7 +406,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAnomaliesBySeverity
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgeAnomaly
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -480,7 +480,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUnacknowledgedAnomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -516,7 +516,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -546,7 +546,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStaleSymbols
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -576,7 +576,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbol
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -610,7 +610,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAnomaliesDetected
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
@@ -641,7 +641,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/DataQuality/AnomalyDetector.cs

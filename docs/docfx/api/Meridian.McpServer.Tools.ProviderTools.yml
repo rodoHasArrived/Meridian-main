@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTools
     path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListBackfillProviders
     path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/ProviderTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastBackfillResult
     path: ../../src/Meridian.McpServer/Tools/ProviderTools.cs

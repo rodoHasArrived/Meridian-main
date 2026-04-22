@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterestUpdate
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contract
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterest
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousOpenInterest
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -289,7 +289,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterestChange
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
@@ -402,7 +402,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VolumeToOpenInterestRatio
     path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs

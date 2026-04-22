@@ -9,6 +9,8 @@ items:
   - Meridian.Ui.Shared.LeanAutoExportService
   - Meridian.Ui.Shared.LeanSymbolMapper
   - Meridian.Ui.Shared.LoginSessionService
+  - Meridian.Ui.Shared.ScoreExplanationProjection
+  - Meridian.Ui.Shared.ScoreReasonProjection
   - Meridian.Ui.Shared.UserAccountConfig
   - Meridian.Ui.Shared.UserProfile
   - Meridian.Ui.Shared.UserProfileRegistry
@@ -53,6 +55,19 @@ references:
   name: LoginSessionService
   nameWithType: LoginSessionService
   fullName: Meridian.Ui.Shared.LoginSessionService
+- uid: Meridian.Ui.Shared.ScoreExplanationProjection
+  commentId: T:Meridian.Ui.Shared.ScoreExplanationProjection
+  parent: Meridian.Ui.Shared
+  href: Meridian.Ui.Shared.ScoreExplanationProjection.html
+  name: ScoreExplanationProjection
+  nameWithType: ScoreExplanationProjection
+  fullName: Meridian.Ui.Shared.ScoreExplanationProjection
+- uid: Meridian.Ui.Shared.ScoreReasonProjection
+  commentId: T:Meridian.Ui.Shared.ScoreReasonProjection
+  href: Meridian.Ui.Shared.ScoreReasonProjection.html
+  name: ScoreReasonProjection
+  nameWithType: ScoreReasonProjection
+  fullName: Meridian.Ui.Shared.ScoreReasonProjection
 - uid: Meridian.Ui.Shared.UserProfileRegistry
   commentId: T:Meridian.Ui.Shared.UserProfileRegistry
   parent: Meridian.Ui.Shared

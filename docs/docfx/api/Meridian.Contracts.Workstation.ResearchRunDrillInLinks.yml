@@ -1,0 +1,627 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  commentId: T:Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  id: ResearchRunDrillInLinks
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger
+  langs:
+  - csharp
+  - vb
+  name: ResearchRunDrillInLinks
+  nameWithType: ResearchRunDrillInLinks
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchRunDrillInLinks
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Drill-in links attached to research run cards and comparisons.
+  example: []
+  syntax:
+    content: 'public sealed record ResearchRunDrillInLinks : IEquatable<ResearchRunDrillInLinks>'
+    content.vb: Public NotInheritable Class ResearchRunDrillInLinks Implements IEquatable(Of ResearchRunDrillInLinks)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ResearchRunDrillInLinks}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.#ctor(System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: ResearchRunDrillInLinks(string, string, string, string?, string, string?)
+  nameWithType: ResearchRunDrillInLinks.ResearchRunDrillInLinks(string, string, string, string?, string, string?)
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.ResearchRunDrillInLinks(string, string, string, string?, string, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Drill-in links attached to research run cards and comparisons.
+  example: []
+  syntax:
+    content: public ResearchRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity)
+    parameters:
+    - id: EquityCurve
+      type: System.String
+    - id: Fills
+      type: System.String
+    - id: Attribution
+      type: System.String
+    - id: Ledger
+      type: System.String
+    - id: CashFlows
+      type: System.String
+    - id: Continuity
+      type: System.String
+    content.vb: Public Sub New(EquityCurve As String, Fills As String, Attribution As String, Ledger As String, CashFlows As String, Continuity As String)
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.#ctor*
+  nameWithType.vb: ResearchRunDrillInLinks.New(String, String, String, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.New(String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String)
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve
+  commentId: P:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve
+  id: EquityCurve
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: EquityCurve
+  nameWithType: ResearchRunDrillInLinks.EquityCurve
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EquityCurve
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string EquityCurve { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EquityCurve As String
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve*
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills
+  commentId: P:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills
+  id: Fills
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: Fills
+  nameWithType: ResearchRunDrillInLinks.Fills
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fills
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Fills { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Fills As String
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills*
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution
+  commentId: P:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution
+  id: Attribution
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: Attribution
+  nameWithType: ResearchRunDrillInLinks.Attribution
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Attribution
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Attribution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Attribution As String
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution*
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger
+  commentId: P:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger
+  id: Ledger
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: ResearchRunDrillInLinks.Ledger
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? Ledger { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Ledger As String
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger*
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows
+  commentId: P:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows
+  id: CashFlows
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: CashFlows
+  nameWithType: ResearchRunDrillInLinks.CashFlows
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFlows
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string CashFlows { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CashFlows As String
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows*
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity
+  commentId: P:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity
+  id: Continuity
+  parent: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  langs:
+  - csharp
+  - vb
+  name: Continuity
+  nameWithType: ResearchRunDrillInLinks.Continuity
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Continuity
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? Continuity { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Continuity As String
+  overload: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ResearchRunDrillInLinks}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ResearchRunDrillInLinks}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResearchRunDrillInLinks>
+  nameWithType: IEquatable<ResearchRunDrillInLinks>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ResearchRunDrillInLinks>
+  nameWithType.vb: IEquatable(Of ResearchRunDrillInLinks)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  name.vb: IEquatable(Of ResearchRunDrillInLinks)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    name: ResearchRunDrillInLinks
+    href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    name: ResearchRunDrillInLinks
+    href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.#ctor
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks__ctor_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: ResearchRunDrillInLinks
+  nameWithType: ResearchRunDrillInLinks.ResearchRunDrillInLinks
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.ResearchRunDrillInLinks
+  nameWithType.vb: ResearchRunDrillInLinks.New
+  fullName.vb: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks_EquityCurve
+  name: EquityCurve
+  nameWithType: ResearchRunDrillInLinks.EquityCurve
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.EquityCurve
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks_Fills
+  name: Fills
+  nameWithType: ResearchRunDrillInLinks.Fills
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Fills
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks_Attribution
+  name: Attribution
+  nameWithType: ResearchRunDrillInLinks.Attribution
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Attribution
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks_Ledger
+  name: Ledger
+  nameWithType: ResearchRunDrillInLinks.Ledger
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Ledger
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks_CashFlows
+  name: CashFlows
+  nameWithType: ResearchRunDrillInLinks.CashFlows
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.CashFlows
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html#Meridian_Contracts_Workstation_ResearchRunDrillInLinks_Continuity
+  name: Continuity
+  nameWithType: ResearchRunDrillInLinks.Continuity
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.Continuity

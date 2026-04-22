@@ -7,17 +7,26 @@ items:
   - Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster
   - Meridian.Application.SecurityMaster.ISecurityMasterConflictService
   - Meridian.Application.SecurityMaster.ISecurityMasterImportService
+  - Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
   - Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
   - Meridian.Application.SecurityMaster.ISecurityMasterQueryService
   - Meridian.Application.SecurityMaster.ISecurityResolver
+  - Meridian.Application.SecurityMaster.NullSecurityMasterImportService
+  - Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  - Meridian.Application.SecurityMaster.NullSecurityMasterService
+  - Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
   - Meridian.Application.SecurityMaster.PositionCorporateActionAdjustment
+  - Meridian.Application.SecurityMaster.SecurityKindMapping
+  - Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus
   - Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
   - Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService
+  - Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus
   - Meridian.Application.SecurityMaster.SecurityMasterConflictService
   - Meridian.Application.SecurityMaster.SecurityMasterCsvParser
   - Meridian.Application.SecurityMaster.SecurityMasterImportProgress
   - Meridian.Application.SecurityMaster.SecurityMasterImportResult
   - Meridian.Application.SecurityMaster.SecurityMasterImportService
+  - Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
   - Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
   - Meridian.Application.SecurityMaster.SecurityMasterOptionsValidator
   - Meridian.Application.SecurityMaster.SecurityMasterProjectionService
@@ -63,6 +72,36 @@ references:
   name: ISecurityResolver
   nameWithType: ISecurityResolver
   fullName: Meridian.Application.SecurityMaster.ISecurityResolver
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  commentId: T:Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService.html
+  name: NullSecurityMasterQueryService
+  nameWithType: NullSecurityMasterQueryService
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterQueryService
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterService
+  commentId: T:Meridian.Application.SecurityMaster.NullSecurityMasterService
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterService.html
+  name: NullSecurityMasterService
+  nameWithType: NullSecurityMasterService
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterService
+- uid: Meridian.Application.SecurityMaster.NullSecurityMasterImportService
+  commentId: T:Meridian.Application.SecurityMaster.NullSecurityMasterImportService
+  href: Meridian.Application.SecurityMaster.NullSecurityMasterImportService.html
+  name: NullSecurityMasterImportService
+  nameWithType: NullSecurityMasterImportService
+  fullName: Meridian.Application.SecurityMaster.NullSecurityMasterImportService
+- uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  commentId: T:Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  href: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.html
+  name: NullTradingParametersBackfillService
+  nameWithType: NullTradingParametersBackfillService
+  fullName: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping
+  commentId: T:Meridian.Application.SecurityMaster.SecurityKindMapping
+  href: Meridian.Application.SecurityMaster.SecurityKindMapping.html
+  name: SecurityKindMapping
+  nameWithType: SecurityKindMapping
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping
 - uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
   commentId: T:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
   parent: Meridian.Application.SecurityMaster
@@ -122,6 +161,34 @@ references:
   name: SecurityMasterImportService
   nameWithType: SecurityMasterImportService
   fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService
+- uid: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot.html
+  name: SecurityMasterIngestStatusSnapshot
+  nameWithType: SecurityMasterIngestStatusSnapshot
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+- uid: Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus.html
+  name: SecurityMasterActiveImportStatus
+  nameWithType: SecurityMasterActiveImportStatus
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus
+- uid: Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus.html
+  name: SecurityMasterCompletedImportStatus
+  nameWithType: SecurityMasterCompletedImportStatus
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterCompletedImportStatus
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.html
+  name: ISecurityMasterIngestStatusService
+  nameWithType: ISecurityMasterIngestStatusService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
 - uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
   commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
   parent: Meridian.Application.SecurityMaster

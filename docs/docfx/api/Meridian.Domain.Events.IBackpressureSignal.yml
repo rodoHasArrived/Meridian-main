@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/IBackpressureSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBackpressureSignal
     path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/IBackpressureSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsUnderPressure
     path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/IBackpressureSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
     path: ../../src/Meridian.Domain/Events/IBackpressureSignal.cs

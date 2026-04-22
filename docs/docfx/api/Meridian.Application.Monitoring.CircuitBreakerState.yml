@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreakerState
     path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Closed
     path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HalfOpen
     path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs

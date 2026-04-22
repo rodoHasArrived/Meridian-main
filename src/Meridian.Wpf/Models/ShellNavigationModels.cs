@@ -71,9 +71,16 @@ public sealed record ShellNavigationItem(
     string Glyph,
     string VisibilityLabel)
 {
-    public string MetaLine => string.IsNullOrWhiteSpace(VisibilityLabel)
-        ? $"{WorkspaceTitle} · {SectionLabel}"
-        : $"{WorkspaceTitle} · {SectionLabel} · {VisibilityLabel}";
+    public string MetaLine
+    {
+        get
+        {
+            var parts = new[] { SectionLabel, VisibilityLabel }
+                .Where(static part => !string.IsNullOrWhiteSpace(part));
+
+            return string.Join(" · ", parts);
+        }
+    }
 }
 
 public sealed record WorkspaceShellState(
@@ -95,7 +102,14 @@ public sealed record ShellCommandPaletteEntry(
     string Glyph,
     string VisibilityLabel)
 {
-    public string MetaLine => string.IsNullOrWhiteSpace(VisibilityLabel)
-        ? $"{WorkspaceTitle} · {SectionLabel}"
-        : $"{WorkspaceTitle} · {SectionLabel} · {VisibilityLabel}";
+    public string MetaLine
+    {
+        get
+        {
+            var parts = new[] { SectionLabel, VisibilityLabel }
+                .Where(static part => !string.IsNullOrWhiteSpace(part));
+
+            return string.Join(" · ", parts);
+        }
+    }
 }

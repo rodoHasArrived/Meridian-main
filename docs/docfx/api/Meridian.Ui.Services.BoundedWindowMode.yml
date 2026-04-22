@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BoundedWindowMode
+  commentId: T:Meridian.Ui.Services.BoundedWindowMode
+  id: BoundedWindowMode
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BoundedWindowMode.DockFloat
+  - Meridian.Ui.Services.BoundedWindowMode.Focused
+  - Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
+  langs:
+  - csharp
+  - vb
+  name: BoundedWindowMode
+  nameWithType: BoundedWindowMode
+  fullName: Meridian.Ui.Services.BoundedWindowMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BoundedWindowMode
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Bounded workstation shell mode for one-shell dock and float behavior.
+  example: []
+  syntax:
+    content: 'public enum BoundedWindowMode : byte'
+    content.vb: Public Enum BoundedWindowMode As Byte
+- uid: Meridian.Ui.Services.BoundedWindowMode.Focused
+  commentId: F:Meridian.Ui.Services.BoundedWindowMode.Focused
+  id: Focused
+  parent: Meridian.Ui.Services.BoundedWindowMode
+  langs:
+  - csharp
+  - vb
+  name: Focused
+  nameWithType: BoundedWindowMode.Focused
+  fullName: Meridian.Ui.Services.BoundedWindowMode.Focused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Focused
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Focused = 0
+    return:
+      type: Meridian.Ui.Services.BoundedWindowMode
+- uid: Meridian.Ui.Services.BoundedWindowMode.DockFloat
+  commentId: F:Meridian.Ui.Services.BoundedWindowMode.DockFloat
+  id: DockFloat
+  parent: Meridian.Ui.Services.BoundedWindowMode
+  langs:
+  - csharp
+  - vb
+  name: DockFloat
+  nameWithType: BoundedWindowMode.DockFloat
+  fullName: Meridian.Ui.Services.BoundedWindowMode.DockFloat
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DockFloat
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: DockFloat = 1
+    return:
+      type: Meridian.Ui.Services.BoundedWindowMode
+- uid: Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
+  commentId: F:Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
+  id: WorkbenchPreset
+  parent: Meridian.Ui.Services.BoundedWindowMode
+  langs:
+  - csharp
+  - vb
+  name: WorkbenchPreset
+  nameWithType: BoundedWindowMode.WorkbenchPreset
+  fullName: Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkbenchPreset
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: WorkbenchPreset = 2
+    return:
+      type: Meridian.Ui.Services.BoundedWindowMode
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.BoundedWindowMode
+  commentId: T:Meridian.Ui.Services.BoundedWindowMode
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BoundedWindowMode.html
+  name: BoundedWindowMode
+  nameWithType: BoundedWindowMode
+  fullName: Meridian.Ui.Services.BoundedWindowMode

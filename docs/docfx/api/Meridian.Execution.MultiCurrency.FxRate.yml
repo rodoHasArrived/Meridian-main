@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FxRate
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuoteCurrency
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rate
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Convert
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertInverse
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -301,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Inverse
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
@@ -331,7 +331,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/FxRate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
     path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs

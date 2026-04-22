@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProviderOptionsDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 336
+    startLine: 228
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 338
+    startLine: 230
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -97,11 +97,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 341
+    startLine: 233
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -138,11 +138,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitPerMinute
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 344
+    startLine: 236
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -179,11 +179,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitPerHour
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 347
+    startLine: 239
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -220,11 +220,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Extensions
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 354
+    startLine: 246
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

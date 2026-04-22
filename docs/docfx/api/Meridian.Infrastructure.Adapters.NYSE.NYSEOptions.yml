@@ -37,7 +37,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSEOptions
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiKey
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiSecret
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientId
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketUrl
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseSandbox
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SandboxBaseUrl
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SandboxWebSocketUrl
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionTimeoutSeconds
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectDelaySeconds
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -397,7 +397,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectAttempts
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -428,7 +428,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableLevel2
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -462,7 +462,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableIntegratedFeed
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludePreMarket
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -524,7 +524,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeAfterHours
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -555,7 +555,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeedTier
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -586,7 +586,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSubscriptions
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -617,7 +617,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveBaseUrl
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -648,7 +648,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveWebSocketUrl
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -679,7 +679,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveApiKey
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -709,7 +709,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveApiSecret
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
@@ -739,7 +739,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveClientId
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs

@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaBackfillConfig
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KeyId
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecretKey
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Adjustment
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -269,7 +269,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -300,7 +300,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitPerMinute
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs

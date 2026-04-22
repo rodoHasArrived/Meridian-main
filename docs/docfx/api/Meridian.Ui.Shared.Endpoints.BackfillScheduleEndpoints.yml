@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillScheduleEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapBackfillScheduleEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/BackfillScheduleEndpoints.cs

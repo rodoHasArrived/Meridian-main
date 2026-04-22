@@ -7,7 +7,6 @@ items:
   children:
   - Meridian.Ui.Services.SetupWizardService.#ctor
   - Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset,System.String,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync(Meridian.Contracts.Configuration.StockSharpOptionsDto,System.Threading.CancellationToken)
   - Meridian.Ui.Services.SetupWizardService.GetSetupPresets
   - Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
@@ -22,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetupWizardService
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
@@ -61,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
@@ -90,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunPreflightChecksAsync
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
@@ -123,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestProviderConnectivityAsync
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
@@ -163,11 +162,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSetupPresets
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 545
+    startLine: 502
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -193,11 +192,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPresetAsync
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 645
+    startLine: 602
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -219,41 +218,6 @@ items:
   nameWithType.vb: SetupWizardService.ApplyPresetAsync(SetupPreset, String, CancellationToken)
   fullName.vb: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset, String, System.Threading.CancellationToken)
   name.vb: ApplyPresetAsync(SetupPreset, String, CancellationToken)
-- uid: Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync(Meridian.Contracts.Configuration.StockSharpOptionsDto,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync(Meridian.Contracts.Configuration.StockSharpOptionsDto,System.Threading.CancellationToken)
-  id: ApplyStockSharpConfigAsync(Meridian.Contracts.Configuration.StockSharpOptionsDto,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.SetupWizardService
-  langs:
-  - csharp
-  - vb
-  name: ApplyStockSharpConfigAsync(StockSharpOptionsDto, CancellationToken)
-  nameWithType: SetupWizardService.ApplyStockSharpConfigAsync(StockSharpOptionsDto, CancellationToken)
-  fullName: Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync(Meridian.Contracts.Configuration.StockSharpOptionsDto, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ApplyStockSharpConfigAsync
-    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 672
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Applies StockSharp configuration settings.
-  example: []
-  syntax:
-    content: public Task ApplyStockSharpConfigAsync(StockSharpOptionsDto options, CancellationToken ct = default)
-    parameters:
-    - id: options
-      type: Meridian.Contracts.Configuration.StockSharpOptionsDto
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task
-    content.vb: Public Function ApplyStockSharpConfigAsync(options As StockSharpOptionsDto, ct As CancellationToken = Nothing) As Task
-  overload: Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync*
 - uid: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
   id: SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
@@ -268,11 +232,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCredentialsAsync
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 683
+    startLine: 629
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -942,49 +906,6 @@ references:
   name: Task
   nameWithType: Task
   fullName: System.Threading.Tasks.Task
-- uid: Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync*
-  commentId: Overload:Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync
-  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_ApplyStockSharpConfigAsync_Meridian_Contracts_Configuration_StockSharpOptionsDto_System_Threading_CancellationToken_
-  name: ApplyStockSharpConfigAsync
-  nameWithType: SetupWizardService.ApplyStockSharpConfigAsync
-  fullName: Meridian.Ui.Services.SetupWizardService.ApplyStockSharpConfigAsync
-- uid: Meridian.Contracts.Configuration.StockSharpOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.StockSharpOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.StockSharpOptionsDto.html
-  name: StockSharpOptionsDto
-  nameWithType: StockSharpOptionsDto
-  fullName: Meridian.Contracts.Configuration.StockSharpOptionsDto
-- uid: Meridian.Contracts.Configuration
-  commentId: N:Meridian.Contracts.Configuration
-  href: Meridian.html
-  name: Meridian.Contracts.Configuration
-  nameWithType: Meridian.Contracts.Configuration
-  fullName: Meridian.Contracts.Configuration
-  spec.csharp:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Contracts
-    name: Contracts
-    href: Meridian.Contracts.html
-  - name: .
-  - uid: Meridian.Contracts.Configuration
-    name: Configuration
-    href: Meridian.Contracts.Configuration.html
-  spec.vb:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Contracts
-    name: Contracts
-    href: Meridian.Contracts.html
-  - name: .
-  - uid: Meridian.Contracts.Configuration
-    name: Configuration
-    href: Meridian.Contracts.Configuration.html
 - uid: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync*
   commentId: Overload:Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync
   href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_SaveCredentialsAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_Threading_CancellationToken_

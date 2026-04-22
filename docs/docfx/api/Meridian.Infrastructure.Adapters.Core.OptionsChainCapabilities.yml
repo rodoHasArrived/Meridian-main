@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsChainCapabilities
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsGreeks
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOpenInterest
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsImpliedVolatility
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIndexOptions
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsHistorical
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedInstrumentTypes
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Basic
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullFeatured
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs

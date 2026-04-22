@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SloComplianceDashboard
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSlos
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subsystems
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs

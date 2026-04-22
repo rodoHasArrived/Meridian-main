@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SloDefinitionRegistry
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unregister
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Get
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Evaluate
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDashboard
     path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs

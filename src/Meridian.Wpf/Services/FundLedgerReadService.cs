@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
@@ -22,28 +23,13 @@ public sealed class FundLedgerReadService
     public async Task<FundLedgerSummary?> GetAsync(FundLedgerQuery query, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(query);
-        await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
-
-        var profile = _fundContextService.Profiles.FirstOrDefault(item =>
-            string.Equals(item.FundProfileId, query.FundProfileId, StringComparison.OrdinalIgnoreCase));
-        if (profile is null)
+        var context = await BuildContextAsync(query.FundProfileId, ct).ConfigureAwait(false);
+        if (context is null)
         {
             return null;
         }
 
-        var fundLedgerBook = new FundLedgerBook(profile.FundProfileId);
-        var runs = await _runWorkspaceService.GetRecordedRunEntriesAsync(ct).ConfigureAwait(false);
-
-        foreach (var run in runs.Where(run =>
-                     string.Equals(run.FundProfileId, profile.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
-                     run.Metrics?.Ledger is not null))
-        {
-            foreach (var journalEntry in run.Metrics!.Ledger!.Journal)
-            {
-                fundLedgerBook.FundLedger.Post(journalEntry);
-            }
-        }
-
+        var (profile, fundLedgerBook) = context.Value;
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var journal = BuildJournal(fundLedgerBook, query, asOf);
         var trialBalance = BuildTrialBalance(fundLedgerBook, query, asOf);
@@ -71,6 +57,87 @@ public sealed class FundLedgerReadService
             EntityCount: entityCount,
             SleeveCount: sleeveCount,
             VehicleCount: vehicleCount);
+    }
+
+    public async Task<FundLedgerReconciliationSnapshot?> GetReconciliationSnapshotAsync(
+        FundLedgerQuery query,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        var context = await BuildContextAsync(query.FundProfileId, ct).ConfigureAwait(false);
+        if (context is null)
+        {
+            return null;
+        }
+
+        var (_, fundLedgerBook) = context.Value;
+        var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
+        return ProjectReconciliationSnapshot(fundLedgerBook.ReconciliationSnapshot(asOf));
+    }
+
+    public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        return new FundLedgerReconciliationSnapshot(
+            FundProfileId: snapshot.FundId,
+            AsOf: snapshot.AsOf,
+            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Entities: snapshot.Entities.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Sleeves: snapshot.Sleeves.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Vehicles: snapshot.Vehicles.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+        new(
+            Timestamp: snapshot.Timestamp,
+            JournalEntryCount: snapshot.JournalEntryCount,
+            LedgerEntryCount: snapshot.LedgerEntryCount,
+            Balances: snapshot.Balances
+                .OrderBy(static pair => pair.Key.AccountType)
+                .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                    AccountName: pair.Key.Name,
+                    AccountType: pair.Key.AccountType.ToString(),
+                    Symbol: pair.Key.Symbol,
+                    FinancialAccountId: pair.Key.FinancialAccountId,
+                    Balance: pair.Value))
+                .ToArray());
+
+    private async Task<(FundProfileDetail Profile, FundLedgerBook Book)?> BuildContextAsync(
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+        var profile = _fundContextService.Profiles.FirstOrDefault(item =>
+            string.Equals(item.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase));
+        if (profile is null)
+        {
+            return null;
+        }
+
+        var book = new FundLedgerBook(profile.FundProfileId);
+        var runs = await _runWorkspaceService.GetRecordedRunEntriesAsync(ct).ConfigureAwait(false);
+        foreach (var run in runs.Where(run =>
+                     string.Equals(run.FundProfileId, profile.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                     run.Metrics?.Ledger is not null))
+        {
+            foreach (var journalEntry in run.Metrics!.Ledger!.Journal)
+            {
+                book.FundLedger.Post(journalEntry);
+            }
+        }
+
+        return (profile, book);
     }
 
     private static IReadOnlyList<FundTrialBalanceLine> BuildTrialBalance(

@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlStorageSink
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsBuffered
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsWritten
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchesWritten
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendAsync
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -294,11 +294,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-    startLine: 312
+    startLine: 318
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks
@@ -329,11 +329,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-    startLine: 328
+    startLine: 334
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Sinks

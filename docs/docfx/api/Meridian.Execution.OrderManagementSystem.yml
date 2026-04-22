@@ -25,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderManagementSystem
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 16
+    startLine: 14
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -69,11 +69,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 30
+    startLine: 29
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -113,11 +113,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceOrderAsync
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 57
+    startLine: 56
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -150,11 +150,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 259
+    startLine: 258
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -190,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 304
+    startLine: 295
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -232,11 +232,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrders
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 349
+    startLine: 316
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -264,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCompletedOrders
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 358
+    startLine: 325
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -305,11 +305,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrder
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 374
+    startLine: 341
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -343,11 +343,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAllAsync
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 380
+    startLine: 347
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -378,11 +378,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 391
+    startLine: 358
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -408,11 +408,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/OrderManagementSystem.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionReports
     path: ../../src/Meridian.Execution/OrderManagementSystem.cs
-    startLine: 402
+    startLine: 370
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -421,7 +421,7 @@ items:
 
     by portfolio trackers and audit subscribers.  Reports are published as each order
 
-    transitions to OrderStatus.Filled or OrderStatus.PartiallyFilled.
+    transitions to <xref href="Meridian.Execution.Sdk.OrderStatus.Filled" data-throw-if-not-resolved="false"></xref> or <xref href="Meridian.Execution.Sdk.OrderStatus.PartiallyFilled" data-throw-if-not-resolved="false"></xref>.
 
     Consumers must drain this reader promptly to avoid backpressure.
   example: []
@@ -1498,6 +1498,16 @@ references:
     href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
   - name: (
   - name: )
+- uid: Meridian.Execution.Sdk.OrderStatus.Filled
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.Filled
+  name: Filled
+  nameWithType: OrderStatus.Filled
+  fullName: Meridian.Execution.Sdk.OrderStatus.Filled
+- uid: Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
+  commentId: F:Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
+  name: PartiallyFilled
+  nameWithType: OrderStatus.PartiallyFilled
+  fullName: Meridian.Execution.Sdk.OrderStatus.PartiallyFilled
 - uid: Meridian.Execution.OrderManagementSystem.ExecutionReports*
   commentId: Overload:Meridian.Execution.OrderManagementSystem.ExecutionReports
   href: Meridian.Execution.OrderManagementSystem.html#Meridian_Execution_OrderManagementSystem_ExecutionReports

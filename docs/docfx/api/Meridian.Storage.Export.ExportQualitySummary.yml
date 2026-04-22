@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportQualitySummary
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExpectedRecords
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalActualRecords
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsDetected
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapsFilled
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutliersDetected
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutlierHandling
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingDates
     path: ../../src/Meridian.Storage/Export/ExportResult.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IssueDetails
     path: ../../src/Meridian.Storage/Export/ExportResult.cs

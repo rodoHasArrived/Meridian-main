@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IRateLimitAwareProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitInfo
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnRateLimitHit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs

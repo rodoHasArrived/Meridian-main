@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMappingConfig
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 275
+    startLine: 296
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 275
+    startLine: 296
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -107,11 +107,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbol
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 279
+    startLine: 300
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -136,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IbSymbol
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 284
+    startLine: 305
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -165,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaSymbol
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 289
+    startLine: 310
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -194,11 +194,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSymbol
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 294
+    startLine: 315
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YahooSymbol
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 299
+    startLine: 320
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -252,11 +252,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 304
+    startLine: 325
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -281,11 +281,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 309
+    startLine: 330
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config

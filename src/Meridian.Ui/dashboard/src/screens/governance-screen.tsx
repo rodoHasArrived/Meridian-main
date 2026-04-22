@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  getSecurityIdentity,
   getReconciliationBreakQueue,
   getRunTrialBalance,
   getSecurityConflicts,
@@ -18,6 +19,7 @@ import type {
   GovernanceWorkspaceResponse,
   ReconciliationBreakQueueItem,
   ResolveConflictRequest,
+  SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry
 } from "@/types";
@@ -77,6 +79,9 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
   const [securityQuery, setSecurityQuery] = useState("");
   const [securityResults, setSecurityResults] = useState<SecurityMasterEntry[] | null>(null);
   const [securitySearching, setSecuritySearching] = useState(false);
+  const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
+  const [securityIdentity, setSecurityIdentity] = useState<SecurityIdentityDrillIn | null>(null);
+  const [securityIdentityLoading, setSecurityIdentityLoading] = useState(false);
   const securitySearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Security Master conflicts state ---
@@ -110,6 +115,8 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
 
   function handleSecurityQueryChange(q: string) {
     setSecurityQuery(q);
+    setSelectedSecurityId(null);
+    setSecurityIdentity(null);
     if (securitySearchRef.current) clearTimeout(securitySearchRef.current);
     if (!q.trim()) { setSecurityResults(null); return; }
     securitySearchRef.current = setTimeout(() => {
@@ -119,6 +126,15 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
         .catch(() => setSecurityResults([]))
         .finally(() => setSecuritySearching(false));
     }, 350);
+  }
+
+  function handleSelectSecurity(securityId: string) {
+    setSelectedSecurityId(securityId);
+    setSecurityIdentityLoading(true);
+    getSecurityIdentity(securityId)
+      .then(setSecurityIdentity)
+      .catch(() => setSecurityIdentity(null))
+      .finally(() => setSecurityIdentityLoading(false));
   }
 
   async function handleResolveConflict(conflictId: string, resolution: ResolveConflictRequest["resolution"]) {
@@ -430,7 +446,14 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                     </thead>
                     <tbody className="divide-y divide-border/50">
                       {securityResults.map((s) => (
-                        <tr key={s.securityId} className="bg-background/20">
+                        <tr
+                          key={s.securityId}
+                          className={cn(
+                            "cursor-pointer bg-background/20 transition-colors hover:bg-secondary/30",
+                            selectedSecurityId === s.securityId ? "bg-primary/10" : ""
+                          )}
+                          onClick={() => handleSelectSecurity(s.securityId)}
+                        >
                           <td className="px-3 py-2 font-semibold text-foreground">{s.displayName}</td>
                           <td className="px-3 py-2 text-muted-foreground">{s.classification.assetClass}</td>
                           <td className="px-3 py-2 font-mono text-muted-foreground">
@@ -442,6 +465,66 @@ export function GovernanceScreen({ data }: GovernanceScreenProps) {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+              {securityIdentityLoading && <p className="text-sm text-muted-foreground">Loading identity drill-in…</p>}
+              {securityIdentity && (
+                <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 p-4">
+                  <div>
+                    <h4 className="font-semibold text-foreground">Identity drill-in · {securityIdentity.displayName}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {securityIdentity.securityId} · v{securityIdentity.version} · {securityIdentity.assetClass}
+                    </p>
+                  </div>
+
+                  <div>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Identifiers</div>
+                    <div className="overflow-x-auto rounded-lg border border-border/60">
+                      <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+                        <thead className="bg-secondary/30">
+                          <tr>{["Kind", "Value", "Provider", "Primary", "Valid"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/40">
+                          {securityIdentity.identifiers.map((identifier) => (
+                            <tr key={`${identifier.kind}-${identifier.value}`}>
+                              <td className="px-3 py-2 font-mono">{identifier.kind}</td>
+                              <td className="px-3 py-2 font-mono">{identifier.value}</td>
+                              <td className="px-3 py-2">{identifier.provider ?? "—"}</td>
+                              <td className="px-3 py-2">{identifier.isPrimary ? "Yes" : "No"}</td>
+                              <td className="px-3 py-2 font-mono">{new Date(identifier.validFrom).toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Aliases</div>
+                    {securityIdentity.aliases.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No aliases found.</p>
+                    ) : (
+                      <div className="overflow-x-auto rounded-lg border border-border/60">
+                        <table className="min-w-full divide-y divide-border/50 text-left text-xs sm:text-sm">
+                          <thead className="bg-secondary/30">
+                            <tr>{["Kind", "Alias", "Provider", "Scope", "Enabled", "Valid From"].map((col) => <th key={col} className="px-3 py-2">{col}</th>)}</tr>
+                          </thead>
+                          <tbody className="divide-y divide-border/40">
+                            {securityIdentity.aliases.map((alias) => (
+                              <tr key={alias.aliasId}>
+                                <td className="px-3 py-2 font-mono">{alias.aliasKind}</td>
+                                <td className="px-3 py-2 font-mono">{alias.aliasValue}</td>
+                                <td className="px-3 py-2">{alias.provider ?? "—"}</td>
+                                <td className="px-3 py-2">{alias.scope}</td>
+                                <td className="px-3 py-2">{alias.isEnabled ? "Yes" : "No"}</td>
+                                <td className="px-3 py-2 font-mono">{new Date(alias.validFrom).toLocaleDateString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>

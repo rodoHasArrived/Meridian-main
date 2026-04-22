@@ -27,11 +27,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetupPreset
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 789
+    startLine: 735
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -63,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 791
+    startLine: 737
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 792
+    startLine: 738
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -121,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 793
+    startLine: 739
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -150,11 +150,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Icon
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 794
+    startLine: 740
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -179,11 +179,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecommendedProviders
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 795
+    startLine: 741
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -208,11 +208,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultSymbols
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 796
+    startLine: 742
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -237,11 +237,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 797
+    startLine: 743
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -266,11 +266,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 798
+    startLine: 744
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -295,11 +295,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeQuotes
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 799
+    startLine: 745
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -324,11 +324,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 800
+    startLine: 746
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -353,11 +353,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableBackfill
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 801
+    startLine: 747
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -382,11 +382,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageTier
     path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
-    startLine: 802
+    startLine: 748
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

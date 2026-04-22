@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineData
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishedCount
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DroppedCount
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsumedCount
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentQueueSize
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeakQueueSize
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueCapacity
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueUtilization
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -346,7 +346,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageProcessingTimeUs
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs

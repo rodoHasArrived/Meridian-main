@@ -16,8 +16,14 @@ public sealed class PromotionServiceLiveGovernanceTests
     [Fact]
     public async Task EvaluateAsync_WhenPaperRunTargetsLive_RequiresHumanApprovalControls()
     {
+        var tempRoot = CreateTempRoot();
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+
         var service = BuildService(
             out var store,
+            controls,
             brokerageConfiguration: new BrokerageConfiguration
             {
                 Gateway = "paper",
@@ -38,7 +44,107 @@ public sealed class PromotionServiceLiveGovernanceTests
         result.RequiresManualOverride.Should().BeTrue();
         result.RequiredManualOverrideKind.Should().Be(ExecutionManualOverrideKinds.AllowLivePromotion);
         result.BlockingReasons.Should().NotBeNull();
-        result.BlockingReasons!.Should().Contain(reason => reason.Contains("Live execution is not enabled", StringComparison.Ordinal));
+        result.BlockingReasons!.Should().Contain(reason => reason.Contains("does not enable live execution", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_WhenPaperRunTargetsLiveWithPaperGateway_RequiresHumanApprovalControls()
+    {
+        var service = BuildService(
+            out var store,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.EvaluateAsync(run.RunId);
+
+        result.TargetMode.Should().Be(RunType.Live);
+        result.RequiresHumanApproval.Should().BeTrue();
+        result.RequiresManualOverride.Should().BeTrue();
+        result.RequiredManualOverrideKind.Should().Be(ExecutionManualOverrideKinds.AllowLivePromotion);
+        result.BlockingReasons.Should().NotBeNull();
+        result.BlockingReasons!.Should().Contain(reason => reason.Contains("paper trading", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [MemberData(nameof(LivePolicyScenarios))]
+    public async Task EvaluateAsync_LivePolicyScenarioMatrix_ReportsExpectedDecision(
+        bool includeControls,
+        bool liveEnabled,
+        bool createAllowOverride,
+        bool createConflictOverride,
+        bool openCircuitBreaker,
+        bool expectEligible,
+        bool expectManualOverride,
+        string expectedBlockingReason)
+    {
+        var tempRoot = CreateTempRoot();
+        var controls = includeControls
+            ? new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+                NullLogger<ExecutionOperatorControlService>.Instance)
+            : null;
+
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail: null,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = liveEnabled ? "alpaca" : "paper",
+                LiveExecutionEnabled = liveEnabled
+            });
+
+        var run = StrategyRunEntry.Start("s-edge", "Strategy Edge", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        if (controls is not null)
+        {
+            if (openCircuitBreaker)
+            {
+                await controls.SetCircuitBreakerAsync(true, "maintenance", "ops");
+            }
+
+            if (createAllowOverride)
+            {
+                await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+                    Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+                    Reason: "approved for live",
+                    CreatedBy: "ops",
+                    StrategyId: run.StrategyId,
+                    RunId: run.RunId));
+            }
+
+            if (createConflictOverride)
+            {
+                await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+                    Kind: ExecutionManualOverrideKinds.ForceBlockOrders,
+                    Reason: "conflicting freeze",
+                    CreatedBy: "ops",
+                    StrategyId: run.StrategyId,
+                    RunId: run.RunId));
+            }
+        }
+
+        var result = await service.EvaluateAsync(run.RunId);
+
+        result.IsEligible.Should().Be(expectEligible);
+        result.RequiresManualOverride.Should().Be(expectManualOverride);
+        result.BlockingReasons.Should().NotBeNull();
+        result.BlockingReasons!.Should().Contain(reason => reason.Contains(expectedBlockingReason, StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -109,6 +215,36 @@ public sealed class PromotionServiceLiveGovernanceTests
             entry.ParentRunId == run.RunId);
     }
 
+    [Fact]
+    public async Task ApproveAsync_WhenPaperRunMissingManualOverride_IsRejectedByExecutionControls()
+    {
+        var tempRoot = CreateTempRoot();
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(tempRoot, "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+        var service = BuildService(
+            out var store,
+            controls,
+            auditTrail: null,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(run.RunId, ApprovedBy: "ops"));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("requires an active AllowLivePromotion", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static PromotionService BuildService(
         out StrategyRunStore store,
         ExecutionOperatorControlService? controls = null,
@@ -117,13 +253,25 @@ public sealed class PromotionServiceLiveGovernanceTests
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(CreateTempRoot(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
         return new PromotionService(
             store,
             promoter,
+            promotionStore,
             NullLogger<PromotionService>.Instance,
             controls,
             auditTrail,
             brokerageConfiguration);
+    }
+
+    public static IEnumerable<object[]> LivePolicyScenarios()
+    {
+        yield return [true, true, false, false, false, false, true, "requires an active AllowLivePromotion"];
+        yield return [false, true, false, false, false, false, true, "trust evidence is stale"];
+        yield return [true, true, true, true, false, false, true, "conflicting manual override"];
+        yield return [true, true, true, false, true, false, true, "circuit breaker is open"];
     }
 
     private static string CreateTempRoot()

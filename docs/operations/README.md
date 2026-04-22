@@ -14,6 +14,7 @@ Guides for deploying, monitoring, and maintaining the Meridian in production.
 | [Portable Data Packager](portable-data-packager.md) | Creating and importing data packages |
 | [MSIX Packaging](msix-packaging.md) | Desktop application packaging |
 | [Governance Operator Workflow](governance-operator-workflow.md) | Security Master, reconciliation queue, and governance export operations |
+| [Provider Degradation Calibration](provider-degradation-calibration.md) | Offline calibration and governance gates for provider degradation kernel promotions |
 
 ## Quick Links
 

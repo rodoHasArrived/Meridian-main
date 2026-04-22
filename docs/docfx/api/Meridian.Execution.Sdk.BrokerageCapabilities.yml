@@ -16,6 +16,7 @@ items:
   - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
   - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
   - Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  - Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
   langs:
   - csharp
   - vb
@@ -26,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -64,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedOrderTypes
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -95,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedTimeInForce
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -126,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOrderModification
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -157,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsPartialFills
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -188,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsShortSelling
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -219,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsFractionalShares
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -250,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsExtendedHours
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -281,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedAssetClasses
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -312,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -343,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Extensions
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -374,7 +375,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsEquity
     path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
@@ -404,6 +405,55 @@ items:
   nameWithType.vb: BrokerageCapabilities.UsEquity(Boolean, Boolean, Boolean, Boolean, Boolean)
   fullName.vb: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(Boolean, Boolean, Boolean, Boolean, Boolean)
   name.vb: UsEquity(Boolean, Boolean, Boolean, Boolean, Boolean)
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  id: UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: UsEquityAndFixedIncome(bool, bool, bool, bool, bool)
+  nameWithType: BrokerageCapabilities.UsEquityAndFixedIncome(bool, bool, bool, bool, bool)
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(bool, bool, bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsEquityAndFixedIncome
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: >-
+    Brokerage capabilities for brokers that support both US equities and fixed income
+
+    instruments (US Treasuries, corporate bonds, municipal bonds).
+
+    Fixed income orders may use notional (dollar-amount) sizing in addition to share qty.
+  example: []
+  syntax:
+    content: public static BrokerageCapabilities UsEquityAndFixedIncome(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = true, bool extendedHours = false)
+    parameters:
+    - id: modification
+      type: System.Boolean
+    - id: partialFills
+      type: System.Boolean
+    - id: shortSelling
+      type: System.Boolean
+    - id: fractional
+      type: System.Boolean
+    - id: extendedHours
+      type: System.Boolean
+    return:
+      type: Meridian.Execution.Sdk.BrokerageCapabilities
+    content.vb: Public Shared Function UsEquityAndFixedIncome(modification As Boolean = True, partialFills As Boolean = True, shortSelling As Boolean = True, fractional As Boolean = True, extendedHours As Boolean = False) As BrokerageCapabilities
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome*
+  nameWithType.vb: BrokerageCapabilities.UsEquityAndFixedIncome(Boolean, Boolean, Boolean, Boolean, Boolean)
+  fullName.vb: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(Boolean, Boolean, Boolean, Boolean, Boolean)
+  name.vb: UsEquityAndFixedIncome(Boolean, Boolean, Boolean, Boolean, Boolean)
 references:
 - uid: Meridian.Execution.Sdk
   commentId: N:Meridian.Execution.Sdk
@@ -1068,3 +1118,9 @@ references:
   name: BrokerageCapabilities
   nameWithType: BrokerageCapabilities
   fullName: Meridian.Execution.Sdk.BrokerageCapabilities
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_UsEquityAndFixedIncome_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_
+  name: UsEquityAndFixedIncome
+  nameWithType: BrokerageCapabilities.UsEquityAndFixedIncome
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome

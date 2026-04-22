@@ -1,0 +1,995 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  id: GovernanceCashFlowVarianceBucketDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.#ctor(System.Int32,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.String)
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  - Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  langs:
+  - csharp
+  - vb
+  name: GovernanceCashFlowVarianceBucketDto
+  nameWithType: GovernanceCashFlowVarianceBucketDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceCashFlowVarianceBucketDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record GovernanceCashFlowVarianceBucketDto : IEquatable<GovernanceCashFlowVarianceBucketDto>'
+    content.vb: Public NotInheritable Class GovernanceCashFlowVarianceBucketDto Implements IEquatable(Of GovernanceCashFlowVarianceBucketDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.#ctor(System.Int32,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.#ctor(System.Int32,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.String)
+  id: '#ctor(System.Int32,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.String)'
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: GovernanceCashFlowVarianceBucketDto(int, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, int, int, string)
+  nameWithType: GovernanceCashFlowVarianceBucketDto.GovernanceCashFlowVarianceBucketDto(int, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, int, int, string)
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.GovernanceCashFlowVarianceBucketDto(int, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, int, int, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public GovernanceCashFlowVarianceBucketDto(int BucketIndex, DateTimeOffset RealizedBucketStart, DateTimeOffset RealizedBucketEnd, DateTimeOffset ProjectedBucketStart, DateTimeOffset ProjectedBucketEnd, decimal RealizedInflows, decimal RealizedOutflows, decimal RealizedNetFlow, decimal ProjectedInflows, decimal ProjectedOutflows, decimal ProjectedNetFlow, decimal VarianceAmount, int RealizedEventCount, int ProjectedEventCount, string Currency)
+    parameters:
+    - id: BucketIndex
+      type: System.Int32
+    - id: RealizedBucketStart
+      type: System.DateTimeOffset
+    - id: RealizedBucketEnd
+      type: System.DateTimeOffset
+    - id: ProjectedBucketStart
+      type: System.DateTimeOffset
+    - id: ProjectedBucketEnd
+      type: System.DateTimeOffset
+    - id: RealizedInflows
+      type: System.Decimal
+    - id: RealizedOutflows
+      type: System.Decimal
+    - id: RealizedNetFlow
+      type: System.Decimal
+    - id: ProjectedInflows
+      type: System.Decimal
+    - id: ProjectedOutflows
+      type: System.Decimal
+    - id: ProjectedNetFlow
+      type: System.Decimal
+    - id: VarianceAmount
+      type: System.Decimal
+    - id: RealizedEventCount
+      type: System.Int32
+    - id: ProjectedEventCount
+      type: System.Int32
+    - id: Currency
+      type: System.String
+    content.vb: Public Sub New(BucketIndex As Integer, RealizedBucketStart As DateTimeOffset, RealizedBucketEnd As DateTimeOffset, ProjectedBucketStart As DateTimeOffset, ProjectedBucketEnd As DateTimeOffset, RealizedInflows As Decimal, RealizedOutflows As Decimal, RealizedNetFlow As Decimal, ProjectedInflows As Decimal, ProjectedOutflows As Decimal, ProjectedNetFlow As Decimal, VarianceAmount As Decimal, RealizedEventCount As Integer, ProjectedEventCount As Integer, Currency As String)
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.#ctor*
+  nameWithType.vb: GovernanceCashFlowVarianceBucketDto.New(Integer, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Integer, Integer, String)
+  fullName.vb: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.New(Integer, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Integer, Integer, String)
+  name.vb: New(Integer, DateTimeOffset, DateTimeOffset, DateTimeOffset, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Integer, Integer, String)
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex
+  id: BucketIndex
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: BucketIndex
+  nameWithType: GovernanceCashFlowVarianceBucketDto.BucketIndex
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BucketIndex
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public int BucketIndex { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BucketIndex As Integer
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  id: RealizedBucketStart
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedBucketStart
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedBucketStart
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 430
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset RealizedBucketStart { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RealizedBucketStart As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  id: RealizedBucketEnd
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedBucketEnd
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedBucketEnd
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset RealizedBucketEnd { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RealizedBucketEnd As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  id: ProjectedBucketStart
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedBucketStart
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedBucketStart
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 432
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset ProjectedBucketStart { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ProjectedBucketStart As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  id: ProjectedBucketEnd
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedBucketEnd
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedBucketEnd
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset ProjectedBucketEnd { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ProjectedBucketEnd As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  id: RealizedInflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedInflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedInflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 434
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal RealizedInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedInflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  id: RealizedOutflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedOutflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedOutflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 435
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal RealizedOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedOutflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  id: RealizedNetFlow
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedNetFlow
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedNetFlow
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 436
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal RealizedNetFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedNetFlow As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  id: ProjectedInflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedInflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedInflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 437
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal ProjectedInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedInflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  id: ProjectedOutflows
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedOutflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedOutflows
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal ProjectedOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedOutflows As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  id: ProjectedNetFlow
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedNetFlow
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedNetFlow
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 439
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal ProjectedNetFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedNetFlow As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  id: VarianceAmount
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: VarianceAmount
+  nameWithType: GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VarianceAmount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 440
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal VarianceAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property VarianceAmount As Decimal
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  id: RealizedEventCount
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: RealizedEventCount
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedEventCount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 441
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public int RealizedEventCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RealizedEventCount As Integer
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  id: ProjectedEventCount
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedEventCount
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedEventCount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public int ProjectedEventCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ProjectedEventCount As Integer
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount*
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency
+  commentId: P:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: GovernanceCashFlowVarianceBucketDto.Currency
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 443
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<GovernanceCashFlowVarianceBucketDto>
+  nameWithType: IEquatable<GovernanceCashFlowVarianceBucketDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto>
+  nameWithType.vb: IEquatable(Of GovernanceCashFlowVarianceBucketDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto)
+  name.vb: IEquatable(Of GovernanceCashFlowVarianceBucketDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+    name: GovernanceCashFlowVarianceBucketDto
+    href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto
+    name: GovernanceCashFlowVarianceBucketDto
+    href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.#ctor
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto__ctor_System_Int32_System_DateTimeOffset_System_DateTimeOffset_System_DateTimeOffset_System_DateTimeOffset_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Int32_System_Int32_System_String_
+  name: GovernanceCashFlowVarianceBucketDto
+  nameWithType: GovernanceCashFlowVarianceBucketDto.GovernanceCashFlowVarianceBucketDto
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.GovernanceCashFlowVarianceBucketDto
+  nameWithType.vb: GovernanceCashFlowVarianceBucketDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_BucketIndex
+  name: BucketIndex
+  nameWithType: GovernanceCashFlowVarianceBucketDto.BucketIndex
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.BucketIndex
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_RealizedBucketStart
+  name: RealizedBucketStart
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketStart
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_RealizedBucketEnd
+  name: RealizedBucketEnd
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedBucketEnd
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_ProjectedBucketStart
+  name: ProjectedBucketStart
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketStart
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_ProjectedBucketEnd
+  name: ProjectedBucketEnd
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedBucketEnd
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_RealizedInflows
+  name: RealizedInflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedInflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_RealizedOutflows
+  name: RealizedOutflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedOutflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_RealizedNetFlow
+  name: RealizedNetFlow
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedNetFlow
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_ProjectedInflows
+  name: ProjectedInflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedInflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_ProjectedOutflows
+  name: ProjectedOutflows
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedOutflows
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_ProjectedNetFlow
+  name: ProjectedNetFlow
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedNetFlow
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_VarianceAmount
+  name: VarianceAmount
+  nameWithType: GovernanceCashFlowVarianceBucketDto.VarianceAmount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.VarianceAmount
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_RealizedEventCount
+  name: RealizedEventCount
+  nameWithType: GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.RealizedEventCount
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_ProjectedEventCount
+  name: ProjectedEventCount
+  nameWithType: GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.ProjectedEventCount
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency*
+  commentId: Overload:Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.html#Meridian_Contracts_FundStructure_GovernanceCashFlowVarianceBucketDto_Currency
+  name: Currency
+  nameWithType: GovernanceCashFlowVarianceBucketDto.Currency
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowVarianceBucketDto.Currency

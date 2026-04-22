@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandEntry
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Command
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Shortcut
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogRebuildProgress
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Phase
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentFile
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs

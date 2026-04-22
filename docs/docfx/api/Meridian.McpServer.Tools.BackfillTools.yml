@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/BackfillTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTools
     path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
-    startLine: 7
+    startLine: 8
   assemblies:
   - Meridian.McpServer
   namespace: Meridian.McpServer.Tools
@@ -85,11 +85,11 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/BackfillTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
-    startLine: 25
+    startLine: 26
   assemblies:
   - Meridian.McpServer
   namespace: Meridian.McpServer.Tools
@@ -121,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/BackfillTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfill
     path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
-    startLine: 34
+    startLine: 35
   assemblies:
   - Meridian.McpServer
   namespace: Meridian.McpServer.Tools

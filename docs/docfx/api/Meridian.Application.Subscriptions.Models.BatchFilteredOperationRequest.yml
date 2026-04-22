@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchFilteredOperationRequest
     path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Filter
     path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operation
     path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BatchOperations.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Parameters
     path: ../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs

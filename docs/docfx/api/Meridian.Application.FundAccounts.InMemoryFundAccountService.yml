@@ -5,6 +5,8 @@ items:
   id: InMemoryFundAccountService
   parent: Meridian.Application.FundAccounts
   children:
+  - Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor
+  - Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor(System.String)
   - Meridian.Application.FundAccounts.InMemoryFundAccountService.CreateAccountAsync(Meridian.Contracts.FundStructure.CreateAccountRequest,System.Threading.CancellationToken)
   - Meridian.Application.FundAccounts.InMemoryFundAccountService.DeactivateAccountAsync(System.Guid,System.String,System.Threading.CancellationToken)
   - Meridian.Application.FundAccounts.InMemoryFundAccountService.GetAccountAsync(System.Guid,System.Threading.CancellationToken)
@@ -32,18 +34,18 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InMemoryFundAccountService
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 8
+    startLine: 10
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
   summary: >-
-    Thread-safe in-memory implementation of <xref href="Meridian.Application.FundAccounts.IFundAccountService" data-throw-if-not-resolved="false"></xref>.
+    Thread-safe fund-account service backed by an in-memory working set with optional
 
-    Used when no Postgres connection string is configured. All state is lost on restart.
+    durable JSON snapshot persistence for local-first workflows.
   example: []
   syntax:
     content: 'public sealed class InMemoryFundAccountService : IFundAccountService'
@@ -59,6 +61,67 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
+- uid: Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor
+  commentId: M:Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor
+  id: '#ctor'
+  parent: Meridian.Application.FundAccounts.InMemoryFundAccountService
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundAccountService()
+  nameWithType: InMemoryFundAccountService.InMemoryFundAccountService()
+  fullName: Meridian.Application.FundAccounts.InMemoryFundAccountService.InMemoryFundAccountService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundAccounts
+  syntax:
+    content: public InMemoryFundAccountService()
+    content.vb: Public Sub New()
+  overload: Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor*
+  nameWithType.vb: InMemoryFundAccountService.New()
+  fullName.vb: Meridian.Application.FundAccounts.InMemoryFundAccountService.New()
+  name.vb: New()
+- uid: Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor(System.String)
+  commentId: M:Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Application.FundAccounts.InMemoryFundAccountService
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundAccountService(string?)
+  nameWithType: InMemoryFundAccountService.InMemoryFundAccountService(string?)
+  fullName: Meridian.Application.FundAccounts.InMemoryFundAccountService.InMemoryFundAccountService(string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundAccounts
+  syntax:
+    content: public InMemoryFundAccountService(string? persistencePath)
+    parameters:
+    - id: persistencePath
+      type: System.String
+    content.vb: Public Sub New(persistencePath As String)
+  overload: Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor*
+  nameWithType.vb: InMemoryFundAccountService.New(String)
+  fullName.vb: Meridian.Application.FundAccounts.InMemoryFundAccountService.New(String)
+  name.vb: New(String)
 - uid: Meridian.Application.FundAccounts.InMemoryFundAccountService.CreateAccountAsync(Meridian.Contracts.FundStructure.CreateAccountRequest,System.Threading.CancellationToken)
   commentId: M:Meridian.Application.FundAccounts.InMemoryFundAccountService.CreateAccountAsync(Meridian.Contracts.FundStructure.CreateAccountRequest,System.Threading.CancellationToken)
   id: CreateAccountAsync(Meridian.Contracts.FundStructure.CreateAccountRequest,System.Threading.CancellationToken)
@@ -73,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 33
+    startLine: 54
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -109,11 +172,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 79
+    startLine: 104
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -145,11 +208,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueryAccountsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 89
+    startLine: 114
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -181,11 +244,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCustodianDetailsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 114
+    startLine: 139
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -219,11 +282,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBankDetailsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 131
+    startLine: 164
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -257,11 +320,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 148
+    startLine: 189
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -298,11 +361,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFundAccountsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 168
+    startLine: 214
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -335,11 +398,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordBalanceSnapshotAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 192
+    startLine: 236
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -371,11 +434,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalanceHistoryAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 220
+    startLine: 269
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -411,11 +474,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestBalanceSnapshotAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 239
+    startLine: 290
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -447,11 +510,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestCustodianStatementAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 258
+    startLine: 309
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -483,11 +546,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestBankStatementAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 285
+    startLine: 339
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -519,11 +582,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCustodianPositionsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 311
+    startLine: 368
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -557,11 +620,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBankStatementLinesAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 327
+    startLine: 386
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -597,11 +660,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAccountAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 348
+    startLine: 407
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -633,11 +696,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationRunsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 436
+    startLine: 497
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -669,11 +732,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconciliationResultsAsync
     path: ../../src/Meridian.Application/FundAccounts/InMemoryFundAccountService.cs
-    startLine: 449
+    startLine: 511
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.FundAccounts
@@ -692,13 +755,6 @@ items:
   implements:
   - Meridian.Application.FundAccounts.IFundAccountService.GetReconciliationResultsAsync(System.Guid,System.Threading.CancellationToken)
 references:
-- uid: Meridian.Application.FundAccounts.IFundAccountService
-  commentId: T:Meridian.Application.FundAccounts.IFundAccountService
-  parent: Meridian.Application.FundAccounts
-  href: Meridian.Application.FundAccounts.IFundAccountService.html
-  name: IFundAccountService
-  nameWithType: IFundAccountService
-  fullName: Meridian.Application.FundAccounts.IFundAccountService
 - uid: Meridian.Application.FundAccounts
   commentId: N:Meridian.Application.FundAccounts
   href: Meridian.html
@@ -740,6 +796,13 @@ references:
   nameWithType.vb: Object
   fullName.vb: Object
   name.vb: Object
+- uid: Meridian.Application.FundAccounts.IFundAccountService
+  commentId: T:Meridian.Application.FundAccounts.IFundAccountService
+  parent: Meridian.Application.FundAccounts
+  href: Meridian.Application.FundAccounts.IFundAccountService.html
+  name: IFundAccountService
+  nameWithType: IFundAccountService
+  fullName: Meridian.Application.FundAccounts.IFundAccountService
 - uid: System.Object.Equals(System.Object)
   commentId: M:System.Object.Equals(System.Object)
   parent: System.Object
@@ -942,6 +1005,26 @@ references:
   name: System
   nameWithType: System
   fullName: System
+- uid: Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor*
+  commentId: Overload:Meridian.Application.FundAccounts.InMemoryFundAccountService.#ctor
+  href: Meridian.Application.FundAccounts.InMemoryFundAccountService.html#Meridian_Application_FundAccounts_InMemoryFundAccountService__ctor
+  name: InMemoryFundAccountService
+  nameWithType: InMemoryFundAccountService.InMemoryFundAccountService
+  fullName: Meridian.Application.FundAccounts.InMemoryFundAccountService.InMemoryFundAccountService
+  nameWithType.vb: InMemoryFundAccountService.New
+  fullName.vb: Meridian.Application.FundAccounts.InMemoryFundAccountService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
 - uid: Meridian.Application.FundAccounts.InMemoryFundAccountService.CreateAccountAsync*
   commentId: Overload:Meridian.Application.FundAccounts.InMemoryFundAccountService.CreateAccountAsync
   href: Meridian.Application.FundAccounts.InMemoryFundAccountService.html#Meridian_Application_FundAccounts_InMemoryFundAccountService_CreateAccountAsync_Meridian_Contracts_FundStructure_CreateAccountRequest_System_Threading_CancellationToken_
@@ -1483,17 +1566,6 @@ references:
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
   - name: )
-- uid: System.String
-  commentId: T:System.String
-  parent: System
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.string
-  name: string
-  nameWithType: string
-  fullName: string
-  nameWithType.vb: String
-  fullName.vb: String
-  name.vb: String
 - uid: Meridian.Application.FundAccounts.InMemoryFundAccountService.GetFundAccountsAsync*
   commentId: Overload:Meridian.Application.FundAccounts.InMemoryFundAccountService.GetFundAccountsAsync
   href: Meridian.Application.FundAccounts.InMemoryFundAccountService.html#Meridian_Application_FundAccounts_InMemoryFundAccountService_GetFundAccountsAsync_System_Guid_System_Threading_CancellationToken_

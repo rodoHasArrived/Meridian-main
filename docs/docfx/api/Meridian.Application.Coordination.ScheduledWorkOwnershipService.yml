@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledWorkOwnershipService
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireDispatcherLeadershipAsync
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireScheduleAsync
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseScheduleAsync
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireJobAsync
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseJobAsync
     path: ../../src/Meridian.Application/Coordination/ScheduledWorkOwnershipService.cs

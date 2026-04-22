@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerSnapshot
     path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balances
     path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryCount
     path: ../../src/Meridian.Ledger/LedgerSnapshot.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerEntryCount
     path: ../../src/Meridian.Ledger/LedgerSnapshot.cs

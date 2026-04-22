@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IReconnectionMetrics
     path: ../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/IReconnectionMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAttempt
     path: ../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs

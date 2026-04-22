@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepoNavigationTools
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindSubsystem
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RouteTask
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindEntrypoints
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindRelatedProjects
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FindAuthoritativeDocs
     path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs

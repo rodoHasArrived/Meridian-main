@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlBatchOptions
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSize
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushInterval
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelSerializationThreshold
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughput
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -259,7 +259,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowLatency
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoBatching
     path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs

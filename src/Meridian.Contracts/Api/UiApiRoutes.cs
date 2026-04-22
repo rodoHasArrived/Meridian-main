@@ -429,6 +429,9 @@ public static class UiApiRoutes
     public const string ExecutionHealth = "/api/execution/health";
     public const string ExecutionCapabilities = "/api/execution/capabilities";
     public const string ExecutionAudit = "/api/execution/audit";
+    public const string ExecutionControls = "/api/execution/controls";
+    public const string ExecutionManualOverrides = "/api/execution/controls/manual-overrides";
+    public const string ExecutionManualOverrideClear = "/api/execution/controls/manual-overrides/{overrideId}/clear";
     public const string ExecutionSessions = "/api/execution/sessions";
     public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
@@ -453,6 +456,7 @@ public static class UiApiRoutes
     public const string PromotionHistory = "/api/promotion/history";
 
     // Strategy run comparison and diff endpoints
+    public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";

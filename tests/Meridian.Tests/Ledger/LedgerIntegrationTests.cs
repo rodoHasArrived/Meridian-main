@@ -613,14 +613,21 @@ public sealed class LedgerIntegrationTests
 
         fund.EntityLedger("e1").PostLines(ts, "sale", new[] { (cash, 60m, 0m), (revenue, 0m, 60m) });
         fund.SleeveLedger("s1").PostLines(ts, "sale", new[] { (cash, 40m, 0m), (revenue, 0m, 40m) });
+        fund.VehicleLedger("v1").PostLines(ts, "sale", new[] { (cash, 25m, 0m), (revenue, 0m, 25m) });
 
         var snap = fund.ReconciliationSnapshot(ts);
 
         snap.FundId.Should().Be("fund-recon");
         snap.AsOf.Should().Be(ts);
-        snap.Consolidated.Balances[cash].Should().Be(100m);
+        snap.Consolidated.Balances[cash].Should().Be(125m);
+        snap.Consolidated.JournalEntryCount.Should().Be(3);
+        snap.Consolidated.LedgerEntryCount.Should().Be(6);
         snap.Entities.Should().ContainKey("e1");
+        snap.Entities["e1"].Balances[cash].Should().Be(60m);
+        snap.Entities["e1"].JournalEntryCount.Should().Be(1);
         snap.Sleeves.Should().ContainKey("s1");
-        snap.Vehicles.Should().BeEmpty();
+        snap.Sleeves["s1"].LedgerEntryCount.Should().Be(2);
+        snap.Vehicles.Should().ContainKey("v1");
+        snap.Vehicles["v1"].Balances[cash].Should().Be(25m);
     }
 }

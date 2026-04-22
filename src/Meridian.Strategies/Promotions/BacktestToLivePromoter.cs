@@ -16,15 +16,23 @@ public sealed class BacktestToLivePromoter
     /// </summary>
     public bool MeetsPromotionThresholds(BacktestResult result, PromotionCriteria criteria)
     {
+        var decision = EvaluatePromotionThresholds(result, criteria);
+        return decision.Eligible;
+    }
+
+    /// <summary>
+    /// Returns the typed promotion threshold decision from the F# policy kernel.
+    /// </summary>
+    public Interop.PromotionDecisionDto EvaluatePromotionThresholds(BacktestResult result, PromotionCriteria criteria)
+    {
         ArgumentNullException.ThrowIfNull(result);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var decision = Interop.PromotionInterop.EvaluateBacktestPromotion(
+        return Interop.PromotionInterop.EvaluateBacktestPromotion(
             result,
             criteria.MinSharpeRatio,
             criteria.MaxAllowedDrawdownPercent,
             criteria.MinTotalReturn);
-        return decision.Eligible;
     }
 
     /// <summary>
@@ -35,23 +43,33 @@ public sealed class BacktestToLivePromoter
         BacktestResult result,
         string strategyId,
         string strategyName,
+        string sourceRunId,
+        string? targetRunId,
         RunType targetRunType,
+        string decision,
         string? approvedBy = null,
-        string? manualOverrideId = null)
+        string? manualOverrideId = null,
+        string? approvalReason = null,
+        string? reviewNotes = null,
+        string? auditReference = null)
     {
         ArgumentNullException.ThrowIfNull(result);
 
-        var auditReference = Guid.NewGuid().ToString("N");
         return new StrategyPromotionRecord(
             PromotionId: Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
             StrategyName: strategyName,
+            SourceRunId: sourceRunId,
+            TargetRunId: targetRunId,
             SourceRunType: targetRunType == RunType.Paper ? RunType.Backtest : RunType.Paper,
             TargetRunType: targetRunType,
             QualifyingSharpe: result.Metrics.SharpeRatio,
             QualifyingMaxDrawdownPercent: result.Metrics.MaxDrawdownPercent,
             QualifyingTotalReturn: result.Metrics.TotalReturn,
             PromotedAt: DateTimeOffset.UtcNow,
+            Decision: decision,
+            ApprovalReason: approvalReason,
+            ReviewNotes: reviewNotes,
             AuditReference: auditReference,
             ApprovedBy: approvedBy,
             ManualOverrideId: manualOverrideId);
@@ -79,12 +97,17 @@ public sealed record StrategyPromotionRecord(
     string PromotionId,
     string StrategyId,
     string StrategyName,
+    string SourceRunId,
+    string? TargetRunId,
     RunType SourceRunType,
     RunType TargetRunType,
     double QualifyingSharpe,
     decimal QualifyingMaxDrawdownPercent,
     decimal QualifyingTotalReturn,
     DateTimeOffset PromotedAt,
+    string Decision,
+    string? ApprovalReason = null,
+    string? ReviewNotes = null,
     string? AuditReference = null,
     string? ApprovedBy = null,
     string? ManualOverrideId = null);

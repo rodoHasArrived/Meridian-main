@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NyseNationalTradesCsvParser
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeMessageType
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SummaryMessageType
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusMessageType
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseTradeLine
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToRealtimeTrade
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseAllTrades
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -298,7 +298,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMessageType
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapExchangeCode
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
@@ -370,7 +370,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryParseNanosecondTime
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs

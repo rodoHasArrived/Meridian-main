@@ -251,7 +251,8 @@ type RiskDecisionDto = {
 [<CLIMutable>]
 type PromotionDecisionDto = {
     Eligible: bool
-    RequiresManualReview: bool
+    Outcome: string
+    RequiredManualOverrideKind: string
     Reasons: string array
 }
 
@@ -313,24 +314,46 @@ type RiskInterop private () =
 type PromotionInterop private () =
 
     static member private ToDto(decision: PromotionTypes.PromotionDecision) =
-        match decision with
-        | PromotionTypes.Eligible ->
-            { Eligible = true
-              RequiresManualReview = false
-              Reasons = [||] }
-        | PromotionTypes.Ineligible reasons ->
-            { Eligible = false
-              RequiresManualReview = false
-              Reasons = reasons |> List.toArray }
-        | PromotionTypes.ManualReview reasons ->
-            { Eligible = false
-              RequiresManualReview = true
-              Reasons = reasons |> List.toArray }
+        let outcomeText, requiredOverrideKind =
+            match decision.Outcome with
+            | PromotionTypes.Approved -> "approved", String.Empty
+            | PromotionTypes.RequiresHumanReview -> "requires_human_review", String.Empty
+            | PromotionTypes.RequiresManualOverride kind -> "requires_manual_override", kind
+            | PromotionTypes.Blocked -> "blocked", String.Empty
+
+        { Eligible = decision.IsEligible
+          Outcome = outcomeText
+          RequiredManualOverrideKind = requiredOverrideKind
+          Reasons = decision.BlockingReasons |> List.toArray }
 
     static member EvaluateBacktestPromotion(
         result: BacktestResult,
         minSharpeRatio: double,
         maxAllowedDrawdownPercent: decimal,
         minTotalReturn: decimal) : PromotionDecisionDto =
-        PromotionPolicy.evaluate result minSharpeRatio maxAllowedDrawdownPercent minTotalReturn
+        let policyInput : PromotionPolicy.PromotionPolicyInput =
+            {
+                IsRunCompleted = true
+                HasMetrics = true
+                SharpeRatio = result.Metrics.SharpeRatio
+                MaxDrawdownPercent = result.Metrics.MaxDrawdownPercent
+                TotalReturn = result.Metrics.TotalReturn
+                MinSharpeRatio = minSharpeRatio
+                MaxAllowedDrawdownPercent = maxAllowedDrawdownPercent
+                MinTotalReturn = minTotalReturn
+                IsLiveTarget = false
+                HasCompleteTrustEvidence = true
+                HasFreshTrustEvidence = true
+                IsLiveExecutionEnabled = true
+                IsCircuitBreakerOpen = false
+                HasConflictingOverride = false
+                HasActiveLivePromotionOverride = true
+                RequiredManualOverrideKind = String.Empty
+            }
+
+        PromotionPolicy.evaluatePolicy policyInput
+        |> PromotionInterop.ToDto
+
+    static member EvaluatePromotionPolicy(input: PromotionPolicy.PromotionPolicyInput) : PromotionDecisionDto =
+        PromotionPolicy.evaluatePolicy input
         |> PromotionInterop.ToDto

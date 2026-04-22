@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostStartup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostStartupFactory
     path: ../../src/Meridian.Application/Composition/HostStartup.cs
-    startLine: 296
+    startLine: 290
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostStartup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveProfile
     path: ../../src/Meridian.Application/Composition/HostStartup.cs
-    startLine: 301
+    startLine: 295
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostStartup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
     path: ../../src/Meridian.Application/Composition/HostStartup.cs
-    startLine: 317
+    startLine: 310
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -133,11 +133,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostStartup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForBackfill
     path: ../../src/Meridian.Application/Composition/HostStartup.cs
-    startLine: 333
+    startLine: 325
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -171,11 +171,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostStartup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForUtility
     path: ../../src/Meridian.Application/Composition/HostStartup.cs
-    startLine: 341
+    startLine: 333
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MmfFundFamilyDto
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizedFamilyName
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemberSecurityIds
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemberCount
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs

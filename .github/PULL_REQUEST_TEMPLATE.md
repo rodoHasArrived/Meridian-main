@@ -83,6 +83,8 @@ body:
           required: false
         - label: I have updated CHANGELOG.md (if applicable)
           required: false
+        - label: Contract migration notes added (required for breaking workstation/strategy/ledger contract changes)
+          required: false
 
   - type: textarea
     id: breaking-changes

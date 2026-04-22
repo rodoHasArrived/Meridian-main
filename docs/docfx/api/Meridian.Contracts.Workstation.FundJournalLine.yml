@@ -5,8 +5,9 @@ items:
   id: FundJournalLine
   parent: Meridian.Contracts.Workstation
   children:
-  - Meridian.Contracts.Workstation.FundJournalLine.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32)
+  - Meridian.Contracts.Workstation.FundJournalLine.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{System.String})
   - Meridian.Contracts.Workstation.FundJournalLine.Description
+  - Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds
   - Meridian.Contracts.Workstation.FundJournalLine.JournalEntryId
   - Meridian.Contracts.Workstation.FundJournalLine.LineCount
   - Meridian.Contracts.Workstation.FundJournalLine.Timestamp
@@ -22,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundJournalLine
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -46,21 +47,21 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Workstation.FundJournalLine.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32)
-  commentId: M:Meridian.Contracts.Workstation.FundJournalLine.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32)
-  id: '#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32)'
+- uid: Meridian.Contracts.Workstation.FundJournalLine.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Contracts.Workstation.FundJournalLine.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.Guid,System.DateTimeOffset,System.String,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{System.String})'
   parent: Meridian.Contracts.Workstation.FundJournalLine
   langs:
   - csharp
   - vb
-  name: FundJournalLine(Guid, DateTimeOffset, string, decimal, decimal, int)
-  nameWithType: FundJournalLine.FundJournalLine(Guid, DateTimeOffset, string, decimal, decimal, int)
-  fullName: Meridian.Contracts.Workstation.FundJournalLine.FundJournalLine(System.Guid, System.DateTimeOffset, string, decimal, decimal, int)
+  name: FundJournalLine(Guid, DateTimeOffset, string, decimal, decimal, int, IReadOnlyList<string>?)
+  nameWithType: FundJournalLine.FundJournalLine(Guid, DateTimeOffset, string, decimal, decimal, int, IReadOnlyList<string>?)
+  fullName: Meridian.Contracts.Workstation.FundJournalLine.FundJournalLine(System.Guid, System.DateTimeOffset, string, decimal, decimal, int, System.Collections.Generic.IReadOnlyList<string>?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -71,7 +72,7 @@ items:
   summary: Journal row for a fund ledger view.
   example: []
   syntax:
-    content: public FundJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount)
+    content: public FundJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount, IReadOnlyList<string>? FinancialAccountIds = null)
     parameters:
     - id: JournalEntryId
       type: System.Guid
@@ -85,11 +86,13 @@ items:
       type: System.Decimal
     - id: LineCount
       type: System.Int32
-    content.vb: Public Sub New(JournalEntryId As Guid, Timestamp As DateTimeOffset, Description As String, TotalDebits As Decimal, TotalCredits As Decimal, LineCount As Integer)
+    - id: FinancialAccountIds
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(JournalEntryId As Guid, Timestamp As DateTimeOffset, Description As String, TotalDebits As Decimal, TotalCredits As Decimal, LineCount As Integer, FinancialAccountIds As IReadOnlyList(Of String) = Nothing)
   overload: Meridian.Contracts.Workstation.FundJournalLine.#ctor*
-  nameWithType.vb: FundJournalLine.New(Guid, DateTimeOffset, String, Decimal, Decimal, Integer)
-  fullName.vb: Meridian.Contracts.Workstation.FundJournalLine.New(System.Guid, System.DateTimeOffset, String, Decimal, Decimal, Integer)
-  name.vb: New(Guid, DateTimeOffset, String, Decimal, Decimal, Integer)
+  nameWithType.vb: FundJournalLine.New(Guid, DateTimeOffset, String, Decimal, Decimal, Integer, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Contracts.Workstation.FundJournalLine.New(System.Guid, System.DateTimeOffset, String, Decimal, Decimal, Integer, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(Guid, DateTimeOffset, String, Decimal, Decimal, Integer, IReadOnlyList(Of String))
 - uid: Meridian.Contracts.Workstation.FundJournalLine.JournalEntryId
   commentId: P:Meridian.Contracts.Workstation.FundJournalLine.JournalEntryId
   id: JournalEntryId
@@ -104,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryId
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -133,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -162,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -191,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDebits
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -220,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCredits
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -249,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LineCount
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -264,6 +267,35 @@ items:
       type: System.Int32
     content.vb: Public Property LineCount As Integer
   overload: Meridian.Contracts.Workstation.FundJournalLine.LineCount*
+- uid: Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds
+  commentId: P:Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds
+  id: FinancialAccountIds
+  parent: Meridian.Contracts.Workstation.FundJournalLine
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountIds
+  nameWithType: FundJournalLine.FinancialAccountIds
+  fullName: Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccountIds
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<string>? FinancialAccountIds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property FinancialAccountIds As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds*
 references:
 - uid: Meridian.Contracts.Workstation
   commentId: N:Meridian.Contracts.Workstation
@@ -571,7 +603,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Workstation.FundJournalLine.#ctor*
   commentId: Overload:Meridian.Contracts.Workstation.FundJournalLine.#ctor
-  href: Meridian.Contracts.Workstation.FundJournalLine.html#Meridian_Contracts_Workstation_FundJournalLine__ctor_System_Guid_System_DateTimeOffset_System_String_System_Decimal_System_Decimal_System_Int32_
+  href: Meridian.Contracts.Workstation.FundJournalLine.html#Meridian_Contracts_Workstation_FundJournalLine__ctor_System_Guid_System_DateTimeOffset_System_String_System_Decimal_System_Decimal_System_Int32_System_Collections_Generic_IReadOnlyList_System_String__
   name: FundJournalLine
   nameWithType: FundJournalLine.FundJournalLine
   fullName: Meridian.Contracts.Workstation.FundJournalLine.FundJournalLine
@@ -627,6 +659,106 @@ references:
   nameWithType.vb: Integer
   fullName.vb: Integer
   name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
 - uid: Meridian.Contracts.Workstation.FundJournalLine.JournalEntryId*
   commentId: Overload:Meridian.Contracts.Workstation.FundJournalLine.JournalEntryId
   href: Meridian.Contracts.Workstation.FundJournalLine.html#Meridian_Contracts_Workstation_FundJournalLine_JournalEntryId
@@ -663,3 +795,9 @@ references:
   name: LineCount
   nameWithType: FundJournalLine.LineCount
   fullName: Meridian.Contracts.Workstation.FundJournalLine.LineCount
+- uid: Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds*
+  commentId: Overload:Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds
+  href: Meridian.Contracts.Workstation.FundJournalLine.html#Meridian_Contracts_Workstation_FundJournalLine_FinancialAccountIds
+  name: FinancialAccountIds
+  nameWithType: FundJournalLine.FinancialAccountIds
+  fullName: Meridian.Contracts.Workstation.FundJournalLine.FinancialAccountIds

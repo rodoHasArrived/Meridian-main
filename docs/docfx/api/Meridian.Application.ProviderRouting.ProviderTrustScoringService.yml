@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTrustScoringService
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 55
+    startLine: 56
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting
@@ -53,11 +53,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 60
+    startLine: 64
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting
@@ -87,11 +87,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrustSnapshotsAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs
-    startLine: 66
+    startLine: 70
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.ProviderRouting
