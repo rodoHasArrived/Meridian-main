@@ -136,11 +136,19 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetHistoryForRunAsync(runId, ct);
 
-    private static ReconciliationBreakCategory MapCategory(string category, string missingSource = "", string checkId = "") => category switch
+    private static bool IsExternalStatementMismatchSource(string expectedSource = "", string actualSource = "") =>
+        IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource);
+
+    private static ReconciliationBreakCategory MapCategory(
+        string category,
+        string missingSource = "",
+        string checkId = "",
+        string expectedSource = "",
+        string actualSource = "") => category switch
     {
         "amount_mismatch" when IsCashCheck(checkId)
             => ReconciliationBreakCategory.CashMismatch,
-        "amount_mismatch" when IsExternalStatementSource(missingSource)
+        "amount_mismatch" when IsExternalStatementMismatchSource(expectedSource, actualSource)
             => ReconciliationBreakCategory.ExternalStatementMismatch,
         "amount_mismatch" => ReconciliationBreakCategory.AmountMismatch,
         "missing_ledger_coverage" when IsCashCheck(checkId)
