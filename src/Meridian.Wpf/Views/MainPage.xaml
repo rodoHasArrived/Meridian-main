@@ -87,6 +87,14 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
+        <Style x:Key="ShellNavMetaStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource NavSectionLabelBrush}" />
+            <Setter Property="Opacity" Value="0.62" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
         <!-- Marquee: uppercase muted section labels — light text on dark sidebar -->
         <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
@@ -166,7 +174,7 @@
                                Style="{StaticResource ShellNavSubtitleStyle}"
                                Margin="0,2,0,0" />
                     <TextBlock Text="{Binding MetaLine}"
-                               Style="{StaticResource ShellSectionLabelStyle}"
+                               Style="{StaticResource ShellNavMetaStyle}"
                                Margin="0,4,0,0" />
                 </StackPanel>
             </Grid>
@@ -275,7 +283,7 @@
                                                    Style="{StaticResource ShellNavSubtitleStyle}"
                                                    Margin="0,2,0,0" />
                                         <TextBlock Text="{Binding MetaLine}"
-                                                   Style="{StaticResource ShellSectionLabelStyle}"
+                                                   Style="{StaticResource ShellNavMetaStyle}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
                                 </Grid>

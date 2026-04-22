@@ -87,6 +87,20 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void CommandPaletteQuery_UsesTierOrderingWithinMatchingResults()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "workspace";
+
+            vm.CommandPalettePages.Should().NotBeEmpty();
+            vm.CommandPalettePages.First().PageTag.Should().Be("ResearchShell");
+        });
+    }
+
+    [Fact]
     public void CommandPaletteQuery_WhenNoResults_ShowsHelpfulEmptyStateAndCanClear()
     {
         WpfTestThread.Run(() =>
@@ -136,6 +150,20 @@ public sealed class MainShellViewModelTests
             vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["GovernanceShell", "FundLedger", "FundReconciliation"]);
             vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
             vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
+        });
+    }
+
+    [Fact]
+    public void WorkspaceNavigation_UsesFriendlyContextTagsInsteadOfRawTierNames()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.SelectWorkspaceCommand.Execute("governance");
+
+            vm.SecondaryNavigationItems.Should().OnlyContain(item => item.VisibilityLabel != "Secondary");
+            vm.OverflowNavigationItems.Should().OnlyContain(item => item.VisibilityLabel == "Admin");
         });
     }
 
