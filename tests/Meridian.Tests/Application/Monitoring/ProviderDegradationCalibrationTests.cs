@@ -6,6 +6,49 @@ namespace Meridian.Tests.Application.Monitoring;
 public sealed class ProviderDegradationCalibrationTests
 {
     [Fact]
+    public async Task LoadAsync_ParsesStringBasedSeverityEnums()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        const string json = """
+                            {
+                              "datasetId": "dataset-2026-04",
+                              "generatedAt": "2026-04-20T00:00:00Z",
+                              "source": "test",
+                              "windows": [
+                                {
+                                  "provider": "A",
+                                  "windowStart": "2026-04-20T00:00:00Z",
+                                  "windowEnd": "2026-04-20T00:05:00Z",
+                                  "observedSeverity": "Critical",
+                                  "connectionScore": 0.9,
+                                  "latencyScore": 0.8,
+                                  "errorRateScore": 0.7,
+                                  "reconnectScore": 0.6,
+                                  "eventsObserved": 10,
+                                  "alertVolumeObserved": 1
+                                }
+                              ]
+                            }
+                            """;
+
+        try
+        {
+            await File.WriteAllTextAsync(path, json);
+            var dataset = await ProviderIncidentCalibrationDataset.LoadAsync(path);
+
+            dataset.Windows.Should().ContainSingle();
+            dataset.Windows[0].ObservedSeverity.Should().Be(IncidentSeverity.Critical);
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    [Fact]
     public void Run_ComputesPrecisionRecallAndAlertVolumeComparison()
     {
         var dataset = BuildDataset();
@@ -29,6 +72,8 @@ public sealed class ProviderDegradationCalibrationTests
         snapshot.CandidateKernelVersion.Should().Be("candidate-v2");
         snapshot.BaselineMetrics.Should().HaveCount(4);
         snapshot.CandidateMetrics.Should().HaveCount(4);
+        snapshot.CandidateMetrics.Single(m => m.Severity == IncidentSeverity.Critical).Threshold
+            .Should().Be(candidate.Config.DegradationThreshold);
         snapshot.Comparison.ExpectedAlertCountCandidate.Should().BeGreaterThan(0);
         snapshot.Comparison.ExpectedAlertVolumeChangePercent.Should().NotBe(double.NaN);
     }

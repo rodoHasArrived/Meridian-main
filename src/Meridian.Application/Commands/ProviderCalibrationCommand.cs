@@ -32,16 +32,18 @@ internal sealed class ProviderCalibrationCommand : ICliCommand
 
         var baselineConfigPath = CliArguments.GetValue(args, "--baseline-config");
         var candidateConfigPath = CliArguments.GetValue(args, "--candidate-config");
+        var baselineConfig = await LoadConfigOrDefaultAsync(baselineConfigPath, ct).ConfigureAwait(false);
+        var candidateConfig = await LoadConfigOrDefaultAsync(candidateConfigPath, ct).ConfigureAwait(false);
 
         var baselineProfile = new ProviderDegradationKernelProfile(
             baselineKernelVersion,
-            await LoadConfigOrDefaultAsync(baselineConfigPath, ct).ConfigureAwait(false),
-            ProviderDegradationKernelProfile.Default().SeverityThresholds);
+            baselineConfig,
+            ProviderDegradationKernelProfile.BuildSeverityThresholds(baselineConfig));
 
         var candidateProfile = new ProviderDegradationKernelProfile(
             candidateKernelVersion,
-            await LoadConfigOrDefaultAsync(candidateConfigPath, ct).ConfigureAwait(false),
-            ProviderDegradationKernelProfile.Default().SeverityThresholds);
+            candidateConfig,
+            ProviderDegradationKernelProfile.BuildSeverityThresholds(candidateConfig));
 
         var dataset = await ProviderIncidentCalibrationDataset.LoadAsync(inputPath, ct).ConfigureAwait(false);
         var runner = new ProviderDegradationCalibrationRunner();

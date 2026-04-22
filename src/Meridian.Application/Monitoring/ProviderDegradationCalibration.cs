@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Application.Monitoring;
 
@@ -12,10 +13,15 @@ public sealed record ProviderIncidentCalibrationDataset(
     string Source,
     IReadOnlyList<ProviderIncidentWindow> Windows)
 {
+    private static readonly JsonSerializerOptions DatasetJsonOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public static async Task<ProviderIncidentCalibrationDataset> LoadAsync(string path, CancellationToken ct = default)
     {
         await using var stream = File.OpenRead(path);
-        var dataset = await JsonSerializer.DeserializeAsync<ProviderIncidentCalibrationDataset>(stream, cancellationToken: ct)
+        var dataset = await JsonSerializer.DeserializeAsync<ProviderIncidentCalibrationDataset>(stream, DatasetJsonOptions, ct)
             .ConfigureAwait(false);
         return dataset ?? throw new InvalidOperationException($"Failed to parse calibration dataset from '{path}'.");
     }
@@ -24,7 +30,7 @@ public sealed record ProviderIncidentCalibrationDataset(
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path) ?? ".");
         await using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, this, cancellationToken: ct).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream, this, DatasetJsonOptions, ct).ConfigureAwait(false);
     }
 }
 
@@ -96,16 +102,16 @@ public sealed record ProviderDegradationKernelProfile(
     IReadOnlyDictionary<IncidentSeverity, double> SeverityThresholds)
 {
     public static ProviderDegradationKernelProfile Default(string kernelVersion = "default") =>
-        new(
-            kernelVersion,
-            ProviderDegradationConfig.Default,
-            new Dictionary<IncidentSeverity, double>
-            {
-                [IncidentSeverity.Minor] = 0.35,
-                [IncidentSeverity.Moderate] = 0.50,
-                [IncidentSeverity.Major] = 0.65,
-                [IncidentSeverity.Critical] = ProviderDegradationConfig.Default.DegradationThreshold
-            });
+        new(kernelVersion, ProviderDegradationConfig.Default, BuildSeverityThresholds(ProviderDegradationConfig.Default));
+
+    public static IReadOnlyDictionary<IncidentSeverity, double> BuildSeverityThresholds(ProviderDegradationConfig config) =>
+        new Dictionary<IncidentSeverity, double>
+        {
+            [IncidentSeverity.Minor] = 0.35,
+            [IncidentSeverity.Moderate] = 0.50,
+            [IncidentSeverity.Major] = 0.65,
+            [IncidentSeverity.Critical] = config.DegradationThreshold
+        };
 }
 
 public sealed class ProviderDegradationCalibrationRunner
