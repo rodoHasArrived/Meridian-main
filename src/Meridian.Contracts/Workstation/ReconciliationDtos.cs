@@ -138,10 +138,11 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
     IReadOnlyList<BankTransactionDto>? BankTransactions = null,
     /// <summary>
-    /// Security Master classification keyed by ticker symbol, populated for every symbol whose
-    /// Security Master entry was resolved at reconciliation time. Suitable for audit reporting.
+    /// Authoritative Security Master references keyed by ticker symbol, populated for every
+    /// symbol resolved at reconciliation time from the shared workstation instrument layer.
+    /// Suitable for governance and audit reporting.
     /// </summary>
-    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
+    IReadOnlyDictionary<string, WorkstationSecurityReference>? SecurityClassifications = null);
 
 /// <summary>
 /// Operator queue state for a reconciliation break.

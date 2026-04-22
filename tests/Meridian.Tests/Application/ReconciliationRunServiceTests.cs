@@ -75,7 +75,7 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
-    public async Task RunAsync_WithSecurityLookup_ShouldPopulateSecurityClassifications()
+    public async Task RunAsync_WithSecurityLookup_ShouldPopulateAuthoritativeSecurityReferences()
     {
         // Arrange — register both AAPL and TSLA so the lookup returns full data for both
         var store = new StrategyRunStore();
@@ -110,17 +110,16 @@ public sealed class ReconciliationRunServiceTests
         // Assert
         detail.Should().NotBeNull();
         detail!.SecurityClassifications.Should().NotBeNull(
-            "a Security Master lookup was wired, so classifications must be populated");
+            "a Security Master lookup was wired, so authoritative security references must be populated");
 
         detail.SecurityClassifications!.Should().ContainKey("AAPL");
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
-        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("ISIN");
-        detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
+        detail.SecurityClassifications["AAPL"].PrimaryIdentifier.Should().Be("AAPL");
         detail.SecurityClassifications["AAPL"].MatchedIdentifierKind.Should().Be("ISIN");
         detail.SecurityClassifications["AAPL"].MatchedIdentifierValue.Should().Be("US0378331005");
         detail.SecurityClassifications["AAPL"].MatchedProvider.Should().Be("OpenFIGI");
-        detail.SecurityClassifications["TSLA"].PrimaryIdentifierKind.Should().Be("Ticker");
+        detail.SecurityClassifications["TSLA"].MatchedIdentifierKind.Should().BeNull();
     }
 
     [Fact]
@@ -155,7 +154,7 @@ public sealed class ReconciliationRunServiceTests
         detail!.SecurityClassifications.Should().NotBeNull();
         detail.SecurityClassifications!["AAPL"].SubType.Should().BeNull("ambiguous equity subtype should stay explicitly null");
         detail.SecurityClassifications["TSLA"].SubType.Should().Be("LegacyEquitySubtype");
-        detail.SecurityClassifications["TSLA"].PrimaryIdentifierValue.Should().Be("88160R101");
+        detail.SecurityClassifications["TSLA"].PrimaryIdentifier.Should().Be("88160R101");
     }
 
     [Fact]
