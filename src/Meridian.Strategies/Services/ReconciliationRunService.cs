@@ -158,12 +158,12 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         _ => ReconciliationBreakStatus.Open
     };
 
-    private static ReconciliationBreakSeverity MapSeverity(string severity) => severity switch
+    private static ReconciliationBreakSeverity MapSeverity(string severity) => severity.ToUpperInvariant() switch
     {
-        "Critical" => ReconciliationBreakSeverity.Critical,
-        "High" => ReconciliationBreakSeverity.High,
-        "Medium" => ReconciliationBreakSeverity.Medium,
-        "Low" => ReconciliationBreakSeverity.Low,
+        "CRITICAL" => ReconciliationBreakSeverity.Critical,
+        "HIGH" => ReconciliationBreakSeverity.High,
+        "MEDIUM" => ReconciliationBreakSeverity.Medium,
+        "LOW" => ReconciliationBreakSeverity.Low,
         _ => ReconciliationBreakSeverity.Info
     };
 
