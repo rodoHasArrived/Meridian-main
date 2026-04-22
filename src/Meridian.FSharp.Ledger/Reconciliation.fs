@@ -281,6 +281,16 @@ module Reconciliation =
                             "classification_gap", "open", "unknown", reason, false, inferredSeverity
                         | OtherBreak reason ->
                             "classification_gap", "open", "unknown", reason, false, inferredSeverity
+                elif check.HasExpectedAmount && check.HasActualAmount then
+                    if check.ActualAmount <> check.ExpectedAmount then
+                        "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, BreakSeverity.asString BreakSeverity.Medium
+                    else
+                        "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
+                elif check.HasExpectedAsOf && check.HasActualAsOf then
+                    if check.ActualAsOf <> check.ExpectedAsOf then
+                        "timing_mismatch", "open", "unknown", "Comparison timestamps drift beyond tolerance.", false, BreakSeverity.asString BreakSeverity.Medium
+                    else
+                        "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
                 else
                     "matched", "matched", "unknown", "Comparison satisfied all configured checks.", true, BreakSeverity.asString BreakSeverity.Info
 
