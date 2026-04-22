@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
@@ -214,6 +215,46 @@ public sealed class LedgerReadServiceTests
     {
         var act = () => new LedgerReadService(null!);
         act.Should().Throw<ArgumentNullException>();
+    }
+
+
+    [Fact]
+    public void BuildSummary_MapsAndSerializesScopeMetadataFromRunParameters()
+    {
+        var entry = BuildCompletedRun() with
+        {
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-paper",
+                ["accountScopeDisplayName"] = "Paper Account",
+                ["entityScopeId"] = "entity-paper",
+                ["entityScopeDisplayName"] = "Paper Entity",
+                ["sleeveScopeId"] = "sleeve-paper",
+                ["sleeveScopeDisplayName"] = "Paper Sleeve",
+                ["vehicleScopeId"] = "vehicle-paper",
+                ["vehicleScopeDisplayName"] = "Paper Vehicle"
+            }
+        };
+
+        var service = new LedgerReadService();
+        var summary = service.BuildSummary(entry);
+
+        summary.Should().NotBeNull();
+        summary!.AccountScopeId.Should().Be("acct-paper");
+        summary.EntityScopeId.Should().Be("entity-paper");
+        summary.SleeveScopeId.Should().Be("sleeve-paper");
+        summary.VehicleScopeId.Should().Be("vehicle-paper");
+        summary.TrialBalance.Should().OnlyContain(line =>
+            line.AccountScopeId == "acct-paper" &&
+            line.EntityScopeId == "entity-paper" &&
+            line.SleeveScopeId == "sleeve-paper" &&
+            line.VehicleScopeId == "vehicle-paper");
+        summary.Journal.Should().OnlyContain(line => line.AccountScopeId == "acct-paper");
+
+        var json = JsonSerializer.Serialize(summary);
+        json.Should().Contain("entityScopeId");
+        json.Should().Contain("sleeveScopeDisplayName");
+        json.Should().Contain("vehicleScopeDisplayName");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

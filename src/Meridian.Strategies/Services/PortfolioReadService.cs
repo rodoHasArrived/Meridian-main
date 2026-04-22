@@ -66,15 +66,25 @@ public sealed class PortfolioReadService
             return null;
         }
 
+        var scope = StrategyRunScopeMetadataResolver.Resolve(entry);
+
         var positions = latestSnapshot.Positions.Values
             .OrderBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
-            .Select(static position => new PortfolioPositionSummary(
+            .Select(position => new PortfolioPositionSummary(
                 Symbol: position.Symbol,
                 Quantity: position.Quantity,
                 AverageCostBasis: position.AverageCostBasis,
                 RealizedPnl: position.RealizedPnl,
                 UnrealizedPnl: position.UnrealizedPnl,
-                IsShort: position.IsShort))
+                IsShort: position.IsShort,
+                AccountScopeId: scope.AccountId,
+                AccountScopeDisplayName: scope.AccountDisplayName,
+                EntityScopeId: scope.EntityId,
+                EntityScopeDisplayName: scope.EntityDisplayName,
+                SleeveScopeId: scope.SleeveId,
+                SleeveScopeDisplayName: scope.SleeveDisplayName,
+                VehicleScopeId: scope.VehicleId,
+                VehicleScopeDisplayName: scope.VehicleDisplayName))
             .ToArray();
 
         var longMarketValue = latestSnapshot.LongMarketValue;
@@ -99,7 +109,15 @@ public sealed class PortfolioReadService
             UnrealizedPnl: unrealizedPnl,
             Commissions: result.Metrics.TotalCommissions,
             Financing: financing,
-            Positions: positions);
+            Positions: positions,
+            AccountScopeId: scope.AccountId,
+            AccountScopeDisplayName: scope.AccountDisplayName,
+            EntityScopeId: scope.EntityId,
+            EntityScopeDisplayName: scope.EntityDisplayName,
+            SleeveScopeId: scope.SleeveId,
+            SleeveScopeDisplayName: scope.SleeveDisplayName,
+            VehicleScopeId: scope.VehicleId,
+            VehicleScopeDisplayName: scope.VehicleDisplayName);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecuritiesAsync(

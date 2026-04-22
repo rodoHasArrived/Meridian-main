@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
@@ -244,6 +245,49 @@ public sealed class PortfolioReadServiceTests
     {
         var act = () => new PortfolioReadService(null!);
         act.Should().Throw<ArgumentNullException>();
+    }
+
+
+    [Fact]
+    public void BuildSummary_MapsAndSerializesScopeMetadataFromRunParameters()
+    {
+        var entry = BuildCompletedRun(
+            finalEquity: 120_000m,
+            realizedPnl: 15_000m,
+            unrealizedPnl: 5_000m) with
+        {
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-backtest",
+                ["accountScopeDisplayName"] = "Backtest Prime",
+                ["entityScopeId"] = "entity-alpha",
+                ["entityScopeDisplayName"] = "Alpha Management",
+                ["sleeveScopeId"] = "sleeve-growth",
+                ["sleeveScopeDisplayName"] = "Growth Sleeve",
+                ["vehicleScopeId"] = "vehicle-lp",
+                ["vehicleScopeDisplayName"] = "Alpha LP"
+            }
+        };
+
+        var service = new PortfolioReadService();
+        var summary = service.BuildSummary(entry);
+
+        summary.Should().NotBeNull();
+        summary!.AccountScopeId.Should().Be("acct-backtest");
+        summary.AccountScopeDisplayName.Should().Be("Backtest Prime");
+        summary.EntityScopeId.Should().Be("entity-alpha");
+        summary.SleeveScopeId.Should().Be("sleeve-growth");
+        summary.VehicleScopeId.Should().Be("vehicle-lp");
+        summary.Positions.Should().OnlyContain(position =>
+            position.AccountScopeId == "acct-backtest" &&
+            position.EntityScopeId == "entity-alpha" &&
+            position.SleeveScopeId == "sleeve-growth" &&
+            position.VehicleScopeId == "vehicle-lp");
+
+        var json = JsonSerializer.Serialize(summary);
+        json.Should().Contain("accountScopeId");
+        json.Should().Contain("entityScopeDisplayName");
+        json.Should().Contain("vehicleScopeDisplayName");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
