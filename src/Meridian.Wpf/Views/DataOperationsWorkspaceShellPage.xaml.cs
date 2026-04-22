@@ -156,13 +156,24 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
 
         OperationsSummaryTitleText.Text = presentation.OperationsSummaryTitleText;
         OperationsSummaryDetailText.Text = presentation.OperationsSummaryDetailText;
-        SummaryProvidersText.Text = presentation.SummaryProvidersText;
+        SummaryProvidersText.Text = NormalizeSummaryText(presentation.SummaryProvidersText, DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary);
         SummaryProvidersText.Foreground = ResolveToneBrush(presentation.SummaryProvidersTone);
-        SummaryBackfillText.Text = presentation.SummaryBackfillText;
+        SummaryBackfillText.Text = NormalizeSummaryText(presentation.SummaryBackfillText, DataOperationsWorkspacePresentationBuilder.BackfillUnavailableSummary);
         SummaryBackfillText.Foreground = ResolveToneBrush(presentation.SummaryBackfillTone);
-        SummaryStorageText.Text = presentation.SummaryStorageText;
+        SummaryStorageText.Text = NormalizeSummaryText(presentation.SummaryStorageText, DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary);
         SummaryStorageText.Foreground = ResolveToneBrush(presentation.SummaryStorageTone);
         RecentOperationsList.ItemsSource = presentation.RecentOperations;
+    }
+
+    private static string NormalizeSummaryText(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var normalized = value.Trim();
+        return normalized is "Loading..." or "Loading…" or "—" ? fallback : normalized;
     }
 
     private static async Task<T> LoadSafeAsync<T>(string operationName, Func<Task<T>> loader, T fallback)

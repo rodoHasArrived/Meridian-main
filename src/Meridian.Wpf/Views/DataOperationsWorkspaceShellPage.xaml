@@ -220,7 +220,7 @@
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   Text="3" />
+                                                   Text="Loading…" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
@@ -233,7 +233,7 @@
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource WarningColorBrush}"
-                                                   Text="Queue" />
+                                                   Text="Loading…" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}">
@@ -246,7 +246,7 @@
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   Text="Watch" />
+                                                   Text="Loading…" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
