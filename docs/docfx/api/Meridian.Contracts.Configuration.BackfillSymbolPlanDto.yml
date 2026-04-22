@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillSymbolPlanDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 449
+    startLine: 344
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 451
+    startLine: 346
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -96,11 +96,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSequence
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 454
+    startLine: 349
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -137,11 +137,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectedProvider
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 457
+    startLine: 352
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -178,11 +178,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 460
+    startLine: 355
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

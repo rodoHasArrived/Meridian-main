@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlRunResult
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsProcessed
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsAccepted
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsRejected
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordsDeduplicated
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportResult
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs

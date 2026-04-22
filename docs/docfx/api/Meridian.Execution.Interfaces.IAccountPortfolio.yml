@@ -6,13 +6,16 @@ items:
   parent: Meridian.Execution.Interfaces
   children:
   - Meridian.Execution.Interfaces.IAccountPortfolio.AccountId
+  - Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower
   - Meridian.Execution.Interfaces.IAccountPortfolio.Cash
   - Meridian.Execution.Interfaces.IAccountPortfolio.DisplayName
   - Meridian.Execution.Interfaces.IAccountPortfolio.Kind
   - Meridian.Execution.Interfaces.IAccountPortfolio.LongMarketValue
   - Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+  - Meridian.Execution.Interfaces.IAccountPortfolio.MarginType
   - Meridian.Execution.Interfaces.IAccountPortfolio.Positions
   - Meridian.Execution.Interfaces.IAccountPortfolio.RealisedPnl
+  - Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral
   - Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarketValue
   - Meridian.Execution.Interfaces.IAccountPortfolio.TakeSnapshot
   - Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
@@ -26,11 +29,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAccountPortfolio
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 8
+    startLine: 10
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -56,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 11
+    startLine: 13
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -87,11 +90,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 14
+    startLine: 16
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -118,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 19
+    startLine: 21
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -149,11 +152,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 22
+    startLine: 24
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -180,15 +183,15 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 25
+    startLine: 27
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
-  summary: Margin balance (positive = margin used; 0 for cash-only accounts).
+  summary: Margin balance — total amount borrowed from the broker for long positions (0 for cash accounts).
   example: []
   syntax:
     content: decimal MarginBalance { get; }
@@ -197,6 +200,109 @@ items:
       type: System.Decimal
     content.vb: ReadOnly Property MarginBalance As Decimal
   overload: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral
+  id: ShortMarginCollateral
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ShortMarginCollateral
+  nameWithType: IAccountPortfolio.ShortMarginCollateral
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarginCollateral
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Total collateral held by the broker against short positions.
+
+    Zero for cash accounts and accounts with no open shorts.
+  example: []
+  syntax:
+    content: decimal ShortMarginCollateral { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property ShortMarginCollateral As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.MarginType
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.MarginType
+  id: MarginType
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: MarginType
+  nameWithType: IAccountPortfolio.MarginType
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.MarginType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginType
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Margin regime for this account. Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref> for
+
+    backward-compatible callers that do not implement the property explicitly.
+  example: []
+  syntax:
+    content: MarginAccountType MarginType { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+    content.vb: ReadOnly Property MarginType As MarginAccountType
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.MarginType*
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower
+  id: BuyingPower
+  parent: Meridian.Execution.Interfaces.IAccountPortfolio
+  langs:
+  - csharp
+  - vb
+  name: BuyingPower
+  nameWithType: IAccountPortfolio.BuyingPower
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuyingPower
+    path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Available buying power.
+
+
+    <ul><li><xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref>: equals <xref href="Meridian.Execution.Interfaces.IAccountPortfolio.Cash" data-throw-if-not-resolved="false"></xref>.</li><li><xref href="Meridian.Execution.Margin.MarginAccountType.RegT" data-throw-if-not-resolved="false"></xref>: up to 2× <xref href="Meridian.Execution.Interfaces.IAccountPortfolio.Cash" data-throw-if-not-resolved="false"></xref> (50 % initial margin).</li><li><xref href="Meridian.Execution.Margin.MarginAccountType.PortfolioMargin" data-throw-if-not-resolved="false"></xref>: model-specific; defaults to <xref href="Meridian.Execution.Interfaces.IAccountPortfolio.Cash" data-throw-if-not-resolved="false"></xref>.</li></ul>
+  example: []
+  syntax:
+    content: decimal BuyingPower { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property BuyingPower As Decimal
+  overload: Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower*
 - uid: Meridian.Execution.Interfaces.IAccountPortfolio.Positions
   commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.Positions
   id: Positions
@@ -211,22 +317,29 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 28
+    startLine: 57
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
-  summary: Open positions keyed by ticker symbol (upper-case).
+  summary: >-
+    Open positions keyed by ticker symbol (upper-case), typed against the cross-pillar
+
+    <xref href="Meridian.Execution.Sdk.IPosition" data-throw-if-not-resolved="false"></xref> interface.
+
+    Callers that require the concrete <xref href="Meridian.Execution.Models.ExecutionPosition" data-throw-if-not-resolved="false"></xref> type (e.g. serialisation
+
+    boundaries) should cast individual values: <code>account.Positions.Values.Cast&lt;ExecutionPosition&gt;()</code>.
   example: []
   syntax:
-    content: IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    content: IReadOnlyDictionary<string, IPosition> Positions { get; }
     parameters: []
     return:
-      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
-    content.vb: ReadOnly Property Positions As IReadOnlyDictionary(Of String, ExecutionPosition)
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+    content.vb: ReadOnly Property Positions As IReadOnlyDictionary(Of String, IPosition)
   overload: Meridian.Execution.Interfaces.IAccountPortfolio.Positions*
 - uid: Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
   commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.UnrealisedPnl
@@ -242,11 +355,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 31
+    startLine: 60
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -273,11 +386,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 34
+    startLine: 63
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -304,11 +417,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMarketValue
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 37
+    startLine: 66
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -335,11 +448,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarketValue
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 40
+    startLine: 69
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -366,11 +479,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeSnapshot
     path: ../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs
-    startLine: 46
+    startLine: 75
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Interfaces
@@ -512,23 +625,116 @@ references:
   name: MarginBalance
   nameWithType: IAccountPortfolio.MarginBalance
   fullName: Meridian.Execution.Interfaces.IAccountPortfolio.MarginBalance
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_ShortMarginCollateral
+  name: ShortMarginCollateral
+  nameWithType: IAccountPortfolio.ShortMarginCollateral
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.ShortMarginCollateral
+- uid: Meridian.Execution.Margin.MarginAccountType.Cash
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.Cash
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_Cash
+  name: Cash
+  nameWithType: MarginAccountType.Cash
+  fullName: Meridian.Execution.Margin.MarginAccountType.Cash
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.MarginType*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.MarginType
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_MarginType
+  name: MarginType
+  nameWithType: IAccountPortfolio.MarginType
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.MarginType
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginAccountType.html
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  commentId: P:Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_Cash
+  name: Cash
+  nameWithType: IAccountPortfolio.Cash
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Cash
+- uid: Meridian.Execution.Margin.MarginAccountType.RegT
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.RegT
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_RegT
+  name: RegT
+  nameWithType: MarginAccountType.RegT
+  fullName: Meridian.Execution.Margin.MarginAccountType.RegT
+- uid: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_PortfolioMargin
+  name: PortfolioMargin
+  nameWithType: MarginAccountType.PortfolioMargin
+  fullName: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+- uid: Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower*
+  commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower
+  href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_BuyingPower
+  name: BuyingPower
+  nameWithType: IAccountPortfolio.BuyingPower
+  fullName: Meridian.Execution.Interfaces.IAccountPortfolio.BuyingPower
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPosition.html
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
+- uid: Meridian.Execution.Models.ExecutionPosition
+  commentId: T:Meridian.Execution.Models.ExecutionPosition
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionPosition.html
+  name: ExecutionPosition
+  nameWithType: ExecutionPosition
+  fullName: Meridian.Execution.Models.ExecutionPosition
 - uid: Meridian.Execution.Interfaces.IAccountPortfolio.Positions*
   commentId: Overload:Meridian.Execution.Interfaces.IAccountPortfolio.Positions
   href: Meridian.Execution.Interfaces.IAccountPortfolio.html#Meridian_Execution_Interfaces_IAccountPortfolio_Positions
   name: Positions
   nameWithType: IAccountPortfolio.Positions
   fullName: Meridian.Execution.Interfaces.IAccountPortfolio.Positions
-- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
-  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
   parent: System.Collections.Generic
   definition: System.Collections.Generic.IReadOnlyDictionary`2
   href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
-  name: IReadOnlyDictionary<string, ExecutionPosition>
-  nameWithType: IReadOnlyDictionary<string, ExecutionPosition>
-  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>
-  nameWithType.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
-  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition)
-  name.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  name: IReadOnlyDictionary<string, IPosition>
+  nameWithType: IReadOnlyDictionary<string, IPosition>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition>
+  nameWithType.vb: IReadOnlyDictionary(Of String, IPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Sdk.IPosition)
+  name.vb: IReadOnlyDictionary(Of String, IPosition)
   spec.csharp:
   - uid: System.Collections.Generic.IReadOnlyDictionary`2
     name: IReadOnlyDictionary
@@ -541,9 +747,9 @@ references:
     href: https://learn.microsoft.com/dotnet/api/system.string
   - name: ','
   - name: " "
-  - uid: Meridian.Execution.Models.ExecutionPosition
-    name: ExecutionPosition
-    href: Meridian.Execution.Models.ExecutionPosition.html
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
   - name: '>'
   spec.vb:
   - uid: System.Collections.Generic.IReadOnlyDictionary`2
@@ -559,10 +765,40 @@ references:
     href: https://learn.microsoft.com/dotnet/api/system.string
   - name: ','
   - name: " "
-  - uid: Meridian.Execution.Models.ExecutionPosition
-    name: ExecutionPosition
-    href: Meridian.Execution.Models.ExecutionPosition.html
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
   - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
 - uid: System.Collections.Generic.IReadOnlyDictionary`2
   commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
   isExternal: true

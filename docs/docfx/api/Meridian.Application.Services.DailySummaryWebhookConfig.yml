@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailySummaryWebhookConfig
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Webhooks
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableScheduledSummary
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduledTime
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryCount
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeoutSeconds
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs

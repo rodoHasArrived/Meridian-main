@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationRunService
     path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByIdAsync
     path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestForRunAsync
     path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/ReconciliationRunService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryForRunAsync
     path: ../../src/Meridian.Strategies/Services/ReconciliationRunService.cs

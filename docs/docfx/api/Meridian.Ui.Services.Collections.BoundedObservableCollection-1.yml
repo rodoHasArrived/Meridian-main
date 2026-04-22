@@ -35,7 +35,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BoundedObservableCollection
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectionChanged
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PropertyChanged
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxCapacity
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsReadOnly
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: this[]
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Prepend
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrependRange
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -482,7 +482,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contains
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -519,7 +519,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CopyTo
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -557,7 +557,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnumerator
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -591,7 +591,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexOf
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -628,7 +628,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Insert
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -666,7 +666,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remove
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -703,7 +703,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveAt
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -739,7 +739,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplaceAll
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -774,7 +774,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToList
     path: ../../src/Meridian.Ui.Services/Collections/BoundedObservableCollection.cs
@@ -975,7 +975,7 @@ references:
   - name: T
   - name: )
 - uid: System.Collections.Generic.IEnumerable{{T}}
-  commentId: T:System.Collections.Generic.IEnumerable{`0}
+  commentId: T:System.Collections.Generic.IEnumerable{``0}
   parent: System.Collections.Generic
   definition: System.Collections.Generic.IEnumerable`1
   href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1

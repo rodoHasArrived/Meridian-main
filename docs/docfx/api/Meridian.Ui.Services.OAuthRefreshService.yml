@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OAuthRefreshService
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RefreshThresholdMinutes
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalMs
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TokenRefreshed
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TokenRefreshFailed
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TokenExpirationWarning
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stop
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTokenStatuses
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -334,7 +334,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RefreshTokenAsync
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetAutoRefreshAsync
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs

@@ -32,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IReadOnlyLedger
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Journal
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryCount
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalLedgerEntryCount
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEntries
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEntries
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalance
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -300,7 +300,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBalanceAsOf
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasAccount
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalEntries
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -408,7 +408,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJournalEntries
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -441,7 +441,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountSummary
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -474,7 +474,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SummarizeAccounts
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -512,7 +512,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -548,7 +548,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalanceAsOf
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -586,7 +586,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunningBalance
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs
@@ -623,7 +623,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/IReadOnlyLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnapshotAsOf
     path: ../../src/Meridian.Ledger/IReadOnlyLedger.cs

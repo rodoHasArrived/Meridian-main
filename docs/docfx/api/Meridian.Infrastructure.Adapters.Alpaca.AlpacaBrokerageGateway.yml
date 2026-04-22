@@ -31,11 +31,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaBrokerageGateway
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 33
+    startLine: 36
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -56,6 +56,11 @@ items:
 
     - Supports extended hours trading
 
+    - Supports US equities and fixed income (US Treasuries, corporate bonds)
+
+    - Fixed income orders may use notional sizing: set Metadata["notional"] = "true" on the OrderRequest
+      and pass the dollar amount as Quantity. Optionally set Metadata["asset_class"] = "us_treasury"
+      to route treasury orders explicitly.
     - Rate limit: 200 req/min
   example: []
   syntax:
@@ -157,11 +162,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 51
+    startLine: 54
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -193,11 +198,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 71
+    startLine: 74
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -226,11 +231,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 74
+    startLine: 77
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -259,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 77
+    startLine: 80
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -292,11 +297,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 80
+    startLine: 83
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -325,11 +330,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 91
+    startLine: 94
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -360,11 +365,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 108
+    startLine: 111
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -395,11 +400,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 116
+    startLine: 119
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -432,11 +437,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 183
+    startLine: 194
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -472,11 +477,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 230
+    startLine: 241
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -514,11 +519,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 269
+    startLine: 280
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -549,11 +554,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 279
+    startLine: 290
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -584,11 +589,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 300
+    startLine: 311
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -619,11 +624,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 325
+    startLine: 339
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -654,11 +659,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 354
+    startLine: 368
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -692,11 +697,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs
-    startLine: 373
+    startLine: 387
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca

@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticSystemMetrics
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CpuUsagePercent
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryUsedBytes
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MemoryTotalBytes
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiskUsagePercent
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveConnections
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSubscriptions
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsPerSecond
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsProcessed
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uptime
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs

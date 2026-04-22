@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegTMarginModel
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModelName
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongInitialRate
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMaintenanceRate
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortInitialRate
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMaintenanceRate
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculateForPosition
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Margin/RegTMarginModel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatePortfolioRequirement
     path: ../../src/Meridian.Execution/Margin/RegTMarginModel.cs

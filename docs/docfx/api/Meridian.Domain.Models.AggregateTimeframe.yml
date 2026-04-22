@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/AggregateBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregateTimeframe
     path: ../../src/Meridian.Domain/Models/AggregateBar.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/AggregateBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Second
     path: ../../src/Meridian.Domain/Models/AggregateBar.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/AggregateBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minute
     path: ../../src/Meridian.Domain/Models/AggregateBar.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/AggregateBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hour
     path: ../../src/Meridian.Domain/Models/AggregateBar.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Models/AggregateBar.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Day
     path: ../../src/Meridian.Domain/Models/AggregateBar.cs

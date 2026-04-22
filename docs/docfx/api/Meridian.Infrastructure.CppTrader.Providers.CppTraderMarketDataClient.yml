@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderMarketDataClient
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -346,7 +346,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
@@ -382,7 +382,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Providers/CppTraderMarketDataClient.cs

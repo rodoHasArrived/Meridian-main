@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanSymbolMappingResult
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 630
+    startLine: 641
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -51,11 +51,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mappings
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 632
+    startLine: 643
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -80,11 +80,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Total
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 633
+    startLine: 644
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

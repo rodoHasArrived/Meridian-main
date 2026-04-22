@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureSettings
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeReturns
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReturnHorizons
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseLogReturns
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeRollingStats
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RollingWindows
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeTechnicalIndicators
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TechnicalIndicators
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeMicrostructure
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -404,7 +404,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normalization
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs

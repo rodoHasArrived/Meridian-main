@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertRunbookRegistry
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByAlertName
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRunbookUrl
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBySeverity
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnrichWithRunbook
     path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs

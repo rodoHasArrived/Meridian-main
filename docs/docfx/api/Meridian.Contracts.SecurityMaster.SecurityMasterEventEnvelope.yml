@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterEventEnvelope
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalSequence
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamVersion
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTimestamp
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Actor
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -286,7 +286,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrelationId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -315,7 +315,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CausationId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Payload
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs

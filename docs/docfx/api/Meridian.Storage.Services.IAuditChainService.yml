@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/AuditChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAuditChainService
     path: ../../src/Meridian.Storage/Services/AuditChainService.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/AuditChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendEntryAsync
     path: ../../src/Meridian.Storage/Services/AuditChainService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/AuditChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyChainAsync
     path: ../../src/Meridian.Storage/Services/AuditChainService.cs

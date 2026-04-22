@@ -35,7 +35,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityEvent
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedSequence
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualSequence
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -303,7 +303,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapSize
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -332,7 +332,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StaleDuration
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastEventTime
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -390,7 +390,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedField
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -419,7 +419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationReason
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -448,7 +448,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromProvider
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -477,7 +477,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToProvider
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -506,7 +506,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAcknowledged
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -535,7 +535,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcknowledgedAt
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -564,7 +564,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativeTime
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -595,7 +595,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IconGlyph
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
@@ -626,7 +626,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SeverityColor
     path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs

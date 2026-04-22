@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectLedgerBook
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectId
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerKeys
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrCreate
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetLedger
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilteredSnapshot
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilteredLedgerKeys
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -333,7 +333,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedTrialBalance
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -375,7 +375,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedSnapshotAsOf
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -419,7 +419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedJournalEntries
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs
@@ -461,7 +461,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/ProjectLedgerBook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsolidatedAccountSummaries
     path: ../../src/Meridian.Ledger/ProjectLedgerBook.cs

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThreadingUtilities
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetHighPriority
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetAboveNormalPriority
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrySetThreadAffinity
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrySetProcessAffinity
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrySetProcessHighPriority
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YieldProcessor
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpinWait
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentThreadId
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -332,7 +332,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryStartNoGCRegion
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
@@ -371,7 +371,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndNoGCRegion
     path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs

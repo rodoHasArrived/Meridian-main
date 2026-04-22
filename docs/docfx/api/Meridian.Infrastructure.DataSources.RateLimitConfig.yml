@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitConfig
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentRequests
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowSeconds
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDelayBetweenRequestsMs
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToOptions
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs

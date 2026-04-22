@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMessagingService
     path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Subscribe
     path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unsubscribe
     path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Publish
     path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs

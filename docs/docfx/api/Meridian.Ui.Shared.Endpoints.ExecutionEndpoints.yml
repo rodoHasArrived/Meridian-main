@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 16
+    startLine: 17
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapExecutionEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 18
+    startLine: 19
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

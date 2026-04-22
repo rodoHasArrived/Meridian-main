@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataOutlier
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Index
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldName
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ZScore
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedRange
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs

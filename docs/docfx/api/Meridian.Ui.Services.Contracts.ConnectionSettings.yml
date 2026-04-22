@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionSettings
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoReconnectEnabled
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectAttempts
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitialReconnectDelayMs
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxReconnectDelayMs
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckIntervalSeconds
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceTimeoutSeconds
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs

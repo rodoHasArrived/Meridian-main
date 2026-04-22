@@ -14,14 +14,14 @@ items:
   - Meridian.Contracts.Configuration.BackfillProviderStatusDto
   - Meridian.Contracts.Configuration.BackfillProvidersConfigDto
   - Meridian.Contracts.Configuration.BackfillSymbolPlanDto
-  - Meridian.Contracts.Configuration.CQGOptionsDto
   - Meridian.Contracts.Configuration.DataSourceConfigDto
   - Meridian.Contracts.Configuration.DataSourcesConfigDto
   - Meridian.Contracts.Configuration.DerivativesConfigDto
   - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  - Meridian.Contracts.Configuration.IBClientPortalOptionsDto
   - Meridian.Contracts.Configuration.IBOptionsDto
-  - Meridian.Contracts.Configuration.IQFeedOptionsDto
   - Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  - Meridian.Contracts.Configuration.MeridianPathDefaults
   - Meridian.Contracts.Configuration.PolygonOptionsDto
   - Meridian.Contracts.Configuration.ProviderBindingConfigDto
   - Meridian.Contracts.Configuration.ProviderCertificationConfigDto
@@ -31,10 +31,7 @@ items:
   - Meridian.Contracts.Configuration.ProviderPolicyConfigDto
   - Meridian.Contracts.Configuration.ProviderPresetConfigDto
   - Meridian.Contracts.Configuration.ProviderScopeDto
-  - Meridian.Contracts.Configuration.RithmicOptionsDto
   - Meridian.Contracts.Configuration.SmartGroupCriteriaDto
-  - Meridian.Contracts.Configuration.StockSharpIBOptionsDto
-  - Meridian.Contracts.Configuration.StockSharpOptionsDto
   - Meridian.Contracts.Configuration.StorageConfigDto
   - Meridian.Contracts.Configuration.SymbolConfig
   - Meridian.Contracts.Configuration.SymbolConfigDto
@@ -64,41 +61,6 @@ references:
   name: AlpacaOptionsDto
   nameWithType: AlpacaOptionsDto
   fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
-- uid: Meridian.Contracts.Configuration.StockSharpOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.StockSharpOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.StockSharpOptionsDto.html
-  name: StockSharpOptionsDto
-  nameWithType: StockSharpOptionsDto
-  fullName: Meridian.Contracts.Configuration.StockSharpOptionsDto
-- uid: Meridian.Contracts.Configuration.RithmicOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.RithmicOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.RithmicOptionsDto.html
-  name: RithmicOptionsDto
-  nameWithType: RithmicOptionsDto
-  fullName: Meridian.Contracts.Configuration.RithmicOptionsDto
-- uid: Meridian.Contracts.Configuration.IQFeedOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.IQFeedOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.IQFeedOptionsDto.html
-  name: IQFeedOptionsDto
-  nameWithType: IQFeedOptionsDto
-  fullName: Meridian.Contracts.Configuration.IQFeedOptionsDto
-- uid: Meridian.Contracts.Configuration.CQGOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.CQGOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.CQGOptionsDto.html
-  name: CQGOptionsDto
-  nameWithType: CQGOptionsDto
-  fullName: Meridian.Contracts.Configuration.CQGOptionsDto
-- uid: Meridian.Contracts.Configuration.StockSharpIBOptionsDto
-  commentId: T:Meridian.Contracts.Configuration.StockSharpIBOptionsDto
-  parent: Meridian.Contracts.Configuration
-  href: Meridian.Contracts.Configuration.StockSharpIBOptionsDto.html
-  name: StockSharpIBOptionsDto
-  nameWithType: StockSharpIBOptionsDto
-  fullName: Meridian.Contracts.Configuration.StockSharpIBOptionsDto
 - uid: Meridian.Contracts.Configuration.StorageConfigDto
   commentId: T:Meridian.Contracts.Configuration.StorageConfigDto
   parent: Meridian.Contracts.Configuration
@@ -193,6 +155,13 @@ references:
   name: IBOptionsDto
   nameWithType: IBOptionsDto
   fullName: Meridian.Contracts.Configuration.IBOptionsDto
+- uid: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBClientPortalOptionsDto.html
+  name: IBClientPortalOptionsDto
+  nameWithType: IBClientPortalOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
 - uid: Meridian.Contracts.Configuration.SymbolGroupsConfigDto
   commentId: T:Meridian.Contracts.Configuration.SymbolGroupsConfigDto
   parent: Meridian.Contracts.Configuration
@@ -241,44 +210,44 @@ references:
   name: IndexOptionsConfigDto
   nameWithType: IndexOptionsConfigDto
   fullName: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+- uid: Meridian.Contracts.Configuration.MeridianPathDefaults
+  commentId: T:Meridian.Contracts.Configuration.MeridianPathDefaults
+  href: Meridian.Contracts.Configuration.MeridianPathDefaults.html
+  name: MeridianPathDefaults
+  nameWithType: MeridianPathDefaults
+  fullName: Meridian.Contracts.Configuration.MeridianPathDefaults
 - uid: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
   commentId: T:Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
-  parent: Meridian.Contracts.Configuration
   href: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto.html
   name: ProviderConnectionsConfigDto
   nameWithType: ProviderConnectionsConfigDto
   fullName: Meridian.Contracts.Configuration.ProviderConnectionsConfigDto
 - uid: Meridian.Contracts.Configuration.ProviderConnectionConfigDto
   commentId: T:Meridian.Contracts.Configuration.ProviderConnectionConfigDto
-  parent: Meridian.Contracts.Configuration
   href: Meridian.Contracts.Configuration.ProviderConnectionConfigDto.html
   name: ProviderConnectionConfigDto
   nameWithType: ProviderConnectionConfigDto
   fullName: Meridian.Contracts.Configuration.ProviderConnectionConfigDto
 - uid: Meridian.Contracts.Configuration.ProviderBindingConfigDto
   commentId: T:Meridian.Contracts.Configuration.ProviderBindingConfigDto
-  parent: Meridian.Contracts.Configuration
   href: Meridian.Contracts.Configuration.ProviderBindingConfigDto.html
   name: ProviderBindingConfigDto
   nameWithType: ProviderBindingConfigDto
   fullName: Meridian.Contracts.Configuration.ProviderBindingConfigDto
 - uid: Meridian.Contracts.Configuration.ProviderPolicyConfigDto
   commentId: T:Meridian.Contracts.Configuration.ProviderPolicyConfigDto
-  parent: Meridian.Contracts.Configuration
   href: Meridian.Contracts.Configuration.ProviderPolicyConfigDto.html
   name: ProviderPolicyConfigDto
   nameWithType: ProviderPolicyConfigDto
   fullName: Meridian.Contracts.Configuration.ProviderPolicyConfigDto
 - uid: Meridian.Contracts.Configuration.ProviderPresetConfigDto
   commentId: T:Meridian.Contracts.Configuration.ProviderPresetConfigDto
-  parent: Meridian.Contracts.Configuration
   href: Meridian.Contracts.Configuration.ProviderPresetConfigDto.html
   name: ProviderPresetConfigDto
   nameWithType: ProviderPresetConfigDto
   fullName: Meridian.Contracts.Configuration.ProviderPresetConfigDto
 - uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
   commentId: T:Meridian.Contracts.Configuration.ProviderCertificationConfigDto
-  parent: Meridian.Contracts.Configuration
   href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html
   name: ProviderCertificationConfigDto
   nameWithType: ProviderCertificationConfigDto

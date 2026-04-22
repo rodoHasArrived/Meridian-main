@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigValidationResultDetail
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
     path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs

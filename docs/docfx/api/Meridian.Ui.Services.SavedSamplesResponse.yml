@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedSamplesResponse
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Samples
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs

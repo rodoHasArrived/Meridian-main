@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenancePriority
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Normal
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Background
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs

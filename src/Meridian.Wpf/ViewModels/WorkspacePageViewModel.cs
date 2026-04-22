@@ -440,7 +440,24 @@ public sealed class WorkspacePageViewModel : BindableBase, IDisposable
 
     private void OnWorkspaceChanged(object? sender, Meridian.Ui.Services.WorkspaceEventArgs e)
     {
-        _ = RefreshFromServiceAsync();
+        _ = HandleWorkspaceChangedAsync();
+    }
+
+    private async Task HandleWorkspaceChangedAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            await RefreshFromServiceAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to refresh workspace page after workspace change", ex);
+        }
     }
 
     private async Task RefreshFromServiceAsync()

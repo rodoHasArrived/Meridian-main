@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlaState
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Violation
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoData
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutsideMarketHours
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs

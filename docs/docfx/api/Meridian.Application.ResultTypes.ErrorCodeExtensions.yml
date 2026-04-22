@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorCodeExtensions
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCategory
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTransient
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToExitCode
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromException
     path: ../../src/Meridian.Application/Results/ErrorCode.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Results/ErrorCode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToHttpStatusCode
     path: ../../src/Meridian.Application/Results/ErrorCode.cs

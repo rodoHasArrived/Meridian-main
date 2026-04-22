@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterImportService
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-    startLine: 30
+    startLine: 31
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster
@@ -33,6 +33,7 @@ items:
     content: public interface ISecurityMasterImportService
     content.vb: Public Interface ISecurityMasterImportService
   derivedClasses:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterImportService
   - Meridian.Application.SecurityMaster.SecurityMasterImportService
 - uid: Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
   commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
@@ -48,11 +49,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-    startLine: 40
+    startLine: 41
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster

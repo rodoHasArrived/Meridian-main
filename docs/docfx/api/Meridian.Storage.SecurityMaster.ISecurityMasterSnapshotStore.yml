@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterSnapshotStore
     path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAsync
     path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
     path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs

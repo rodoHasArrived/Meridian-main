@@ -5,7 +5,7 @@ items:
   id: StrategyRunSummary
   parent: Meridian.Contracts.Workstation
   children:
-  - Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)
+  - Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String,System.String)
   - Meridian.Contracts.Workstation.StrategyRunSummary.AuditReference
   - Meridian.Contracts.Workstation.StrategyRunSummary.CompletedAt
   - Meridian.Contracts.Workstation.StrategyRunSummary.DatasetReference
@@ -21,6 +21,7 @@ items:
   - Meridian.Contracts.Workstation.StrategyRunSummary.LedgerReference
   - Meridian.Contracts.Workstation.StrategyRunSummary.Mode
   - Meridian.Contracts.Workstation.StrategyRunSummary.NetPnl
+  - Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId
   - Meridian.Contracts.Workstation.StrategyRunSummary.PortfolioId
   - Meridian.Contracts.Workstation.StrategyRunSummary.Promotion
   - Meridian.Contracts.Workstation.StrategyRunSummary.RunId
@@ -39,7 +40,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunSummary
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -63,21 +64,21 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)
-  commentId: M:Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)
-  id: '#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String)'
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Workstation.StrategyRunSummary.#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunEngine,Meridian.Contracts.Workstation.StrategyRunStatus,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int32,System.DateTimeOffset,System.String,Meridian.Contracts.Workstation.StrategyRunExecutionSummary,Meridian.Contracts.Workstation.StrategyRunPromotionSummary,Meridian.Contracts.Workstation.StrategyRunGovernanceSummary,System.String,System.String,System.String)'
   parent: Meridian.Contracts.Workstation.StrategyRunSummary
   langs:
   - csharp
   - vb
-  name: StrategyRunSummary(string, string, string, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, DateTimeOffset, string?, StrategyRunExecutionSummary?, StrategyRunPromotionSummary?, StrategyRunGovernanceSummary?, string?, string?)
-  nameWithType: StrategyRunSummary.StrategyRunSummary(string, string, string, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, DateTimeOffset, string?, StrategyRunExecutionSummary?, StrategyRunPromotionSummary?, StrategyRunGovernanceSummary?, string?, string?)
-  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyRunSummary(string, string, string, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Contracts.Workstation.StrategyRunStatus, System.DateTimeOffset, System.DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, System.DateTimeOffset, string?, Meridian.Contracts.Workstation.StrategyRunExecutionSummary?, Meridian.Contracts.Workstation.StrategyRunPromotionSummary?, Meridian.Contracts.Workstation.StrategyRunGovernanceSummary?, string?, string?)
+  name: StrategyRunSummary(string, string, string, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, DateTimeOffset, string?, StrategyRunExecutionSummary?, StrategyRunPromotionSummary?, StrategyRunGovernanceSummary?, string?, string?, string?)
+  nameWithType: StrategyRunSummary.StrategyRunSummary(string, string, string, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, DateTimeOffset, string?, StrategyRunExecutionSummary?, StrategyRunPromotionSummary?, StrategyRunGovernanceSummary?, string?, string?, string?)
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyRunSummary(string, string, string, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Contracts.Workstation.StrategyRunStatus, System.DateTimeOffset, System.DateTimeOffset?, string?, string?, string?, string?, decimal?, decimal?, decimal?, int, System.DateTimeOffset, string?, Meridian.Contracts.Workstation.StrategyRunExecutionSummary?, Meridian.Contracts.Workstation.StrategyRunPromotionSummary?, Meridian.Contracts.Workstation.StrategyRunGovernanceSummary?, string?, string?, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -88,7 +89,7 @@ items:
   summary: Summary row shown in a run browser or recent-run list.
   example: []
   syntax:
-    content: public StrategyRunSummary(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, string? DatasetReference, string? FeedReference, string? PortfolioId, string? LedgerReference, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, int FillCount, DateTimeOffset LastUpdatedAt, string? AuditReference = null, StrategyRunExecutionSummary? Execution = null, StrategyRunPromotionSummary? Promotion = null, StrategyRunGovernanceSummary? Governance = null, string? FundProfileId = null, string? FundDisplayName = null)
+    content: public StrategyRunSummary(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, string? DatasetReference, string? FeedReference, string? PortfolioId, string? LedgerReference, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, int FillCount, DateTimeOffset LastUpdatedAt, string? AuditReference = null, StrategyRunExecutionSummary? Execution = null, StrategyRunPromotionSummary? Promotion = null, StrategyRunGovernanceSummary? Governance = null, string? FundProfileId = null, string? FundDisplayName = null, string? ParentRunId = null)
     parameters:
     - id: RunId
       type: System.String
@@ -136,11 +137,13 @@ items:
       type: System.String
     - id: FundDisplayName
       type: System.String
-    content.vb: Public Sub New(RunId As String, StrategyId As String, StrategyName As String, Mode As StrategyRunMode, Engine As StrategyRunEngine, Status As StrategyRunStatus, StartedAt As DateTimeOffset, CompletedAt As DateTimeOffset?, DatasetReference As String, FeedReference As String, PortfolioId As String, LedgerReference As String, NetPnl As Decimal?, TotalReturn As Decimal?, FinalEquity As Decimal?, FillCount As Integer, LastUpdatedAt As DateTimeOffset, AuditReference As String = Nothing, Execution As StrategyRunExecutionSummary = Nothing, Promotion As StrategyRunPromotionSummary = Nothing, Governance As StrategyRunGovernanceSummary = Nothing, FundProfileId As String = Nothing, FundDisplayName As String = Nothing)
+    - id: ParentRunId
+      type: System.String
+    content.vb: Public Sub New(RunId As String, StrategyId As String, StrategyName As String, Mode As StrategyRunMode, Engine As StrategyRunEngine, Status As StrategyRunStatus, StartedAt As DateTimeOffset, CompletedAt As DateTimeOffset?, DatasetReference As String, FeedReference As String, PortfolioId As String, LedgerReference As String, NetPnl As Decimal?, TotalReturn As Decimal?, FinalEquity As Decimal?, FillCount As Integer, LastUpdatedAt As DateTimeOffset, AuditReference As String = Nothing, Execution As StrategyRunExecutionSummary = Nothing, Promotion As StrategyRunPromotionSummary = Nothing, Governance As StrategyRunGovernanceSummary = Nothing, FundProfileId As String = Nothing, FundDisplayName As String = Nothing, ParentRunId As String = Nothing)
   overload: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor*
-  nameWithType.vb: StrategyRunSummary.New(String, String, String, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, DateTimeOffset, String, StrategyRunExecutionSummary, StrategyRunPromotionSummary, StrategyRunGovernanceSummary, String, String)
-  fullName.vb: Meridian.Contracts.Workstation.StrategyRunSummary.New(String, String, String, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Contracts.Workstation.StrategyRunStatus, System.DateTimeOffset, System.DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, System.DateTimeOffset, String, Meridian.Contracts.Workstation.StrategyRunExecutionSummary, Meridian.Contracts.Workstation.StrategyRunPromotionSummary, Meridian.Contracts.Workstation.StrategyRunGovernanceSummary, String, String)
-  name.vb: New(String, String, String, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, DateTimeOffset, String, StrategyRunExecutionSummary, StrategyRunPromotionSummary, StrategyRunGovernanceSummary, String, String)
+  nameWithType.vb: StrategyRunSummary.New(String, String, String, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, DateTimeOffset, String, StrategyRunExecutionSummary, StrategyRunPromotionSummary, StrategyRunGovernanceSummary, String, String, String)
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunSummary.New(String, String, String, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunEngine, Meridian.Contracts.Workstation.StrategyRunStatus, System.DateTimeOffset, System.DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, System.DateTimeOffset, String, Meridian.Contracts.Workstation.StrategyRunExecutionSummary, Meridian.Contracts.Workstation.StrategyRunPromotionSummary, Meridian.Contracts.Workstation.StrategyRunGovernanceSummary, String, String, String)
+  name.vb: New(String, String, String, StrategyRunMode, StrategyRunEngine, StrategyRunStatus, DateTimeOffset, DateTimeOffset?, String, String, String, String, Decimal?, Decimal?, Decimal?, Integer, DateTimeOffset, String, StrategyRunExecutionSummary, StrategyRunPromotionSummary, StrategyRunGovernanceSummary, String, String, String)
 - uid: Meridian.Contracts.Workstation.StrategyRunSummary.RunId
   commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.RunId
   id: RunId
@@ -155,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -184,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -213,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyName
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -242,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -271,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Engine
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -300,7 +303,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -329,7 +332,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -358,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -387,7 +390,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatasetReference
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -416,7 +419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeedReference
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -445,7 +448,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -474,7 +477,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReference
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -503,7 +506,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetPnl
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -532,7 +535,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalReturn
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -561,7 +564,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinalEquity
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -590,7 +593,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -619,7 +622,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdatedAt
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -648,7 +651,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditReference
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -677,7 +680,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Execution
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -706,7 +709,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Promotion
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -735,7 +738,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Governance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -764,7 +767,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -793,7 +796,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundDisplayName
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -808,6 +811,35 @@ items:
       type: System.String
     content.vb: Public Property FundDisplayName As String
   overload: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName*
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId
+  id: ParentRunId
+  parent: Meridian.Contracts.Workstation.StrategyRunSummary
+  langs:
+  - csharp
+  - vb
+  name: ParentRunId
+  nameWithType: StrategyRunSummary.ParentRunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParentRunId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? ParentRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ParentRunId As String
+  overload: Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId*
 references:
 - uid: Meridian.Contracts.Workstation
   commentId: N:Meridian.Contracts.Workstation
@@ -1115,7 +1147,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Workstation.StrategyRunSummary.#ctor*
   commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.#ctor
-  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary__ctor_System_String_System_String_System_String_Meridian_Contracts_Workstation_StrategyRunMode_Meridian_Contracts_Workstation_StrategyRunEngine_Meridian_Contracts_Workstation_StrategyRunStatus_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_System_String_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Int32_System_DateTimeOffset_System_String_Meridian_Contracts_Workstation_StrategyRunExecutionSummary_Meridian_Contracts_Workstation_StrategyRunPromotionSummary_Meridian_Contracts_Workstation_StrategyRunGovernanceSummary_System_String_System_String_
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary__ctor_System_String_System_String_System_String_Meridian_Contracts_Workstation_StrategyRunMode_Meridian_Contracts_Workstation_StrategyRunEngine_Meridian_Contracts_Workstation_StrategyRunStatus_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_System_String_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Int32_System_DateTimeOffset_System_String_Meridian_Contracts_Workstation_StrategyRunExecutionSummary_Meridian_Contracts_Workstation_StrategyRunPromotionSummary_Meridian_Contracts_Workstation_StrategyRunGovernanceSummary_System_String_System_String_System_String_
   name: StrategyRunSummary
   nameWithType: StrategyRunSummary.StrategyRunSummary
   fullName: Meridian.Contracts.Workstation.StrategyRunSummary.StrategyRunSummary
@@ -1403,3 +1435,9 @@ references:
   name: FundDisplayName
   nameWithType: StrategyRunSummary.FundDisplayName
   fullName: Meridian.Contracts.Workstation.StrategyRunSummary.FundDisplayName
+- uid: Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId
+  href: Meridian.Contracts.Workstation.StrategyRunSummary.html#Meridian_Contracts_Workstation_StrategyRunSummary_ParentRunId
+  name: ParentRunId
+  nameWithType: StrategyRunSummary.ParentRunId
+  fullName: Meridian.Contracts.Workstation.StrategyRunSummary.ParentRunId

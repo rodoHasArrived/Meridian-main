@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedStartupHelpers
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 93
+    startLine: 103
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveConfigPath
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 101
+    startLine: 111
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -93,11 +93,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfigMinimal
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 116
+    startLine: 126
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -129,11 +129,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveDeployment
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 166
+    startLine: 178
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -167,11 +167,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnsureDefaultSymbols
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 172
+    startLine: 184
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -200,11 +200,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildBackfillRequest
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 184
+    startLine: 196
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup

@@ -35,11 +35,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositionOptions
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 216
+    startLine: 212
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -73,11 +73,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 221
+    startLine: 217
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -104,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Minimal
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 239
+    startLine: 235
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -135,11 +135,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebDashboard
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 256
+    startLine: 252
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -166,11 +166,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streaming
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 274
+    startLine: 270
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -197,11 +197,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillOnly
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 292
+    startLine: 288
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -228,11 +228,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: McpServer
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 310
+    startLine: 306
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -262,11 +262,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 328
+    startLine: 324
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -293,11 +293,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataRoot
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 333
+    startLine: 329
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -324,11 +324,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableSymbolManagement
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 335
+    startLine: 331
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -353,11 +353,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableBackfillServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 336
+    startLine: 332
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -382,11 +382,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableEtlServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 337
+    startLine: 333
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -411,11 +411,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableMaintenanceServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 338
+    startLine: 334
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -440,11 +440,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableDiagnosticServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 339
+    startLine: 335
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -469,11 +469,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableCredentialServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 340
+    startLine: 336
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -498,11 +498,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableProviderServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 341
+    startLine: 337
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -527,11 +527,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnablePipelineServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 342
+    startLine: 338
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -556,11 +556,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableCollectorServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 343
+    startLine: 339
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -585,11 +585,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableHttpClientFactory
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 344
+    startLine: 340
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -614,11 +614,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableCanonicalizationServices
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 345
+    startLine: 341
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -643,11 +643,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableOpenTelemetry
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 350
+    startLine: 346
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition

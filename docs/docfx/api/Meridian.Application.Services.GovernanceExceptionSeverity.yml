@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GovernanceExceptionSeverity
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Info
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Medium
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GovernanceExceptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Critical
     path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs

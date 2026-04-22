@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKindConverter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceKindConverter
     path: ../../src/Meridian.Core/Config/DataSourceKindConverter.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKindConverter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Read
     path: ../../src/Meridian.Core/Config/DataSourceKindConverter.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKindConverter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Write
     path: ../../src/Meridian.Core/Config/DataSourceKindConverter.cs

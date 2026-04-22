@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlPositionSnapshotStore
     path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-    startLine: 20
+    startLine: 21
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -111,11 +111,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-    startLine: 32
+    startLine: 33
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -145,11 +145,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSnapshotAsync
     path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-    startLine: 42
+    startLine: 43
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -182,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLatestSnapshotAsync
     path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-    startLine: 71
+    startLine: 68
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -227,11 +227,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotHistoryAsync
     path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
-    startLine: 100
+    startLine: 97
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventPipelinePolicy
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capacity
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullMode
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableMetrics
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighThroughput
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageBuffer
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -305,7 +305,7 @@ items:
   - Meridian.Core
   namespace: Meridian.Application.Pipeline
   summary: >-
-    Policy for internal message buffering channels (e.g., StockSharp message buffer).
+    Policy for internal message buffering channels used by provider adapters.
 
     Moderate capacity (50k), drops oldest on overflow, metrics disabled for performance.
   example: []
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceQueue
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -364,7 +364,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Logging
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -398,7 +398,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletionQueue
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -434,7 +434,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateChannel
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
@@ -490,7 +490,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToBoundedOptions
     path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs

@@ -69,14 +69,6 @@ public sealed partial class WorkstationOperatingContextService
         }
 
         var targetKey = LastSelectedOperatingContextKey;
-        if (string.IsNullOrWhiteSpace(targetKey) &&
-            !string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId))
-        {
-            targetKey = WorkstationOperatingContext.CreateContextKey(
-                OperatingContextScopeKind.Fund,
-                _fundContextService.LastSelectedFundProfileId!);
-        }
-
         if (!string.IsNullOrWhiteSpace(targetKey))
         {
             await SelectContextAsync(targetKey, raiseChanging: false, raiseChanged: false, ct: ct).ConfigureAwait(false);

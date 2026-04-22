@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportValidator
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateAsync
     path: ../../src/Meridian.Storage/Export/ExportValidator.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITradingParametersBackfillService
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
@@ -34,6 +34,7 @@ items:
     content: public interface ITradingParametersBackfillService
     content.vb: Public Interface ITradingParametersBackfillService
   derivedClasses:
+  - Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
   - Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
 - uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
@@ -49,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillAllAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
@@ -82,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTickerAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs

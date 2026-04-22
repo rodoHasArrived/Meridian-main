@@ -1,0 +1,918 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  id: StrategyRunCashFlowDigest
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.#ctor(System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Decimal})
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunCashFlowDigest
+  nameWithType: StrategyRunCashFlowDigest
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunCashFlowDigest
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Compact cash-flow digest attached to a continuity drill-in.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyRunCashFlowDigest : IEquatable<StrategyRunCashFlowDigest>'
+    content.vb: Public NotInheritable Class StrategyRunCashFlowDigest Implements IEquatable(Of StrategyRunCashFlowDigest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.StrategyRunCashFlowDigest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.#ctor(System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Decimal})
+  commentId: M:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.#ctor(System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Decimal})
+  id: '#ctor(System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.Decimal})'
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunCashFlowDigest(DateTimeOffset, string, int, decimal, decimal, decimal, decimal, int, DateTimeOffset?, DateTimeOffset?, decimal?)
+  nameWithType: StrategyRunCashFlowDigest.StrategyRunCashFlowDigest(DateTimeOffset, string, int, decimal, decimal, decimal, decimal, int, DateTimeOffset?, DateTimeOffset?, decimal?)
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.StrategyRunCashFlowDigest(System.DateTimeOffset, string, int, decimal, decimal, decimal, decimal, int, System.DateTimeOffset?, System.DateTimeOffset?, decimal?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Compact cash-flow digest attached to a continuity drill-in.
+  example: []
+  syntax:
+    content: public StrategyRunCashFlowDigest(DateTimeOffset AsOf, string Currency, int TotalEntries, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, decimal ProjectedNetPosition, int BucketCount, DateTimeOffset? NextBucketStart = null, DateTimeOffset? NextBucketEnd = null, decimal? NextBucketNetFlow = null)
+    parameters:
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: Currency
+      type: System.String
+    - id: TotalEntries
+      type: System.Int32
+    - id: TotalInflows
+      type: System.Decimal
+    - id: TotalOutflows
+      type: System.Decimal
+    - id: NetCashFlow
+      type: System.Decimal
+    - id: ProjectedNetPosition
+      type: System.Decimal
+    - id: BucketCount
+      type: System.Int32
+    - id: NextBucketStart
+      type: System.Nullable{System.DateTimeOffset}
+    - id: NextBucketEnd
+      type: System.Nullable{System.DateTimeOffset}
+    - id: NextBucketNetFlow
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub New(AsOf As DateTimeOffset, Currency As String, TotalEntries As Integer, TotalInflows As Decimal, TotalOutflows As Decimal, NetCashFlow As Decimal, ProjectedNetPosition As Decimal, BucketCount As Integer, NextBucketStart As DateTimeOffset? = Nothing, NextBucketEnd As DateTimeOffset? = Nothing, NextBucketNetFlow As Decimal? = Nothing)
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.#ctor*
+  nameWithType.vb: StrategyRunCashFlowDigest.New(DateTimeOffset, String, Integer, Decimal, Decimal, Decimal, Decimal, Integer, DateTimeOffset?, DateTimeOffset?, Decimal?)
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.New(System.DateTimeOffset, String, Integer, Decimal, Decimal, Decimal, Decimal, Integer, System.DateTimeOffset?, System.DateTimeOffset?, Decimal?)
+  name.vb: New(DateTimeOffset, String, Integer, Decimal, Decimal, Decimal, Decimal, Integer, DateTimeOffset?, DateTimeOffset?, Decimal?)
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: StrategyRunCashFlowDigest.AsOf
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: StrategyRunCashFlowDigest.Currency
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 464
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries
+  id: TotalEntries
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: TotalEntries
+  nameWithType: StrategyRunCashFlowDigest.TotalEntries
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEntries
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int TotalEntries { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalEntries As Integer
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows
+  id: TotalInflows
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: TotalInflows
+  nameWithType: StrategyRunCashFlowDigest.TotalInflows
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalInflows
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 466
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalInflows As Decimal
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows
+  id: TotalOutflows
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: TotalOutflows
+  nameWithType: StrategyRunCashFlowDigest.TotalOutflows
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalOutflows
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 467
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalOutflows As Decimal
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow
+  id: NetCashFlow
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: NetCashFlow
+  nameWithType: StrategyRunCashFlowDigest.NetCashFlow
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetCashFlow
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 468
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetCashFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetCashFlow As Decimal
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition
+  id: ProjectedNetPosition
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: ProjectedNetPosition
+  nameWithType: StrategyRunCashFlowDigest.ProjectedNetPosition
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedNetPosition
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 469
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ProjectedNetPosition { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedNetPosition As Decimal
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount
+  id: BucketCount
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: BucketCount
+  nameWithType: StrategyRunCashFlowDigest.BucketCount
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BucketCount
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 470
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int BucketCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BucketCount As Integer
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart
+  id: NextBucketStart
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: NextBucketStart
+  nameWithType: StrategyRunCashFlowDigest.NextBucketStart
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextBucketStart
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 471
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? NextBucketStart { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property NextBucketStart As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd
+  id: NextBucketEnd
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: NextBucketEnd
+  nameWithType: StrategyRunCashFlowDigest.NextBucketEnd
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextBucketEnd
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 472
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? NextBucketEnd { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property NextBucketEnd As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd*
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow
+  commentId: P:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow
+  id: NextBucketNetFlow
+  parent: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  langs:
+  - csharp
+  - vb
+  name: NextBucketNetFlow
+  nameWithType: StrategyRunCashFlowDigest.NextBucketNetFlow
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextBucketNetFlow
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 473
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? NextBucketNetFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property NextBucketNetFlow As Decimal?
+  overload: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.StrategyRunCashFlowDigest}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.StrategyRunCashFlowDigest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyRunCashFlowDigest>
+  nameWithType: IEquatable<StrategyRunCashFlowDigest>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.StrategyRunCashFlowDigest>
+  nameWithType.vb: IEquatable(Of StrategyRunCashFlowDigest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.StrategyRunCashFlowDigest)
+  name.vb: IEquatable(Of StrategyRunCashFlowDigest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+    name: StrategyRunCashFlowDigest
+    href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+    name: StrategyRunCashFlowDigest
+    href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.#ctor
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest__ctor_System_DateTimeOffset_System_String_System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Int32_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Nullable_System_Decimal__
+  name: StrategyRunCashFlowDigest
+  nameWithType: StrategyRunCashFlowDigest.StrategyRunCashFlowDigest
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.StrategyRunCashFlowDigest
+  nameWithType.vb: StrategyRunCashFlowDigest.New
+  fullName.vb: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_AsOf
+  name: AsOf
+  nameWithType: StrategyRunCashFlowDigest.AsOf
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.AsOf
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_Currency
+  name: Currency
+  nameWithType: StrategyRunCashFlowDigest.Currency
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.Currency
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_TotalEntries
+  name: TotalEntries
+  nameWithType: StrategyRunCashFlowDigest.TotalEntries
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalEntries
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_TotalInflows
+  name: TotalInflows
+  nameWithType: StrategyRunCashFlowDigest.TotalInflows
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalInflows
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_TotalOutflows
+  name: TotalOutflows
+  nameWithType: StrategyRunCashFlowDigest.TotalOutflows
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.TotalOutflows
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_NetCashFlow
+  name: NetCashFlow
+  nameWithType: StrategyRunCashFlowDigest.NetCashFlow
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NetCashFlow
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_ProjectedNetPosition
+  name: ProjectedNetPosition
+  nameWithType: StrategyRunCashFlowDigest.ProjectedNetPosition
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.ProjectedNetPosition
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_BucketCount
+  name: BucketCount
+  nameWithType: StrategyRunCashFlowDigest.BucketCount
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.BucketCount
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_NextBucketStart
+  name: NextBucketStart
+  nameWithType: StrategyRunCashFlowDigest.NextBucketStart
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketStart
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_NextBucketEnd
+  name: NextBucketEnd
+  nameWithType: StrategyRunCashFlowDigest.NextBucketEnd
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketEnd
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow*
+  commentId: Overload:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html#Meridian_Contracts_Workstation_StrategyRunCashFlowDigest_NextBucketNetFlow
+  name: NextBucketNetFlow
+  nameWithType: StrategyRunCashFlowDigest.NextBucketNetFlow
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.NextBucketNetFlow

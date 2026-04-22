@@ -5,9 +5,10 @@ items:
   id: LegalEntitySummaryDto
   parent: Meridian.Contracts.FundStructure
   children:
-  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
   - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
   - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
   - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
   - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
   - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
@@ -25,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LegalEntitySummaryDto
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 176
+    startLine: 163
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -47,30 +48,30 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
-  commentId: M:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
-  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})'
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)'
   parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
   langs:
   - csharp
   - vb
-  name: LegalEntitySummaryDto(Guid, LegalEntityTypeDto, string, string, string, string, bool, DateTimeOffset, DateTimeOffset?)
-  nameWithType: LegalEntitySummaryDto.LegalEntitySummaryDto(Guid, LegalEntityTypeDto, string, string, string, string, bool, DateTimeOffset, DateTimeOffset?)
-  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.LegalEntitySummaryDto(System.Guid, Meridian.Contracts.FundStructure.LegalEntityTypeDto, string, string, string, string, bool, System.DateTimeOffset, System.DateTimeOffset?)
+  name: LegalEntitySummaryDto(Guid, LegalEntityTypeDto, string, string, string, string, bool, DateTimeOffset, DateTimeOffset?, string?)
+  nameWithType: LegalEntitySummaryDto.LegalEntitySummaryDto(Guid, LegalEntityTypeDto, string, string, string, string, bool, DateTimeOffset, DateTimeOffset?, string?)
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.LegalEntitySummaryDto(System.Guid, Meridian.Contracts.FundStructure.LegalEntityTypeDto, string, string, string, string, bool, System.DateTimeOffset, System.DateTimeOffset?, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 176
+    startLine: 163
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public LegalEntitySummaryDto(Guid EntityId, LegalEntityTypeDto EntityType, string Code, string Name, string Jurisdiction, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo)
+    content: public LegalEntitySummaryDto(Guid EntityId, LegalEntityTypeDto EntityType, string Code, string Name, string Jurisdiction, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? Description = null)
     parameters:
     - id: EntityId
       type: System.Guid
@@ -90,11 +91,13 @@ items:
       type: System.DateTimeOffset
     - id: EffectiveTo
       type: System.Nullable{System.DateTimeOffset}
-    content.vb: Public Sub New(EntityId As Guid, EntityType As LegalEntityTypeDto, Code As String, Name As String, Jurisdiction As String, BaseCurrency As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?)
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(EntityId As Guid, EntityType As LegalEntityTypeDto, Code As String, Name As String, Jurisdiction As String, BaseCurrency As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, Description As String = Nothing)
   overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor*
-  nameWithType.vb: LegalEntitySummaryDto.New(Guid, LegalEntityTypeDto, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?)
-  fullName.vb: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.New(System.Guid, Meridian.Contracts.FundStructure.LegalEntityTypeDto, String, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?)
-  name.vb: New(Guid, LegalEntityTypeDto, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?)
+  nameWithType.vb: LegalEntitySummaryDto.New(Guid, LegalEntityTypeDto, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String)
+  fullName.vb: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.New(System.Guid, Meridian.Contracts.FundStructure.LegalEntityTypeDto, String, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?, String)
+  name.vb: New(Guid, LegalEntityTypeDto, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String)
 - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
   commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
   id: EntityId
@@ -109,11 +112,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 177
+    startLine: 164
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -138,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityType
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 178
+    startLine: 165
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -167,11 +170,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Code
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 179
+    startLine: 166
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -196,11 +199,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 180
+    startLine: 167
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -225,11 +228,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Jurisdiction
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 181
+    startLine: 168
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -254,11 +257,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 182
+    startLine: 169
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -283,11 +286,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 183
+    startLine: 170
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -312,11 +315,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 184
+    startLine: 171
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -341,11 +344,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 185
+    startLine: 172
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -356,6 +359,35 @@ items:
       type: System.Nullable{System.DateTimeOffset}
     content.vb: Public Property EffectiveTo As DateTimeOffset?
   overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  id: Description
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: LegalEntitySummaryDto.Description
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description*
 references:
 - uid: Meridian.Contracts.FundStructure
   commentId: N:Meridian.Contracts.FundStructure
@@ -663,7 +695,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor*
   commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor
-  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto__ctor_System_Guid_Meridian_Contracts_FundStructure_LegalEntityTypeDto_System_String_System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto__ctor_System_Guid_Meridian_Contracts_FundStructure_LegalEntityTypeDto_System_String_System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_
   name: LegalEntitySummaryDto
   nameWithType: LegalEntitySummaryDto.LegalEntitySummaryDto
   fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.LegalEntitySummaryDto
@@ -817,3 +849,9 @@ references:
   name: EffectiveTo
   nameWithType: LegalEntitySummaryDto.EffectiveTo
   fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_Description
+  name: Description
+  nameWithType: LegalEntitySummaryDto.Description
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description

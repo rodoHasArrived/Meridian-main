@@ -1,0 +1,209 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+  commentId: T:Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+  id: IDecisionKernel`2
+  parent: Meridian.Contracts.RuleEvaluation
+  children:
+  - Meridian.Contracts.RuleEvaluation.IDecisionKernel`2.Evaluate(`0,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDecisionKernel<TInput, TScore>
+  nameWithType: IDecisionKernel<TInput, TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.IDecisionKernel<TInput, TScore>
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDecisionKernel
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  summary: Contract for rule kernels that evaluate a decision subject into a standardized envelope.
+  example: []
+  syntax:
+    content: public interface IDecisionKernel<in TInput, TScore>
+    typeParameters:
+    - id: TInput
+    - id: TScore
+    content.vb: Public Interface IDecisionKernel(Of In TInput, TScore)
+  nameWithType.vb: IDecisionKernel(Of TInput, TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.IDecisionKernel(Of TInput, TScore)
+  name.vb: IDecisionKernel(Of TInput, TScore)
+- uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2.Evaluate(`0,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.RuleEvaluation.IDecisionKernel`2.Evaluate(`0,System.Threading.CancellationToken)
+  id: Evaluate(`0,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2
+  langs:
+  - csharp
+  - vb
+  name: Evaluate(TInput, CancellationToken)
+  nameWithType: IDecisionKernel<TInput, TScore>.Evaluate(TInput, CancellationToken)
+  fullName: Meridian.Contracts.RuleEvaluation.IDecisionKernel<TInput, TScore>.Evaluate(TInput, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Evaluate
+    path: ../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.RuleEvaluation
+  syntax:
+    content: DecisionResult<TScore> Evaluate(TInput input, CancellationToken ct = default)
+    parameters:
+    - id: input
+      type: '{TInput}'
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionResult{{TScore}}
+    content.vb: Function Evaluate(input As TInput, ct As CancellationToken = Nothing) As DecisionResult(Of TScore)
+  overload: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2.Evaluate*
+  nameWithType.vb: IDecisionKernel(Of TInput, TScore).Evaluate(TInput, CancellationToken)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.IDecisionKernel(Of TInput, TScore).Evaluate(TInput, System.Threading.CancellationToken)
+references:
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  href: Meridian.html
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+- uid: Meridian.Contracts.RuleEvaluation.IDecisionKernel`2.Evaluate*
+  commentId: Overload:Meridian.Contracts.RuleEvaluation.IDecisionKernel`2.Evaluate
+  href: Meridian.Contracts.RuleEvaluation.IDecisionKernel-2.html#Meridian_Contracts_RuleEvaluation_IDecisionKernel_2_Evaluate__0_System_Threading_CancellationToken_
+  name: Evaluate
+  nameWithType: IDecisionKernel<TInput, TScore>.Evaluate
+  fullName: Meridian.Contracts.RuleEvaluation.IDecisionKernel<TInput, TScore>.Evaluate
+  nameWithType.vb: IDecisionKernel(Of TInput, TScore).Evaluate
+  fullName.vb: Meridian.Contracts.RuleEvaluation.IDecisionKernel(Of TInput, TScore).Evaluate
+- uid: '{TInput}'
+  commentId: '!:TInput'
+  definition: TInput
+  name: TInput
+  nameWithType: TInput
+  fullName: TInput
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult{{TScore}}
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult{`1}
+  parent: Meridian.Contracts.RuleEvaluation
+  definition: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<TScore>
+  nameWithType: DecisionResult<TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<TScore>
+  nameWithType.vb: DecisionResult(Of TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of TScore)
+  name.vb: DecisionResult(Of TScore)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - name: TScore
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TScore
+  - name: )
+- uid: TInput
+  commentId: '!:TInput'
+  name: TInput
+  nameWithType: TInput
+  fullName: TInput
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<TScore>
+  nameWithType: DecisionResult<TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<TScore>
+  nameWithType.vb: DecisionResult(Of TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of TScore)
+  name.vb: DecisionResult(Of TScore)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - name: TScore
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TScore
+  - name: )

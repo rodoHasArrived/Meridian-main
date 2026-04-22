@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoordinationMode
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SingleInstance
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/CoordinationConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedStorage
     path: ../../src/Meridian.Core/Config/CoordinationConfig.cs

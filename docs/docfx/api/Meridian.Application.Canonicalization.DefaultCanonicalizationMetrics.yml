@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultCanonicalizationMetrics
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSuccess
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSoftFail
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHardFail
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordUnresolved
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordDualWrite
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetActiveVersion
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs

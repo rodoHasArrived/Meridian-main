@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  id: EnvironmentManagedScopeKind
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.FamilyOffice
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.Fund
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.IndividualInvestor
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentManagedScopeKind
+  nameWithType: EnvironmentManagedScopeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentManagedScopeKind
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<EnvironmentManagedScopeKind>))]
+
+      public enum EnvironmentManagedScopeKind
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of EnvironmentManagedScopeKind)))>
+
+      Public Enum EnvironmentManagedScopeKind
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind}
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.IndividualInvestor
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.IndividualInvestor
+  id: IndividualInvestor
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  langs:
+  - csharp
+  - vb
+  name: IndividualInvestor
+  nameWithType: EnvironmentManagedScopeKind.IndividualInvestor
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.IndividualInvestor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndividualInvestor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: IndividualInvestor = 0
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.FamilyOffice
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.FamilyOffice
+  id: FamilyOffice
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  langs:
+  - csharp
+  - vb
+  name: FamilyOffice
+  nameWithType: EnvironmentManagedScopeKind.FamilyOffice
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.FamilyOffice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FamilyOffice
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: FamilyOffice = 1
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.Fund
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.Fund
+  id: Fund
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  langs:
+  - csharp
+  - vb
+  name: Fund
+  nameWithType: EnvironmentManagedScopeKind.Fund
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.Fund
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fund
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Fund = 2
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind.html
+  name: EnvironmentManagedScopeKind
+  nameWithType: EnvironmentManagedScopeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind

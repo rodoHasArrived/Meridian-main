@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PositionState
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketPrice
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketValue
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
     path: ../../src/Meridian.Execution.Sdk/Models.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerQuery
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundProfileId
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScopeKind
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScopeId
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs

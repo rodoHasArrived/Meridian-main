@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IRiskValidator
     path: ../../src/Meridian.Execution/IRiskValidator.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
     path: ../../src/Meridian.Execution/IRiskValidator.cs

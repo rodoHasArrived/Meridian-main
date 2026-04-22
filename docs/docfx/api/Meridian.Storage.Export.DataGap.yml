@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGap
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartTime
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndTime
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapType
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedMissingRecords
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs

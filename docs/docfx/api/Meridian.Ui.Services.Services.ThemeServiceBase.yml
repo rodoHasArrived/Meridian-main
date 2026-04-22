@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThemeServiceBase
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTheme
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTheme
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleTheme
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSystemTheme
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyThemeCore
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ThemeServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnThemeChanged
     path: ../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs

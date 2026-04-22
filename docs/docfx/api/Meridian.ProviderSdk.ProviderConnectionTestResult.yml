@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderConnectionTestResult
     path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Checks
     path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestedAt
     path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs

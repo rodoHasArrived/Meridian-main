@@ -25,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlFilePaperSessionStore
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 23
+    startLine: 24
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -79,11 +79,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseDirectory
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 32
+    startLine: 33
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -110,11 +110,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 34
+    startLine: 35
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -144,11 +144,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveSessionMetadataAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 48
+    startLine: 49
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -181,11 +181,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendFillAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 57
+    startLine: 58
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppendOrderUpdateAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 65
+    startLine: 66
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -265,11 +265,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadAllSessionsAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 77
+    startLine: 78
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -300,11 +300,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFillsAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 99
+    startLine: 100
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -340,11 +340,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadOrderHistoryAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 110
+    startLine: 111
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -380,11 +380,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveLedgerJournalAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 121
+    startLine: 122
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -425,11 +425,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadLedgerJournalAsync
     path: ../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs
-    startLine: 143
+    startLine: 144
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services

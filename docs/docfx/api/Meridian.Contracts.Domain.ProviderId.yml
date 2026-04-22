@@ -16,7 +16,6 @@ items:
   - Meridian.Contracts.Domain.ProviderId.InteractiveBrokers
   - Meridian.Contracts.Domain.ProviderId.Nyse
   - Meridian.Contracts.Domain.ProviderId.Polygon
-  - Meridian.Contracts.Domain.ProviderId.StockSharp
   - Meridian.Contracts.Domain.ProviderId.Stooq
   - Meridian.Contracts.Domain.ProviderId.Tiingo
   - Meridian.Contracts.Domain.ProviderId.ToString
@@ -35,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -76,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -115,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -146,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -182,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Explicit
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -218,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -247,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -276,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InteractiveBrokers
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -305,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nyse
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
@@ -320,35 +319,6 @@ items:
     return:
       type: Meridian.Contracts.Domain.ProviderId
     content.vb: Public Shared ReadOnly Nyse As ProviderId
-- uid: Meridian.Contracts.Domain.ProviderId.StockSharp
-  commentId: F:Meridian.Contracts.Domain.ProviderId.StockSharp
-  id: StockSharp
-  parent: Meridian.Contracts.Domain.ProviderId
-  langs:
-  - csharp
-  - vb
-  name: StockSharp
-  nameWithType: ProviderId.StockSharp
-  fullName: Meridian.Contracts.Domain.ProviderId.StockSharp
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StockSharp
-    path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 43
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.Domain
-  summary: StockSharp multi-connector provider.
-  example: []
-  syntax:
-    content: public static readonly ProviderId StockSharp
-    return:
-      type: Meridian.Contracts.Domain.ProviderId
-    content.vb: Public Shared ReadOnly StockSharp As ProviderId
 - uid: Meridian.Contracts.Domain.ProviderId.Stooq
   commentId: F:Meridian.Contracts.Domain.ProviderId.Stooq
   id: Stooq
@@ -363,11 +333,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stooq
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 45
+    startLine: 43
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -392,11 +362,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tiingo
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 47
+    startLine: 45
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -421,11 +391,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Finnhub
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 49
+    startLine: 47
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -450,11 +420,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlphaVantage
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 51
+    startLine: 49
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -479,11 +449,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 54
+    startLine: 52
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -516,11 +486,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 58
+    startLine: 56
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -555,11 +525,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHashCode
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 61
+    startLine: 59
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -587,11 +557,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareTo
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 65
+    startLine: 63
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -627,11 +597,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 69
+    startLine: 67
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -659,11 +629,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Equality
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 72
+    startLine: 70
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain
@@ -698,11 +668,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderId.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Inequality
     path: ../../src/Meridian.Contracts/Domain/ProviderId.cs
-    startLine: 75
+    startLine: 73
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Domain

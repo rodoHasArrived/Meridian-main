@@ -4,13 +4,18 @@ items:
   commentId: N:Meridian.Contracts.SecurityMaster
   id: Meridian.Contracts.SecurityMaster
   children:
+  - Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  - Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
   - Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+  - Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
   - Meridian.Contracts.SecurityMaster.CorporateActionDto
   - Meridian.Contracts.SecurityMaster.CreateSecurityRequest
   - Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest
   - Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
   - Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
   - Meridian.Contracts.SecurityMaster.ISecurityMasterService
+  - Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
   - Meridian.Contracts.SecurityMaster.ResolveConflictRequest
   - Meridian.Contracts.SecurityMaster.ResolveSecurityRequest
   - Meridian.Contracts.SecurityMaster.SecurityAliasDto
@@ -43,6 +48,7 @@ items:
 references:
 - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
   commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
+  parent: Meridian.Contracts.SecurityMaster
   href: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.html
   name: ISecurityMasterAmender
   nameWithType: ISecurityMasterAmender
@@ -54,6 +60,13 @@ references:
   name: ISecurityMasterQueryService
   nameWithType: ISecurityMasterQueryService
   fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus.html
+  name: ISecurityMasterRuntimeStatus
+  nameWithType: ISecurityMasterRuntimeStatus
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus
 - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterService
   commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterService
   parent: Meridian.Contracts.SecurityMaster
@@ -75,6 +88,13 @@ references:
   name: AmendSecurityTermsRequest
   nameWithType: AmendSecurityTermsRequest
   fullName: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+- uid: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest.html
+  name: AmendConvertibleEquityTermsRequest
+  nameWithType: AmendConvertibleEquityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest
 - uid: Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest
   commentId: T:Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest
   parent: Meridian.Contracts.SecurityMaster
@@ -95,6 +115,13 @@ references:
   name: UpsertSecurityAliasRequest
   nameWithType: UpsertSecurityAliasRequest
   fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+- uid: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest.html
+  name: AmendPreferredEquityTermsRequest
+  nameWithType: AmendPreferredEquityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest
 - uid: Meridian.Contracts.SecurityMaster.SecurityStatusDto
   commentId: T:Meridian.Contracts.SecurityMaster.SecurityStatusDto
   parent: Meridian.Contracts.SecurityMaster
@@ -152,6 +179,7 @@ references:
   fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
 - uid: Meridian.Contracts.SecurityMaster.TradingParametersDto
   commentId: T:Meridian.Contracts.SecurityMaster.TradingParametersDto
+  parent: Meridian.Contracts.SecurityMaster
   href: Meridian.Contracts.SecurityMaster.TradingParametersDto.html
   name: TradingParametersDto
   nameWithType: TradingParametersDto
@@ -163,6 +191,20 @@ references:
   name: CorporateActionDto
   nameWithType: CorporateActionDto
   fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto
+- uid: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
+  commentId: T:Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto.html
+  name: PreferredEquityTermsDto
+  nameWithType: PreferredEquityTermsDto
+  fullName: Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto
+- uid: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
+  commentId: T:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto.html
+  name: ConvertibleEquityTermsDto
+  nameWithType: ConvertibleEquityTermsDto
+  fullName: Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto
 - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
   commentId: T:Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
   parent: Meridian.Contracts.SecurityMaster

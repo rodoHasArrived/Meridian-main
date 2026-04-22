@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelinePublisher
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 191
+    startLine: 187
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 196
+    startLine: 192
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
     path: ../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs
-    startLine: 202
+    startLine: 198
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition

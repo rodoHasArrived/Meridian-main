@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStorageCatalogService
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCatalog
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildCatalogAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFileEntryAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveFileEntryAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDirectoryIndexAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateDirectoryIndexAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScanDirectoryAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -382,7 +382,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyIntegrityAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -422,7 +422,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilesForSymbol
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -458,7 +458,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilesForDateRange
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -496,7 +496,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFilesForEventType
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -532,7 +532,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchFiles
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -565,7 +565,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveCatalogAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -598,7 +598,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportCatalogAsync
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs

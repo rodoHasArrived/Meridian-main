@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/RolePermissions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RolePermissions
     path: ../../src/Meridian.Contracts/Auth/RolePermissions.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/RolePermissions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: For
     path: ../../src/Meridian.Contracts/Auth/RolePermissions.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Auth/RolePermissions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasPermission
     path: ../../src/Meridian.Contracts/Auth/RolePermissions.cs

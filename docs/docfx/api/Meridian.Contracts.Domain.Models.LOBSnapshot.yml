@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LOBSnapshot
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bids
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Asks
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MicroPrice
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -306,7 +306,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Imbalance
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketState
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -364,7 +364,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -393,7 +393,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
@@ -422,7 +422,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/LOBSnapshot.cs

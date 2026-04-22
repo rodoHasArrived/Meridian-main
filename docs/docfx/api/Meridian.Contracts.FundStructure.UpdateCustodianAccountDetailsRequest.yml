@@ -17,15 +17,17 @@ items:
   type: Class
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateCustodianAccountDetailsRequest
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 59
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 180
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: Request to update custodian account details.
+  example: []
   syntax:
     content: 'public sealed record UpdateCustodianAccountDetailsRequest : IEquatable<UpdateCustodianAccountDetailsRequest>'
     content.vb: Public NotInheritable Class UpdateCustodianAccountDetailsRequest Implements IEquatable(Of UpdateCustodianAccountDetailsRequest)
@@ -53,15 +55,17 @@ items:
   type: Constructor
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 59
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 180
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: Request to update custodian account details.
+  example: []
   syntax:
     content: public UpdateCustodianAccountDetailsRequest(CustodianAccountDetailsDto Details, string UpdatedBy)
     parameters:
@@ -87,12 +91,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 60
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 181
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -116,12 +120,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedBy
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
-    startLine: 61
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 182
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure

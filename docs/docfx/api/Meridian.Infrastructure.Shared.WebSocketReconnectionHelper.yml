@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebSocketReconnectionHelper
     path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-    startLine: 21
+    startLine: 20
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Shared
@@ -32,7 +32,7 @@ items:
 
     Eliminates duplicated reconnection logic across Polygon (~40 LOC),
 
-    NYSE (~30 LOC), and StockSharp (~35 LOC) providers by providing
+    and NYSE (~30 LOC) providers by providing
 
     a single gated exponential-backoff-with-jitter reconnection algorithm.
   remarks: >-
@@ -43,8 +43,6 @@ items:
     - <code>PolygonMarketDataClient</code>: Manual exponential + jitter
 
     - <code>NYSEDataSource</code>: Linear multiply backoff
-
-    - <code>StockSharpMarketDataClient</code>: Exponential + jitter with connector recreation
 
     </p>
   example: []
@@ -88,11 +86,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-    startLine: 33
+    startLine: 32
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Shared
@@ -130,11 +128,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsReconnecting
     path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-    startLine: 52
+    startLine: 51
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Shared
@@ -161,11 +159,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconnected
     path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-    startLine: 59
+    startLine: 58
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Shared
@@ -195,11 +193,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryReconnectAsync
     path: ../../src/Meridian.Infrastructure/Shared/WebSocketReconnectionHelper.cs
-    startLine: 71
+    startLine: 70
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Shared

@@ -8,9 +8,11 @@ items:
   - Meridian.Contracts.Api.CapabilityInfo.MaxDepthLevels
   - Meridian.Contracts.Api.CapabilityInfo.SupportsAdjustedPrices
   - Meridian.Contracts.Api.CapabilityInfo.SupportsAuctions
+  - Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage
   - Meridian.Contracts.Api.CapabilityInfo.SupportsDividends
   - Meridian.Contracts.Api.CapabilityInfo.SupportsIntraday
   - Meridian.Contracts.Api.CapabilityInfo.SupportsMarketDepth
+  - Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain
   - Meridian.Contracts.Api.CapabilityInfo.SupportsQuotes
   - Meridian.Contracts.Api.CapabilityInfo.SupportsSplits
   - Meridian.Contracts.Api.CapabilityInfo.SupportsStreaming
@@ -26,11 +28,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapabilityInfo
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 747
+    startLine: 766
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -65,11 +67,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsStreaming
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 752
+    startLine: 771
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -108,11 +110,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarketDepth
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 758
+    startLine: 777
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -151,11 +153,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 764
+    startLine: 783
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -194,11 +196,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 770
+    startLine: 789
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -237,11 +239,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 776
+    startLine: 795
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -280,11 +282,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 782
+    startLine: 801
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -323,11 +325,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 788
+    startLine: 807
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -366,11 +368,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsTrades
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 794
+    startLine: 813
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -409,11 +411,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsQuotes
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 800
+    startLine: 819
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -438,6 +440,92 @@ items:
     arguments:
     - type: System.String
       value: supportsQuotes
+- uid: Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain
+  commentId: P:Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain
+  id: SupportsOptionsChain
+  parent: Meridian.Contracts.Api.CapabilityInfo
+  langs:
+  - csharp
+  - vb
+  name: SupportsOptionsChain
+  nameWithType: CapabilityInfo.SupportsOptionsChain
+  fullName: Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsOptionsChain
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 825
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets a value indicating whether options chain data is supported.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("supportsOptionsChain")]
+
+      public bool SupportsOptionsChain { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("supportsOptionsChain")>
+
+      Public Property SupportsOptionsChain As Boolean
+  overload: Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: supportsOptionsChain
+- uid: Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage
+  commentId: P:Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage
+  id: SupportsBrokerage
+  parent: Meridian.Contracts.Api.CapabilityInfo
+  langs:
+  - csharp
+  - vb
+  name: SupportsBrokerage
+  nameWithType: CapabilityInfo.SupportsBrokerage
+  fullName: Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBrokerage
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 831
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets a value indicating whether brokerage execution is supported.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("supportsBrokerage")]
+
+      public bool SupportsBrokerage { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("supportsBrokerage")>
+
+      Public Property SupportsBrokerage As Boolean
+  overload: Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: supportsBrokerage
 - uid: Meridian.Contracts.Api.CapabilityInfo.SupportsAuctions
   commentId: P:Meridian.Contracts.Api.CapabilityInfo.SupportsAuctions
   id: SupportsAuctions
@@ -452,11 +540,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAuctions
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 806
+    startLine: 837
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -495,11 +583,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/ProviderCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDictionary
     path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
-    startLine: 812
+    startLine: 843
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -871,6 +959,18 @@ references:
   name: SupportsQuotes
   nameWithType: CapabilityInfo.SupportsQuotes
   fullName: Meridian.Contracts.Api.CapabilityInfo.SupportsQuotes
+- uid: Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain*
+  commentId: Overload:Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain
+  href: Meridian.Contracts.Api.CapabilityInfo.html#Meridian_Contracts_Api_CapabilityInfo_SupportsOptionsChain
+  name: SupportsOptionsChain
+  nameWithType: CapabilityInfo.SupportsOptionsChain
+  fullName: Meridian.Contracts.Api.CapabilityInfo.SupportsOptionsChain
+- uid: Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage*
+  commentId: Overload:Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage
+  href: Meridian.Contracts.Api.CapabilityInfo.html#Meridian_Contracts_Api_CapabilityInfo_SupportsBrokerage
+  name: SupportsBrokerage
+  nameWithType: CapabilityInfo.SupportsBrokerage
+  fullName: Meridian.Contracts.Api.CapabilityInfo.SupportsBrokerage
 - uid: Meridian.Contracts.Api.CapabilityInfo.SupportsAuctions*
   commentId: Overload:Meridian.Contracts.Api.CapabilityInfo.SupportsAuctions
   href: Meridian.Contracts.Api.CapabilityInfo.html#Meridian_Contracts_Api_CapabilityInfo_SupportsAuctions

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupRequest
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliArgs
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DashboardServerFactory
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancellationToken
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupRequest.cs

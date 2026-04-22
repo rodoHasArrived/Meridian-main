@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderBookSide
     path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bid
     path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ask
     path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs

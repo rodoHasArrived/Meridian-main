@@ -8,20 +8,25 @@ items:
   - Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.AccountDefinition},Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
   - Meridian.Execution.Services.PaperTradingPortfolio.#ctor(System.Decimal,Meridian.Ledger.Ledger,Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster)
   - Meridian.Execution.Services.PaperTradingPortfolio.Accounts
+  - Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest(System.Decimal,System.Int32)
   - Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
   - Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
   - Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
   - Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(System.String,Meridian.Execution.Sdk.ExecutionReport)
   - Meridian.Execution.Services.PaperTradingPortfolio.Cash
+  - Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
   - Meridian.Execution.Services.PaperTradingPortfolio.DefaultAccountId
   - Meridian.Execution.Services.PaperTradingPortfolio.GetAccount(System.String)
   - Meridian.Execution.Services.PaperTradingPortfolio.GetAccountSnapshot(System.String)
   - Meridian.Execution.Services.PaperTradingPortfolio.GetAggregateSnapshot
   - Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots
+  - Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
   - Meridian.Execution.Services.PaperTradingPortfolio.Ledger
+  - Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance
   - Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
   - Meridian.Execution.Services.PaperTradingPortfolio.Positions
   - Meridian.Execution.Services.PaperTradingPortfolio.RealisedPnl
+  - Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral
   - Meridian.Execution.Services.PaperTradingPortfolio.UnrealisedPnl
   - Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.Decimal)
   - Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice(System.String,System.String,System.Decimal)
@@ -35,11 +40,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperTradingPortfolio
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 14
+    startLine: 15
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -79,11 +84,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultAccountId
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 17
+    startLine: 18
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -108,11 +113,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 33
+    startLine: 34
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -149,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 68
+    startLine: 69
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -197,11 +202,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 103
+    startLine: 106
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -216,6 +221,68 @@ items:
   overload: Meridian.Execution.Services.PaperTradingPortfolio.Cash*
   implements:
   - Meridian.Execution.Models.IPortfolioState.Cash
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance
+  id: MarginBalance
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: MarginBalance
+  nameWithType: PaperTradingPortfolio.MarginBalance
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginBalance
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Total margin borrowed (long positions) across all accounts (0 for all-cash portfolios).
+  example: []
+  syntax:
+    content: public decimal MarginBalance { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property MarginBalance As Decimal
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance*
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral
+  commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral
+  id: ShortMarginCollateral
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: ShortMarginCollateral
+  nameWithType: PaperTradingPortfolio.ShortMarginCollateral
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarginCollateral
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Total short margin collateral held across all accounts.
+  example: []
+  syntax:
+    content: public decimal ShortMarginCollateral { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property ShortMarginCollateral As Decimal
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral*
 - uid: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
   commentId: P:Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
   id: PortfolioValue
@@ -230,11 +297,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 109
+    startLine: 124
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -263,11 +330,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 115
+    startLine: 130
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -296,11 +363,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 121
+    startLine: 136
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -329,23 +396,30 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 128
+    startLine: 143
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
-  summary: Open positions keyed by symbol.
+  summary: >-
+    Open positions keyed by symbol, typed against the cross-pillar <xref href="Meridian.Execution.Sdk.IPosition" data-throw-if-not-resolved="false"></xref> interface.
+
+    Replaces the former <code>IReadOnlyDictionary&lt;string, ExecutionPosition&gt;</code> surface.
+
+    Callers that require the concrete <xref href="Meridian.Execution.Models.ExecutionPosition" data-throw-if-not-resolved="false"></xref> type (e.g. serialisation
+
+    boundaries) should cast individual values: <code>portfolio.Positions.Values.Cast&lt;ExecutionPosition&gt;()</code>.
   remarks: Aggregates positions across all accounts; same-symbol positions are netted.
   example: []
   syntax:
-    content: public IReadOnlyDictionary<string, ExecutionPosition> Positions { get; }
+    content: public IReadOnlyDictionary<string, IPosition> Positions { get; }
     parameters: []
     return:
-      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
-    content.vb: Public ReadOnly Property Positions As IReadOnlyDictionary(Of String, ExecutionPosition)
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+    content.vb: Public ReadOnly Property Positions As IReadOnlyDictionary(Of String, IPosition)
   overload: Meridian.Execution.Services.PaperTradingPortfolio.Positions*
   implements:
   - Meridian.Execution.Models.IPortfolioState.Positions
@@ -363,11 +437,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 171
+    startLine: 186
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -396,11 +470,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccount
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 177
+    startLine: 192
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -437,11 +511,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregateSnapshot
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 186
+    startLine: 201
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -469,11 +543,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountSnapshot
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 204
+    startLine: 219
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -508,11 +582,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllAccountSnapshots
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 215
+    startLine: 230
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -524,6 +598,149 @@ items:
       type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
     content.vb: Public Function GetAllAccountSnapshots() As IReadOnlyList(Of ExecutionAccountDetailSnapshot)
   overload: Meridian.Execution.Services.PaperTradingPortfolio.GetAllAccountSnapshots*
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: CheckMarginStatus(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: CheckMarginStatus(string, IReadOnlyDictionary<string, decimal>)
+  nameWithType: PaperTradingPortfolio.CheckMarginStatus(string, IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus(string, System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckMarginStatus
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Evaluates the current maintenance-margin health of one account given a set of
+
+    current market prices, and returns a <xref href="Meridian.Execution.Margin.MarginCallStatus" data-throw-if-not-resolved="false"></xref> indicating
+
+    whether a margin call is in effect.
+  example: []
+  syntax:
+    content: public MarginCallStatus CheckMarginStatus(string accountId, IReadOnlyDictionary<string, decimal> prices)
+    parameters:
+    - id: accountId
+      type: System.String
+      description: Account to evaluate.
+    - id: prices
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+      description: >-
+        Current market prices keyed by symbol (case-insensitive).
+
+        Positions without a corresponding price entry are skipped.
+    return:
+      type: Meridian.Execution.Margin.MarginCallStatus
+      description: >-
+        A <xref href="Meridian.Execution.Margin.MarginCallStatus" data-throw-if-not-resolved="false"></xref> for the account.
+
+        Returns <xref href="Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(System.String)" data-throw-if-not-resolved="false"></xref> for cash accounts or
+
+        accounts with no open positions.
+    content.vb: Public Function CheckMarginStatus(accountId As String, prices As IReadOnlyDictionary(Of String, Decimal)) As MarginCallStatus
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus*
+  nameWithType.vb: PaperTradingPortfolio.CheckMarginStatus(String, IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus(String, System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: CheckMarginStatus(String, IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: GetMarginRequirement(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: GetMarginRequirement(string, IReadOnlyDictionary<string, decimal>)
+  nameWithType: PaperTradingPortfolio.GetMarginRequirement(string, IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement(string, System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMarginRequirement
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Returns the portfolio-level <xref href="Meridian.Execution.Margin.MarginRequirement" data-throw-if-not-resolved="false"></xref> for the specified account.
+
+    Returns a zeroed requirement for cash accounts or accounts with no margin model.
+  example: []
+  syntax:
+    content: public MarginRequirement GetMarginRequirement(string accountId, IReadOnlyDictionary<string, decimal> prices)
+    parameters:
+    - id: accountId
+      type: System.String
+    - id: prices
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    return:
+      type: Meridian.Execution.Margin.MarginRequirement
+    content.vb: Public Function GetMarginRequirement(accountId As String, prices As IReadOnlyDictionary(Of String, Decimal)) As MarginRequirement
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement*
+  nameWithType.vb: PaperTradingPortfolio.GetMarginRequirement(String, IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement(String, System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: GetMarginRequirement(String, IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest(System.Decimal,System.Int32)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest(System.Decimal,System.Int32)
+  id: AccrueMarginInterest(System.Decimal,System.Int32)
+  parent: Meridian.Execution.Services.PaperTradingPortfolio
+  langs:
+  - csharp
+  - vb
+  name: AccrueMarginInterest(decimal, int)
+  nameWithType: PaperTradingPortfolio.AccrueMarginInterest(decimal, int)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest(decimal, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccrueMarginInterest
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Accrues interest on any outstanding margin loans in all margin accounts.
+  remarks: >-
+    Call this once per interest period (e.g. daily).  The charge is deducted from the
+
+    account's <code>Cash</code> balance and added to <code>MarginBorrowed</code> on each affected
+
+    position so that equity (and therefore buying power) is reduced accordingly.
+  example: []
+  syntax:
+    content: public void AccrueMarginInterest(decimal annualRate, int days = 1)
+    parameters:
+    - id: annualRate
+      type: System.Decimal
+      description: Annual interest rate expressed as a decimal (e.g. 0.065 = 6.5 %).
+    - id: days
+      type: System.Int32
+      description: Number of days to accrue interest for. Defaults to 1 (daily).
+    content.vb: Public Sub AccrueMarginInterest(annualRate As Decimal, days As Integer = 1)
+  overload: Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest*
+  exceptions:
+  - type: System.ArgumentOutOfRangeException
+    commentId: T:System.ArgumentOutOfRangeException
+    description: Thrown when <code class="paramref">annualRate</code> is negative or <code class="paramref">days</code> is less than 1.
+  nameWithType.vb: PaperTradingPortfolio.AccrueMarginInterest(Decimal, Integer)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest(Decimal, Integer)
+  name.vb: AccrueMarginInterest(Decimal, Integer)
 - uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
   commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
   id: ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
@@ -538,11 +755,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyFill
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 228
+    startLine: 354
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -569,11 +786,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyFill
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 234
+    startLine: 360
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -608,11 +825,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMarketPrice
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 259
+    startLine: 385
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -644,11 +861,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMarketPrice
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 274
+    startLine: 400
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -682,11 +899,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 292
+    startLine: 418
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -716,11 +933,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyCorporateActionsAsync
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 300
+    startLine: 426
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -759,11 +976,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyCorporateActionsAsync
     path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
-    startLine: 309
+    startLine: 435
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -1295,6 +1512,18 @@ references:
   name: Cash
   nameWithType: IPortfolioState.Cash
   fullName: Meridian.Execution.Models.IPortfolioState.Cash
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_MarginBalance
+  name: MarginBalance
+  nameWithType: PaperTradingPortfolio.MarginBalance
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.MarginBalance
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ShortMarginCollateral
+  name: ShortMarginCollateral
+  nameWithType: PaperTradingPortfolio.ShortMarginCollateral
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ShortMarginCollateral
 - uid: Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue*
   commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.PortfolioValue
   href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_PortfolioValue
@@ -1334,6 +1563,20 @@ references:
   name: RealisedPnl
   nameWithType: IPortfolioState.RealisedPnl
   fullName: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPosition.html
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
+- uid: Meridian.Execution.Models.ExecutionPosition
+  commentId: T:Meridian.Execution.Models.ExecutionPosition
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionPosition.html
+  name: ExecutionPosition
+  nameWithType: ExecutionPosition
+  fullName: Meridian.Execution.Models.ExecutionPosition
 - uid: Meridian.Execution.Services.PaperTradingPortfolio.Positions*
   commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.Positions
   href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_Positions
@@ -1347,17 +1590,17 @@ references:
   name: Positions
   nameWithType: IPortfolioState.Positions
   fullName: Meridian.Execution.Models.IPortfolioState.Positions
-- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
-  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Models.ExecutionPosition}
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
   parent: System.Collections.Generic
   definition: System.Collections.Generic.IReadOnlyDictionary`2
   href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
-  name: IReadOnlyDictionary<string, ExecutionPosition>
-  nameWithType: IReadOnlyDictionary<string, ExecutionPosition>
-  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Models.ExecutionPosition>
-  nameWithType.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
-  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Models.ExecutionPosition)
-  name.vb: IReadOnlyDictionary(Of String, ExecutionPosition)
+  name: IReadOnlyDictionary<string, IPosition>
+  nameWithType: IReadOnlyDictionary<string, IPosition>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition>
+  nameWithType.vb: IReadOnlyDictionary(Of String, IPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Sdk.IPosition)
+  name.vb: IReadOnlyDictionary(Of String, IPosition)
   spec.csharp:
   - uid: System.Collections.Generic.IReadOnlyDictionary`2
     name: IReadOnlyDictionary
@@ -1370,9 +1613,9 @@ references:
     href: https://learn.microsoft.com/dotnet/api/system.string
   - name: ','
   - name: " "
-  - uid: Meridian.Execution.Models.ExecutionPosition
-    name: ExecutionPosition
-    href: Meridian.Execution.Models.ExecutionPosition.html
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
   - name: '>'
   spec.vb:
   - uid: System.Collections.Generic.IReadOnlyDictionary`2
@@ -1388,10 +1631,40 @@ references:
     href: https://learn.microsoft.com/dotnet/api/system.string
   - name: ','
   - name: " "
-  - uid: Meridian.Execution.Models.ExecutionPosition
-    name: ExecutionPosition
-    href: Meridian.Execution.Models.ExecutionPosition.html
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
   - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
 - uid: System.Collections.Generic.IReadOnlyDictionary`2
   commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
   isExternal: true
@@ -1630,6 +1903,163 @@ references:
     name: ExecutionAccountDetailSnapshot
     href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
   - name: )
+- uid: Meridian.Execution.Margin.MarginCallStatus
+  commentId: T:Meridian.Execution.Margin.MarginCallStatus
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginCallStatus.html
+  name: MarginCallStatus
+  nameWithType: MarginCallStatus
+  fullName: Meridian.Execution.Margin.MarginCallStatus
+- uid: Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(System.String)
+  commentId: M:Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(System.String)
+  isExternal: true
+  href: Meridian.Execution.Margin.MarginCallStatus.html#Meridian_Execution_Margin_MarginCallStatus_NoMarginRequired_System_String_
+  name: NoMarginRequired(string)
+  nameWithType: MarginCallStatus.NoMarginRequired(string)
+  fullName: Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(string)
+  nameWithType.vb: MarginCallStatus.NoMarginRequired(String)
+  fullName.vb: Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(String)
+  name.vb: NoMarginRequired(String)
+  spec.csharp:
+  - uid: Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(System.String)
+    name: NoMarginRequired
+    href: Meridian.Execution.Margin.MarginCallStatus.html#Meridian_Execution_Margin_MarginCallStatus_NoMarginRequired_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Margin.MarginCallStatus.NoMarginRequired(System.String)
+    name: NoMarginRequired
+    href: Meridian.Execution.Margin.MarginCallStatus.html#Meridian_Execution_Margin_MarginCallStatus_NoMarginRequired_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_CheckMarginStatus_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__
+  name: CheckMarginStatus
+  nameWithType: PaperTradingPortfolio.CheckMarginStatus
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.CheckMarginStatus
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, decimal>
+  nameWithType: IReadOnlyDictionary<string, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal)
+  name.vb: IReadOnlyDictionary(Of String, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+- uid: Meridian.Execution.Margin.MarginRequirement
+  commentId: T:Meridian.Execution.Margin.MarginRequirement
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginRequirement.html
+  name: MarginRequirement
+  nameWithType: MarginRequirement
+  fullName: Meridian.Execution.Margin.MarginRequirement
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_GetMarginRequirement_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__
+  name: GetMarginRequirement
+  nameWithType: PaperTradingPortfolio.GetMarginRequirement
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.GetMarginRequirement
+- uid: System.ArgumentOutOfRangeException
+  commentId: T:System.ArgumentOutOfRangeException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception
+  name: ArgumentOutOfRangeException
+  nameWithType: ArgumentOutOfRangeException
+  fullName: System.ArgumentOutOfRangeException
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest*
+  commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_AccrueMarginInterest_System_Decimal_System_Int32_
+  name: AccrueMarginInterest
+  nameWithType: PaperTradingPortfolio.AccrueMarginInterest
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.AccrueMarginInterest
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
 - uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill*
   commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.ApplyFill
   href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ApplyFill_Meridian_Execution_Sdk_ExecutionReport_
@@ -1643,36 +2073,6 @@ references:
   name: ExecutionReport
   nameWithType: ExecutionReport
   fullName: Meridian.Execution.Sdk.ExecutionReport
-- uid: Meridian.Execution.Sdk
-  commentId: N:Meridian.Execution.Sdk
-  href: Meridian.html
-  name: Meridian.Execution.Sdk
-  nameWithType: Meridian.Execution.Sdk
-  fullName: Meridian.Execution.Sdk
-  spec.csharp:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Execution
-    name: Execution
-    href: Meridian.Execution.html
-  - name: .
-  - uid: Meridian.Execution.Sdk
-    name: Sdk
-    href: Meridian.Execution.Sdk.html
-  spec.vb:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Execution
-    name: Execution
-    href: Meridian.Execution.html
-  - name: .
-  - uid: Meridian.Execution.Sdk
-    name: Sdk
-    href: Meridian.Execution.Sdk.html
 - uid: Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice*
   commentId: Overload:Meridian.Execution.Services.PaperTradingPortfolio.UpdateMarketPrice
   href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_UpdateMarketPrice_System_String_System_Decimal_

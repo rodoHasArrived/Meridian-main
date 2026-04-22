@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntradayBar
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -351,7 +351,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -380,7 +380,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeCount
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -409,7 +409,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VWAP
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs

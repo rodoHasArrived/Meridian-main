@@ -26,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaQuoteMessage
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 247
+    startLine: 221
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -64,11 +64,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 249
+    startLine: 223
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -105,11 +105,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 252
+    startLine: 226
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -146,11 +146,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 255
+    startLine: 229
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -187,11 +187,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 258
+    startLine: 232
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -228,11 +228,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 261
+    startLine: 235
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -269,11 +269,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 264
+    startLine: 238
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -310,11 +310,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 267
+    startLine: 241
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -351,11 +351,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidExchange
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 270
+    startLine: 244
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -392,11 +392,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskExchange
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 273
+    startLine: 247
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -433,11 +433,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tape
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 276
+    startLine: 250
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -474,11 +474,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Conditions
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 279
+    startLine: 253
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization

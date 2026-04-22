@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewConfigurationStep
     path: ../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-    startLine: 14
+    startLine: 13
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps
@@ -63,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepId
     path: ../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-    startLine: 27
+    startLine: 18
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps
@@ -96,11 +96,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-    startLine: 29
+    startLine: 20
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps
@@ -130,11 +130,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
     path: ../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs
-    startLine: 35
+    startLine: 26
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Wizard.Steps

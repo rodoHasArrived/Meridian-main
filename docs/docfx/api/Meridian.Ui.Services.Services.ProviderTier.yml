@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderTier
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 309
+    startLine: 316
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -46,11 +46,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Free
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 311
+    startLine: 318
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -72,11 +72,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreeWithAccount
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 312
+    startLine: 319
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -98,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitedFree
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 313
+    startLine: 320
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -124,11 +124,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Premium
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 314
+    startLine: 321
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services

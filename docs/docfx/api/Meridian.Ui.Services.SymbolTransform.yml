@@ -9,7 +9,6 @@ items:
   - Meridian.Ui.Services.SymbolTransform.DotsToSpaces
   - Meridian.Ui.Services.SymbolTransform.Lowercase
   - Meridian.Ui.Services.SymbolTransform.None
-  - Meridian.Ui.Services.SymbolTransform.StockSharpFormat
   - Meridian.Ui.Services.SymbolTransform.StooqFormat
   - Meridian.Ui.Services.SymbolTransform.Uppercase
   langs:
@@ -22,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolTransform
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 485
+    startLine: 616
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -49,11 +48,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 488
+    startLine: 619
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -77,11 +76,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uppercase
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 490
+    startLine: 621
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -105,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lowercase
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 492
+    startLine: 623
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -133,11 +132,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DotsToSpaces
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 494
+    startLine: 625
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -161,11 +160,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DotsToDashes
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 496
+    startLine: 627
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -189,11 +188,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StooqFormat
     path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 498
+    startLine: 629
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -201,34 +200,6 @@ items:
   example: []
   syntax:
     content: StooqFormat = 5
-    return:
-      type: Meridian.Ui.Services.SymbolTransform
-- uid: Meridian.Ui.Services.SymbolTransform.StockSharpFormat
-  commentId: F:Meridian.Ui.Services.SymbolTransform.StockSharpFormat
-  id: StockSharpFormat
-  parent: Meridian.Ui.Services.SymbolTransform
-  langs:
-  - csharp
-  - vb
-  name: StockSharpFormat
-  nameWithType: SymbolTransform.StockSharpFormat
-  fullName: Meridian.Ui.Services.SymbolTransform.StockSharpFormat
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StockSharpFormat
-    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
-    startLine: 500
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: 'StockSharp format: SYMBOL@EXCHANGE.'
-  example: []
-  syntax:
-    content: StockSharpFormat = 6
     return:
       type: Meridian.Ui.Services.SymbolTransform
 references:

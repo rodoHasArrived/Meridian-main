@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalTradesResult
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextPageToken
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasMore
     path: ../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs

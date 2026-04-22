@@ -12,6 +12,9 @@ items:
   - Meridian.Execution.Sdk.BrokerageCapabilities
   - Meridian.Execution.Sdk.BrokerageConfiguration
   - Meridian.Execution.Sdk.BrokeragePositionDto
+  - Meridian.Execution.Sdk.BrokerageValidationEvaluator
+  - Meridian.Execution.Sdk.BrokerageValidationReport
+  - Meridian.Execution.Sdk.BrokerageValidationState
   - Meridian.Execution.Sdk.ExecutionMode
   - Meridian.Execution.Sdk.ExecutionReport
   - Meridian.Execution.Sdk.ExecutionReportType
@@ -19,6 +22,7 @@ items:
   - Meridian.Execution.Sdk.IBrokeragePositionSync
   - Meridian.Execution.Sdk.IExecutionGateway
   - Meridian.Execution.Sdk.IOrderManager
+  - Meridian.Execution.Sdk.IPosition
   - Meridian.Execution.Sdk.IPositionTracker
   - Meridian.Execution.Sdk.OrderModification
   - Meridian.Execution.Sdk.OrderRequest
@@ -27,6 +31,7 @@ items:
   - Meridian.Execution.Sdk.OrderState
   - Meridian.Execution.Sdk.OrderStatus
   - Meridian.Execution.Sdk.OrderType
+  - Meridian.Execution.Sdk.PositionExtensions
   - Meridian.Execution.Sdk.PositionState
   - Meridian.Execution.Sdk.TaxLot
   - Meridian.Execution.Sdk.TimeInForce
@@ -47,6 +52,26 @@ references:
   name: BrokerageConfiguration
   nameWithType: BrokerageConfiguration
   fullName: Meridian.Execution.Sdk.BrokerageConfiguration
+- uid: Meridian.Execution.Sdk.BrokerageValidationEvaluator
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationEvaluator
+  href: Meridian.Execution.Sdk.BrokerageValidationEvaluator.html
+  name: BrokerageValidationEvaluator
+  nameWithType: BrokerageValidationEvaluator
+  fullName: Meridian.Execution.Sdk.BrokerageValidationEvaluator
+- uid: Meridian.Execution.Sdk.BrokerageValidationState
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationState
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerageValidationState.html
+  name: BrokerageValidationState
+  nameWithType: BrokerageValidationState
+  fullName: Meridian.Execution.Sdk.BrokerageValidationState
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationReport
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html
+  name: BrokerageValidationReport
+  nameWithType: BrokerageValidationReport
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport
 - uid: Meridian.Execution.Sdk.IBrokerageGateway
   commentId: T:Meridian.Execution.Sdk.IBrokerageGateway
   parent: Meridian.Execution.Sdk
@@ -118,6 +143,13 @@ references:
   name: IOrderManager
   nameWithType: IOrderManager
   fullName: Meridian.Execution.Sdk.IOrderManager
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPosition.html
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
 - uid: Meridian.Execution.Sdk.IPositionTracker
   commentId: T:Meridian.Execution.Sdk.IPositionTracker
   parent: Meridian.Execution.Sdk
@@ -208,6 +240,13 @@ references:
   name: PositionState
   nameWithType: PositionState
   fullName: Meridian.Execution.Sdk.PositionState
+- uid: Meridian.Execution.Sdk.PositionExtensions
+  commentId: T:Meridian.Execution.Sdk.PositionExtensions
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.PositionExtensions.html
+  name: PositionExtensions
+  nameWithType: PositionExtensions
+  fullName: Meridian.Execution.Sdk.PositionExtensions
 - uid: Meridian.Execution.Sdk.TaxLot
   commentId: T:Meridian.Execution.Sdk.TaxLot
   parent: Meridian.Execution.Sdk

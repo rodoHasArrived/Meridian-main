@@ -146,4 +146,33 @@ public sealed class MainPageSmokeTests
             }
         });
     }
+
+    [Fact]
+    public void NavigationService_CreatePageContent_ShouldResolveSecurityMasterFromMainPageTestProvider()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.ResetForTests();
+            NavigationService.Instance.SetServiceProvider(services);
+
+            try
+            {
+                FrameworkElement? content = null;
+                var exception = Record.Exception(() =>
+                    content = NavigationService.Instance.CreatePageContent("SecurityMaster"));
+
+                exception.Should().BeNull();
+                content.Should().NotBeNull();
+                NavigationHostInspector.ResolveInnermostPage(content)
+                    .Should().BeOfType<SecurityMasterPage>();
+            }
+            finally
+            {
+                NavigationService.Instance.ResetForTests();
+            }
+        });
+    }
 }

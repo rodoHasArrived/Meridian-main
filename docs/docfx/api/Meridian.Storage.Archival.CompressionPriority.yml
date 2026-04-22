@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionPriority
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Speed
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Balanced
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
     path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs

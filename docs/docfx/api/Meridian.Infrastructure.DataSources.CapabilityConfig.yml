@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapabilityConfig
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalLookbackDays
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalLookbackYears
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntradayBarIntervals
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDepthLevels
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsL2
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs

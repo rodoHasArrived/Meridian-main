@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDataQualityService
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateReportAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalScoresAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RankSourcesAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateGoldenRecordAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrendAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityAlertsAsync
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs

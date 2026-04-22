@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaReference
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentVersion
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VersionsInUse
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaPath
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCountByVersion
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs

@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConflictStrategy
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FirstWins
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastWins
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HighestPriority
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowestLatency
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostComplete
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Merge
     path: ../../src/Meridian.Storage/StorageOptions.cs

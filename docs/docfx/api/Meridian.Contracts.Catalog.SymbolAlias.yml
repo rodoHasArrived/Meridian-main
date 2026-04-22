@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolAlias
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alias
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidFrom
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidTo
     path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs

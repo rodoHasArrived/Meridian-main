@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SemanticValidationStage
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
-    startLine: 134
+    startLine: 139
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
-    startLine: 136
+    startLine: 141
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config

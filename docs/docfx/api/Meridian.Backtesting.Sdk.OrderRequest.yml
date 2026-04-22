@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderRequest
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeProfitPrice
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopLossPrice
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeInForce
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionModel
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -401,7 +401,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowPartialFills
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderParameters
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs
@@ -459,7 +459,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Order.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Backtesting.Sdk/Order.cs

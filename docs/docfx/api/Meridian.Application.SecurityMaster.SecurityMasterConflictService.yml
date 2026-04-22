@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterConflictService
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenConflictsAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConflictAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordConflictsForProjectionAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterConflictService.cs
@@ -219,7 +219,7 @@ items:
 
     and records any newly found conflicts in the in-memory store.
 
-    Called automatically after every create/amend operation.
+    Called automatically after projection writes such as create, amend, import, and rebuild replay.
   example: []
   syntax:
     content: public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)

@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceTask
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskType
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Schedule
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scope
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsRunning
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunStart
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -326,7 +326,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunEnd
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunSuccess
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -384,7 +384,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunMessage
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -413,7 +413,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShouldRunNow
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
@@ -449,7 +449,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextRunTime
     path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IEtlJobDefinitionStore
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListAsync
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlAbstractions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteAsync
     path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs

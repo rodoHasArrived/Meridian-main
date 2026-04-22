@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillStatistics
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExecutions
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessfulExecutions
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedExecutions
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBarsDownloaded
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageExecutionTimeSeconds
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/BackfillApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSuccessfulExecution
     path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs

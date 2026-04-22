@@ -1,0 +1,1059 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingRun
+  id: ResearchBriefingRun
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.Mode
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.Notes
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.RunId
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.Status
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn
+  - Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel
+  langs:
+  - csharp
+  - vb
+  name: ResearchBriefingRun
+  nameWithType: ResearchBriefingRun
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchBriefingRun
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Research run card shown in the briefing and recent-run rail.
+  example: []
+  syntax:
+    content: 'public sealed record ResearchBriefingRun : IEquatable<ResearchBriefingRun>'
+    content.vb: Public NotInheritable Class ResearchBriefingRun Implements IEquatable(Of ResearchBriefingRun)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingRun}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  commentId: M:Meridian.Contracts.Workstation.ResearchBriefingRun.#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  id: '#ctor(System.String,System.String,Meridian.Contracts.Workstation.StrategyRunMode,Meridian.Contracts.Workstation.StrategyRunStatus,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},Meridian.Contracts.Workstation.ResearchRunDrillInLinks)'
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: ResearchBriefingRun(string, string, StrategyRunMode, StrategyRunStatus, string, string, string, string, string, string, StrategyRunPromotionState?, decimal?, decimal?, decimal?, ResearchRunDrillInLinks)
+  nameWithType: ResearchBriefingRun.ResearchBriefingRun(string, string, StrategyRunMode, StrategyRunStatus, string, string, string, string, string, string, StrategyRunPromotionState?, decimal?, decimal?, decimal?, ResearchRunDrillInLinks)
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.ResearchBriefingRun(string, string, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunStatus, string, string, string, string, string, string, Meridian.Contracts.Workstation.StrategyRunPromotionState?, decimal?, decimal?, decimal?, Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Research run card shown in the briefing and recent-run rail.
+  example: []
+  syntax:
+    content: public ResearchBriefingRun(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, string Dataset, string WindowLabel, string ReturnLabel, string SharpeLabel, string LastUpdatedLabel, string Notes, StrategyRunPromotionState? PromotionState, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, ResearchRunDrillInLinks DrillIn)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: Mode
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    - id: Status
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    - id: Dataset
+      type: System.String
+    - id: WindowLabel
+      type: System.String
+    - id: ReturnLabel
+      type: System.String
+    - id: SharpeLabel
+      type: System.String
+    - id: LastUpdatedLabel
+      type: System.String
+    - id: Notes
+      type: System.String
+    - id: PromotionState
+      type: System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState}
+    - id: NetPnl
+      type: System.Nullable{System.Decimal}
+    - id: TotalReturn
+      type: System.Nullable{System.Decimal}
+    - id: FinalEquity
+      type: System.Nullable{System.Decimal}
+    - id: DrillIn
+      type: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    content.vb: Public Sub New(RunId As String, StrategyName As String, Mode As StrategyRunMode, Status As StrategyRunStatus, Dataset As String, WindowLabel As String, ReturnLabel As String, SharpeLabel As String, LastUpdatedLabel As String, Notes As String, PromotionState As StrategyRunPromotionState?, NetPnl As Decimal?, TotalReturn As Decimal?, FinalEquity As Decimal?, DrillIn As ResearchRunDrillInLinks)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.#ctor*
+  nameWithType.vb: ResearchBriefingRun.New(String, String, StrategyRunMode, StrategyRunStatus, String, String, String, String, String, String, StrategyRunPromotionState?, Decimal?, Decimal?, Decimal?, ResearchRunDrillInLinks)
+  fullName.vb: Meridian.Contracts.Workstation.ResearchBriefingRun.New(String, String, Meridian.Contracts.Workstation.StrategyRunMode, Meridian.Contracts.Workstation.StrategyRunStatus, String, String, String, String, String, String, Meridian.Contracts.Workstation.StrategyRunPromotionState?, Decimal?, Decimal?, Decimal?, Meridian.Contracts.Workstation.ResearchRunDrillInLinks)
+  name.vb: New(String, String, StrategyRunMode, StrategyRunStatus, String, String, String, String, String, String, StrategyRunPromotionState?, Decimal?, Decimal?, Decimal?, ResearchRunDrillInLinks)
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.RunId
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ResearchBriefingRun.RunId
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.RunId*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName
+  id: StrategyName
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: ResearchBriefingRun.StrategyName
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Mode
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.Mode
+  id: Mode
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: Mode
+  nameWithType: ResearchBriefingRun.Mode
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Mode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mode
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunMode Mode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    content.vb: Public Property Mode As StrategyRunMode
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.Mode*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Status
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.Status
+  id: Status
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ResearchBriefingRun.Status
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunStatus
+    content.vb: Public Property Status As StrategyRunStatus
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.Status*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset
+  id: Dataset
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: Dataset
+  nameWithType: ResearchBriefingRun.Dataset
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dataset
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Dataset { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Dataset As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel
+  id: WindowLabel
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: WindowLabel
+  nameWithType: ResearchBriefingRun.WindowLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowLabel
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string WindowLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WindowLabel As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel
+  id: ReturnLabel
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: ReturnLabel
+  nameWithType: ResearchBriefingRun.ReturnLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReturnLabel
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string ReturnLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReturnLabel As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel
+  id: SharpeLabel
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: SharpeLabel
+  nameWithType: ResearchBriefingRun.SharpeLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharpeLabel
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string SharpeLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SharpeLabel As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel
+  id: LastUpdatedLabel
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: LastUpdatedLabel
+  nameWithType: ResearchBriefingRun.LastUpdatedLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdatedLabel
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string LastUpdatedLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastUpdatedLabel As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Notes
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.Notes
+  id: Notes
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ResearchBriefingRun.Notes
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.Notes*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState
+  id: PromotionState
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: PromotionState
+  nameWithType: ResearchBriefingRun.PromotionState
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PromotionState
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunPromotionState? PromotionState { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState}
+    content.vb: Public Property PromotionState As StrategyRunPromotionState?
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl
+  id: NetPnl
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: NetPnl
+  nameWithType: ResearchBriefingRun.NetPnl
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetPnl
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? NetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property NetPnl As Decimal?
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn
+  id: TotalReturn
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: TotalReturn
+  nameWithType: ResearchBriefingRun.TotalReturn
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReturn
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? TotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property TotalReturn As Decimal?
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity
+  id: FinalEquity
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: FinalEquity
+  nameWithType: ResearchBriefingRun.FinalEquity
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinalEquity
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal? FinalEquity { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property FinalEquity As Decimal?
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn
+  id: DrillIn
+  parent: Meridian.Contracts.Workstation.ResearchBriefingRun
+  langs:
+  - csharp
+  - vb
+  name: DrillIn
+  nameWithType: ResearchBriefingRun.DrillIn
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrillIn
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ResearchRunDrillInLinks DrillIn { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+    content.vb: Public Property DrillIn As ResearchRunDrillInLinks
+  overload: Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingRun}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingRun}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResearchBriefingRun>
+  nameWithType: IEquatable<ResearchBriefingRun>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ResearchBriefingRun>
+  nameWithType.vb: IEquatable(Of ResearchBriefingRun)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ResearchBriefingRun)
+  name.vb: IEquatable(Of ResearchBriefingRun)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+    name: ResearchBriefingRun
+    href: Meridian.Contracts.Workstation.ResearchBriefingRun.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+    name: ResearchBriefingRun
+    href: Meridian.Contracts.Workstation.ResearchBriefingRun.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.#ctor
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun__ctor_System_String_System_String_Meridian_Contracts_Workstation_StrategyRunMode_Meridian_Contracts_Workstation_StrategyRunStatus_System_String_System_String_System_String_System_String_System_String_System_String_System_Nullable_Meridian_Contracts_Workstation_StrategyRunPromotionState__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__Meridian_Contracts_Workstation_ResearchRunDrillInLinks_
+  name: ResearchBriefingRun
+  nameWithType: ResearchBriefingRun.ResearchBriefingRun
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.ResearchBriefingRun
+  nameWithType.vb: ResearchBriefingRun.New
+  fullName.vb: Meridian.Contracts.Workstation.ResearchBriefingRun.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunMode
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunMode
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  name: StrategyRunMode
+  nameWithType: StrategyRunMode
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode
+- uid: Meridian.Contracts.Workstation.StrategyRunStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus
+  nameWithType: StrategyRunStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus
+- uid: System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState}
+  commentId: T:System.Nullable{Meridian.Contracts.Workstation.StrategyRunPromotionState}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Workstation.StrategyRunPromotionState.html
+  name: StrategyRunPromotionState?
+  nameWithType: StrategyRunPromotionState?
+  fullName: Meridian.Contracts.Workstation.StrategyRunPromotionState?
+  spec.csharp:
+  - uid: Meridian.Contracts.Workstation.StrategyRunPromotionState
+    name: StrategyRunPromotionState
+    href: Meridian.Contracts.Workstation.StrategyRunPromotionState.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Workstation.StrategyRunPromotionState
+    name: StrategyRunPromotionState
+    href: Meridian.Contracts.Workstation.StrategyRunPromotionState.html
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  commentId: T:Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html
+  name: ResearchRunDrillInLinks
+  nameWithType: ResearchRunDrillInLinks
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.RunId
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_RunId
+  name: RunId
+  nameWithType: ResearchBriefingRun.RunId
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.RunId
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_StrategyName
+  name: StrategyName
+  nameWithType: ResearchBriefingRun.StrategyName
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.StrategyName
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Mode*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.Mode
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_Mode
+  name: Mode
+  nameWithType: ResearchBriefingRun.Mode
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Mode
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Status*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.Status
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_Status
+  name: Status
+  nameWithType: ResearchBriefingRun.Status
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Status
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_Dataset
+  name: Dataset
+  nameWithType: ResearchBriefingRun.Dataset
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Dataset
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_WindowLabel
+  name: WindowLabel
+  nameWithType: ResearchBriefingRun.WindowLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.WindowLabel
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_ReturnLabel
+  name: ReturnLabel
+  nameWithType: ResearchBriefingRun.ReturnLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.ReturnLabel
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_SharpeLabel
+  name: SharpeLabel
+  nameWithType: ResearchBriefingRun.SharpeLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.SharpeLabel
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_LastUpdatedLabel
+  name: LastUpdatedLabel
+  nameWithType: ResearchBriefingRun.LastUpdatedLabel
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.LastUpdatedLabel
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.Notes*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.Notes
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_Notes
+  name: Notes
+  nameWithType: ResearchBriefingRun.Notes
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.Notes
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_PromotionState
+  name: PromotionState
+  nameWithType: ResearchBriefingRun.PromotionState
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.PromotionState
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_NetPnl
+  name: NetPnl
+  nameWithType: ResearchBriefingRun.NetPnl
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.NetPnl
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_TotalReturn
+  name: TotalReturn
+  nameWithType: ResearchBriefingRun.TotalReturn
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.TotalReturn
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_FinalEquity
+  name: FinalEquity
+  nameWithType: ResearchBriefingRun.FinalEquity
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.FinalEquity
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html#Meridian_Contracts_Workstation_ResearchBriefingRun_DrillIn
+  name: DrillIn
+  nameWithType: ResearchBriefingRun.DrillIn
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun.DrillIn

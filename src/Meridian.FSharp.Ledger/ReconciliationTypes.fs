@@ -28,6 +28,11 @@ type BreakRecord = {
     SecurityId    : Guid
     FlowId        : Guid
     Classification: string
+    TaxonomyVersion: string
+    CanonicalClass: string
+    PrimaryReasonCode: string
+    ReasonCodes: string array
+    IsFallbackClassification: bool
     Severity      : string
     ExpectedAmount: decimal
     ActualAmount  : decimal

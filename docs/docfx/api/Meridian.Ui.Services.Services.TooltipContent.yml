@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TooltipContent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TooltipContent
     path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TooltipContent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFeatureHelp
     path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TooltipContent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOnboardingTips
     path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TooltipContent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTooltipText
     path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TooltipContent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureHelpContent
     path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/TooltipContent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnboardingTipsContent
     path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs

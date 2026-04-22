@@ -1,0 +1,658 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping
+  commentId: T:Meridian.Application.SecurityMaster.SecurityKindMapping
+  id: SecurityKindMapping
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass(Meridian.Contracts.Domain.Enums.InstrumentType)
+  - Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes(System.String)
+  - Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType(System.String)
+  langs:
+  - csharp
+  - vb
+  name: SecurityKindMapping
+  nameWithType: SecurityKindMapping
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityKindMapping
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Read-only bridge between <xref href="Meridian.Contracts.Domain.Enums.InstrumentType" data-throw-if-not-resolved="false"></xref> (market-data layer) and the
+
+    F# <code>SecurityKind</code> asset-class strings (security master layer).
+
+
+    <p>
+
+    These two classification systems evolved independently: <xref href="Meridian.Contracts.Domain.Enums.InstrumentType" data-throw-if-not-resolved="false"></xref> is
+
+    used by the data-collection pipeline and provider adapters, while the security master uses
+
+    F# discriminated-union asset-class names. This static lookup provides a non-breaking,
+
+    read-only mapping so routing code does not need to hardcode string comparisons.
+
+    </p>
+  example: []
+  syntax:
+    content: public static class SecurityKindMapping
+    content.vb: Public Module SecurityKindMapping
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass(Meridian.Contracts.Domain.Enums.InstrumentType)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass(Meridian.Contracts.Domain.Enums.InstrumentType)
+  id: ToAssetClass(Meridian.Contracts.Domain.Enums.InstrumentType)
+  parent: Meridian.Application.SecurityMaster.SecurityKindMapping
+  langs:
+  - csharp
+  - vb
+  name: ToAssetClass(InstrumentType)
+  nameWithType: SecurityKindMapping.ToAssetClass(InstrumentType)
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass(Meridian.Contracts.Domain.Enums.InstrumentType)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToAssetClass
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the canonical security master asset-class string for the given
+
+    <code class="paramref">instrumentType</code>, or <code>null</code> when no mapping exists.
+  example: []
+  syntax:
+    content: public static string? ToAssetClass(InstrumentType instrumentType)
+    parameters:
+    - id: instrumentType
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    return:
+      type: System.String
+    content.vb: Public Shared Function ToAssetClass(instrumentType As InstrumentType) As String
+  overload: Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass*
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes(System.String)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes(System.String)
+  id: ToInstrumentTypes(System.String)
+  parent: Meridian.Application.SecurityMaster.SecurityKindMapping
+  langs:
+  - csharp
+  - vb
+  name: ToInstrumentTypes(string)
+  nameWithType: SecurityKindMapping.ToInstrumentTypes(string)
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToInstrumentTypes
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns all <xref href="Meridian.Contracts.Domain.Enums.InstrumentType" data-throw-if-not-resolved="false"></xref> values that correspond to the given
+
+    security master <code class="paramref">assetClass</code> string.
+
+    Returns an empty list when the asset class is not mapped to a market-data instrument type.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<InstrumentType> ToInstrumentTypes(string assetClass)
+    parameters:
+    - id: assetClass
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Enums.InstrumentType}
+    content.vb: Public Shared Function ToInstrumentTypes(assetClass As String) As IReadOnlyList(Of InstrumentType)
+  overload: Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes*
+  nameWithType.vb: SecurityKindMapping.ToInstrumentTypes(String)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes(String)
+  name.vb: ToInstrumentTypes(String)
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType(System.String)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType(System.String)
+  id: ToPrimaryInstrumentType(System.String)
+  parent: Meridian.Application.SecurityMaster.SecurityKindMapping
+  langs:
+  - csharp
+  - vb
+  name: ToPrimaryInstrumentType(string)
+  nameWithType: SecurityKindMapping.ToPrimaryInstrumentType(string)
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToPrimaryInstrumentType
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityKindMapping.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns the single most-specific <xref href="Meridian.Contracts.Domain.Enums.InstrumentType" data-throw-if-not-resolved="false"></xref> hint for a given
+
+    <code class="paramref">assetClass</code>, or <code>null</code> when ambiguous or unmapped.
+
+    Useful for provider subscription routing when a precise type is needed.
+  example: []
+  syntax:
+    content: public static InstrumentType? ToPrimaryInstrumentType(string assetClass)
+    parameters:
+    - id: assetClass
+      type: System.String
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.InstrumentType}
+    content.vb: Public Shared Function ToPrimaryInstrumentType(assetClass As String) As InstrumentType?
+  overload: Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType*
+  nameWithType.vb: SecurityKindMapping.ToPrimaryInstrumentType(String)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType(String)
+  name.vb: ToPrimaryInstrumentType(String)
+references:
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.InstrumentType.html
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass
+  href: Meridian.Application.SecurityMaster.SecurityKindMapping.html#Meridian_Application_SecurityMaster_SecurityKindMapping_ToAssetClass_Meridian_Contracts_Domain_Enums_InstrumentType_
+  name: ToAssetClass
+  nameWithType: SecurityKindMapping.ToAssetClass
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping.ToAssetClass
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes
+  href: Meridian.Application.SecurityMaster.SecurityKindMapping.html#Meridian_Application_SecurityMaster_SecurityKindMapping_ToInstrumentTypes_System_String_
+  name: ToInstrumentTypes
+  nameWithType: SecurityKindMapping.ToInstrumentTypes
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping.ToInstrumentTypes
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Enums.InstrumentType}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Enums.InstrumentType}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<InstrumentType>
+  nameWithType: IReadOnlyList<InstrumentType>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Enums.InstrumentType>
+  nameWithType.vb: IReadOnlyList(Of InstrumentType)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Enums.InstrumentType)
+  name.vb: IReadOnlyList(Of InstrumentType)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Enums.InstrumentType
+    name: InstrumentType
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Enums.InstrumentType
+    name: InstrumentType
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType
+  href: Meridian.Application.SecurityMaster.SecurityKindMapping.html#Meridian_Application_SecurityMaster_SecurityKindMapping_ToPrimaryInstrumentType_System_String_
+  name: ToPrimaryInstrumentType
+  nameWithType: SecurityKindMapping.ToPrimaryInstrumentType
+  fullName: Meridian.Application.SecurityMaster.SecurityKindMapping.ToPrimaryInstrumentType
+- uid: System.Nullable{Meridian.Contracts.Domain.Enums.InstrumentType}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.Enums.InstrumentType}
+  parent: System
+  definition: System.Nullable`1
+  name: InstrumentType?
+  nameWithType: InstrumentType?
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.InstrumentType
+    name: InstrumentType
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.InstrumentType
+    name: InstrumentType
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

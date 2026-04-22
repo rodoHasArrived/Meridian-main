@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReplayEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapReplayEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs

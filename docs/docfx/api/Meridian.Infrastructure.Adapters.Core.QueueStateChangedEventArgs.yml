@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueStateChangedEventArgs
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PendingCount
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InFlightCount
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs

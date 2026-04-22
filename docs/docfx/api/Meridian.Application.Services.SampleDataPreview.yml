@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleDataPreview
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Events
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedTotalEvents
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/SampleDataGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleSymbols
     path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs

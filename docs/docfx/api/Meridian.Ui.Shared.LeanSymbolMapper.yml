@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanSymbolMapper
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UsaMarket
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquitySecurityType
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CryptoSecurityType
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForexSecurityType
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToLeanTicker
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromLeanTicker
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectSecurityType
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectMarket
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildLeanDataDirectory
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -387,7 +387,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildLeanFileName
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -428,7 +428,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapEventTypeToLean
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs
@@ -464,7 +464,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanSymbolMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapResolutionToMdc
     path: ../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs

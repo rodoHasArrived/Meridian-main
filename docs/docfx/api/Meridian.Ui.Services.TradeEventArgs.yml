@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeEventArgs
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trade
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs

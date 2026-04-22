@@ -7,8 +7,6 @@ items:
   - Meridian.Backtesting.Sdk.AssetEvent
   - Meridian.Backtesting.Sdk.AssetEventCashFlow
   - Meridian.Backtesting.Sdk.AssetEventType
-  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-  - Meridian.Backtesting.Sdk.BacktestArtifactStatus
   - Meridian.Backtesting.Sdk.BacktestCommissionKind
   - Meridian.Backtesting.Sdk.BacktestDefaults
   - Meridian.Backtesting.Sdk.BacktestEngineMetadata
@@ -31,6 +29,7 @@ items:
   - Meridian.Backtesting.Sdk.FinancialAccountSnapshot
   - Meridian.Backtesting.Sdk.IBacktestContext
   - Meridian.Backtesting.Sdk.IBacktestStrategy
+  - Meridian.Backtesting.Sdk.IntermediateMetrics
   - Meridian.Backtesting.Sdk.LotSelectionMethod
   - Meridian.Backtesting.Sdk.MarginInterestCashFlow
   - Meridian.Backtesting.Sdk.OpenLot
@@ -100,27 +99,6 @@ references:
   name: BacktestRequest
   nameWithType: BacktestRequest
   fullName: Meridian.Backtesting.Sdk.BacktestRequest
-- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus
-  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactStatus
-  parent: Meridian.Backtesting.Sdk
-  href: Meridian.Backtesting.Sdk.BacktestArtifactStatus.html
-  name: BacktestArtifactStatus
-  nameWithType: BacktestArtifactStatus
-  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus
-- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-  parent: Meridian.Backtesting.Sdk
-  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html
-  name: BacktestArtifactCoverage
-  nameWithType: BacktestArtifactCoverage
-  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
-- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
-  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMetadata
-  parent: Meridian.Backtesting.Sdk
-  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
-  name: BacktestEngineMetadata
-  nameWithType: BacktestEngineMetadata
-  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata
 - uid: Meridian.Backtesting.Sdk.SymbolAttribution
   commentId: T:Meridian.Backtesting.Sdk.SymbolAttribution
   href: Meridian.Backtesting.Sdk.SymbolAttribution.html
@@ -134,6 +112,13 @@ references:
   name: BacktestMetrics
   nameWithType: BacktestMetrics
   fullName: Meridian.Backtesting.Sdk.BacktestMetrics
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
+  name: BacktestEngineMetadata
+  nameWithType: BacktestEngineMetadata
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata
 - uid: Meridian.Backtesting.Sdk.BacktestResult
   commentId: T:Meridian.Backtesting.Sdk.BacktestResult
   parent: Meridian.Backtesting.Sdk
@@ -250,6 +235,12 @@ references:
   name: IBacktestStrategy
   nameWithType: IBacktestStrategy
   fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+  commentId: T:Meridian.Backtesting.Sdk.IntermediateMetrics
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html
+  name: IntermediateMetrics
+  nameWithType: IntermediateMetrics
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics
 - uid: Meridian.Backtesting.Sdk.LotSelectionMethod
   commentId: T:Meridian.Backtesting.Sdk.LotSelectionMethod
   parent: Meridian.Backtesting.Sdk

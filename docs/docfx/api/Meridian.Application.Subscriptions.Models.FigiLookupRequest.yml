@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FigiLookupRequest
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdType
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdValue
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExchCode
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketSecDes
     path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs

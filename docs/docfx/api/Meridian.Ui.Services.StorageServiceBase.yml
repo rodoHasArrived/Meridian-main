@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageServiceBase
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageStatsAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageBreakdownAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolInfoAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStorageStatsAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolFolderPathAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCleanupCandidatesAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunCleanupAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -391,7 +391,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetArchiveStatsAsync
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -424,7 +424,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatBytes
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs
@@ -460,7 +460,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFileIcon
     path: ../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs

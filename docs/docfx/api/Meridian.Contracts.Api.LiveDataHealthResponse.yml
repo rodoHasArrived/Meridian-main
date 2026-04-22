@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiveDataHealthResponse
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CollectorsAvailable
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsWithQuotes
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsWithDepth
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelinePublished
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineDropped
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineConsumed
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineQueueSize
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PipelineUtilization
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LiveDataModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs

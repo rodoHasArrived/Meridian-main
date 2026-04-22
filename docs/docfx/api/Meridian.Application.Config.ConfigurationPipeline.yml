@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationPipeline
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromFile
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Process
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromWizardResult
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromAutoConfigResult
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromHotReload
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -303,7 +303,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartHotReload
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopHotReload
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
@@ -376,11 +376,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigurationPipeline.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Config/ConfigurationPipeline.cs
-    startLine: 853
+    startLine: 854
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config

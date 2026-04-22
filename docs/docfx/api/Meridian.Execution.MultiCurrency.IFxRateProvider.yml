@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IFxRateProvider
     path: ../../src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateAsync
     path: ../../src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRequiredRateAsync
     path: ../../src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs

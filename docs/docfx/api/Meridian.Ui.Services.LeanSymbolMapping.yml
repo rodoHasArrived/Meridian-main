@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanSymbolMapping
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 622
+    startLine: 633
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -53,11 +53,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MdcSymbol
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 624
+    startLine: 635
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -82,11 +82,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanTicker
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 625
+    startLine: 636
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -111,11 +111,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 626
+    startLine: 637
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -140,11 +140,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Market
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 627
+    startLine: 638
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

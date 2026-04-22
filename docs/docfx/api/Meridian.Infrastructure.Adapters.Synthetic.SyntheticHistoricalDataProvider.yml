@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyntheticHistoricalDataProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -393,7 +393,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -440,7 +440,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalQuotesAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -489,7 +489,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalQuotesAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -538,7 +538,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalTradesAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -587,7 +587,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalTradesAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -636,7 +636,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalAuctionsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -683,7 +683,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoricalAuctionsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -730,7 +730,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDividendsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
@@ -774,7 +774,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSplitsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs

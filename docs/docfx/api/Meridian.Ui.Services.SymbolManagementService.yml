@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolManagementService
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMonitoredSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetArchivedSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleTradesAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleDepthAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -403,7 +403,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolStatisticsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -436,7 +436,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -476,7 +476,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolArchiveInfoAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -514,7 +514,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkAddSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -558,7 +558,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkRemoveSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
@@ -596,7 +596,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs

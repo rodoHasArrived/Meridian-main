@@ -7,18 +7,14 @@ items:
   children:
   - Meridian.Ui.Services.BackfillApiService.#ctor
   - Meridian.Ui.Services.BackfillApiService.CheckProviderHealthAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.GetExecutionHistoryAsync(System.Int32,System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.GetLastStatusAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.GetPresetsAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.GetProvidersAsync(System.Threading.CancellationToken)
-  - Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.GetStatisticsAsync(System.Nullable{System.Int32},System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(System.String,System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.RunBackfillAsync(System.String,System.String[],System.String,System.String,System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(System.String[],System.Int32,System.String,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
   langs:
   - csharp
   - vb
@@ -29,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillApiService
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 12
+    startLine: 10
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -65,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 16
+    startLine: 14
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -94,11 +90,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 24
+    startLine: 22
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -127,11 +123,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 33
+    startLine: 31
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -160,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfillAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 41
+    startLine: 39
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -206,11 +202,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckProviderHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 80
+    startLine: 78
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -239,18 +235,18 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunGapFillAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 98
+    startLine: 86
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
   summary: Runs an immediate gap-fill operation.
   example: []
   syntax:
-    content: public Task<BackfillResultDto?> RunGapFillAsync(string[] symbols, int lookbackDays = 30, string priority = "High", CancellationToken ct = default)
+    content: public Task<BackfillExecutionResponse?> RunGapFillAsync(string[] symbols, int lookbackDays = 30, string priority = "High", CancellationToken ct = default)
     parameters:
     - id: symbols
       type: System.String[]
@@ -261,8 +257,8 @@ items:
     - id: ct
       type: System.Threading.CancellationToken
     return:
-      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillResultDto}
-    content.vb: Public Function RunGapFillAsync(symbols As String(), lookbackDays As Integer = 30, priority As String = "High", ct As CancellationToken = Nothing) As Task(Of BackfillResultDto)
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
+    content.vb: Public Function RunGapFillAsync(symbols As String(), lookbackDays As Integer = 30, priority As String = "High", ct As CancellationToken = Nothing) As Task(Of BackfillExecutionResponse)
   overload: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync*
   nameWithType.vb: BackfillApiService.RunGapFillAsync(String(), Integer, String, CancellationToken)
   fullName.vb: Meridian.Ui.Services.BackfillApiService.RunGapFillAsync(String(), Integer, String, System.Threading.CancellationToken)
@@ -281,11 +277,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPresetsAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 124
+    startLine: 111
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -314,11 +310,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExecutionHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 147
+    startLine: 120
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -352,11 +348,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatisticsAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 174
+    startLine: 130
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -390,11 +386,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolGapAnalysisAsync
     path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 201
+    startLine: 143
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -419,150 +415,6 @@ items:
   nameWithType.vb: BackfillApiService.GetSymbolGapAnalysisAsync(String, String, CancellationToken)
   fullName.vb: Meridian.Ui.Services.BackfillApiService.GetSymbolGapAnalysisAsync(String, String, System.Threading.CancellationToken)
   name.vb: GetSymbolGapAnalysisAsync(String, String, CancellationToken)
-- uid: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
-  id: GetSchedulesAsync(System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.BackfillApiService
-  langs:
-  - csharp
-  - vb
-  name: GetSchedulesAsync(CancellationToken)
-  nameWithType: BackfillApiService.GetSchedulesAsync(CancellationToken)
-  fullName: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync(System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: GetSchedulesAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 216
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Gets all configured backfill schedules.
-  example: []
-  syntax:
-    content: public Task<List<BackfillScheduleSummary>> GetSchedulesAsync(CancellationToken ct = default)
-    parameters:
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.BackfillScheduleSummary}}
-    content.vb: Public Function GetSchedulesAsync(ct As CancellationToken = Nothing) As Task(Of List(Of BackfillScheduleSummary))
-  overload: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync*
-- uid: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
-  id: CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.BackfillApiService
-  langs:
-  - csharp
-  - vb
-  name: CreateScheduleAsync(BackfillScheduleCreateRequest, CancellationToken)
-  nameWithType: BackfillApiService.CreateScheduleAsync(BackfillScheduleCreateRequest, CancellationToken)
-  fullName: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync(Meridian.Ui.Services.BackfillScheduleCreateRequest, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: CreateScheduleAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 225
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Creates a new backfill schedule.
-  example: []
-  syntax:
-    content: public Task<BackfillScheduleSummary?> CreateScheduleAsync(BackfillScheduleCreateRequest request, CancellationToken ct = default)
-    parameters:
-    - id: request
-      type: Meridian.Ui.Services.BackfillScheduleCreateRequest
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillScheduleSummary}
-    content.vb: Public Function CreateScheduleAsync(request As BackfillScheduleCreateRequest, ct As CancellationToken = Nothing) As Task(Of BackfillScheduleSummary)
-  overload: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync*
-- uid: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
-  id: DeleteScheduleAsync(System.String,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.BackfillApiService
-  langs:
-  - csharp
-  - vb
-  name: DeleteScheduleAsync(string, CancellationToken)
-  nameWithType: BackfillApiService.DeleteScheduleAsync(string, CancellationToken)
-  fullName: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(string, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: DeleteScheduleAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 235
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Deletes a schedule by id.
-  example: []
-  syntax:
-    content: public Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken ct = default)
-    parameters:
-    - id: scheduleId
-      type: System.String
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{System.Boolean}
-    content.vb: Public Function DeleteScheduleAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
-  overload: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync*
-  nameWithType.vb: BackfillApiService.DeleteScheduleAsync(String, CancellationToken)
-  fullName.vb: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync(String, System.Threading.CancellationToken)
-  name.vb: DeleteScheduleAsync(String, CancellationToken)
-- uid: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
-  id: RunScheduleNowAsync(System.String,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.BackfillApiService
-  langs:
-  - csharp
-  - vb
-  name: RunScheduleNowAsync(string, CancellationToken)
-  nameWithType: BackfillApiService.RunScheduleNowAsync(string, CancellationToken)
-  fullName: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(string, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/BackfillApiService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: RunScheduleNowAsync
-    path: ../../src/Meridian.Ui.Services/Services/BackfillApiService.cs
-    startLine: 245
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Triggers a schedule immediately.
-  example: []
-  syntax:
-    content: public Task<BackfillExecutionResponse?> RunScheduleNowAsync(string scheduleId, CancellationToken ct = default)
-    parameters:
-    - id: scheduleId
-      type: System.String
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
-    content.vb: Public Function RunScheduleNowAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of BackfillExecutionResponse)
-  overload: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync*
-  nameWithType.vb: BackfillApiService.RunScheduleNowAsync(String, CancellationToken)
-  fullName.vb: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync(String, System.Threading.CancellationToken)
-  name.vb: RunScheduleNowAsync(String, CancellationToken)
 references:
 - uid: Meridian.Ui.Services
   commentId: N:Meridian.Ui.Services
@@ -1104,6 +956,37 @@ references:
   nameWithType.vb: Integer
   fullName.vb: Integer
   name.vb: Integer
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillExecutionResponse>
+  nameWithType: Task<BackfillExecutionResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillExecutionResponse>
+  nameWithType.vb: Task(Of BackfillExecutionResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillExecutionResponse)
+  name.vb: Task(Of BackfillExecutionResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillExecutionResponse
+    name: BackfillExecutionResponse
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillExecutionResponse
+    name: BackfillExecutionResponse
+  - name: )
 - uid: Meridian.Ui.Services.BackfillApiService.GetPresetsAsync*
   commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetPresetsAsync
   href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetPresetsAsync_System_Threading_CancellationToken_
@@ -1338,181 +1221,4 @@ references:
   - uid: Meridian.Ui.Services.SymbolGapAnalysisDto
     name: SymbolGapAnalysisDto
     href: Meridian.Ui.Services.SymbolGapAnalysisDto.html
-  - name: )
-- uid: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync*
-  commentId: Overload:Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync
-  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_GetSchedulesAsync_System_Threading_CancellationToken_
-  name: GetSchedulesAsync
-  nameWithType: BackfillApiService.GetSchedulesAsync
-  fullName: Meridian.Ui.Services.BackfillApiService.GetSchedulesAsync
-- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.BackfillScheduleSummary}}
-  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.BackfillScheduleSummary}}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<List<BackfillScheduleSummary>>
-  nameWithType: Task<List<BackfillScheduleSummary>>
-  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.BackfillScheduleSummary>>
-  nameWithType.vb: Task(Of List(Of BackfillScheduleSummary))
-  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.BackfillScheduleSummary))
-  name.vb: Task(Of List(Of BackfillScheduleSummary))
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: System.Collections.Generic.List`1
-    name: List
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  - name: <
-  - uid: Meridian.Ui.Services.BackfillScheduleSummary
-    name: BackfillScheduleSummary
-    href: Meridian.Ui.Services.BackfillScheduleSummary.html
-  - name: '>'
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: System.Collections.Generic.List`1
-    name: List
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.BackfillScheduleSummary
-    name: BackfillScheduleSummary
-    href: Meridian.Ui.Services.BackfillScheduleSummary.html
-  - name: )
-  - name: )
-- uid: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync*
-  commentId: Overload:Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync
-  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_CreateScheduleAsync_Meridian_Ui_Services_BackfillScheduleCreateRequest_System_Threading_CancellationToken_
-  name: CreateScheduleAsync
-  nameWithType: BackfillApiService.CreateScheduleAsync
-  fullName: Meridian.Ui.Services.BackfillApiService.CreateScheduleAsync
-- uid: Meridian.Ui.Services.BackfillScheduleCreateRequest
-  commentId: T:Meridian.Ui.Services.BackfillScheduleCreateRequest
-  parent: Meridian.Ui.Services
-  href: Meridian.Ui.Services.BackfillScheduleCreateRequest.html
-  name: BackfillScheduleCreateRequest
-  nameWithType: BackfillScheduleCreateRequest
-  fullName: Meridian.Ui.Services.BackfillScheduleCreateRequest
-- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillScheduleSummary}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillScheduleSummary}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<BackfillScheduleSummary>
-  nameWithType: Task<BackfillScheduleSummary>
-  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BackfillScheduleSummary>
-  nameWithType.vb: Task(Of BackfillScheduleSummary)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BackfillScheduleSummary)
-  name.vb: Task(Of BackfillScheduleSummary)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Ui.Services.BackfillScheduleSummary
-    name: BackfillScheduleSummary
-    href: Meridian.Ui.Services.BackfillScheduleSummary.html
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Ui.Services.BackfillScheduleSummary
-    name: BackfillScheduleSummary
-    href: Meridian.Ui.Services.BackfillScheduleSummary.html
-  - name: )
-- uid: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync*
-  commentId: Overload:Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync
-  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_DeleteScheduleAsync_System_String_System_Threading_CancellationToken_
-  name: DeleteScheduleAsync
-  nameWithType: BackfillApiService.DeleteScheduleAsync
-  fullName: Meridian.Ui.Services.BackfillApiService.DeleteScheduleAsync
-- uid: System.Threading.Tasks.Task{System.Boolean}
-  commentId: T:System.Threading.Tasks.Task{System.Boolean}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<bool>
-  nameWithType: Task<bool>
-  fullName: System.Threading.Tasks.Task<bool>
-  nameWithType.vb: Task(Of Boolean)
-  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
-  name.vb: Task(Of Boolean)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: System.Boolean
-    name: bool
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.boolean
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: System.Boolean
-    name: Boolean
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.boolean
-  - name: )
-- uid: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync*
-  commentId: Overload:Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync
-  href: Meridian.Ui.Services.BackfillApiService.html#Meridian_Ui_Services_BackfillApiService_RunScheduleNowAsync_System_String_System_Threading_CancellationToken_
-  name: RunScheduleNowAsync
-  nameWithType: BackfillApiService.RunScheduleNowAsync
-  fullName: Meridian.Ui.Services.BackfillApiService.RunScheduleNowAsync
-- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.BackfillExecutionResponse}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<BackfillExecutionResponse>
-  nameWithType: Task<BackfillExecutionResponse>
-  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.BackfillExecutionResponse>
-  nameWithType.vb: Task(Of BackfillExecutionResponse)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.BackfillExecutionResponse)
-  name.vb: Task(Of BackfillExecutionResponse)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Contracts.Api.BackfillExecutionResponse
-    name: BackfillExecutionResponse
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Contracts.Api.BackfillExecutionResponse
-    name: BackfillExecutionResponse
   - name: )

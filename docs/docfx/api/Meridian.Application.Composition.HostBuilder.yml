@@ -9,12 +9,10 @@ items:
   - Meridian.Application.Composition.HostBuilder.AsConsole(System.Boolean)
   - Meridian.Application.Composition.HostBuilder.AsDesktop(System.Int32)
   - Meridian.Application.Composition.HostBuilder.AsStreaming(System.Boolean,System.Nullable{System.Int32})
-  - Meridian.Application.Composition.HostBuilder.AsWebDashboard(System.Int32,Meridian.Application.UI.StatusEndpointHandlers)
   - Meridian.Application.Composition.HostBuilder.Build
   - Meridian.Application.Composition.HostBuilder.Create(System.String[],Meridian.Application.Composition.CompositionOptions)
   - Meridian.Application.Composition.HostBuilder.CreateForBackfill(System.String)
   - Meridian.Application.Composition.HostBuilder.CreateForStreaming(System.String,System.Nullable{System.Int32})
-  - Meridian.Application.Composition.HostBuilder.CreateForWeb(System.String,System.Int32)
   - Meridian.Application.Composition.HostBuilder.WithAdapter(Meridian.Application.Composition.IHostAdapter)
   langs:
   - csharp
@@ -26,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostBuilder
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 285
+    startLine: 200
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -62,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Create
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 300
+    startLine: 215
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -86,44 +84,6 @@ items:
   nameWithType.vb: HostBuilder.Create(String(), CompositionOptions)
   fullName.vb: Meridian.Application.Composition.HostBuilder.Create(String(), Meridian.Application.Composition.CompositionOptions)
   name.vb: Create(String(), CompositionOptions)
-- uid: Meridian.Application.Composition.HostBuilder.CreateForWeb(System.String,System.Int32)
-  commentId: M:Meridian.Application.Composition.HostBuilder.CreateForWeb(System.String,System.Int32)
-  id: CreateForWeb(System.String,System.Int32)
-  parent: Meridian.Application.Composition.HostBuilder
-  langs:
-  - csharp
-  - vb
-  name: CreateForWeb(string, int)
-  nameWithType: HostBuilder.CreateForWeb(string, int)
-  fullName: Meridian.Application.Composition.HostBuilder.CreateForWeb(string, int)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: CreateForWeb
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 309
-  assemblies:
-  - Meridian.Application
-  namespace: Meridian.Application.Composition
-  summary: Creates a new host builder for web dashboard mode.
-  example: []
-  syntax:
-    content: public static HostBuilder CreateForWeb(string configPath, int port = 8080)
-    parameters:
-    - id: configPath
-      type: System.String
-    - id: port
-      type: System.Int32
-    return:
-      type: Meridian.Application.Composition.HostBuilder
-    content.vb: Public Shared Function CreateForWeb(configPath As String, port As Integer = 8080) As HostBuilder
-  overload: Meridian.Application.Composition.HostBuilder.CreateForWeb*
-  nameWithType.vb: HostBuilder.CreateForWeb(String, Integer)
-  fullName.vb: Meridian.Application.Composition.HostBuilder.CreateForWeb(String, Integer)
-  name.vb: CreateForWeb(String, Integer)
 - uid: Meridian.Application.Composition.HostBuilder.CreateForStreaming(System.String,System.Nullable{System.Int32})
   commentId: M:Meridian.Application.Composition.HostBuilder.CreateForStreaming(System.String,System.Nullable{System.Int32})
   id: CreateForStreaming(System.String,System.Nullable{System.Int32})
@@ -138,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForStreaming
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 322
+    startLine: 224
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -176,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateForBackfill
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 338
+    startLine: 240
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -212,11 +172,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAdapter
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 350
+    startLine: 252
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -231,44 +191,6 @@ items:
       type: Meridian.Application.Composition.HostBuilder
     content.vb: Public Function WithAdapter(adapter As IHostAdapter) As HostBuilder
   overload: Meridian.Application.Composition.HostBuilder.WithAdapter*
-- uid: Meridian.Application.Composition.HostBuilder.AsWebDashboard(System.Int32,Meridian.Application.UI.StatusEndpointHandlers)
-  commentId: M:Meridian.Application.Composition.HostBuilder.AsWebDashboard(System.Int32,Meridian.Application.UI.StatusEndpointHandlers)
-  id: AsWebDashboard(System.Int32,Meridian.Application.UI.StatusEndpointHandlers)
-  parent: Meridian.Application.Composition.HostBuilder
-  langs:
-  - csharp
-  - vb
-  name: AsWebDashboard(int, StatusEndpointHandlers?)
-  nameWithType: HostBuilder.AsWebDashboard(int, StatusEndpointHandlers?)
-  fullName: Meridian.Application.Composition.HostBuilder.AsWebDashboard(int, Meridian.Application.UI.StatusEndpointHandlers?)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: AsWebDashboard
-    path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 359
-  assemblies:
-  - Meridian.Application
-  namespace: Meridian.Application.Composition
-  summary: Configures the host for web dashboard mode.
-  example: []
-  syntax:
-    content: public HostBuilder AsWebDashboard(int port = 8080, StatusEndpointHandlers? statusHandlers = null)
-    parameters:
-    - id: port
-      type: System.Int32
-    - id: statusHandlers
-      type: Meridian.Application.UI.StatusEndpointHandlers
-    return:
-      type: Meridian.Application.Composition.HostBuilder
-    content.vb: Public Function AsWebDashboard(port As Integer = 8080, statusHandlers As StatusEndpointHandlers = Nothing) As HostBuilder
-  overload: Meridian.Application.Composition.HostBuilder.AsWebDashboard*
-  nameWithType.vb: HostBuilder.AsWebDashboard(Integer, StatusEndpointHandlers)
-  fullName.vb: Meridian.Application.Composition.HostBuilder.AsWebDashboard(Integer, Meridian.Application.UI.StatusEndpointHandlers)
-  name.vb: AsWebDashboard(Integer, StatusEndpointHandlers)
 - uid: Meridian.Application.Composition.HostBuilder.AsConsole(System.Boolean)
   commentId: M:Meridian.Application.Composition.HostBuilder.AsConsole(System.Boolean)
   id: AsConsole(System.Boolean)
@@ -283,11 +205,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsConsole
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 368
+    startLine: 261
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -319,11 +241,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsDesktop
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 377
+    startLine: 270
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -355,11 +277,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsStreaming
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 386
+    startLine: 279
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -393,11 +315,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsBackfill
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 395
+    startLine: 288
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -423,11 +345,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Build
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 404
+    startLine: 297
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -726,12 +648,12 @@ references:
   name: HostBuilder
   nameWithType: HostBuilder
   fullName: Meridian.Application.Composition.HostBuilder
-- uid: Meridian.Application.Composition.HostBuilder.CreateForWeb*
-  commentId: Overload:Meridian.Application.Composition.HostBuilder.CreateForWeb
-  href: Meridian.Application.Composition.HostBuilder.html#Meridian_Application_Composition_HostBuilder_CreateForWeb_System_String_System_Int32_
-  name: CreateForWeb
-  nameWithType: HostBuilder.CreateForWeb
-  fullName: Meridian.Application.Composition.HostBuilder.CreateForWeb
+- uid: Meridian.Application.Composition.HostBuilder.CreateForStreaming*
+  commentId: Overload:Meridian.Application.Composition.HostBuilder.CreateForStreaming
+  href: Meridian.Application.Composition.HostBuilder.html#Meridian_Application_Composition_HostBuilder_CreateForStreaming_System_String_System_Nullable_System_Int32__
+  name: CreateForStreaming
+  nameWithType: HostBuilder.CreateForStreaming
+  fullName: Meridian.Application.Composition.HostBuilder.CreateForStreaming
 - uid: System.String
   commentId: T:System.String
   parent: System
@@ -743,23 +665,6 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
-- uid: System.Int32
-  commentId: T:System.Int32
-  parent: System
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.int32
-  name: int
-  nameWithType: int
-  fullName: int
-  nameWithType.vb: Integer
-  fullName.vb: Integer
-  name.vb: Integer
-- uid: Meridian.Application.Composition.HostBuilder.CreateForStreaming*
-  commentId: Overload:Meridian.Application.Composition.HostBuilder.CreateForStreaming
-  href: Meridian.Application.Composition.HostBuilder.html#Meridian_Application_Composition_HostBuilder_CreateForStreaming_System_String_System_Nullable_System_Int32__
-  name: CreateForStreaming
-  nameWithType: HostBuilder.CreateForStreaming
-  fullName: Meridian.Application.Composition.HostBuilder.CreateForStreaming
 - uid: System.Nullable{System.Int32}
   commentId: T:System.Nullable{System.Int32}
   parent: System
@@ -830,49 +735,6 @@ references:
   name: IHostAdapter
   nameWithType: IHostAdapter
   fullName: Meridian.Application.Composition.IHostAdapter
-- uid: Meridian.Application.Composition.HostBuilder.AsWebDashboard*
-  commentId: Overload:Meridian.Application.Composition.HostBuilder.AsWebDashboard
-  href: Meridian.Application.Composition.HostBuilder.html#Meridian_Application_Composition_HostBuilder_AsWebDashboard_System_Int32_Meridian_Application_UI_StatusEndpointHandlers_
-  name: AsWebDashboard
-  nameWithType: HostBuilder.AsWebDashboard
-  fullName: Meridian.Application.Composition.HostBuilder.AsWebDashboard
-- uid: Meridian.Application.UI.StatusEndpointHandlers
-  commentId: T:Meridian.Application.UI.StatusEndpointHandlers
-  parent: Meridian.Application.UI
-  href: Meridian.Application.UI.StatusEndpointHandlers.html
-  name: StatusEndpointHandlers
-  nameWithType: StatusEndpointHandlers
-  fullName: Meridian.Application.UI.StatusEndpointHandlers
-- uid: Meridian.Application.UI
-  commentId: N:Meridian.Application.UI
-  href: Meridian.html
-  name: Meridian.Application.UI
-  nameWithType: Meridian.Application.UI
-  fullName: Meridian.Application.UI
-  spec.csharp:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Application
-    name: Application
-    href: Meridian.Application.html
-  - name: .
-  - uid: Meridian.Application.UI
-    name: UI
-    href: Meridian.Application.UI.html
-  spec.vb:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Application
-    name: Application
-    href: Meridian.Application.html
-  - name: .
-  - uid: Meridian.Application.UI
-    name: UI
-    href: Meridian.Application.UI.html
 - uid: Meridian.Application.Composition.HostBuilder.AsConsole*
   commentId: Overload:Meridian.Application.Composition.HostBuilder.AsConsole
   href: Meridian.Application.Composition.HostBuilder.html#Meridian_Application_Composition_HostBuilder_AsConsole_System_Boolean_
@@ -896,6 +758,17 @@ references:
   name: AsDesktop
   nameWithType: HostBuilder.AsDesktop
   fullName: Meridian.Application.Composition.HostBuilder.AsDesktop
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
 - uid: Meridian.Application.Composition.HostBuilder.AsStreaming*
   commentId: Overload:Meridian.Application.Composition.HostBuilder.AsStreaming
   href: Meridian.Application.Composition.HostBuilder.html#Meridian_Application_Composition_HostBuilder_AsStreaming_System_Boolean_System_Nullable_System_Int32__

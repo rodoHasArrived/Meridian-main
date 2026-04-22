@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportConfiguration
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Profile
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OutputPath
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeQualityReport
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeSchema
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdditionalOptions
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs

@@ -38,8 +38,8 @@ rules:
   # ---------------------------------------------------------------------------
   - name: "Generated docs have auto-generated notice"
     applies_to: "docs/generated/*.md"
-    must_contain: "auto-generated"
-    severity: warning
+    must_contain: "(?i)auto-generated"
+    severity: error
 
   # ---------------------------------------------------------------------------
   # Provider documentation
@@ -49,7 +49,7 @@ rules:
     required_sections:
       - "Prerequisites"
       - "Configuration"
-    severity: warning
+    severity: error
 
   # ---------------------------------------------------------------------------
   # Top-level project files
@@ -102,4 +102,4 @@ rules:
     applies_to: "docs/operations/operator-runbook.md"
     required_sections:
       - "Troubleshooting"
-    severity: warning
+    severity: error

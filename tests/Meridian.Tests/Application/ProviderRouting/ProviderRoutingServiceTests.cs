@@ -3,6 +3,8 @@ using Meridian.Application.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
 using Meridian.ProviderSdk;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Meridian.Tests.Application.ProviderRouting;
@@ -190,13 +192,65 @@ public sealed class ProviderRoutingServiceTests : IDisposable
         second.SelectedDecision!.ConnectionId.Should().Be("primary-b");
     }
 
-    private ProviderRoutingService CreateService(IProviderConnectionHealthSource? healthSource = null)
+    [Fact]
+    public async Task RouteAsync_RecordsKernelObservabilitySignals_AndFlagsDeterminismMismatchInDiagnostics()
+    {
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig("route-a", "alpha", "Route A"),
+                    new ProviderConnectionConfig("route-b", "beta", "Route B")
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig("historical-binding", ProviderCapabilityKind.HistoricalBars, "route-a")
+                ])));
+
+        var observability = new KernelObservabilityService(new FakeHostEnvironment("Development"));
+        var service = CreateService(kernelObservability: observability);
+
+        var context = new ProviderRouteContext(ProviderCapabilityKind.HistoricalBars, Workspace: "research");
+        var first = await service.RouteAsync(context);
+        first.IsSuccess.Should().BeTrue();
+
+        await Task.Delay(25);
+        await SaveConfigAsync(new AppConfig(
+            ProviderConnections: new ProviderConnectionsConfig(
+                Connections:
+                [
+                    new ProviderConnectionConfig("route-a", "alpha", "Route A"),
+                    new ProviderConnectionConfig("route-b", "beta", "Route B")
+                ],
+                Bindings:
+                [
+                    new ProviderBindingConfig("historical-binding", ProviderCapabilityKind.HistoricalBars, "route-b")
+                ])));
+
+        var second = await service.RouteAsync(context);
+        second.SelectedDecision!.ConnectionId.Should().Be("route-b");
+
+        var snapshot = observability.GetSnapshot();
+        snapshot.Domains.Should().ContainSingle(domain => domain.Domain == ProviderCapabilityKind.HistoricalBars.ToString());
+
+        var domain = snapshot.Domains.Single(static d => d.Domain == nameof(ProviderCapabilityKind.HistoricalBars));
+        domain.Evaluations.Should().Be(2);
+        domain.Latency.P95Ms.Should().BeGreaterThanOrEqualTo(0);
+        domain.ThroughputPerMinute.Should().BeGreaterThan(0);
+        domain.ReasonCodeCoveragePercent.Should().BeGreaterThan(0);
+        domain.DeterminismMismatches.Should().Be(1);
+    }
+
+    private ProviderRoutingService CreateService(
+        IProviderConnectionHealthSource? healthSource = null,
+        KernelObservabilityService? kernelObservability = null)
     {
         var store = new ConfigStore(_configPath);
         return new ProviderRoutingService(
             store,
             healthSource ?? new FakeHealthSource(),
-            new FakeCatalogService());
+            new FakeCatalogService(),
+            kernelObservability);
     }
 
     private async Task SaveConfigAsync(AppConfig config)
@@ -280,5 +334,16 @@ public sealed class ProviderRoutingServiceTests : IDisposable
                 Score: isHealthy ? 100 : 25,
                 CheckedAt: DateTimeOffset.UtcNow));
         }
+    }
+
+    private sealed class FakeHostEnvironment(string name) : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = name;
+
+        public string ApplicationName { get; set; } = "Meridian.Tests";
+
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

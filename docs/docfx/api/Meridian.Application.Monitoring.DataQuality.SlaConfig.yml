@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlaConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultFreshnessThresholdSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalFreshnessThresholdSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolThresholds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipOutsideMarketHours
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketOpenUtc
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketCloseUtc
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownSeconds
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetThresholdForSymbol
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs

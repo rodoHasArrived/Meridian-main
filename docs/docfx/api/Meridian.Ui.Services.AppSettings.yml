@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AppSettings
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 452
+    startLine: 446
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 454
+    startLine: 448
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -85,11 +85,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceTimeoutSeconds
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 455
+    startLine: 449
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -114,11 +114,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillTimeoutMinutes
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 456
+    startLine: 450
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

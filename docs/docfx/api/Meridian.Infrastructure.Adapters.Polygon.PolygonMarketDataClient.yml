@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonMarketDataClient
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasValidCredentials
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -288,7 +288,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -350,7 +350,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseDelayed
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -381,7 +381,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -413,7 +413,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -445,7 +445,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -477,7 +477,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -509,7 +509,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -541,7 +541,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -571,7 +571,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -601,7 +601,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -631,7 +631,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildWebSocketUri
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -662,7 +662,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticateAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -709,7 +709,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleMessageAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -750,7 +750,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -788,7 +788,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -825,7 +825,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -859,7 +859,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -894,7 +894,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -928,7 +928,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -963,7 +963,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeAggregates
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -998,7 +998,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeAggregates
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -1032,7 +1032,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionCount
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -1063,7 +1063,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedTradeSymbols
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -1094,7 +1094,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedQuoteSymbols
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
@@ -1125,7 +1125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedAggregateSymbols
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs

@@ -17,6 +17,7 @@ items:
   - Meridian.Contracts.Configuration.BackfillProviderMetadataDto.HasCredentials
   - Meridian.Contracts.Configuration.BackfillProviderMetadataDto.ProviderId
   - Meridian.Contracts.Configuration.BackfillProviderMetadataDto.RequiresApiKey
+  - Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities
   langs:
   - csharp
   - vb
@@ -27,11 +28,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProviderMetadataDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 362
+    startLine: 254
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -66,11 +67,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 364
+    startLine: 256
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -107,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 367
+    startLine: 259
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -148,11 +149,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 370
+    startLine: 262
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -189,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataTypes
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 373
+    startLine: 265
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -230,11 +231,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresApiKey
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 376
+    startLine: 268
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -271,11 +272,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCredentials
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 379
+    startLine: 271
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -312,11 +313,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreeTier
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 382
+    startLine: 274
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -353,11 +354,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPriority
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 385
+    startLine: 277
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -394,11 +395,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultRateLimitPerMinute
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 388
+    startLine: 280
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -435,11 +436,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultRateLimitPerHour
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 391
+    startLine: 283
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -476,11 +477,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigSource
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 394
+    startLine: 286
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -503,6 +504,47 @@ items:
     arguments:
     - type: System.String
       value: configSource
+- uid: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities
+  id: SupportedGranularities
+  parent: Meridian.Contracts.Configuration.BackfillProviderMetadataDto
+  langs:
+  - csharp
+  - vb
+  name: SupportedGranularities
+  nameWithType: BackfillProviderMetadataDto.SupportedGranularities
+  fullName: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedGranularities
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("supportedGranularities")]
+
+      public string[] SupportedGranularities { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("supportedGranularities")>
+
+      Public Property SupportedGranularities As String()
+  overload: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: supportedGranularities
 - uid: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.FeatureFlags
   commentId: P:Meridian.Contracts.Configuration.BackfillProviderMetadataDto.FeatureFlags
   id: FeatureFlags
@@ -517,11 +559,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FeatureFlags
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 397
+    startLine: 292
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -961,6 +1003,12 @@ references:
   name: ConfigSource
   nameWithType: BackfillProviderMetadataDto.ConfigSource
   fullName: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.ConfigSource
+- uid: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities
+  href: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.html#Meridian_Contracts_Configuration_BackfillProviderMetadataDto_SupportedGranularities
+  name: SupportedGranularities
+  nameWithType: BackfillProviderMetadataDto.SupportedGranularities
+  fullName: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.SupportedGranularities
 - uid: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.FeatureFlags*
   commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderMetadataDto.FeatureFlags
   href: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.html#Meridian_Contracts_Configuration_BackfillProviderMetadataDto_FeatureFlags

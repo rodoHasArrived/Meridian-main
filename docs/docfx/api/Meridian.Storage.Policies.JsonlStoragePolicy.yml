@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonlStoragePolicy
     path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPath
     path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPathPreview
     path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Policies/JsonlStoragePolicy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryParsePath
     path: ../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs

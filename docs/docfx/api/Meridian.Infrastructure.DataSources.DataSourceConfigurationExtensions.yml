@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceConfigurationExtensions
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsForSource
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseType
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseCategory
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnabledSourceIds
     path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs

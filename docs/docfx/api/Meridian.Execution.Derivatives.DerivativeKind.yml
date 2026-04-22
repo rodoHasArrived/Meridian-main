@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DerivativeKind
     path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Option
     path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Future
     path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
     path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs

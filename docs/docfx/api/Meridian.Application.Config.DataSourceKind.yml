@@ -9,7 +9,6 @@ items:
   - Meridian.Application.Config.DataSourceKind.IB
   - Meridian.Application.Config.DataSourceKind.NYSE
   - Meridian.Application.Config.DataSourceKind.Polygon
-  - Meridian.Application.Config.DataSourceKind.StockSharp
   - Meridian.Application.Config.DataSourceKind.Synthetic
   langs:
   - csharp
@@ -21,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceKind
     path: ../../src/Meridian.Core/Config/DataSourceKind.cs
@@ -48,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IB
     path: ../../src/Meridian.Core/Config/DataSourceKind.cs
@@ -76,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Core/Config/DataSourceKind.cs
@@ -104,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Core/Config/DataSourceKind.cs
@@ -116,37 +115,6 @@ items:
   example: []
   syntax:
     content: Polygon = 2
-    return:
-      type: Meridian.Application.Config.DataSourceKind
-- uid: Meridian.Application.Config.DataSourceKind.StockSharp
-  commentId: F:Meridian.Application.Config.DataSourceKind.StockSharp
-  id: StockSharp
-  parent: Meridian.Application.Config.DataSourceKind
-  langs:
-  - csharp
-  - vb
-  name: StockSharp
-  nameWithType: DataSourceKind.StockSharp
-  fullName: Meridian.Application.Config.DataSourceKind.StockSharp
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StockSharp
-    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
-    startLine: 20
-  assemblies:
-  - Meridian.Core
-  namespace: Meridian.Application.Config
-  summary: >-
-    StockSharp unified connector framework.
-
-    Provides access to 90+ data sources including Rithmic, IQFeed, CQG, and more.
-  example: []
-  syntax:
-    content: StockSharp = 3
     return:
       type: Meridian.Application.Config.DataSourceKind
 - uid: Meridian.Application.Config.DataSourceKind.NYSE
@@ -163,11 +131,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSE
     path: ../../src/Meridian.Core/Config/DataSourceKind.cs
-    startLine: 23
+    startLine: 17
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -191,11 +159,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Synthetic
     path: ../../src/Meridian.Core/Config/DataSourceKind.cs
-    startLine: 26
+    startLine: 20
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config

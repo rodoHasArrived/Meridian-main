@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchBacktestRequest
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseRequest
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterGrid
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/BatchBacktestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrency
     path: ../../src/Meridian.Backtesting/BatchBacktestService.cs

@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkspaceLayoutPreset
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 159
+    startLine: 169
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PresetId
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 161
+    startLine: 171
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -85,11 +85,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 162
+    startLine: 172
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -114,11 +114,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBuiltIn
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 163
+    startLine: 173
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -143,11 +143,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Layout
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 164
+    startLine: 174
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -172,11 +172,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedAt
     path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
-    startLine: 165
+    startLine: 175
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

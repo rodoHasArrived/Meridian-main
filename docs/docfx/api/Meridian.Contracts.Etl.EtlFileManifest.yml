@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EtlFileManifest
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileName
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelativePath
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumSha256
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Etl/EtlModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StagedAtUtc
     path: ../../src/Meridian.Contracts/Etl/EtlModels.cs

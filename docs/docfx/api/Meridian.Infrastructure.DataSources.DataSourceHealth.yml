@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceHealth
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsHealthy
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastChecked
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastResponseTime
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveFailures
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -284,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentErrors
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -313,7 +313,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Healthy
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -346,7 +346,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Degraded
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unhealthy
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs

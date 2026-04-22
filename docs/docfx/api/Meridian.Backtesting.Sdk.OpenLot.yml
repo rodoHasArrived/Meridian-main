@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenLot
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotId
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -153,7 +153,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntryPrice
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenedAt
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -269,7 +269,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFillId
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -298,7 +298,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -356,7 +356,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -392,7 +392,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NotionalValue
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -428,7 +428,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Age
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs
@@ -461,7 +461,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/OpenLot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLongTerm
     path: ../../src/Meridian.Backtesting.Sdk/OpenLot.cs

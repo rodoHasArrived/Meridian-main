@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCatalogEntry
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aliases
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -278,7 +278,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -364,7 +364,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -407,7 +407,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypes
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sources
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdated
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -536,7 +536,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceRange
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs

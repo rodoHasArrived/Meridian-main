@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigJsonSchemaGenerator
     path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSchema
     path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSchemaJson
     path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WriteSchema
     path: ../../src/Meridian.Application/Config/ConfigJsonSchemaGenerator.cs

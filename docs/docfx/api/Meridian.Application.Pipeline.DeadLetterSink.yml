@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeadLetterSink
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 22
+    startLine: 25
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -87,11 +87,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 39
+    startLine: 42
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -125,11 +125,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRejected
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 49
+    startLine: 52
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -156,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectedCountsBySymbol
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 52
+    startLine: 55
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -187,11 +187,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAsync
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 61
+    startLine: 64
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -230,11 +230,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 119
+    startLine: 121
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
@@ -294,11 +294,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/DeadLetterSink.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Pipeline/DeadLetterSink.cs
-    startLine: 174
+    startLine: 166
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline

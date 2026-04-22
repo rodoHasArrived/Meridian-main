@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscriptionOrchestrator
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthSubscriptions
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeSubscriptions
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionSubscriptions
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActiveSubscriptionCount
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOptionSymbol
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Apply
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyAsync
     path: ../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs

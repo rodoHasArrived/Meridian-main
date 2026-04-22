@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSizeValidatorConfig
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultTickSize
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubDollarTickSize
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseSubDollarTicks
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertCooldownMs
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FuturesForex
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lenient
     path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs

@@ -12,6 +12,7 @@ items:
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.DisplayName
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.Dispose
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.MaxRequestsPerWindow
@@ -22,6 +23,7 @@ items:
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.RateLimitDelay
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.RateLimitStatus
   - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities
   langs:
   - csharp
   - vb
@@ -32,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeHistoricalDataProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -57,7 +59,7 @@ items:
 
       [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 
-      public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, IProviderMetadata, IDisposable
+      public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, IProviderMetadata, IHistoricalAggregateBarProvider, IDisposable
     content.vb: >-
       <DataSource("composite", "Multi-Source (Auto-Failover)", DataSourceType.Historical, DataSourceCategory.Aggregator, Priority:=0, Description:="Composite provider with automatic failover across multiple historical data sources")>
 
@@ -67,12 +69,13 @@ items:
 
       <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
 
-      Public NotInheritable Class CompositeHistoricalDataProvider Implements IHistoricalDataProvider, IProviderMetadata, IDisposable
+      Public NotInheritable Class CompositeHistoricalDataProvider Implements IHistoricalDataProvider, IProviderMetadata, IHistoricalAggregateBarProvider, IDisposable
   inheritance:
   - System.Object
   implements:
   - Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
   - System.IDisposable
   inheritedMembers:
   - System.Object.Equals(System.Object)
@@ -135,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnProgressUpdate
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -164,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -197,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -230,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -263,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -299,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -335,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -371,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -407,7 +410,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -443,7 +446,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealth
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -474,7 +477,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitStatus
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
@@ -491,6 +494,39 @@ items:
       type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Infrastructure.Adapters.Core.RateLimitStatus}
     content.vb: Public ReadOnly Property RateLimitStatus As IReadOnlyDictionary(Of String, RateLimitStatus)
   overload: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.RateLimitStatus*
+- uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities
+  id: SupportedGranularities
+  parent: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedGranularities
+  nameWithType: CompositeHistoricalDataProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedGranularities
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Granularities the provider can serve for aggregate-bar backfill.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataGranularity> SupportedGranularities { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+    content.vb: Public ReadOnly Property SupportedGranularities As IReadOnlyList(Of DataGranularity)
+  overload: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
 - uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver,System.Nullable{System.TimeSpan},System.Boolean,System.Boolean,System.Double,Serilog.ILogger)
   commentId: M:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver,System.Nullable{System.TimeSpan},System.Boolean,System.Boolean,System.Double,Serilog.ILogger)
   id: '#ctor(System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider},Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver,System.Nullable{System.TimeSpan},System.Boolean,System.Boolean,System.Double,Serilog.ILogger)'
@@ -505,11 +541,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 82
+    startLine: 90
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -549,11 +585,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 119
+    startLine: 127
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -587,11 +623,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 130
+    startLine: 138
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -617,6 +653,52 @@ items:
   nameWithType.vb: CompositeHistoricalDataProvider.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
   fullName.vb: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
   name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: CompositeHistoricalDataProvider.GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregateBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Fetch aggregate bars for the requested symbol and granularity.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+    content.vb: Public Function GetAggregateBarsAsync(symbol As String, granularity As DataGranularity, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AggregateBar))
+  overload: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  nameWithType.vb: CompositeHistoricalDataProvider.GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
 - uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
   commentId: M:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
   id: GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
@@ -631,11 +713,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 322
+    startLine: 451
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -678,11 +760,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckAllProvidersHealthAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 400
+    startLine: 529
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -711,11 +793,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs
-    startLine: 511
+    startLine: 640
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -791,6 +873,13 @@ references:
   name: IProviderMetadata
   nameWithType: IProviderMetadata
   fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html
+  name: IHistoricalAggregateBarProvider
+  nameWithType: IHistoricalAggregateBarProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
 - uid: System.IDisposable
   commentId: T:System.IDisposable
   parent: System
@@ -1376,6 +1465,80 @@ references:
     name: RateLimitStatus
     href: Meridian.Infrastructure.Adapters.Core.RateLimitStatus.html
   - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities
+  href: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_CompositeHistoricalDataProvider_SupportedGranularities
+  name: SupportedGranularities
+  nameWithType: CompositeHistoricalDataProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.SupportedGranularities
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  parent: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_SupportedGranularities
+  name: SupportedGranularities
+  nameWithType: IHistoricalAggregateBarProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataGranularity>
+  nameWithType: IReadOnlyList<DataGranularity>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.DataGranularity>
+  nameWithType.vb: IReadOnlyList(Of DataGranularity)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  name.vb: IReadOnlyList(Of DataGranularity)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
 - uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.#ctor*
   commentId: Overload:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.#ctor
   href: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_CompositeHistoricalDataProvider__ctor_System_Collections_Generic_IEnumerable_Meridian_Infrastructure_Adapters_Core_IHistoricalDataProvider__Meridian_Infrastructure_Adapters_Core_SymbolResolution_ISymbolResolver_System_Nullable_System_TimeSpan__System_Boolean_System_Boolean_System_Double_Serilog_ILogger_
@@ -1891,6 +2054,145 @@ references:
   - name: " "
   - uid: Meridian.Contracts.Domain.Models.HistoricalBar
     name: HistoricalBar
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync
+  href: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_CompositeHistoricalDataProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAggregateBarsAsync
+  nameWithType: CompositeHistoricalDataProvider.GetAggregateBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAggregateBarsAsync
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalAggregateBarProvider.GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalAggregateBarProvider.GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAggregateBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAggregateBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AggregateBar>>
+  nameWithType: Task<IReadOnlyList<AggregateBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Domain.Models.AggregateBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AggregateBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Domain.Models.AggregateBar))
+  name.vb: Task(Of IReadOnlyList(Of AggregateBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Domain.Models.AggregateBar
+    name: AggregateBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Models.AggregateBar
+    name: AggregateBar
   - name: )
   - name: )
 - uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.GetAdjustedDailyBarsAsync*

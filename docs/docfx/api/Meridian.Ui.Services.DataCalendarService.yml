@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataCalendarService
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetYearCalendarAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMonthCalendarAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDayDataAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCoverageMatrixAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -288,7 +288,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapSummaryAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairGapsAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
@@ -370,7 +370,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCompletenessTrendAsync
     path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs

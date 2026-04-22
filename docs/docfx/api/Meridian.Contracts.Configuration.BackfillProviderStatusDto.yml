@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillProviderStatusDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 404
+    startLine: 299
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 406
+    startLine: 301
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -100,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Options
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 409
+    startLine: 304
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -141,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthStatus
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 412
+    startLine: 307
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -182,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUsed
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 415
+    startLine: 310
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsUsedMinute
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 418
+    startLine: 313
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -264,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestsUsedHour
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 421
+    startLine: 316
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -305,11 +305,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsThrottled
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 424
+    startLine: 319
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -346,11 +346,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveConfigSource
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 427
+    startLine: 322
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

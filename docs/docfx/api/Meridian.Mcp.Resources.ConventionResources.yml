@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Resources/ConventionResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConventionResources
     path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Resources/ConventionResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Resources/ConventionResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConventions
     path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Resources/ConventionResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetKnownErrors
     path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Resources/ConventionResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGuide
     path: ../../src/Meridian.Mcp/Resources/ConventionResources.cs

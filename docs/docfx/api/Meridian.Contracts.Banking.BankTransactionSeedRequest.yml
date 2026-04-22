@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankTransactionSeedRequest
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityIds
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CountPerEntity
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs

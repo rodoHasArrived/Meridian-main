@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SharedStartupBootstrapper
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 38
+    startLine: 40
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs
-    startLine: 40
+    startLine: 42
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup

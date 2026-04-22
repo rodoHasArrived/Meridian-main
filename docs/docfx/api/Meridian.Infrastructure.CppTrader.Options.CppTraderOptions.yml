@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderOptions
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SectionName
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdapterExecutablePath
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupTimeout
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownTimeout
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeartbeatTimeout
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentSessions
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PerSessionQueueCapacity
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -294,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NativeLogLevel
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Features
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs

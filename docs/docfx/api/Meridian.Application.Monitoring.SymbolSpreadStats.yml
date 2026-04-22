@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSpreadStats
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalWideSpreadEvents
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageSpreadBps
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSpreadBps
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastWideSpreadTime
     path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs

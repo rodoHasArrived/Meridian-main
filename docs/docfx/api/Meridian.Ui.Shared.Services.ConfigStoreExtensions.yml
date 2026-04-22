@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigStoreExtensions
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseWebDefaultPath
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs

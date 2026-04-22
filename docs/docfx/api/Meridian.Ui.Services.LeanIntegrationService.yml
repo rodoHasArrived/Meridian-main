@@ -17,9 +17,7 @@ items:
   - Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
-  - Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
   - Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
-  - Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
   - Meridian.Ui.Services.LeanIntegrationService.Instance
   - Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync(Meridian.Ui.Services.BacktestOptions,System.Threading.CancellationToken)
   - Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync(System.String,System.Threading.CancellationToken)
@@ -36,11 +34,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanIntegrationService
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 12
+    startLine: 11
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -75,11 +73,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 17
+    startLine: 16
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -104,11 +102,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestStatusChanged
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 28
+    startLine: 27
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -133,11 +131,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 34
+    startLine: 33
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -166,11 +164,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetConfigurationAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 46
+    startLine: 45
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -199,11 +197,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateConfigurationAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 58
+    startLine: 57
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -234,11 +232,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyInstallationAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 73
+    startLine: 72
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -267,11 +265,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAlgorithmsAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 103
+    startLine: 102
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -300,11 +298,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncDataAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 128
+    startLine: 127
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -335,11 +333,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSyncStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 166
+    startLine: 165
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -368,11 +366,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartBacktestAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 178
+    startLine: 177
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -403,11 +401,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBacktestStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 214
+    startLine: 213
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -441,26 +439,26 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBacktestResultsAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 226
+    startLine: 225
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
   summary: Gets backtest results.
   example: []
   syntax:
-    content: public Task<LeanBacktestResultsSummaryDto> GetBacktestResultsAsync(string backtestId, CancellationToken ct = default)
+    content: public Task<BacktestResults> GetBacktestResultsAsync(string backtestId, CancellationToken ct = default)
     parameters:
     - id: backtestId
       type: System.String
     - id: ct
       type: System.Threading.CancellationToken
     return:
-      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanBacktestResultsSummaryDto}
-    content.vb: Public Function GetBacktestResultsAsync(backtestId As String, ct As CancellationToken = Nothing) As Task(Of LeanBacktestResultsSummaryDto)
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestResults}
+    content.vb: Public Function GetBacktestResultsAsync(backtestId As String, ct As CancellationToken = Nothing) As Task(Of BacktestResults)
   overload: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync*
   nameWithType.vb: LeanIntegrationService.GetBacktestResultsAsync(String, CancellationToken)
   fullName.vb: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync(String, System.Threading.CancellationToken)
@@ -479,11 +477,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopBacktestAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 238
+    startLine: 237
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -517,11 +515,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBacktestHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 251
+    startLine: 250
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -555,11 +553,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteBacktestAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 278
+    startLine: 277
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -593,11 +591,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAutoExportStatusAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 291
+    startLine: 290
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -626,11 +624,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureAutoExportAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 303
+    startLine: 302
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -647,41 +645,6 @@ items:
       type: System.Threading.Tasks.Task{System.Boolean}
     content.vb: Public Function ConfigureAutoExportAsync(options As LeanAutoExportConfigureOptions, ct As CancellationToken = Nothing) As Task(Of Boolean)
   overload: Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync*
-- uid: Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
-  id: InspectBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.LeanIntegrationService
-  langs:
-  - csharp
-  - vb
-  name: InspectBacktestResultsAsync(LeanResultsImportRequestDto, CancellationToken)
-  nameWithType: LeanIntegrationService.InspectBacktestResultsAsync(LeanResultsImportRequestDto, CancellationToken)
-  fullName: Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: InspectBacktestResultsAsync
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 324
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Ingests Lean backtest results from a local results file.
-  example: []
-  syntax:
-    content: public Task<LeanResultsArtifactSummaryDto> InspectBacktestResultsAsync(LeanResultsImportRequestDto request, CancellationToken ct = default)
-    parameters:
-    - id: request
-      type: Meridian.Contracts.Api.LeanResultsImportRequestDto
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsArtifactSummaryDto}
-    content.vb: Public Function InspectBacktestResultsAsync(request As LeanResultsImportRequestDto, ct As CancellationToken = Nothing) As Task(Of LeanResultsArtifactSummaryDto)
-  overload: Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync*
 - uid: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
   id: IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
@@ -696,18 +659,18 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestBacktestResultsAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 344
+    startLine: 323
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
   summary: Ingests Lean backtest results from a local results file.
   example: []
   syntax:
-    content: public Task<LeanResultsIngestResponseDto> IngestBacktestResultsAsync(string resultsFilePath, string? backtestId = null, string? algorithmName = null, CancellationToken ct = default)
+    content: public Task<LeanResultsIngestResult> IngestBacktestResultsAsync(string resultsFilePath, string? backtestId = null, string? algorithmName = null, CancellationToken ct = default)
     parameters:
     - id: resultsFilePath
       type: System.String
@@ -718,47 +681,12 @@ items:
     - id: ct
       type: System.Threading.CancellationToken
     return:
-      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsIngestResponseDto}
-    content.vb: Public Function IngestBacktestResultsAsync(resultsFilePath As String, backtestId As String = Nothing, algorithmName As String = Nothing, ct As CancellationToken = Nothing) As Task(Of LeanResultsIngestResponseDto)
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanResultsIngestResult}
+    content.vb: Public Function IngestBacktestResultsAsync(resultsFilePath As String, backtestId As String = Nothing, algorithmName As String = Nothing, ct As CancellationToken = Nothing) As Task(Of LeanResultsIngestResult)
   overload: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync*
   nameWithType.vb: LeanIntegrationService.IngestBacktestResultsAsync(String, String, String, CancellationToken)
   fullName.vb: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(String, String, String, System.Threading.CancellationToken)
   name.vb: IngestBacktestResultsAsync(String, String, String, CancellationToken)
-- uid: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
-  commentId: M:Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
-  id: IngestBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto,System.Threading.CancellationToken)
-  parent: Meridian.Ui.Services.LeanIntegrationService
-  langs:
-  - csharp
-  - vb
-  name: IngestBacktestResultsAsync(LeanResultsImportRequestDto, CancellationToken)
-  nameWithType: LeanIntegrationService.IngestBacktestResultsAsync(LeanResultsImportRequestDto, CancellationToken)
-  fullName: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(Meridian.Contracts.Api.LeanResultsImportRequestDto, System.Threading.CancellationToken)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: IngestBacktestResultsAsync
-    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 363
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services
-  summary: Ingests Lean backtest results from a local results file.
-  example: []
-  syntax:
-    content: public Task<LeanResultsIngestResponseDto> IngestBacktestResultsAsync(LeanResultsImportRequestDto request, CancellationToken ct = default)
-    parameters:
-    - id: request
-      type: Meridian.Contracts.Api.LeanResultsImportRequestDto
-    - id: ct
-      type: System.Threading.CancellationToken
-    return:
-      type: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsIngestResponseDto}
-    content.vb: Public Function IngestBacktestResultsAsync(request As LeanResultsImportRequestDto, ct As CancellationToken = Nothing) As Task(Of LeanResultsIngestResponseDto)
-  overload: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync*
 - uid: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
   id: GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
@@ -773,11 +701,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolMappingAsync
     path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
-    startLine: 393
+    startLine: 352
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -1606,25 +1534,26 @@ references:
   name: GetBacktestResultsAsync
   nameWithType: LeanIntegrationService.GetBacktestResultsAsync
   fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync
-- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanBacktestResultsSummaryDto}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanBacktestResultsSummaryDto}
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestResults}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestResults}
   parent: System.Threading.Tasks
   definition: System.Threading.Tasks.Task`1
   href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<LeanBacktestResultsSummaryDto>
-  nameWithType: Task<LeanBacktestResultsSummaryDto>
-  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.LeanBacktestResultsSummaryDto>
-  nameWithType.vb: Task(Of LeanBacktestResultsSummaryDto)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.LeanBacktestResultsSummaryDto)
-  name.vb: Task(Of LeanBacktestResultsSummaryDto)
+  name: Task<BacktestResults>
+  nameWithType: Task<BacktestResults>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BacktestResults>
+  nameWithType.vb: Task(Of BacktestResults)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BacktestResults)
+  name.vb: Task(Of BacktestResults)
   spec.csharp:
   - uid: System.Threading.Tasks.Task`1
     name: Task
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
   - name: <
-  - uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
-    name: LeanBacktestResultsSummaryDto
+  - uid: Meridian.Ui.Services.BacktestResults
+    name: BacktestResults
+    href: Meridian.Ui.Services.BacktestResults.html
   - name: '>'
   spec.vb:
   - uid: System.Threading.Tasks.Task`1
@@ -1634,8 +1563,9 @@ references:
   - name: (
   - name: Of
   - name: " "
-  - uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
-    name: LeanBacktestResultsSummaryDto
+  - uid: Meridian.Ui.Services.BacktestResults
+    name: BacktestResults
+    href: Meridian.Ui.Services.BacktestResults.html
   - name: )
 - uid: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync*
   commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync
@@ -1751,105 +1681,32 @@ references:
   name: LeanAutoExportConfigureOptions
   nameWithType: LeanAutoExportConfigureOptions
   fullName: Meridian.Ui.Services.LeanAutoExportConfigureOptions
-- uid: Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync*
-  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync
-  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_InspectBacktestResultsAsync_Meridian_Contracts_Api_LeanResultsImportRequestDto_System_Threading_CancellationToken_
-  name: InspectBacktestResultsAsync
-  nameWithType: LeanIntegrationService.InspectBacktestResultsAsync
-  fullName: Meridian.Ui.Services.LeanIntegrationService.InspectBacktestResultsAsync
-- uid: Meridian.Contracts.Api.LeanResultsImportRequestDto
-  commentId: T:Meridian.Contracts.Api.LeanResultsImportRequestDto
-  parent: Meridian.Contracts.Api
-  href: Meridian.Contracts.Api.LeanResultsImportRequestDto.html
-  name: LeanResultsImportRequestDto
-  nameWithType: LeanResultsImportRequestDto
-  fullName: Meridian.Contracts.Api.LeanResultsImportRequestDto
-- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsArtifactSummaryDto}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsArtifactSummaryDto}
-  parent: System.Threading.Tasks
-  definition: System.Threading.Tasks.Task`1
-  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<LeanResultsArtifactSummaryDto>
-  nameWithType: Task<LeanResultsArtifactSummaryDto>
-  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.LeanResultsArtifactSummaryDto>
-  nameWithType.vb: Task(Of LeanResultsArtifactSummaryDto)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.LeanResultsArtifactSummaryDto)
-  name.vb: Task(Of LeanResultsArtifactSummaryDto)
-  spec.csharp:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: <
-  - uid: Meridian.Contracts.Api.LeanResultsArtifactSummaryDto
-    name: LeanResultsArtifactSummaryDto
-  - name: '>'
-  spec.vb:
-  - uid: System.Threading.Tasks.Task`1
-    name: Task
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  - name: (
-  - name: Of
-  - name: " "
-  - uid: Meridian.Contracts.Api.LeanResultsArtifactSummaryDto
-    name: LeanResultsArtifactSummaryDto
-  - name: )
-- uid: Meridian.Contracts.Api
-  commentId: N:Meridian.Contracts.Api
-  href: Meridian.html
-  name: Meridian.Contracts.Api
-  nameWithType: Meridian.Contracts.Api
-  fullName: Meridian.Contracts.Api
-  spec.csharp:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Contracts
-    name: Contracts
-    href: Meridian.Contracts.html
-  - name: .
-  - uid: Meridian.Contracts.Api
-    name: Api
-    href: Meridian.Contracts.Api.html
-  spec.vb:
-  - uid: Meridian
-    name: Meridian
-    href: Meridian.html
-  - name: .
-  - uid: Meridian.Contracts
-    name: Contracts
-    href: Meridian.Contracts.html
-  - name: .
-  - uid: Meridian.Contracts.Api
-    name: Api
-    href: Meridian.Contracts.Api.html
 - uid: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync*
   commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync
   href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_IngestBacktestResultsAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
   name: IngestBacktestResultsAsync
   nameWithType: LeanIntegrationService.IngestBacktestResultsAsync
   fullName: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync
-- uid: System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsIngestResponseDto}
-  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Api.LeanResultsIngestResponseDto}
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanResultsIngestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanResultsIngestResult}
   parent: System.Threading.Tasks
   definition: System.Threading.Tasks.Task`1
   href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
-  name: Task<LeanResultsIngestResponseDto>
-  nameWithType: Task<LeanResultsIngestResponseDto>
-  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Api.LeanResultsIngestResponseDto>
-  nameWithType.vb: Task(Of LeanResultsIngestResponseDto)
-  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Api.LeanResultsIngestResponseDto)
-  name.vb: Task(Of LeanResultsIngestResponseDto)
+  name: Task<LeanResultsIngestResult>
+  nameWithType: Task<LeanResultsIngestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanResultsIngestResult>
+  nameWithType.vb: Task(Of LeanResultsIngestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanResultsIngestResult)
+  name.vb: Task(Of LeanResultsIngestResult)
   spec.csharp:
   - uid: System.Threading.Tasks.Task`1
     name: Task
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
   - name: <
-  - uid: Meridian.Contracts.Api.LeanResultsIngestResponseDto
-    name: LeanResultsIngestResponseDto
+  - uid: Meridian.Ui.Services.LeanResultsIngestResult
+    name: LeanResultsIngestResult
+    href: Meridian.Ui.Services.LeanResultsIngestResult.html
   - name: '>'
   spec.vb:
   - uid: System.Threading.Tasks.Task`1
@@ -1859,8 +1716,9 @@ references:
   - name: (
   - name: Of
   - name: " "
-  - uid: Meridian.Contracts.Api.LeanResultsIngestResponseDto
-    name: LeanResultsIngestResponseDto
+  - uid: Meridian.Ui.Services.LeanResultsIngestResult
+    name: LeanResultsIngestResult
+    href: Meridian.Ui.Services.LeanResultsIngestResult.html
   - name: )
 - uid: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync*
   commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync

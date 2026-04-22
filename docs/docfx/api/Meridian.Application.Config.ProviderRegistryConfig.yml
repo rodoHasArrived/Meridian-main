@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistryConfig
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 70
+    startLine: 69
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 70
+    startLine: 69
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -101,11 +101,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseAttributeDiscovery
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 71
+    startLine: 70
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config

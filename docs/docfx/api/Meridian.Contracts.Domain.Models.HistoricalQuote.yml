@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalQuote
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskExchange
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskPrice
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AskSize
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidExchange
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidPrice
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BidSize
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Conditions
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tape
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -385,7 +385,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -416,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -447,7 +447,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -515,7 +515,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Spread
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -546,7 +546,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MidPrice
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
@@ -577,7 +577,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpreadBps
     path: ../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs

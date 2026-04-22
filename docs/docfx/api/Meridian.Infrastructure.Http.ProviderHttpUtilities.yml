@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHttpUtilities
     path: ../../src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureDefaultHeaders
     path: ../../src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ProviderHttpUtilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddApiKeyHeader
     path: ../../src/Meridian.ProviderSdk/ProviderHttpUtilities.cs

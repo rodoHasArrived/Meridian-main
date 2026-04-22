@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigValidationHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaOptionsValidator
     path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
-    startLine: 90
+    startLine: 96
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -79,11 +79,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigValidationHelper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Config/ConfigValidationHelper.cs
-    startLine: 92
+    startLine: 98
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config

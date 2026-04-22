@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupValidationResult
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExitCode
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ok
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupValidationResult.cs

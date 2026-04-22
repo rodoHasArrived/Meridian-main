@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaField
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Required
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Example
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Constraints
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs

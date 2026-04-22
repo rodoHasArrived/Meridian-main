@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/StorageSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageQueryBuilder
     path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/StorageSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbol
     path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/StorageSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddType
     path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/StorageSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetDateRange
     path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/StorageSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetMinVolume
     path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/StorageSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Build
     path: ../../src/Meridian.Storage/Services/StorageSearchService.cs

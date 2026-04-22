@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestDefaults
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultBrokerageAccountId
     path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs

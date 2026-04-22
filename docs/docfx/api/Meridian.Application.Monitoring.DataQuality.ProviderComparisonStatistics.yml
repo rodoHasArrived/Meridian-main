@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderComparisonStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsTracked
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProvidersActive
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDiscrepancies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscrepanciesBySeverity
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscrepanciesByType
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostDiscrepantProviderPairs
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs

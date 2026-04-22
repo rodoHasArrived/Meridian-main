@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerQuery
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DescriptionContains
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivityType
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -369,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProjectId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -398,7 +398,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerBook
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -427,7 +427,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerView
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -456,7 +456,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScenarioId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -485,7 +485,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -514,7 +514,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinancialAccountId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -543,7 +543,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CounterpartyAccountId
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -572,7 +572,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Institution
     path: ../../src/Meridian.Ledger/LedgerQuery.cs
@@ -601,7 +601,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountType
     path: ../../src/Meridian.Ledger/LedgerQuery.cs

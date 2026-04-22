@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IndexSubscriptionService
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableIndices
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIndexComponentsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeToIndexAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeFromIndexAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSubscriptionStatusAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs

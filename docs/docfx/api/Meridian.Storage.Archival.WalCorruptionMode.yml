@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalCorruptionMode
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skip
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alert
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Halt
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs

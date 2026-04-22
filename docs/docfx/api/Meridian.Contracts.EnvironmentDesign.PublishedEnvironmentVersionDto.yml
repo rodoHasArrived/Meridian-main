@@ -1,0 +1,1010 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  id: PublishedEnvironmentVersionDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto,Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid},System.String,System.Boolean)
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId
+  - Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel
+  langs:
+  - csharp
+  - vb
+  name: PublishedEnvironmentVersionDto
+  nameWithType: PublishedEnvironmentVersionDto
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishedEnvironmentVersionDto
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: 'public sealed record PublishedEnvironmentVersionDto : IEquatable<PublishedEnvironmentVersionDto>'
+    content.vb: Public NotInheritable Class PublishedEnvironmentVersionDto Implements IEquatable(Of PublishedEnvironmentVersionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto,Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid},System.String,System.Boolean)
+  commentId: M:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto,Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid},System.String,System.Boolean)
+  id: '#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateTimeOffset,System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto,Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid},System.String,System.Boolean)'
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: PublishedEnvironmentVersionDto(Guid, Guid, Guid, string, string, DateTimeOffset, string, EnvironmentValidationResultDto, PublishedEnvironmentRuntimeDto, IReadOnlyDictionary<string, Guid>, string?, bool)
+  nameWithType: PublishedEnvironmentVersionDto.PublishedEnvironmentVersionDto(Guid, Guid, Guid, string, string, DateTimeOffset, string, EnvironmentValidationResultDto, PublishedEnvironmentRuntimeDto, IReadOnlyDictionary<string, Guid>, string?, bool)
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedEnvironmentVersionDto(System.Guid, System.Guid, System.Guid, string, string, System.DateTimeOffset, string, Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto, Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto, System.Collections.Generic.IReadOnlyDictionary<string, System.Guid>, string?, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public PublishedEnvironmentVersionDto(Guid VersionId, Guid DraftId, Guid OrganizationId, string OrganizationName, string VersionLabel, DateTimeOffset PublishedAt, string PublishedBy, EnvironmentValidationResultDto Validation, PublishedEnvironmentRuntimeDto Runtime, IReadOnlyDictionary<string, Guid> RuntimeNodeMappings, string? Notes = null, bool IsCurrent = false)
+    parameters:
+    - id: VersionId
+      type: System.Guid
+    - id: DraftId
+      type: System.Guid
+    - id: OrganizationId
+      type: System.Guid
+    - id: OrganizationName
+      type: System.String
+    - id: VersionLabel
+      type: System.String
+    - id: PublishedAt
+      type: System.DateTimeOffset
+    - id: PublishedBy
+      type: System.String
+    - id: Validation
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    - id: Runtime
+      type: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+    - id: RuntimeNodeMappings
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid}
+    - id: Notes
+      type: System.String
+    - id: IsCurrent
+      type: System.Boolean
+    content.vb: Public Sub New(VersionId As Guid, DraftId As Guid, OrganizationId As Guid, OrganizationName As String, VersionLabel As String, PublishedAt As DateTimeOffset, PublishedBy As String, Validation As EnvironmentValidationResultDto, Runtime As PublishedEnvironmentRuntimeDto, RuntimeNodeMappings As IReadOnlyDictionary(Of String, Guid), Notes As String = Nothing, IsCurrent As Boolean = False)
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.#ctor*
+  nameWithType.vb: PublishedEnvironmentVersionDto.New(Guid, Guid, Guid, String, String, DateTimeOffset, String, EnvironmentValidationResultDto, PublishedEnvironmentRuntimeDto, IReadOnlyDictionary(Of String, Guid), String, Boolean)
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.New(System.Guid, System.Guid, System.Guid, String, String, System.DateTimeOffset, String, Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto, Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto, System.Collections.Generic.IReadOnlyDictionary(Of String, System.Guid), String, Boolean)
+  name.vb: New(Guid, Guid, Guid, String, String, DateTimeOffset, String, EnvironmentValidationResultDto, PublishedEnvironmentRuntimeDto, IReadOnlyDictionary(Of String, Guid), String, Boolean)
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId
+  id: VersionId
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: VersionId
+  nameWithType: PublishedEnvironmentVersionDto.VersionId
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VersionId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public Guid VersionId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property VersionId As Guid
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId
+  id: DraftId
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: DraftId
+  nameWithType: PublishedEnvironmentVersionDto.DraftId
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DraftId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public Guid DraftId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property DraftId As Guid
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId
+  id: OrganizationId
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationId
+  nameWithType: PublishedEnvironmentVersionDto.OrganizationId
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public Guid OrganizationId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OrganizationId As Guid
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName
+  id: OrganizationName
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationName
+  nameWithType: PublishedEnvironmentVersionDto.OrganizationName
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationName
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string OrganizationName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrganizationName As String
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel
+  id: VersionLabel
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: VersionLabel
+  nameWithType: PublishedEnvironmentVersionDto.VersionLabel
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VersionLabel
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string VersionLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property VersionLabel As String
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt
+  id: PublishedAt
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: PublishedAt
+  nameWithType: PublishedEnvironmentVersionDto.PublishedAt
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishedAt
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public DateTimeOffset PublishedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property PublishedAt As DateTimeOffset
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy
+  id: PublishedBy
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: PublishedBy
+  nameWithType: PublishedEnvironmentVersionDto.PublishedBy
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishedBy
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string PublishedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PublishedBy As String
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation
+  id: Validation
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: Validation
+  nameWithType: PublishedEnvironmentVersionDto.Validation
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public EnvironmentValidationResultDto Validation { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    content.vb: Public Property Validation As EnvironmentValidationResultDto
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime
+  id: Runtime
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: Runtime
+  nameWithType: PublishedEnvironmentVersionDto.Runtime
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Runtime
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public PublishedEnvironmentRuntimeDto Runtime { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+    content.vb: Public Property Runtime As PublishedEnvironmentRuntimeDto
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  id: RuntimeNodeMappings
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: RuntimeNodeMappings
+  nameWithType: PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RuntimeNodeMappings
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyDictionary<string, Guid> RuntimeNodeMappings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid}
+    content.vb: Public Property RuntimeNodeMappings As IReadOnlyDictionary(Of String, Guid)
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes
+  id: Notes
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: PublishedEnvironmentVersionDto.Notes
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes*
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent
+  commentId: P:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent
+  id: IsCurrent
+  parent: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+  langs:
+  - csharp
+  - vb
+  name: IsCurrent
+  nameWithType: PublishedEnvironmentVersionDto.IsCurrent
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsCurrent
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public bool IsCurrent { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsCurrent As Boolean
+  overload: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent*
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PublishedEnvironmentVersionDto>
+  nameWithType: IEquatable<PublishedEnvironmentVersionDto>
+  fullName: System.IEquatable<Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto>
+  nameWithType.vb: IEquatable(Of PublishedEnvironmentVersionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto)
+  name.vb: IEquatable(Of PublishedEnvironmentVersionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+    href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+    href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.#ctor
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto__ctor_System_Guid_System_Guid_System_Guid_System_String_System_String_System_DateTimeOffset_System_String_Meridian_Contracts_EnvironmentDesign_EnvironmentValidationResultDto_Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentRuntimeDto_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Guid__System_String_System_Boolean_
+  name: PublishedEnvironmentVersionDto
+  nameWithType: PublishedEnvironmentVersionDto.PublishedEnvironmentVersionDto
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedEnvironmentVersionDto
+  nameWithType.vb: PublishedEnvironmentVersionDto.New
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto.html
+  name: EnvironmentValidationResultDto
+  nameWithType: EnvironmentValidationResultDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto.html
+  name: PublishedEnvironmentRuntimeDto
+  nameWithType: PublishedEnvironmentRuntimeDto
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Guid}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, Guid>
+  nameWithType: IReadOnlyDictionary<string, Guid>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, System.Guid>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Guid)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, System.Guid)
+  name.vb: IReadOnlyDictionary(Of String, Guid)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_VersionId
+  name: VersionId
+  nameWithType: PublishedEnvironmentVersionDto.VersionId
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionId
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_DraftId
+  name: DraftId
+  nameWithType: PublishedEnvironmentVersionDto.DraftId
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.DraftId
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_OrganizationId
+  name: OrganizationId
+  nameWithType: PublishedEnvironmentVersionDto.OrganizationId
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationId
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_OrganizationName
+  name: OrganizationName
+  nameWithType: PublishedEnvironmentVersionDto.OrganizationName
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.OrganizationName
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_VersionLabel
+  name: VersionLabel
+  nameWithType: PublishedEnvironmentVersionDto.VersionLabel
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.VersionLabel
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_PublishedAt
+  name: PublishedAt
+  nameWithType: PublishedEnvironmentVersionDto.PublishedAt
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedAt
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_PublishedBy
+  name: PublishedBy
+  nameWithType: PublishedEnvironmentVersionDto.PublishedBy
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.PublishedBy
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_Validation
+  name: Validation
+  nameWithType: PublishedEnvironmentVersionDto.Validation
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Validation
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_Runtime
+  name: Runtime
+  nameWithType: PublishedEnvironmentVersionDto.Runtime
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Runtime
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_RuntimeNodeMappings
+  name: RuntimeNodeMappings
+  nameWithType: PublishedEnvironmentVersionDto.RuntimeNodeMappings
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.RuntimeNodeMappings
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_Notes
+  name: Notes
+  nameWithType: PublishedEnvironmentVersionDto.Notes
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.Notes
+- uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent
+  href: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.html#Meridian_Contracts_EnvironmentDesign_PublishedEnvironmentVersionDto_IsCurrent
+  name: IsCurrent
+  nameWithType: PublishedEnvironmentVersionDto.IsCurrent
+  fullName: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto.IsCurrent

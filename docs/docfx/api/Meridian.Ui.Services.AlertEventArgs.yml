@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertEventArgs
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alert
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsUpdate
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs

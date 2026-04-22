@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SystemHealthService
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthSummaryAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderDiagnosticsAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentEventsAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSystemMetricsAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestConnectionAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateDiagnosticBundleAsync
     path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs

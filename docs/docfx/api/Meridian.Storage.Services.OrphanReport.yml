@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanReport
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrphanedFiles
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalOrphanedBytes
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs

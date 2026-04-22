@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorDetailsModel
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Title
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Context
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Remedy
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFormattedMessage
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateFromException
     path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs

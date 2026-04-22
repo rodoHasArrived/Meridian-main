@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto
+  commentId: T:Meridian.Contracts.FundStructure.BusinessKindDto
+  id: BusinessKindDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.BusinessKindDto.FinancialAdvisor
+  - Meridian.Contracts.FundStructure.BusinessKindDto.FundManager
+  - Meridian.Contracts.FundStructure.BusinessKindDto.Hybrid
+  langs:
+  - csharp
+  - vb
+  name: BusinessKindDto
+  nameWithType: BusinessKindDto
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessKindDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<BusinessKindDto>))]
+
+      public enum BusinessKindDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of BusinessKindDto)))>
+
+      Public Enum BusinessKindDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.BusinessKindDto}
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto.FinancialAdvisor
+  commentId: F:Meridian.Contracts.FundStructure.BusinessKindDto.FinancialAdvisor
+  id: FinancialAdvisor
+  parent: Meridian.Contracts.FundStructure.BusinessKindDto
+  langs:
+  - csharp
+  - vb
+  name: FinancialAdvisor
+  nameWithType: BusinessKindDto.FinancialAdvisor
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto.FinancialAdvisor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAdvisor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: FinancialAdvisor = 0
+    return:
+      type: Meridian.Contracts.FundStructure.BusinessKindDto
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto.FundManager
+  commentId: F:Meridian.Contracts.FundStructure.BusinessKindDto.FundManager
+  id: FundManager
+  parent: Meridian.Contracts.FundStructure.BusinessKindDto
+  langs:
+  - csharp
+  - vb
+  name: FundManager
+  nameWithType: BusinessKindDto.FundManager
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto.FundManager
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundManager
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: FundManager = 1
+    return:
+      type: Meridian.Contracts.FundStructure.BusinessKindDto
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto.Hybrid
+  commentId: F:Meridian.Contracts.FundStructure.BusinessKindDto.Hybrid
+  id: Hybrid
+  parent: Meridian.Contracts.FundStructure.BusinessKindDto
+  langs:
+  - csharp
+  - vb
+  name: Hybrid
+  nameWithType: BusinessKindDto.Hybrid
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto.Hybrid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hybrid
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Hybrid = 2
+    return:
+      type: Meridian.Contracts.FundStructure.BusinessKindDto
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.BusinessKindDto
+  commentId: T:Meridian.Contracts.FundStructure.BusinessKindDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BusinessKindDto.html
+  name: BusinessKindDto
+  nameWithType: BusinessKindDto
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto

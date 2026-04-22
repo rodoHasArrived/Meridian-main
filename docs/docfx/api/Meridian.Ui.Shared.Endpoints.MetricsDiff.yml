@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetricsDiff
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2346
+    startLine: 3076
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2346
+    startLine: 3076
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -107,11 +107,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetPnlDelta
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2347
+    startLine: 3077
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -136,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalReturnDelta
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2348
+    startLine: 3078
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -165,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillCountDelta
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2349
+    startLine: 3079
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -194,11 +194,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseNetPnl
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2350
+    startLine: 3080
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetNetPnl
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2351
+    startLine: 3081
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -252,11 +252,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseTotalReturn
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2352
+    startLine: 3082
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -281,11 +281,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetTotalReturn
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2353
+    startLine: 3083
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

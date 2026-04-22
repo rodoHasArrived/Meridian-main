@@ -1,0 +1,551 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  id: IPosition
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  - Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  - Meridian.Execution.Sdk.IPosition.IsShort
+  - Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  - Meridian.Execution.Sdk.IPosition.Quantity
+  - Meridian.Execution.Sdk.IPosition.RealizedPnl
+  - Meridian.Execution.Sdk.IPosition.Symbol
+  - Meridian.Execution.Sdk.IPosition.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPosition
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: >-
+    Cross-pillar abstraction for a position held in any portfolio — simulated (backtesting)
+
+    or live (execution). Allows generic portfolio rendering, attribution, and reconciliation
+
+    code to work with both <code>Meridian.Backtesting.Sdk.Position</code> and
+
+    <code>Meridian.Execution.Models.ExecutionPosition</code> without branching on the concrete type.
+  remarks: >-
+    Adopt this interface wherever portfolio code currently branches on
+
+    <code>is Position</code> or <code>is ExecutionPosition</code>.
+
+    Default implementations of <xref href="Meridian.Execution.Sdk.IPosition.IsShort" data-throw-if-not-resolved="false"></xref>, <xref href="Meridian.Execution.Sdk.IPosition.AbsoluteQuantity" data-throw-if-not-resolved="false"></xref>,
+
+    and <xref href="Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)" data-throw-if-not-resolved="false"></xref> are provided so concrete types that already expose
+
+    equivalent members are not required to redeclare them.
+  example: []
+  syntax:
+    content: public interface IPosition
+    content.vb: Public Interface IPosition
+  derivedClasses:
+  - Meridian.Execution.Models.ExecutionPosition
+  extensionMethods:
+  - Meridian.Execution.Sdk.IPosition.Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple
+- uid: Meridian.Execution.Sdk.IPosition.Symbol
+  commentId: P:Meridian.Execution.Sdk.IPosition.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: IPosition.Symbol
+  fullName: Meridian.Execution.Sdk.IPosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Ticker symbol (upper-case, e.g. "AAPL").
+  example: []
+  syntax:
+    content: string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Symbol As String
+  overload: Meridian.Execution.Sdk.IPosition.Symbol*
+- uid: Meridian.Execution.Sdk.IPosition.Quantity
+  commentId: P:Meridian.Execution.Sdk.IPosition.Quantity
+  id: Quantity
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: IPosition.Quantity
+  fullName: Meridian.Execution.Sdk.IPosition.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Shares held; negative means short.
+  example: []
+  syntax:
+    content: long Quantity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: ReadOnly Property Quantity As Long
+  overload: Meridian.Execution.Sdk.IPosition.Quantity*
+- uid: Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  commentId: P:Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  id: AverageCostBasis
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: AverageCostBasis
+  nameWithType: IPosition.AverageCostBasis
+  fullName: Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageCostBasis
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Lot-weighted average entry price.
+  example: []
+  syntax:
+    content: decimal AverageCostBasis { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property AverageCostBasis As Decimal
+  overload: Meridian.Execution.Sdk.IPosition.AverageCostBasis*
+- uid: Meridian.Execution.Sdk.IPosition.UnrealizedPnl
+  commentId: P:Meridian.Execution.Sdk.IPosition.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: IPosition.UnrealizedPnl
+  fullName: Meridian.Execution.Sdk.IPosition.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Mark-to-market unrealized P&amp;L.
+  example: []
+  syntax:
+    content: decimal UnrealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property UnrealizedPnl As Decimal
+  overload: Meridian.Execution.Sdk.IPosition.UnrealizedPnl*
+- uid: Meridian.Execution.Sdk.IPosition.RealizedPnl
+  commentId: P:Meridian.Execution.Sdk.IPosition.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: IPosition.RealizedPnl
+  fullName: Meridian.Execution.Sdk.IPosition.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Cumulative realized P&amp;L.
+  example: []
+  syntax:
+    content: decimal RealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property RealizedPnl As Decimal
+  overload: Meridian.Execution.Sdk.IPosition.RealizedPnl*
+- uid: Meridian.Execution.Sdk.IPosition.IsShort
+  commentId: P:Meridian.Execution.Sdk.IPosition.IsShort
+  id: IsShort
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: IsShort
+  nameWithType: IPosition.IsShort
+  fullName: Meridian.Execution.Sdk.IPosition.IsShort
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsShort
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: True when this is a short (negative-quantity) position.
+  example: []
+  syntax:
+    content: bool IsShort { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsShort As Boolean
+  overload: Meridian.Execution.Sdk.IPosition.IsShort*
+- uid: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  commentId: P:Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  id: AbsoluteQuantity
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: AbsoluteQuantity
+  nameWithType: IPosition.AbsoluteQuantity
+  fullName: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AbsoluteQuantity
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Absolute number of shares without sign.
+  example: []
+  syntax:
+    content: long AbsoluteQuantity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: ReadOnly Property AbsoluteQuantity As Long
+  overload: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity*
+- uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  commentId: M:Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  id: NotionalValue(System.Decimal)
+  parent: Meridian.Execution.Sdk.IPosition
+  langs:
+  - csharp
+  - vb
+  name: NotionalValue(decimal)
+  nameWithType: IPosition.NotionalValue(decimal)
+  fullName: Meridian.Execution.Sdk.IPosition.NotionalValue(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotionalValue
+    path: ../../src/Meridian.Execution.Sdk/IPosition.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Signed notional market value at <code class="paramref">lastPrice</code>.
+  example: []
+  syntax:
+    content: decimal NotionalValue(decimal lastPrice)
+    parameters:
+    - id: lastPrice
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Function NotionalValue(lastPrice As Decimal) As Decimal
+  overload: Meridian.Execution.Sdk.IPosition.NotionalValue*
+  nameWithType.vb: IPosition.NotionalValue(Decimal)
+  fullName.vb: Meridian.Execution.Sdk.IPosition.NotionalValue(Decimal)
+  name.vb: NotionalValue(Decimal)
+references:
+- uid: Meridian.Execution.Sdk.IPosition.IsShort
+  commentId: P:Meridian.Execution.Sdk.IPosition.IsShort
+  parent: Meridian.Execution.Sdk.IPosition
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_IsShort
+  name: IsShort
+  nameWithType: IPosition.IsShort
+  fullName: Meridian.Execution.Sdk.IPosition.IsShort
+- uid: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  commentId: P:Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  parent: Meridian.Execution.Sdk.IPosition
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_AbsoluteQuantity
+  name: AbsoluteQuantity
+  nameWithType: IPosition.AbsoluteQuantity
+  fullName: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+- uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  commentId: M:Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+  parent: Meridian.Execution.Sdk.IPosition
+  isExternal: true
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  name: NotionalValue(decimal)
+  nameWithType: IPosition.NotionalValue(decimal)
+  fullName: Meridian.Execution.Sdk.IPosition.NotionalValue(decimal)
+  nameWithType.vb: IPosition.NotionalValue(Decimal)
+  fullName.vb: Meridian.Execution.Sdk.IPosition.NotionalValue(Decimal)
+  name.vb: NotionalValue(Decimal)
+  spec.csharp:
+  - uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+    name: NotionalValue
+    href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  - name: (
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Sdk.IPosition.NotionalValue(System.Decimal)
+    name: NotionalValue
+    href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  - name: (
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.IPosition.Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple
+  commentId: M:Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+  parent: Meridian.Execution.Sdk.PositionExtensions
+  definition: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+  href: Meridian.Execution.Sdk.PositionExtensions.html#Meridian_Execution_Sdk_PositionExtensions_ToDisplayTuple_Meridian_Execution_Sdk_IPosition_
+  name: ToDisplayTuple(IPosition)
+  nameWithType: PositionExtensions.ToDisplayTuple(IPosition)
+  fullName: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+  spec.csharp:
+  - uid: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+    name: ToDisplayTuple
+    href: Meridian.Execution.Sdk.PositionExtensions.html#Meridian_Execution_Sdk_PositionExtensions_ToDisplayTuple_Meridian_Execution_Sdk_IPosition_
+  - name: (
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+    name: ToDisplayTuple
+    href: Meridian.Execution.Sdk.PositionExtensions.html#Meridian_Execution_Sdk_PositionExtensions_ToDisplayTuple_Meridian_Execution_Sdk_IPosition_
+  - name: (
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
+  - name: )
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPosition.html
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
+- uid: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+  commentId: M:Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+  href: Meridian.Execution.Sdk.PositionExtensions.html#Meridian_Execution_Sdk_PositionExtensions_ToDisplayTuple_Meridian_Execution_Sdk_IPosition_
+  name: ToDisplayTuple(IPosition)
+  nameWithType: PositionExtensions.ToDisplayTuple(IPosition)
+  fullName: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+  spec.csharp:
+  - uid: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+    name: ToDisplayTuple
+    href: Meridian.Execution.Sdk.PositionExtensions.html#Meridian_Execution_Sdk_PositionExtensions_ToDisplayTuple_Meridian_Execution_Sdk_IPosition_
+  - name: (
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Sdk.PositionExtensions.ToDisplayTuple(Meridian.Execution.Sdk.IPosition)
+    name: ToDisplayTuple
+    href: Meridian.Execution.Sdk.PositionExtensions.html#Meridian_Execution_Sdk_PositionExtensions_ToDisplayTuple_Meridian_Execution_Sdk_IPosition_
+  - name: (
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
+  - name: )
+- uid: Meridian.Execution.Sdk.PositionExtensions
+  commentId: T:Meridian.Execution.Sdk.PositionExtensions
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.PositionExtensions.html
+  name: PositionExtensions
+  nameWithType: PositionExtensions
+  fullName: Meridian.Execution.Sdk.PositionExtensions
+- uid: Meridian.Execution.Sdk.IPosition.Symbol*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.Symbol
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_Symbol
+  name: Symbol
+  nameWithType: IPosition.Symbol
+  fullName: Meridian.Execution.Sdk.IPosition.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Sdk.IPosition.Quantity*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.Quantity
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_Quantity
+  name: Quantity
+  nameWithType: IPosition.Quantity
+  fullName: Meridian.Execution.Sdk.IPosition.Quantity
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Execution.Sdk.IPosition.AverageCostBasis*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.AverageCostBasis
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_AverageCostBasis
+  name: AverageCostBasis
+  nameWithType: IPosition.AverageCostBasis
+  fullName: Meridian.Execution.Sdk.IPosition.AverageCostBasis
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.IPosition.UnrealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.UnrealizedPnl
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: IPosition.UnrealizedPnl
+  fullName: Meridian.Execution.Sdk.IPosition.UnrealizedPnl
+- uid: Meridian.Execution.Sdk.IPosition.RealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.RealizedPnl
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_RealizedPnl
+  name: RealizedPnl
+  nameWithType: IPosition.RealizedPnl
+  fullName: Meridian.Execution.Sdk.IPosition.RealizedPnl
+- uid: Meridian.Execution.Sdk.IPosition.IsShort*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.IsShort
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_IsShort
+  name: IsShort
+  nameWithType: IPosition.IsShort
+  fullName: Meridian.Execution.Sdk.IPosition.IsShort
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_AbsoluteQuantity
+  name: AbsoluteQuantity
+  nameWithType: IPosition.AbsoluteQuantity
+  fullName: Meridian.Execution.Sdk.IPosition.AbsoluteQuantity
+- uid: Meridian.Execution.Sdk.IPosition.NotionalValue*
+  commentId: Overload:Meridian.Execution.Sdk.IPosition.NotionalValue
+  href: Meridian.Execution.Sdk.IPosition.html#Meridian_Execution_Sdk_IPosition_NotionalValue_System_Decimal_
+  name: NotionalValue
+  nameWithType: IPosition.NotionalValue
+  fullName: Meridian.Execution.Sdk.IPosition.NotionalValue

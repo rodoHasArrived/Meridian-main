@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IStatusService
     path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrl
     path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusWithResponseAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/IStatusService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Ui.Services/Contracts/IStatusService.cs

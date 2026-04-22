@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaMigration
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromVersion
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToVersion
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldRenames
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewFieldDefaults
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemovedFields
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Transformations
     path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs

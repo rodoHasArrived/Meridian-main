@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventPreviewResponse
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Events
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/EventReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalCount
     path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs

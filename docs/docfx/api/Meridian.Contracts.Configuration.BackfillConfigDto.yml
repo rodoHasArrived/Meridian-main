@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillConfigDto
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 273
+    startLine: 165
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 275
+    startLine: 167
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -100,11 +100,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 278
+    startLine: 170
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -141,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 281
+    startLine: 173
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -182,11 +182,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 284
+    startLine: 176
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 287
+    startLine: 179
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -264,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableFallback
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 290
+    startLine: 182
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -305,11 +305,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableSymbolResolution
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 293
+    startLine: 185
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration
@@ -346,11 +346,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
-    startLine: 299
+    startLine: 191
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Configuration

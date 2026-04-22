@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataCapabilities
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdjustedPrices
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Intraday
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -141,7 +141,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dividends
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Splits
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quotes
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trades
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Auctions
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsOnly
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FullFeatured
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -420,7 +420,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMarkets
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -456,7 +456,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsMarket
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -492,7 +492,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasTickData
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
@@ -523,7 +523,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasCorporateActions
     path: ../../src/Meridian.ProviderSdk/HistoricalDataCapabilities.cs

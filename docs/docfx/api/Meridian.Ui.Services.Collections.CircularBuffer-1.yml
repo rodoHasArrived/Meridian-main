@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircularBuffer
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -118,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capacity
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEmpty
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFull
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Add
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: this[]
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -332,7 +332,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNewest
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -369,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOldest
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -406,7 +406,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetNewest
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetFromNewest
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -494,7 +494,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clear
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -524,7 +524,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToArray
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -557,7 +557,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetEnumerator
     path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
@@ -628,7 +628,7 @@ references:
   fullName.vb: Object
   name.vb: Object
 - uid: System.Collections.Generic.IEnumerable{{T}}
-  commentId: T:System.Collections.Generic.IEnumerable{`0}
+  commentId: T:System.Collections.Generic.IEnumerable{``0}
   parent: System.Collections.Generic
   definition: System.Collections.Generic.IEnumerable`1
   href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1

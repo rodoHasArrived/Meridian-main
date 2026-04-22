@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: KnownErrorTools
     path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetKnownErrors
     path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/KnownErrorTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchKnownErrors
     path: ../../src/Meridian.Mcp/Tools/KnownErrorTools.cs

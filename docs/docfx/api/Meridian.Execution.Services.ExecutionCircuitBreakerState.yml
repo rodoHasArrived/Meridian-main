@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionCircuitBreakerState
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOpen
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangedBy
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChangedAt
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs

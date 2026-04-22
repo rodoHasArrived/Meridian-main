@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpResponseHandler
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleResponseAsync
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryHandleResponseAsync
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleResponse
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExtractRetryAfter
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs

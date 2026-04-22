@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Models/RunType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunType
     path: ../../src/Meridian.Strategies/Models/RunType.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Models/RunType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backtest
     path: ../../src/Meridian.Strategies/Models/RunType.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Models/RunType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paper
     path: ../../src/Meridian.Strategies/Models/RunType.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Models/RunType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Live
     path: ../../src/Meridian.Strategies/Models/RunType.cs

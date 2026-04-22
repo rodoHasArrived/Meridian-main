@@ -1,0 +1,603 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  commentId: T:Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  id: NullTradingParametersBackfillService
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: NullTradingParametersBackfillService
+  nameWithType: NullTradingParametersBackfillService
+  fullName: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NullTradingParametersBackfillService
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: No-op trading-parameter backfill service used when Security Master is not configured.
+  example: []
+  syntax:
+    content: 'public sealed class NullTradingParametersBackfillService : ITradingParametersBackfillService'
+    content.vb: Public NotInheritable Class NullTradingParametersBackfillService Implements ITradingParametersBackfillService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  id: BackfillAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  langs:
+  - csharp
+  - vb
+  name: BackfillAllAsync(CancellationToken)
+  nameWithType: NullTradingParametersBackfillService.BackfillAllAsync(CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillAllAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Backfill trading parameters for all active securities.
+  example: []
+  syntax:
+    content: public Task BackfillAllAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function BackfillAllAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  id: BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  langs:
+  - csharp
+  - vb
+  name: BackfillTickerAsync(string, Guid, CancellationToken)
+  nameWithType: NullTradingParametersBackfillService.BackfillTickerAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync(string, System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillTickerAsync
+    path: ../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Backfill trading parameters for a specific security.
+  example: []
+  syntax:
+    content: public Task BackfillTickerAsync(string ticker, Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: ticker
+      type: System.String
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function BackfillTickerAsync(ticker As String, securityId As Guid, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  nameWithType.vb: NullTradingParametersBackfillService.BackfillTickerAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: BackfillTickerAsync(String, Guid, CancellationToken)
+references:
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html
+  name: ITradingParametersBackfillService
+  nameWithType: ITradingParametersBackfillService
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+- uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync
+  href: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.html#Meridian_Application_SecurityMaster_NullTradingParametersBackfillService_BackfillAllAsync_System_Threading_CancellationToken_
+  name: BackfillAllAsync
+  nameWithType: NullTradingParametersBackfillService.BackfillAllAsync
+  fullName: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillAllAsync
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillAllAsync_System_Threading_CancellationToken_
+  name: BackfillAllAsync(CancellationToken)
+  nameWithType: ITradingParametersBackfillService.BackfillAllAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+    name: BackfillAllAsync
+    href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillAllAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+    name: BackfillAllAsync
+    href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillAllAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync
+  href: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.html#Meridian_Application_SecurityMaster_NullTradingParametersBackfillService_BackfillTickerAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: BackfillTickerAsync
+  nameWithType: NullTradingParametersBackfillService.BackfillTickerAsync
+  fullName: Meridian.Application.SecurityMaster.NullTradingParametersBackfillService.BackfillTickerAsync
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillTickerAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: BackfillTickerAsync(string, Guid, CancellationToken)
+  nameWithType: ITradingParametersBackfillService.BackfillTickerAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(string, System.Guid, System.Threading.CancellationToken)
+  nameWithType.vb: ITradingParametersBackfillService.BackfillTickerAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: BackfillTickerAsync(String, Guid, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+    name: BackfillTickerAsync
+    href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillTickerAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+    name: BackfillTickerAsync
+    href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillTickerAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid

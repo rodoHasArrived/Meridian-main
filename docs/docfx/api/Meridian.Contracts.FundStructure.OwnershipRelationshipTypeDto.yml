@@ -7,7 +7,6 @@ items:
   children:
   - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Advises
   - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.AllocatesTo
-  - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
   - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.ClearsFor
   - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.CustodiesFor
   - Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.Operates
@@ -22,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OwnershipRelationshipTypeDto
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 40
+    startLine: 60
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -59,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Owns
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 43
+    startLine: 63
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -85,11 +84,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Advises
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 44
+    startLine: 64
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -111,11 +110,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Operates
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 45
+    startLine: 65
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -137,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearsFor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 46
+    startLine: 66
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -163,11 +162,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodiesFor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 47
+    startLine: 67
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -189,42 +188,16 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllocatesTo
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 48
+    startLine: 68
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
     content: AllocatesTo = 5
-    return:
-      type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
-- uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
-  commentId: F:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
-  id: BanksFor
-  parent: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
-  langs:
-  - csharp
-  - vb
-  name: BanksFor
-  nameWithType: OwnershipRelationshipTypeDto.BanksFor
-  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.BanksFor
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: BanksFor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 49
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.FundStructure
-  syntax:
-    content: BanksFor = 6
     return:
       type: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
 references:

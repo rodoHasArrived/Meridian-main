@@ -1,0 +1,535 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.StrategyRunContinuityService
+  commentId: T:Meridian.Strategies.Services.StrategyRunContinuityService
+  id: StrategyRunContinuityService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.StrategyRunContinuityService.#ctor(Meridian.Strategies.Services.StrategyRunReadService,Meridian.Strategies.Services.CashFlowProjectionService,Meridian.Strategies.Services.IReconciliationRunService)
+  - Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunContinuityService
+  nameWithType: StrategyRunContinuityService
+  fullName: Meridian.Strategies.Services.StrategyRunContinuityService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunContinuityService
+    path: ../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Builds a shared run-centered continuity drill-in across portfolio, ledger, cash-flow, and reconciliation seams.
+  example: []
+  syntax:
+    content: public sealed class StrategyRunContinuityService
+    content.vb: Public NotInheritable Class StrategyRunContinuityService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.StrategyRunContinuityService.#ctor(Meridian.Strategies.Services.StrategyRunReadService,Meridian.Strategies.Services.CashFlowProjectionService,Meridian.Strategies.Services.IReconciliationRunService)
+  commentId: M:Meridian.Strategies.Services.StrategyRunContinuityService.#ctor(Meridian.Strategies.Services.StrategyRunReadService,Meridian.Strategies.Services.CashFlowProjectionService,Meridian.Strategies.Services.IReconciliationRunService)
+  id: '#ctor(Meridian.Strategies.Services.StrategyRunReadService,Meridian.Strategies.Services.CashFlowProjectionService,Meridian.Strategies.Services.IReconciliationRunService)'
+  parent: Meridian.Strategies.Services.StrategyRunContinuityService
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunContinuityService(StrategyRunReadService, CashFlowProjectionService, IReconciliationRunService)
+  nameWithType: StrategyRunContinuityService.StrategyRunContinuityService(StrategyRunReadService, CashFlowProjectionService, IReconciliationRunService)
+  fullName: Meridian.Strategies.Services.StrategyRunContinuityService.StrategyRunContinuityService(Meridian.Strategies.Services.StrategyRunReadService, Meridian.Strategies.Services.CashFlowProjectionService, Meridian.Strategies.Services.IReconciliationRunService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public StrategyRunContinuityService(StrategyRunReadService runReadService, CashFlowProjectionService cashFlowProjectionService, IReconciliationRunService reconciliationRunService)
+    parameters:
+    - id: runReadService
+      type: Meridian.Strategies.Services.StrategyRunReadService
+    - id: cashFlowProjectionService
+      type: Meridian.Strategies.Services.CashFlowProjectionService
+    - id: reconciliationRunService
+      type: Meridian.Strategies.Services.IReconciliationRunService
+    content.vb: Public Sub New(runReadService As StrategyRunReadService, cashFlowProjectionService As CashFlowProjectionService, reconciliationRunService As IReconciliationRunService)
+  overload: Meridian.Strategies.Services.StrategyRunContinuityService.#ctor*
+  nameWithType.vb: StrategyRunContinuityService.New(StrategyRunReadService, CashFlowProjectionService, IReconciliationRunService)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunContinuityService.New(Meridian.Strategies.Services.StrategyRunReadService, Meridian.Strategies.Services.CashFlowProjectionService, Meridian.Strategies.Services.IReconciliationRunService)
+  name.vb: New(StrategyRunReadService, CashFlowProjectionService, IReconciliationRunService)
+- uid: Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync(System.String,System.Threading.CancellationToken)
+  id: GetRunContinuityAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyRunContinuityService
+  langs:
+  - csharp
+  - vb
+  name: GetRunContinuityAsync(string, CancellationToken)
+  nameWithType: StrategyRunContinuityService.GetRunContinuityAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunContinuityAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<StrategyRunContinuityDetail?> GetRunContinuityAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.StrategyRunContinuityDetail}
+    content.vb: Public Function GetRunContinuityAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of StrategyRunContinuityDetail)
+  overload: Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync*
+  nameWithType.vb: StrategyRunContinuityService.GetRunContinuityAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync(String, System.Threading.CancellationToken)
+  name.vb: GetRunContinuityAsync(String, CancellationToken)
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.StrategyRunContinuityService.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunContinuityService.#ctor
+  href: Meridian.Strategies.Services.StrategyRunContinuityService.html#Meridian_Strategies_Services_StrategyRunContinuityService__ctor_Meridian_Strategies_Services_StrategyRunReadService_Meridian_Strategies_Services_CashFlowProjectionService_Meridian_Strategies_Services_IReconciliationRunService_
+  name: StrategyRunContinuityService
+  nameWithType: StrategyRunContinuityService.StrategyRunContinuityService
+  fullName: Meridian.Strategies.Services.StrategyRunContinuityService.StrategyRunContinuityService
+  nameWithType.vb: StrategyRunContinuityService.New
+  fullName.vb: Meridian.Strategies.Services.StrategyRunContinuityService.New
+  name.vb: New
+- uid: Meridian.Strategies.Services.StrategyRunReadService
+  commentId: T:Meridian.Strategies.Services.StrategyRunReadService
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.StrategyRunReadService.html
+  name: StrategyRunReadService
+  nameWithType: StrategyRunReadService
+  fullName: Meridian.Strategies.Services.StrategyRunReadService
+- uid: Meridian.Strategies.Services.CashFlowProjectionService
+  commentId: T:Meridian.Strategies.Services.CashFlowProjectionService
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.CashFlowProjectionService.html
+  name: CashFlowProjectionService
+  nameWithType: CashFlowProjectionService
+  fullName: Meridian.Strategies.Services.CashFlowProjectionService
+- uid: Meridian.Strategies.Services.IReconciliationRunService
+  commentId: T:Meridian.Strategies.Services.IReconciliationRunService
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.IReconciliationRunService.html
+  name: IReconciliationRunService
+  nameWithType: IReconciliationRunService
+  fullName: Meridian.Strategies.Services.IReconciliationRunService
+- uid: Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync
+  href: Meridian.Strategies.Services.StrategyRunContinuityService.html#Meridian_Strategies_Services_StrategyRunContinuityService_GetRunContinuityAsync_System_String_System_Threading_CancellationToken_
+  name: GetRunContinuityAsync
+  nameWithType: StrategyRunContinuityService.GetRunContinuityAsync
+  fullName: Meridian.Strategies.Services.StrategyRunContinuityService.GetRunContinuityAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.StrategyRunContinuityDetail}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.StrategyRunContinuityDetail}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StrategyRunContinuityDetail>
+  nameWithType: Task<StrategyRunContinuityDetail>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.StrategyRunContinuityDetail>
+  nameWithType.vb: Task(Of StrategyRunContinuityDetail)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.StrategyRunContinuityDetail)
+  name.vb: Task(Of StrategyRunContinuityDetail)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+    name: StrategyRunContinuityDetail
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+    name: StrategyRunContinuityDetail
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -217,6 +217,58 @@ public sealed class ExportValidatorTests : IDisposable
         result.EstimatedRecordCount.Should().Be(10);
     }
 
+
+    [Fact]
+    public void PreflightEngine_KnownContext_NoDataRequiredAndCsvComplex_ReturnsDeterministicIssueSet()
+    {
+        var request = new ExportRequest
+        {
+            OutputDirectory = _outputDir,
+            EventTypes = new[] { "LOBSnapshot" },
+            CustomProfile = new ExportProfile { Id = "csv", Name = "csv", Format = ExportFormat.Csv },
+            ValidationRules = new ExportValidationRulesRequest { RequireData = true }
+        };
+
+        var context = new ExportPreflightContext(
+            Request: request,
+            EstimatedBytes: 1024,
+            AvailableDiskSpaceBytes: 4L * 1024 * 1024 * 1024,
+            HasWritePermission: true,
+            RecordCount: 0);
+
+        var engine = new PreflightEngine<ExportPreflightContext>(ExportPreflightRules.DefaultRules);
+        var issues = engine.Evaluate(context);
+
+        issues.Select(i => (i.RuleId, i.Code, i.Severity, i.Remediation)).Should().Equal(
+            ("export.data-presence.v1", "NO_DATA", PreflightSeverity.Error, "Adjust symbols/date range/event types until matching records exist."),
+            ("export.csv-complex-types.v1", "CSV_COMPLEX_TYPES", PreflightSeverity.Warning, "Switch export format to Parquet or JSONL when nested payload fidelity is required."));
+    }
+
+    [Fact]
+    public void PreflightEngine_KnownContext_DiskAndPermissionIssues_ReturnsDeterministicIssueSet()
+    {
+        var request = new ExportRequest
+        {
+            OutputDirectory = _outputDir,
+            EventTypes = new[] { "Trade" },
+            ValidationRules = new ExportValidationRulesRequest { RequireData = false, DiskSpaceMultiplier = 1.5 }
+        };
+
+        var context = new ExportPreflightContext(
+            Request: request,
+            EstimatedBytes: 100,
+            AvailableDiskSpaceBytes: 120,
+            HasWritePermission: false,
+            RecordCount: 10);
+
+        var engine = new PreflightEngine<ExportPreflightContext>(ExportPreflightRules.DefaultRules);
+        var issues = engine.Evaluate(context);
+
+        issues.Select(i => (i.RuleId, i.Code, i.Severity)).Should().Equal(
+            ("export.disk-space.v1", "DISK_SPACE", PreflightSeverity.Error),
+            ("export.write-permission.v1", "WRITE_PERMISSION", PreflightSeverity.Error));
+    }
+
     // -------------------------------------------------------------------------
     // ExportVerifier — manifest verification
     // -------------------------------------------------------------------------

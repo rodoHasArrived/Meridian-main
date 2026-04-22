@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EdgarSecurityMasterIngestProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAllAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs

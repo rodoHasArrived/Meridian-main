@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityTrend
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentScore
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreviousScore
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrendDirection
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DegradingDimensions
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImprovingDimensions
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreHistory
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs
@@ -309,7 +309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/DataQualityService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreValues
     path: ../../src/Meridian.Storage/Services/DataQualityService.cs

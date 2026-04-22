@@ -135,6 +135,18 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         UpdateLayout();
     }
 
+    public void SelectWorkspaceNavigationPage(ListBox listBox, string pageTag)
+    {
+        listBox.SelectedValue = pageTag;
+        UpdateLayout();
+    }
+
+    public void ClearWorkspaceNavigationSelection(ListBox listBox)
+    {
+        listBox.SelectedItem = null;
+        UpdateLayout();
+    }
+
     public void OpenSelectedCommandPalettePage()
     {
         EnsureNavigationBridge();

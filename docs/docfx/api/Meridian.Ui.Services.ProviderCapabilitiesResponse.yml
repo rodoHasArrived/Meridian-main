@@ -16,11 +16,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilitiesResponse
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 804
+    startLine: 586
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -50,11 +50,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Providers
     path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
-    startLine: 806
+    startLine: 588
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

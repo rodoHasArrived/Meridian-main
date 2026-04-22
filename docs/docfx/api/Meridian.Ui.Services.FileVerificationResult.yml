@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileVerificationResult
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifiedAt
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedChecksum
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActualChecksum
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumMatch
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventCount
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
     path: ../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs

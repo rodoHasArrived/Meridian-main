@@ -1,0 +1,85 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.EnvironmentDesign
+  commentId: N:Meridian.Application.EnvironmentDesign
+  id: Meridian.Application.EnvironmentDesign
+  children:
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.EnvironmentDesign
+  nameWithType: Meridian.Application.EnvironmentDesign
+  fullName: Meridian.Application.EnvironmentDesign
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  commentId: T:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html
+  name: EnvironmentDesignerService
+  nameWithType: EnvironmentDesignerService
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html
+  name: IEnvironmentDesignService
+  nameWithType: IEnvironmentDesignService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html
+  name: IEnvironmentPublishService
+  nameWithType: IEnvironmentPublishService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html
+  name: IEnvironmentRuntimeProjectionService
+  nameWithType: IEnvironmentRuntimeProjectionService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.html
+  name: IEnvironmentValidationService
+  nameWithType: IEnvironmentValidationService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+- uid: Meridian.Application.EnvironmentDesign
+  commentId: N:Meridian.Application.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Application.EnvironmentDesign
+  nameWithType: Meridian.Application.EnvironmentDesign
+  fullName: Meridian.Application.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Application.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Application.EnvironmentDesign.html

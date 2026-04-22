@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMappingEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapSymbolMappingEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs

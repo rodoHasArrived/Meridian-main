@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionControlSnapshot
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CircuitBreaker
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultMaxPositionSize
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPositionLimits
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverrides
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs

@@ -21,6 +21,14 @@ Alpaca provides free real-time and historical market data through WebSocket and 
 
 ---
 
+## Prerequisites
+
+- Active Alpaca account (paper for development; live for production)
+- API Key ID and Secret Key generated from the Alpaca dashboard
+- Meridian environment with access to set environment variables or `appsettings.json`
+
+---
+
 ## Account Setup
 
 ### 1. Create Alpaca Account

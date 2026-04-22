@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolImportExportService
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromTextAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAutoDetectAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportFromCsvAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportToCsv
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportToCsvBytes
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs

@@ -5,10 +5,11 @@ items:
   id: PaperSessionDetailDto
   parent: Meridian.Execution.Services
   children:
-  - Meridian.Execution.Services.PaperSessionDetailDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})
+  - Meridian.Execution.Services.PaperSessionDetailDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})
   - Meridian.Execution.Services.PaperSessionDetailDto.OrderHistory
   - Meridian.Execution.Services.PaperSessionDetailDto.Portfolio
   - Meridian.Execution.Services.PaperSessionDetailDto.Summary
+  - Meridian.Execution.Services.PaperSessionDetailDto.Symbols
   langs:
   - csharp
   - vb
@@ -19,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionDetailDto
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 457
+    startLine: 567
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -43,44 +44,46 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.Services.PaperSessionDetailDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})
-  commentId: M:Meridian.Execution.Services.PaperSessionDetailDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})
-  id: '#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})'
+- uid: Meridian.Execution.Services.PaperSessionDetailDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})
+  commentId: M:Meridian.Execution.Services.PaperSessionDetailDto.#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})
+  id: '#ctor(Meridian.Execution.Services.PaperSessionSummaryDto,System.Collections.Generic.IReadOnlyList{System.String},Meridian.Execution.Services.ExecutionPortfolioSnapshotDto,System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState})'
   parent: Meridian.Execution.Services.PaperSessionDetailDto
   langs:
   - csharp
   - vb
-  name: PaperSessionDetailDto(PaperSessionSummaryDto, ExecutionPortfolioSnapshotDto?, IReadOnlyList<OrderState>?)
-  nameWithType: PaperSessionDetailDto.PaperSessionDetailDto(PaperSessionSummaryDto, ExecutionPortfolioSnapshotDto?, IReadOnlyList<OrderState>?)
-  fullName: Meridian.Execution.Services.PaperSessionDetailDto.PaperSessionDetailDto(Meridian.Execution.Services.PaperSessionSummaryDto, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto?, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.OrderState>?)
+  name: PaperSessionDetailDto(PaperSessionSummaryDto, IReadOnlyList<string>, ExecutionPortfolioSnapshotDto?, IReadOnlyList<OrderState>?)
+  nameWithType: PaperSessionDetailDto.PaperSessionDetailDto(PaperSessionSummaryDto, IReadOnlyList<string>, ExecutionPortfolioSnapshotDto?, IReadOnlyList<OrderState>?)
+  fullName: Meridian.Execution.Services.PaperSessionDetailDto.PaperSessionDetailDto(Meridian.Execution.Services.PaperSessionSummaryDto, System.Collections.Generic.IReadOnlyList<string>, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto?, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.OrderState>?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 457
+    startLine: 567
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
   summary: Detailed session DTO.
   example: []
   syntax:
-    content: public PaperSessionDetailDto(PaperSessionSummaryDto Summary, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory)
+    content: public PaperSessionDetailDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory)
     parameters:
     - id: Summary
       type: Meridian.Execution.Services.PaperSessionSummaryDto
+    - id: Symbols
+      type: System.Collections.Generic.IReadOnlyList{System.String}
     - id: Portfolio
       type: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
     - id: OrderHistory
       type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.OrderState}
-    content.vb: Public Sub New(Summary As PaperSessionSummaryDto, Portfolio As ExecutionPortfolioSnapshotDto, OrderHistory As IReadOnlyList(Of OrderState))
+    content.vb: Public Sub New(Summary As PaperSessionSummaryDto, Symbols As IReadOnlyList(Of String), Portfolio As ExecutionPortfolioSnapshotDto, OrderHistory As IReadOnlyList(Of OrderState))
   overload: Meridian.Execution.Services.PaperSessionDetailDto.#ctor*
-  nameWithType.vb: PaperSessionDetailDto.New(PaperSessionSummaryDto, ExecutionPortfolioSnapshotDto, IReadOnlyList(Of OrderState))
-  fullName.vb: Meridian.Execution.Services.PaperSessionDetailDto.New(Meridian.Execution.Services.PaperSessionSummaryDto, Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.OrderState))
-  name.vb: New(PaperSessionSummaryDto, ExecutionPortfolioSnapshotDto, IReadOnlyList(Of OrderState))
+  nameWithType.vb: PaperSessionDetailDto.New(PaperSessionSummaryDto, IReadOnlyList(Of String), ExecutionPortfolioSnapshotDto, IReadOnlyList(Of OrderState))
+  fullName.vb: Meridian.Execution.Services.PaperSessionDetailDto.New(Meridian.Execution.Services.PaperSessionSummaryDto, System.Collections.Generic.IReadOnlyList(Of String), Meridian.Execution.Services.ExecutionPortfolioSnapshotDto, System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.OrderState))
+  name.vb: New(PaperSessionSummaryDto, IReadOnlyList(Of String), ExecutionPortfolioSnapshotDto, IReadOnlyList(Of OrderState))
 - uid: Meridian.Execution.Services.PaperSessionDetailDto.Summary
   commentId: P:Meridian.Execution.Services.PaperSessionDetailDto.Summary
   id: Summary
@@ -95,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 458
+    startLine: 568
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -110,6 +113,35 @@ items:
       type: Meridian.Execution.Services.PaperSessionSummaryDto
     content.vb: Public Property Summary As PaperSessionSummaryDto
   overload: Meridian.Execution.Services.PaperSessionDetailDto.Summary*
+- uid: Meridian.Execution.Services.PaperSessionDetailDto.Symbols
+  commentId: P:Meridian.Execution.Services.PaperSessionDetailDto.Symbols
+  id: Symbols
+  parent: Meridian.Execution.Services.PaperSessionDetailDto
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: PaperSessionDetailDto.Symbols
+  fullName: Meridian.Execution.Services.PaperSessionDetailDto.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
+    startLine: 569
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public IReadOnlyList<string> Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Symbols As IReadOnlyList(Of String)
+  overload: Meridian.Execution.Services.PaperSessionDetailDto.Symbols*
 - uid: Meridian.Execution.Services.PaperSessionDetailDto.Portfolio
   commentId: P:Meridian.Execution.Services.PaperSessionDetailDto.Portfolio
   id: Portfolio
@@ -124,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 459
+    startLine: 570
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -153,11 +185,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderHistory
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 460
+    startLine: 571
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -475,7 +507,7 @@ references:
   - name: )
 - uid: Meridian.Execution.Services.PaperSessionDetailDto.#ctor*
   commentId: Overload:Meridian.Execution.Services.PaperSessionDetailDto.#ctor
-  href: Meridian.Execution.Services.PaperSessionDetailDto.html#Meridian_Execution_Services_PaperSessionDetailDto__ctor_Meridian_Execution_Services_PaperSessionSummaryDto_Meridian_Execution_Services_ExecutionPortfolioSnapshotDto_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Sdk_OrderState__
+  href: Meridian.Execution.Services.PaperSessionDetailDto.html#Meridian_Execution_Services_PaperSessionDetailDto__ctor_Meridian_Execution_Services_PaperSessionSummaryDto_System_Collections_Generic_IReadOnlyList_System_String__Meridian_Execution_Services_ExecutionPortfolioSnapshotDto_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Sdk_OrderState__
   name: PaperSessionDetailDto
   nameWithType: PaperSessionDetailDto.PaperSessionDetailDto
   fullName: Meridian.Execution.Services.PaperSessionDetailDto.PaperSessionDetailDto
@@ -489,6 +521,41 @@ references:
   name: PaperSessionSummaryDto
   nameWithType: PaperSessionSummaryDto
   fullName: Meridian.Execution.Services.PaperSessionSummaryDto
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
 - uid: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
   commentId: T:Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
   parent: Meridian.Execution.Services
@@ -600,6 +667,12 @@ references:
   name: Summary
   nameWithType: PaperSessionDetailDto.Summary
   fullName: Meridian.Execution.Services.PaperSessionDetailDto.Summary
+- uid: Meridian.Execution.Services.PaperSessionDetailDto.Symbols*
+  commentId: Overload:Meridian.Execution.Services.PaperSessionDetailDto.Symbols
+  href: Meridian.Execution.Services.PaperSessionDetailDto.html#Meridian_Execution_Services_PaperSessionDetailDto_Symbols
+  name: Symbols
+  nameWithType: PaperSessionDetailDto.Symbols
+  fullName: Meridian.Execution.Services.PaperSessionDetailDto.Symbols
 - uid: Meridian.Execution.Services.PaperSessionDetailDto.Portfolio*
   commentId: Overload:Meridian.Execution.Services.PaperSessionDetailDto.Portfolio
   href: Meridian.Execution.Services.PaperSessionDetailDto.html#Meridian_Execution_Services_PaperSessionDetailDto_Portfolio

@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Copy;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -17,6 +19,8 @@ namespace Meridian.Wpf.Views;
 public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 {
     private readonly StrategyRunWorkspaceService _runService;
+    private readonly IResearchBriefingWorkspaceService _briefingService;
+    private readonly Meridian.Wpf.Services.WatchlistService _watchlistService;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService _shellContextService;
@@ -25,17 +29,20 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
     public ResearchWorkspaceShellPage(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         ResearchWorkspaceShellStateProvider stateProvider,
         ResearchWorkspaceShellViewModel viewModel,
         StrategyRunWorkspaceService runService,
+        IResearchBriefingWorkspaceService briefingService,
+        Meridian.Wpf.Services.WatchlistService watchlistService,
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
         WorkspaceShellContextService shellContextService)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
         _runService = runService;
+        _briefingService = briefingService;
+        _watchlistService = watchlistService;
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
         _shellContextService = shellContextService;
@@ -45,6 +52,7 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     {
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
+        _watchlistService.WatchlistsChanged += OnWatchlistsChanged;
         _shellContextService.SignalsChanged += OnSignalsChanged;
         if (_operatingContextService is not null)
         {
@@ -60,6 +68,7 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     {
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
+        _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
         _shellContextService.SignalsChanged -= OnSignalsChanged;
         if (_operatingContextService is not null)
         {
@@ -75,8 +84,17 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     {
         try
         {
-            var summary = await _runService.GetResearchSummaryAsync();
+            var summaryTask = _runService.GetResearchSummaryAsync();
+            var activeRunTask = _runService.GetActiveRunContextAsync();
+            var briefingTask = _briefingService.GetBriefingAsync();
+            await System.Threading.Tasks.Task.WhenAll(summaryTask, activeRunTask, briefingTask);
 
+            var summary = await summaryTask;
+            var activeRun = await activeRunTask;
+            var briefing = await briefingTask;
+
+            ContextStrip.ShellContext = await _shellContextService.CreateAsync(
+                BuildShellContextInput(summary, activeRun, briefing));
             TotalRunsText.Text = summary.TotalRuns.ToString();
             PromotedText.Text = summary.PromotedCount.ToString();
             PendingReviewText.Text = summary.PendingReviewCount.ToString();
@@ -104,7 +122,8 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
                 NoPromotionsText.Visibility = Visibility.Visible;
             }
 
-            UpdateActiveRunContext(await _runService.GetActiveRunContextAsync());
+            UpdateBriefing(briefing);
+            UpdateActiveRunContext(activeRun);
             ViewModel.CommandGroup = BuildCommandGroup();
             CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
@@ -145,6 +164,74 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
         RiskPreviewText.Text = $"{activeContext.RiskSummary} Audit and reconciliation drill-ins stay one action away from the same shell.";
         _canPromoteActiveRun = activeContext.CanPromoteToPaper;
         _canOpenTradingCockpit = true;
+    }
+
+    private void UpdateBriefing(ResearchBriefingDto briefing)
+    {
+        BriefingSummaryText.Text = briefing.Workspace.Summary;
+        BriefingGeneratedText.Text = $"Updated {FormatBriefingTimestamp(briefing.InsightFeed.GeneratedAt)}";
+
+        BindItems(BriefingInsightsList, NoBriefingInsightsText, briefing.InsightFeed.Widgets);
+        BindItems(BriefingWatchlistsList, NoBriefingWatchlistsText, briefing.Watchlists);
+        BindItems(BriefingWhatChangedList, NoBriefingWhatChangedText, briefing.WhatChanged);
+        BindItems(BriefingAlertsList, NoBriefingAlertsText, briefing.Alerts);
+        BindItems(BriefingComparisonsList, NoBriefingComparisonsText, briefing.SavedComparisons);
+    }
+
+    private static WorkspaceShellContextInput BuildShellContextInput(
+        ResearchWorkspaceSummary summary,
+        ActiveRunContext? activeRun,
+        ResearchBriefingDto briefing)
+    {
+        var promotionCandidates = briefing.Workspace.PromotionCandidates;
+        var alertCount = briefing.Alerts.Count;
+        var activeSessions = briefing.Workspace.ActiveRuns;
+
+        return new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = WorkspaceCopyCatalog.Research.ShellTitle,
+            WorkspaceSubtitle = WorkspaceCopyCatalog.Research.ShellSubtitle,
+            PrimaryScopeLabel = WorkspaceCopyCatalog.Research.PrimaryScopeLabel,
+            PrimaryScopeValue = activeRun?.StrategyName
+                ?? briefing.Workspace.LatestStrategyName
+                ?? "No active research run",
+            AsOfValue = briefing.InsightFeed.GeneratedAt.ToString("MMM dd yyyy HH:mm"),
+            FreshnessValue = activeRun is null
+                ? $"{activeSessions} active session(s)"
+                : $"{activeRun.ModeLabel} · {activeRun.StatusLabel}",
+            ReviewStateLabel = "Promotion",
+            ReviewStateValue = promotionCandidates > 0
+                ? $"{promotionCandidates} candidate(s)"
+                : "No promotion queue",
+            ReviewStateTone = promotionCandidates > 0 ? WorkspaceTone.Warning : WorkspaceTone.Success,
+            CriticalLabel = "Alerts",
+            CriticalValue = alertCount > 0 ? $"{alertCount} alert(s)" : "No blocking alerts",
+            CriticalTone = alertCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info,
+            AdditionalBadges =
+            [
+                new WorkspaceShellBadge
+                {
+                    Label = "Watchlists",
+                    Value = briefing.Watchlists.Count > 0 ? $"{briefing.Watchlists.Count} staged" : string.Empty,
+                    Glyph = "\uE8D4",
+                    Tone = WorkspaceTone.Info
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Comparisons",
+                    Value = briefing.SavedComparisons.Count > 0 ? $"{briefing.SavedComparisons.Count} saved" : string.Empty,
+                    Glyph = "\uE9D9",
+                    Tone = WorkspaceTone.Neutral
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Runs",
+                    Value = summary.TotalRuns > 0 ? $"{summary.TotalRuns} tracked" : string.Empty,
+                    Glyph = "\uE8FD",
+                    Tone = WorkspaceTone.Neutral
+                }
+            ]
+        };
     }
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
@@ -217,6 +304,9 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
             case "FundAuditTrail":
                 OpenAuditTrail_Click(sender, new RoutedEventArgs());
                 break;
+            case "Watchlist":
+                OpenWatchlists_Click(sender, new RoutedEventArgs());
+                break;
             case "LeanIntegration":
                 OpenLean_Click(sender, new RoutedEventArgs());
                 break;
@@ -231,6 +321,9 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
     private void OpenStrategyRuns_Click(object sender, RoutedEventArgs e)
         => NavigationService.NavigateTo("StrategyRuns");
+
+    private void OpenWatchlists_Click(object sender, RoutedEventArgs e)
+        => NavigationService.NavigateTo("Watchlist");
 
     private async void PromoteActiveRun_Click(object sender, RoutedEventArgs e)
     {
@@ -319,11 +412,39 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     {
         if (sender is Button { Tag: string runId })
         {
-            await _runService.SetActiveRunContextAsync(runId);
-            OpenWorkspacePage(ResearchDockManager, "RunDetail", PaneDropAction.SplitRight, runId);
-            OpenWorkspacePage(ResearchDockManager, "RunPortfolio", PaneDropAction.SplitBelow, runId);
-            await RefreshAsync();
+            await OpenRunInStudioAsync(runId);
         }
+    }
+
+    private async void OpenBriefingRun_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string runId } && !string.IsNullOrWhiteSpace(runId))
+        {
+            await OpenRunInStudioAsync(runId);
+        }
+    }
+
+    private async void OpenBriefingAlert_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string runId } && !string.IsNullOrWhiteSpace(runId))
+        {
+            await OpenRunInStudioAsync(runId);
+            return;
+        }
+
+        NavigationService.NavigateTo("StrategyRuns");
+    }
+
+    private async void OpenBriefingComparison_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string runId } && !string.IsNullOrWhiteSpace(runId))
+        {
+            await _runService.SetActiveRunContextAsync(runId);
+            NavigationService.NavigateTo("StrategyRuns", runId);
+            return;
+        }
+
+        NavigationService.NavigateTo("StrategyRuns");
     }
 
     private void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
@@ -340,6 +461,9 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     private void OnSignalsChanged(object? sender, EventArgs e)
         => DispatchRefresh(RefreshAsync);
 
+    private void OnWatchlistsChanged(object? sender, WatchlistsChangedEventArgs e)
+        => DispatchRefresh(RefreshAsync);
+
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
         if (!Dispatcher.CheckAccess())
@@ -353,6 +477,48 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
     private void OnActiveRunContextChanged(object? sender, ActiveRunContext? e)
         => DispatchRefresh(RefreshAsync);
+
+    private async System.Threading.Tasks.Task OpenRunInStudioAsync(string runId)
+    {
+        await _runService.SetActiveRunContextAsync(runId);
+        OpenWorkspacePage(ResearchDockManager, "RunDetail", PaneDropAction.SplitRight, runId);
+        OpenWorkspacePage(ResearchDockManager, "RunPortfolio", PaneDropAction.SplitBelow, runId);
+        await RefreshAsync();
+    }
+
+    private static void BindItems<T>(ItemsControl control, TextBlock emptyState, IReadOnlyList<T> items)
+    {
+        if (items.Count > 0)
+        {
+            control.ItemsSource = items;
+            emptyState.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        control.ItemsSource = null;
+        emptyState.Visibility = Visibility.Visible;
+    }
+
+    private static string FormatBriefingTimestamp(DateTimeOffset timestamp)
+    {
+        var span = DateTimeOffset.UtcNow - timestamp;
+        if (span.TotalMinutes < 1)
+        {
+            return "just now";
+        }
+
+        if (span.TotalHours < 1)
+        {
+            return $"{Math.Round(span.TotalMinutes)}m ago";
+        }
+
+        if (span.TotalDays < 1)
+        {
+            return $"{Math.Round(span.TotalHours)}h ago";
+        }
+
+        return $"{Math.Round(span.TotalDays)}d ago";
+    }
 
     private WorkspaceCommandGroup BuildCommandGroup() =>
         new()
@@ -389,13 +555,14 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
             ],
             SecondaryCommands =
             [
+                new WorkspaceCommandItem { Id = "Watchlist", Label = "Watchlists", Description = "Open symbol staging watchlists", Glyph = "\uE8D4" },
                 new WorkspaceCommandItem { Id = "StrategyRuns", Label = "Run Browser", Description = "Open run browser", Glyph = "\uE8FD" },
                 new WorkspaceCommandItem { Id = "RunDetail", Label = "Run Detail", Description = "Open run detail", Glyph = "\uE7C3" },
                 new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio Inspector", Description = "Open portfolio inspector", Glyph = "\uE8B5" },
                 new WorkspaceCommandItem { Id = "RunLedger", Label = "Ledger Inspector", Description = "Open ledger inspector", Glyph = "\uEE94" },
-                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting Impact", Description = "Open trial-balance impact view", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Accounting Impact", Description = "Open trial-balance impact view", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "LeanIntegration", Label = "Lean Integration", Description = "Open Lean integration", Glyph = "\uE943" }
             ]
         };

@@ -5,14 +5,10 @@ items:
   id: ExecutionGatewayHealth
   parent: Meridian.Ui.Shared.Endpoints
   children:
-  - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String,System.String)
+  - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.String)
   - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.AsOf
   - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.BrokerName
-  - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen
   - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsAvailable
-  - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected
-  - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy
-  - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message
   - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Mode
   - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.SelectedGatewayId
   langs:
@@ -25,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionGatewayHealth
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 775
+    startLine: 995
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -49,32 +45,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String,System.String)
-  commentId: M:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String,System.String)
-  id: '#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.String,System.String)'
+- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.String)
+  id: '#ctor(System.String,System.String,System.Boolean,System.DateTimeOffset,System.String)'
   parent: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
   langs:
   - csharp
   - vb
-  name: ExecutionGatewayHealth(string, string, bool, DateTimeOffset, bool?, bool?, bool?, string?, string?)
-  nameWithType: ExecutionGatewayHealth.ExecutionGatewayHealth(string, string, bool, DateTimeOffset, bool?, bool?, bool?, string?, string?)
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.ExecutionGatewayHealth(string, string, bool, System.DateTimeOffset, bool?, bool?, bool?, string?, string?)
+  name: ExecutionGatewayHealth(string, string, bool, DateTimeOffset, string?)
+  nameWithType: ExecutionGatewayHealth.ExecutionGatewayHealth(string, string, bool, DateTimeOffset, string?)
+  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.ExecutionGatewayHealth(string, string, bool, System.DateTimeOffset, string?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 775
+    startLine: 995
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
   summary: Gateway health summary.
   example: []
   syntax:
-    content: public ExecutionGatewayHealth(string BrokerName, string Mode, bool IsAvailable, DateTimeOffset AsOf, bool? IsConnected = null, bool? IsHealthy = null, bool? CircuitBreakerOpen = null, string? Message = null, string? SelectedGatewayId = null)
+    content: public ExecutionGatewayHealth(string BrokerName, string Mode, bool IsAvailable, DateTimeOffset AsOf, string? SelectedGatewayId = null)
     parameters:
     - id: BrokerName
       type: System.String
@@ -84,21 +80,13 @@ items:
       type: System.Boolean
     - id: AsOf
       type: System.DateTimeOffset
-    - id: IsConnected
-      type: System.Nullable{System.Boolean}
-    - id: IsHealthy
-      type: System.Nullable{System.Boolean}
-    - id: CircuitBreakerOpen
-      type: System.Nullable{System.Boolean}
-    - id: Message
-      type: System.String
     - id: SelectedGatewayId
       type: System.String
-    content.vb: Public Sub New(BrokerName As String, Mode As String, IsAvailable As Boolean, AsOf As DateTimeOffset, IsConnected As Boolean? = Nothing, IsHealthy As Boolean? = Nothing, CircuitBreakerOpen As Boolean? = Nothing, Message As String = Nothing, SelectedGatewayId As String = Nothing)
+    content.vb: Public Sub New(BrokerName As String, Mode As String, IsAvailable As Boolean, AsOf As DateTimeOffset, SelectedGatewayId As String = Nothing)
   overload: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor*
-  nameWithType.vb: ExecutionGatewayHealth.New(String, String, Boolean, DateTimeOffset, Boolean?, Boolean?, Boolean?, String, String)
-  fullName.vb: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.New(String, String, Boolean, System.DateTimeOffset, Boolean?, Boolean?, Boolean?, String, String)
-  name.vb: New(String, String, Boolean, DateTimeOffset, Boolean?, Boolean?, Boolean?, String, String)
+  nameWithType.vb: ExecutionGatewayHealth.New(String, String, Boolean, DateTimeOffset, String)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.New(String, String, Boolean, System.DateTimeOffset, String)
+  name.vb: New(String, String, Boolean, DateTimeOffset, String)
 - uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.BrokerName
   commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.BrokerName
   id: BrokerName
@@ -113,11 +101,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 776
+    startLine: 996
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -142,11 +130,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 777
+    startLine: 997
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -171,11 +159,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailable
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 778
+    startLine: 998
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -200,11 +188,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 779
+    startLine: 999
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -215,122 +203,6 @@ items:
       type: System.DateTimeOffset
     content.vb: Public Property AsOf As DateTimeOffset
   overload: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.AsOf*
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected
-  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected
-  id: IsConnected
-  parent: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
-  langs:
-  - csharp
-  - vb
-  name: IsConnected
-  nameWithType: ExecutionGatewayHealth.IsConnected
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: IsConnected
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 780
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  syntax:
-    content: public bool? IsConnected { get; init; }
-    parameters: []
-    return:
-      type: System.Nullable{System.Boolean}
-    content.vb: Public Property IsConnected As Boolean?
-  overload: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected*
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy
-  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy
-  id: IsHealthy
-  parent: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
-  langs:
-  - csharp
-  - vb
-  name: IsHealthy
-  nameWithType: ExecutionGatewayHealth.IsHealthy
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: IsHealthy
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 781
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  syntax:
-    content: public bool? IsHealthy { get; init; }
-    parameters: []
-    return:
-      type: System.Nullable{System.Boolean}
-    content.vb: Public Property IsHealthy As Boolean?
-  overload: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy*
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen
-  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen
-  id: CircuitBreakerOpen
-  parent: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
-  langs:
-  - csharp
-  - vb
-  name: CircuitBreakerOpen
-  nameWithType: ExecutionGatewayHealth.CircuitBreakerOpen
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: CircuitBreakerOpen
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 782
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  syntax:
-    content: public bool? CircuitBreakerOpen { get; init; }
-    parameters: []
-    return:
-      type: System.Nullable{System.Boolean}
-    content.vb: Public Property CircuitBreakerOpen As Boolean?
-  overload: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen*
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message
-  commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message
-  id: Message
-  parent: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
-  langs:
-  - csharp
-  - vb
-  name: Message
-  nameWithType: ExecutionGatewayHealth.Message
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: Message
-    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 783
-  assemblies:
-  - Meridian.Ui.Shared
-  namespace: Meridian.Ui.Shared.Endpoints
-  syntax:
-    content: public string? Message { get; init; }
-    parameters: []
-    return:
-      type: System.String
-    content.vb: Public Property Message As String
-  overload: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message*
 - uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.SelectedGatewayId
   commentId: P:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.SelectedGatewayId
   id: SelectedGatewayId
@@ -345,11 +217,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectedGatewayId
     path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
-    startLine: 784
+    startLine: 1000
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -675,7 +547,7 @@ references:
   - name: )
 - uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor*
   commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.#ctor
-  href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth__ctor_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_Nullable_System_Boolean__System_String_System_String_
+  href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth__ctor_System_String_System_String_System_Boolean_System_DateTimeOffset_System_String_
   name: ExecutionGatewayHealth
   nameWithType: ExecutionGatewayHealth.ExecutionGatewayHealth
   fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.ExecutionGatewayHealth
@@ -712,57 +584,6 @@ references:
   name: DateTimeOffset
   nameWithType: DateTimeOffset
   fullName: System.DateTimeOffset
-- uid: System.Nullable{System.Boolean}
-  commentId: T:System.Nullable{System.Boolean}
-  parent: System
-  definition: System.Nullable`1
-  href: https://learn.microsoft.com/dotnet/api/system.boolean
-  name: bool?
-  nameWithType: bool?
-  fullName: bool?
-  nameWithType.vb: Boolean?
-  fullName.vb: Boolean?
-  name.vb: Boolean?
-  spec.csharp:
-  - uid: System.Boolean
-    name: bool
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.boolean
-  - name: '?'
-  spec.vb:
-  - uid: System.Boolean
-    name: Boolean
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.boolean
-  - name: '?'
-- uid: System.Nullable`1
-  commentId: T:System.Nullable`1
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
-  name: Nullable<T>
-  nameWithType: Nullable<T>
-  fullName: System.Nullable<T>
-  nameWithType.vb: Nullable(Of T)
-  fullName.vb: System.Nullable(Of T)
-  name.vb: Nullable(Of T)
-  spec.csharp:
-  - uid: System.Nullable`1
-    name: Nullable
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
-  - name: <
-  - name: T
-  - name: '>'
-  spec.vb:
-  - uid: System.Nullable`1
-    name: Nullable
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
-  - name: (
-  - name: Of
-  - name: " "
-  - name: T
-  - name: )
 - uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.BrokerName*
   commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.BrokerName
   href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth_BrokerName
@@ -787,30 +608,6 @@ references:
   name: AsOf
   nameWithType: ExecutionGatewayHealth.AsOf
   fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.AsOf
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected
-  href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth_IsConnected
-  name: IsConnected
-  nameWithType: ExecutionGatewayHealth.IsConnected
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsConnected
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy
-  href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth_IsHealthy
-  name: IsHealthy
-  nameWithType: ExecutionGatewayHealth.IsHealthy
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.IsHealthy
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen
-  href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth_CircuitBreakerOpen
-  name: CircuitBreakerOpen
-  nameWithType: ExecutionGatewayHealth.CircuitBreakerOpen
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.CircuitBreakerOpen
-- uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message*
-  commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message
-  href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth_Message
-  name: Message
-  nameWithType: ExecutionGatewayHealth.Message
-  fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.Message
 - uid: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.SelectedGatewayId*
   commentId: Overload:Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.SelectedGatewayId
   href: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth.html#Meridian_Ui_Shared_Endpoints_ExecutionGatewayHealth_SelectedGatewayId

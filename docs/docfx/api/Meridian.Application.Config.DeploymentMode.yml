@@ -7,7 +7,6 @@ items:
   children:
   - Meridian.Application.Config.DeploymentMode.Desktop
   - Meridian.Application.Config.DeploymentMode.Headless
-  - Meridian.Application.Config.DeploymentMode.Web
   langs:
   - csharp
   - vb
@@ -18,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeploymentMode
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 276
+    startLine: 263
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -45,11 +44,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Headless
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 282
+    startLine: 269
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -60,37 +59,6 @@ items:
   example: []
   syntax:
     content: Headless = 0
-    return:
-      type: Meridian.Application.Config.DeploymentMode
-- uid: Meridian.Application.Config.DeploymentMode.Web
-  commentId: F:Meridian.Application.Config.DeploymentMode.Web
-  id: Web
-  parent: Meridian.Application.Config.DeploymentMode
-  langs:
-  - csharp
-  - vb
-  name: Web
-  nameWithType: DeploymentMode.Web
-  fullName: Meridian.Application.Config.DeploymentMode.Web
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: Web
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 288
-  assemblies:
-  - Meridian.Application
-  namespace: Meridian.Application.Config
-  summary: >-
-    Web mode - HTTP server with web dashboard.
-
-    Runs only the UI server without the data collector.
-  example: []
-  syntax:
-    content: Web = 1
     return:
       type: Meridian.Application.Config.DeploymentMode
 - uid: Meridian.Application.Config.DeploymentMode.Desktop
@@ -107,11 +75,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Desktop
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 294
+    startLine: 275
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -121,7 +89,7 @@ items:
     Runs both the data collector and UI server.
   example: []
   syntax:
-    content: Desktop = 2
+    content: Desktop = 1
     return:
       type: Meridian.Application.Config.DeploymentMode
 references:
