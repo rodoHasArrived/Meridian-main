@@ -29,7 +29,22 @@ public sealed class FundLedgerReadService
             return null;
         }
 
-        var (profile, fundLedgerBook) = context.Value;
+        var fundLedgerBook = new FundLedgerBook(profile.FundProfileId);
+        var runs = await _runWorkspaceService.GetRecordedRunEntriesAsync(ct).ConfigureAwait(false);
+        var selectedLedgerIds = NormalizeSelectedLedgerIds(query.SelectedLedgerIds);
+        var constrainToSelectedLedgers = selectedLedgerIds.Count > 0;
+
+        foreach (var run in runs.Where(run =>
+                     string.Equals(run.FundProfileId, profile.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                     run.Metrics?.Ledger is not null &&
+                     (!constrainToSelectedLedgers || selectedLedgerIds.Contains(run.RunId))))
+        {
+            foreach (var journalEntry in run.Metrics!.Ledger!.Journal)
+            {
+                fundLedgerBook.FundLedger.Post(journalEntry);
+            }
+        }
+
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var journal = BuildJournal(fundLedgerBook, query, asOf);
         var trialBalance = BuildTrialBalance(fundLedgerBook, query, asOf);
@@ -228,4 +243,11 @@ public sealed class FundLedgerReadService
             .GroupBy(line => line.Account)
             .ToDictionary(group => group.Key, group => group.Count());
     }
+
+    private static HashSet<string> NormalizeSelectedLedgerIds(IReadOnlyList<string>? selectedLedgerIds) =>
+        selectedLedgerIds?
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Select(static id => id.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+        ?? [];
 }
