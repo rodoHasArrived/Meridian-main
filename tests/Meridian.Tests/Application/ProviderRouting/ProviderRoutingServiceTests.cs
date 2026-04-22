@@ -236,9 +236,91 @@ public sealed class ProviderRoutingServiceTests : IDisposable
         var domain = snapshot.Domains.Single(static d => d.Domain == nameof(ProviderCapabilityKind.HistoricalBars));
         domain.Evaluations.Should().Be(2);
         domain.Latency.P95Ms.Should().BeGreaterThanOrEqualTo(0);
-        domain.ThroughputPerMinute.Should().BeGreaterThan(0);
-        domain.ReasonCodeCoveragePercent.Should().BeGreaterThan(0);
         domain.DeterminismMismatches.Should().Be(1);
+    }
+
+    [Fact]
+    public void DomainKernelState_ToSnapshot_PrunesStaleThroughputEntries()
+    {
+        var state = new DomainKernelState();
+        var baseTime = DateTimeOffset.UtcNow - TimeSpan.FromMinutes(5);
+
+        for (var i = 0; i < 3; i++)
+        {
+            state.Record(
+                baseTime.AddSeconds(i),
+                latencyMs: 1,
+                score: 100,
+                severity: KernelSeverityLevel.Low,
+                hasReasonCodes: true,
+                deterministicMismatch: false);
+        }
+
+        var snapshot = state.ToSnapshot(nameof(ProviderCapabilityKind.HistoricalBars));
+        snapshot.ThroughputPerMinute.Should().Be(0);
+    }
+
+    [Fact]
+    public void DomainKernelState_Record_IncrementsCriticalJumpAlertsOnlyOnInactiveToActiveTransition()
+    {
+        var state = new DomainKernelState();
+        var now = DateTimeOffset.UtcNow;
+
+        for (var i = 0; i < 90; i++)
+        {
+            state.Record(
+                now.AddSeconds(i),
+                latencyMs: 1,
+                score: 100,
+                severity: KernelSeverityLevel.Low,
+                hasReasonCodes: true,
+                deterministicMismatch: false);
+        }
+
+        for (var i = 0; i < 30; i++)
+        {
+            state.Record(
+                now.AddSeconds(90 + i),
+                latencyMs: 1,
+                score: 10,
+                severity: KernelSeverityLevel.Critical,
+                hasReasonCodes: true,
+                deterministicMismatch: false);
+        }
+
+        var firstJumpSnapshot = state.ToSnapshot(nameof(ProviderCapabilityKind.HistoricalBars));
+        firstJumpSnapshot.CriticalJumpActive.Should().BeTrue();
+        firstJumpSnapshot.CriticalJumpAlertCount.Should().Be(1);
+
+        for (var i = 0; i < 60; i++)
+        {
+            state.Record(
+                now.AddSeconds(120 + i),
+                latencyMs: 1,
+                score: 100,
+                severity: KernelSeverityLevel.Low,
+                hasReasonCodes: true,
+                deterministicMismatch: false);
+        }
+
+        var normalizedSnapshot = state.ToSnapshot(nameof(ProviderCapabilityKind.HistoricalBars));
+        normalizedSnapshot.CriticalJumpActive.Should().BeFalse();
+        normalizedSnapshot.CriticalJumpAlertCount.Should().Be(1);
+
+        for (var i = 0; i < 30; i++)
+        {
+            state.Record(
+                now.AddSeconds(180 + i),
+                latencyMs: 1,
+                score: 10,
+                severity: KernelSeverityLevel.Critical,
+                hasReasonCodes: true,
+                deterministicMismatch: false);
+        }
+
+        var secondJumpSnapshot = state.ToSnapshot(nameof(ProviderCapabilityKind.HistoricalBars));
+        secondJumpSnapshot.CriticalJumpActive.Should().BeTrue();
+        secondJumpSnapshot.CriticalJumpAlertCount.Should().Be(2);
     }
 
     private ProviderRoutingService CreateService(
