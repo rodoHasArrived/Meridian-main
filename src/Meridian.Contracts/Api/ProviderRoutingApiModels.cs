@@ -142,7 +142,7 @@ public sealed record ProviderTrustSnapshotDto(
     bool IsProductionReady,
     bool IsCertificationFresh,
     string[] Signals,
-    DecisionResult<double> Decision);
+    DecisionResult<double>? Decision = null);
 
 /// <summary>
 /// Candidate item in a route preview.

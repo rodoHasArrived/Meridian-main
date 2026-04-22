@@ -119,7 +119,8 @@ public sealed class ProviderTrustScoringService
                     EvidenceRefs: [$"connection:{connection.ConnectionId}"]));
             }
 
-            var isCertificationFresh = certification?.ExpiresAt is null || certification.ExpiresAt >= DateTimeOffset.UtcNow;
+            var isCertificationFresh = certification is not null &&
+                                       (certification.ExpiresAt is null || certification.ExpiresAt >= DateTimeOffset.UtcNow);
             if (certification is null)
             {
                 score -= 15;

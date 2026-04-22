@@ -520,7 +520,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, and the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`; cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently; further cross-links and workflow shells remain |
 | Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, and Security Master/reconciliation drill-ins are live; broader governance-first product flows remain incomplete |
-| Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open. Guardrail: Security Master is the sole instrument source, and governance DTOs with instrument terms must carry Security Master identity/provenance references. |
+| Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open. Guardrail: Security Master is the sole instrument source, and governance DTOs with instrument terms must carry Security Master identity/provenance references. Trial-balance and reconciliation symbol metadata now reuse canonical `WorkstationSecurityReference` records (same layer already used by run portfolio/ledger surfaces) rather than a separate classification-only projection. |
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
@@ -635,6 +635,5 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 ---
 
 *Last Updated: 2026-04-17*
-
 
 

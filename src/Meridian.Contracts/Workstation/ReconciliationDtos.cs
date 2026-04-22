@@ -42,6 +42,19 @@ public enum ReconciliationBreakCategory : byte
 }
 
 /// <summary>
+/// Materiality level for a reconciliation break.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakSeverity>))]
+public enum ReconciliationBreakSeverity : byte
+{
+    Info = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4
+}
+
+/// <summary>
 /// Request to create a reconciliation run for a recorded strategy run.
 /// </summary>
 public sealed record ReconciliationRunRequest(
@@ -103,7 +116,8 @@ public sealed record ReconciliationBreakDto(
     decimal Variance,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Info);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -124,10 +138,11 @@ public sealed record ReconciliationRunDetail(
     IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null,
     IReadOnlyList<BankTransactionDto>? BankTransactions = null,
     /// <summary>
-    /// Security Master classification keyed by ticker symbol, populated for every symbol whose
-    /// Security Master entry was resolved at reconciliation time. Suitable for audit reporting.
+    /// Authoritative Security Master references keyed by ticker symbol, populated for every
+    /// symbol resolved at reconciliation time from the shared workstation instrument layer.
+    /// Suitable for governance and audit reporting.
     /// </summary>
-    IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null);
+    IReadOnlyDictionary<string, WorkstationSecurityReference>? SecurityClassifications = null);
 
 /// <summary>
 /// Operator queue state for a reconciliation break.
