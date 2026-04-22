@@ -189,7 +189,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         if (string.Equals(category, "missing_ledger_coverage", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(category, "missing_portfolio_coverage", StringComparison.OrdinalIgnoreCase))
         {
-            return IsExternalStatementSource(missingSource)
+            return IsCashCheck(checkId) ||
+                   IsExternalStatementSource(missingSource)
                 ? ReconciliationBreakSeverity.Critical
                 : ReconciliationBreakSeverity.Warning;
         }
