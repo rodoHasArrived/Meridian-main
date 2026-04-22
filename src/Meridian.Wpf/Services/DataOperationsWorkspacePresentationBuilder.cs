@@ -113,6 +113,63 @@ public static class DataOperationsWorkspacePresentationBuilder
                     : data.ActiveSession is not null
                         ? $"Collection session '{data.ActiveSession.Name}' is active. Monitor provider routing, backfill pressure, and storage growth together."
                         : data.ScopeSummary;
+        var providerQueueState = BuildQueueRegionState(
+            isLoading: false,
+            hasError: providerCount == 0 && data.ProviderStatus is null && (data.BackfillHealth?.Providers?.Count ?? 0) == 0,
+            isEmpty: providerCount == 0,
+            loadingTitle: "Loading provider queue",
+            loadingDescription: "Gathering provider catalog and health telemetry.",
+            emptyTitle: "No providers configured",
+            emptyDescription: "Configure at least one provider before routing collection and backfill queues.",
+            emptyPrimaryLabel: "Switch Context",
+            emptyPrimaryAction: "SwitchContext",
+            emptySecondaryLabel: "Provider Health",
+            emptySecondaryAction: "ProviderHealth",
+            errorTitle: "Provider queue degraded",
+            errorDescription: "Provider catalog or status telemetry is unavailable.",
+            errorPrimaryLabel: "Retry",
+            errorPrimaryAction: "Retry",
+            errorSecondaryLabel: "Open Diagnostics",
+            errorSecondaryAction: "Diagnostics");
+
+        var backfillQueueState = BuildQueueRegionState(
+            isLoading: false,
+            hasError: data.LastBackfillStatus is { Success: false } || IsFailedExecution(latestExecution),
+            isEmpty: resumableCount == 0 && data.LastBackfillStatus is null && latestExecution is null && enabledSchedules == 0,
+            loadingTitle: "Loading backfill queue",
+            loadingDescription: "Reading resumable checkpoints and schedule posture.",
+            emptyTitle: "Backfill queue is empty",
+            emptyDescription: "Stage a historical backfill run or enable schedules to keep coverage fresh.",
+            emptyPrimaryLabel: "Open Backfill",
+            emptyPrimaryAction: "Backfill",
+            emptySecondaryLabel: "Switch Context",
+            emptySecondaryAction: "SwitchContext",
+            errorTitle: "Backfill queue degraded",
+            errorDescription: "Backfill execution or checkpoint telemetry reported an error.",
+            errorPrimaryLabel: "Retry",
+            errorPrimaryAction: "Retry",
+            errorSecondaryLabel: "Open Diagnostics",
+            errorSecondaryAction: "Diagnostics");
+
+        var storageQueueState = BuildQueueRegionState(
+            isLoading: false,
+            hasError: criticalStorageIssueCount > 0 || (data.StorageStats is null && data.StorageHealth is null),
+            isEmpty: data.StorageStats is { TotalSymbols: 0 },
+            loadingTitle: "Loading storage queue",
+            loadingDescription: "Collecting storage utilization and health posture.",
+            emptyTitle: "Storage queue is empty",
+            emptyDescription: "No symbols are currently stored for this context.",
+            emptyPrimaryLabel: "Switch Context",
+            emptyPrimaryAction: "SwitchContext",
+            emptySecondaryLabel: "Open Storage",
+            emptySecondaryAction: "Storage",
+            errorTitle: "Storage queue degraded",
+            errorDescription: "Storage metrics are missing or critical issues require operator review.",
+            errorPrimaryLabel: "Retry",
+            errorPrimaryAction: "Retry",
+            errorSecondaryLabel: "Open Diagnostics",
+            errorSecondaryAction: "Diagnostics");
+
         var operationsDetail = criticalStorageIssueCount > 0
             ? $"{criticalStorageIssueCount} critical storage issue(s) need review before the next package or export handoff for {data.ScopeLabel}."
             : exportRunningCount > 0 && latestExportJob is not null
@@ -165,7 +222,10 @@ public static class DataOperationsWorkspacePresentationBuilder
             SummaryBackfillTone = backfillTone,
             SummaryStorageText = storageText,
             SummaryStorageTone = storageTone,
-            RecentOperations = BuildRecentOperations(data, latestExecution, latestSession, latestExportJob)
+            RecentOperations = BuildRecentOperations(data, latestExecution, latestSession, latestExportJob),
+            ProviderQueueState = providerQueueState,
+            BackfillQueueState = backfillQueueState,
+            StorageQueueState = storageQueueState
         };
     }
 
@@ -368,6 +428,43 @@ public static class DataOperationsWorkspacePresentationBuilder
             ];
     }
 
+    private static WorkspaceQueueRegionState BuildQueueRegionState(
+        bool isLoading,
+        bool hasError,
+        bool isEmpty,
+        string loadingTitle,
+        string loadingDescription,
+        string emptyTitle,
+        string emptyDescription,
+        string emptyPrimaryLabel,
+        string emptyPrimaryAction,
+        string emptySecondaryLabel,
+        string emptySecondaryAction,
+        string errorTitle,
+        string errorDescription,
+        string errorPrimaryLabel,
+        string errorPrimaryAction,
+        string errorSecondaryLabel,
+        string errorSecondaryAction)
+    {
+        if (isLoading)
+        {
+            return WorkspaceQueueRegionState.Loading(loadingTitle, loadingDescription);
+        }
+
+        if (hasError)
+        {
+            return WorkspaceQueueRegionState.Error(errorTitle, errorDescription, errorPrimaryLabel, errorPrimaryAction, errorSecondaryLabel, errorSecondaryAction);
+        }
+
+        if (isEmpty)
+        {
+            return WorkspaceQueueRegionState.Empty(emptyTitle, emptyDescription, emptyPrimaryLabel, emptyPrimaryAction, emptySecondaryLabel, emptySecondaryAction);
+        }
+
+        return WorkspaceQueueRegionState.None;
+    }
+
     private static string ResolveNotificationAction(NotificationHistoryItem notification)
     {
         var combined = $"{notification.Title} {notification.Message}";
@@ -440,4 +537,7 @@ public sealed class DataOperationsWorkspacePresentation
     public string SummaryStorageText { get; init; } = DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary;
     public string SummaryStorageTone { get; init; } = WorkspaceTone.Success;
     public IReadOnlyList<WorkspaceRecentItem> RecentOperations { get; init; } = Array.Empty<WorkspaceRecentItem>();
+    public WorkspaceQueueRegionState ProviderQueueState { get; init; } = WorkspaceQueueRegionState.None;
+    public WorkspaceQueueRegionState BackfillQueueState { get; init; } = WorkspaceQueueRegionState.None;
+    public WorkspaceQueueRegionState StorageQueueState { get; init; } = WorkspaceQueueRegionState.None;
 }

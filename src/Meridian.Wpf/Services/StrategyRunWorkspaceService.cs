@@ -210,7 +210,10 @@ public sealed class StrategyRunWorkspaceService
             AuditStatus = auditStatus,
             ValidationStatus = validationStatus,
             ActiveRunContext = activeRunContext,
-            ActivePositions = positions
+            ActivePositions = positions,
+            ActivePositionsQueueState = positions.Count == 0
+                ? WorkspaceQueueRegionState.Empty("No active positions", "Start a paper/live run or switch context to populate active positions.", "Switch Context", "SwitchContext", "Open Portfolio", "RunPortfolio")
+                : WorkspaceQueueRegionState.None
         };
     }
 

@@ -18,6 +18,7 @@ namespace Meridian.Wpf.Views;
 public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceShellPageBase
 {
     private readonly WorkspaceShellContextService _shellContextService;
+    private readonly FundContextService _fundContextService;
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly StatusService _statusService;
@@ -33,6 +34,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         DataOperationsWorkspaceShellStateProvider stateProvider,
         DataOperationsWorkspaceShellViewModel viewModel,
         WorkspaceShellContextService shellContextService,
+        FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
         Meridian.Wpf.Services.NotificationService notificationService,
         StatusService statusService,
@@ -46,6 +48,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
     {
         InitializeComponent();
         _shellContextService = shellContextService;
+        _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
         _notificationService = notificationService;
         _statusService = statusService;
@@ -72,6 +75,8 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
 
     private async Task RefreshAsync()
     {
+        SetQueueLoadingStates();
+
         try
         {
             var presentation = DataOperationsWorkspacePresentationBuilder.Build(await LoadWorkspaceDataAsync());
@@ -83,6 +88,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         catch (Exception ex)
         {
             Meridian.Wpf.Services.LoggingService.Instance.LogError("[DataOperationsWorkspaceShell] Refresh failed", ex);
+            SetQueueErrorStates();
         }
     }
 
@@ -154,6 +160,9 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         ProviderQueueList.ItemsSource = presentation.ProviderQueueItems;
         BackfillQueueList.ItemsSource = presentation.BackfillQueueItems;
         StorageQueueList.ItemsSource = presentation.StorageQueueItems;
+        ApplyQueueState(ProviderQueueList, ProviderQueueStateContainer, presentation.ProviderQueueState);
+        ApplyQueueState(BackfillQueueList, BackfillQueueStateContainer, presentation.BackfillQueueState);
+        ApplyQueueState(StorageQueueList, StorageQueueStateContainer, presentation.StorageQueueState);
 
         OperationsSummaryTitleText.Text = presentation.OperationsSummaryTitleText;
         OperationsSummaryDetailText.Text = presentation.OperationsSummaryDetailText;
@@ -209,6 +218,44 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         return TryFindResource(resourceKey) as Brush ?? Brushes.White;
     }
 
+
+    private void ApplyQueueState(ItemsControl queueList, ContentControl stateContainer, WorkspaceQueueRegionState state)
+    {
+        if (state.IsVisible)
+        {
+            queueList.Visibility = Visibility.Collapsed;
+            stateContainer.Visibility = Visibility.Visible;
+            stateContainer.Content = state;
+            return;
+        }
+
+        queueList.Visibility = Visibility.Visible;
+        stateContainer.Visibility = Visibility.Collapsed;
+        stateContainer.Content = null;
+    }
+
+    private void SetQueueLoadingStates()
+    {
+        ApplyQueueState(ProviderQueueList, ProviderQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading provider queue", "Refreshing provider readiness and connectivity telemetry."));
+        ApplyQueueState(BackfillQueueList, BackfillQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading backfill queue", "Refreshing backfill checkpoints and execution posture."));
+        ApplyQueueState(StorageQueueList, StorageQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading storage queue", "Refreshing storage health, export, and capacity signals."));
+    }
+
+    private void SetQueueErrorStates()
+    {
+        ApplyQueueState(ProviderQueueList, ProviderQueueStateContainer, WorkspaceQueueRegionState.Error("Provider queue degraded", "Provider telemetry is unavailable right now.", "Retry", "Retry", "Open Diagnostics", "Diagnostics"));
+        ApplyQueueState(BackfillQueueList, BackfillQueueStateContainer, WorkspaceQueueRegionState.Error("Backfill queue degraded", "Backfill telemetry could not be refreshed.", "Retry", "Retry", "Open Diagnostics", "Diagnostics"));
+        ApplyQueueState(StorageQueueList, StorageQueueStateContainer, WorkspaceQueueRegionState.Error("Storage queue degraded", "Storage and export telemetry could not be refreshed.", "Retry", "Retry", "Open Diagnostics", "Diagnostics"));
+    }
+
+    private void OnQueueStateActionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string actionId })
+        {
+            ExecuteAction(actionId, navigate: false);
+        }
+    }
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenWorkspacePage(DataOperationsDockManager, e.PageTag, e.Action);
 
@@ -221,6 +268,18 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
     {
         if (string.IsNullOrWhiteSpace(actionId))
         {
+            return;
+        }
+
+        if (actionId == "Retry")
+        {
+            DispatchRefresh(RefreshAsync);
+            return;
+        }
+
+        if (actionId == "SwitchContext")
+        {
+            RequestContextSelection(_fundContextService, _operatingContextService);
             return;
         }
 

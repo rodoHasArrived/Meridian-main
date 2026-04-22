@@ -90,6 +90,37 @@
             </Border>
         </DataTemplate>
 
+
+        <DataTemplate x:Key="QueueRegionStateTemplate" DataType="{x:Type models:WorkspaceQueueRegionState}">
+            <Border Style="{StaticResource WorkspaceQueueStateCardStyle}">
+                <StackPanel>
+                    <Border Style="{StaticResource WorkspaceQueueStateIconContainerStyle}">
+                        <TextBlock Text="{Binding IconGlyph}" Style="{StaticResource WorkspaceQueueStateIconTextStyle}" />
+                    </Border>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource WorkspaceQueueStateTitleTextStyle}" />
+                    <TextBlock Text="{Binding Description}" Style="{StaticResource WorkspaceQueueStateDescriptionTextStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Tag="{Binding PrimaryActionId}" Content="{Binding PrimaryActionLabel}" Click="OnQueueStateActionClick" Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding PrimaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Tag="{Binding SecondaryActionId}" Content="{Binding SecondaryActionLabel}" Click="OnQueueStateActionClick">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding SecondaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
         <DataTemplate x:Key="RecentItemTemplate" DataType="{x:Type models:WorkspaceRecentItem}">
             <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                 <StackPanel>
@@ -282,32 +313,57 @@
                             <TextBlock Text="Fund Ledger Operations"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,0,0,8" />
-                            <ItemsControl x:Name="OperationsQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="OperationsQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="OperationsQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Trial Balance Accounting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AccountingQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="AccountingQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="AccountingQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Reconciliation"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="ReconciliationQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="ReconciliationQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="ReconciliationQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Reporting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="ReportingQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="ReportingQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="ReportingQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Audit Trail"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AuditQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="AuditQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="AuditQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>

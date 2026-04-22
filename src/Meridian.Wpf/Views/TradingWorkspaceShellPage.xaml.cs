@@ -77,6 +77,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private async System.Threading.Tasks.Task RefreshAsync()
     {
+        ApplyActivePositionsState(WorkspaceQueueRegionState.Loading("Loading active positions", "Refreshing run and portfolio position telemetry."));
+
         try
         {
             var summary = await _runService.GetTradingSummaryAsync();
@@ -93,11 +95,13 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             {
                 ActivePositionsList.ItemsSource = summary.ActivePositions;
                 NoPositionsText.Visibility = Visibility.Collapsed;
+                ApplyActivePositionsState(WorkspaceQueueRegionState.None);
             }
             else
             {
                 ActivePositionsList.ItemsSource = null;
-                NoPositionsText.Visibility = Visibility.Visible;
+                NoPositionsText.Visibility = Visibility.Collapsed;
+                ApplyActivePositionsState(summary.ActivePositionsQueueState);
             }
 
             var profile = _fundContextService.CurrentFundProfile;
@@ -171,6 +175,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 });
             RiskRailText.Text = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.";
             DeskActionStatusText.Text = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.";
+            ApplyActivePositionsState(WorkspaceQueueRegionState.Error("Active positions degraded", "Trading position telemetry is stale.", "Retry", "Retry", "Open Diagnostics", "Diagnostics"));
         }
     }
 
@@ -262,6 +267,45 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private Brush GetBrush(string resourceKey)
         => TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
 
+
+    private void ApplyActivePositionsState(WorkspaceQueueRegionState state)
+    {
+        if (state.IsVisible)
+        {
+            ActivePositionsStateContainer.Content = state;
+            ActivePositionsStateContainer.Visibility = Visibility.Visible;
+            ActivePositionsList.Visibility = Visibility.Collapsed;
+            NoPositionsText.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        ActivePositionsStateContainer.Content = null;
+        ActivePositionsStateContainer.Visibility = Visibility.Collapsed;
+        ActivePositionsList.Visibility = Visibility.Visible;
+    }
+
+    private void OnQueueStateActionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string actionId })
+        {
+            return;
+        }
+
+        if (actionId == "Retry")
+        {
+            DispatchRefresh(RefreshAsync);
+            return;
+        }
+
+        if (actionId == "SwitchContext")
+        {
+            RequestContextSelection(_fundContextService, _operatingContextService);
+            return;
+        }
+
+        OnCommandBarCommandInvoked(this, new WorkspaceCommandInvokedEventArgs(new WorkspaceCommandItem { Id = actionId }));
+    }
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenWorkspacePage(TradingDockManager, e.PageTag, e.Action);
 
@@ -316,6 +360,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 break;
             case "FundAuditTrail":
                 OpenAuditTrail_Click(sender, new RoutedEventArgs());
+                break;
+            case "Diagnostics":
+                NavigationService.NavigateTo("Diagnostics");
                 break;
             case "TradingHours":
                 NavigationService.NavigateTo("TradingHours");
