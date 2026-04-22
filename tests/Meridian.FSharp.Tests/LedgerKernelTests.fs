@@ -498,7 +498,7 @@ let ``ReconciliationRules apply returns PartialMatch when partial matching enabl
                 (DateTimeOffset.Parse("2026-06-01T00:00:00Z"))
 
     match ReconciliationRules.apply permissiveRule c with
-    | PartialMatch (conf, reason) ->
+    | MatchOutcome.PartialMatch (conf, reason) ->
         conf |> should (be greaterThanOrEqualTo) 0.65m
         reason.Contains("Amount variance") |> should equal true
     | other -> failwithf "Expected PartialMatch but got %A" other
