@@ -10,29 +10,29 @@ public static partial class ShellNavigationCatalog
         new(
             Id: "research",
             Title: "Research",
-            Description: "Backtest studio, run comparison, charts, and investigation flows.",
-            Summary: "Operate model exploration with docked run, portfolio, and promotion context.",
+            Description: "Configure backtests, review run evidence, and monitor model behavior.",
+            Summary: "Monitor simulations, compare outcomes, and promote vetted strategies.",
             HomePageTag: "ResearchShell",
             TileSummary: "Runs · Compare · Promote"),
         new(
             Id: "trading",
             Title: "Trading",
-            Description: "Live posture, order flow, execution, and risk-aware monitoring.",
-            Summary: "Operate the trading cockpit with explicit paper/live separation and audit reachability.",
+            Description: "Monitor live markets, review orders, and manage trading risk.",
+            Summary: "Monitor execution, reconcile positions, and review run-level risk.",
             HomePageTag: "TradingShell",
             TileSummary: "Live · Orders · Risk"),
         new(
             Id: "data-operations",
             Title: "Data Operations",
-            Description: "Providers, ingestion, storage, schedules, exports, and blocker visibility.",
-            Summary: "Operate the collection queue, freshness posture, and export pipeline from one workstation.",
+            Description: "Configure providers, monitor collection jobs, and export trusted datasets.",
+            Summary: "Monitor ingestion, reconcile data quality issues, and export analysis packages.",
             HomePageTag: "DataOperationsShell",
             TileSummary: "Providers · Storage · Jobs"),
         new(
             Id: "governance",
             Title: "Governance",
-            Description: "Controls, diagnostics, fund operations, reconciliation, and trust-critical review.",
-            Summary: "Operate accounts, ledger, reconciliation, and audit work from a single control surface.",
+            Description: "Review fund controls, reconcile books, and monitor audit readiness.",
+            Summary: "Review ledgers, reconcile breaks, and configure operational safeguards.",
             HomePageTag: "GovernanceShell",
             TileSummary: "Ledger · Audit · Controls")
     ];
