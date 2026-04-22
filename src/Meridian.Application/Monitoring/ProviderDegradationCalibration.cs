@@ -229,11 +229,30 @@ public sealed class ProviderKernelCalibrationSnapshotStore
         _rootPath = rootPath;
     }
 
+    private static string SanitizeFileNameComponent(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "unknown";
+        }
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var builder = new StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            builder.Append(invalidChars.Contains(c) || c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar ? '_' : c);
+        }
+
+        var sanitized = builder.ToString();
+        return string.IsNullOrWhiteSpace(sanitized) ? "unknown" : sanitized;
+    }
+
     public async Task<string> SaveAsync(ProviderKernelCalibrationSnapshot snapshot, CancellationToken ct = default)
     {
         var dir = Path.Combine(_rootPath, "calibration", "provider-degradation");
         Directory.CreateDirectory(dir);
-        var path = Path.Combine(dir, $"{snapshot.CreatedAt:yyyyMMddHHmmss}_{snapshot.CandidateKernelVersion}_{snapshot.SnapshotId}.json");
+        var safeKernelVersion = SanitizeFileNameComponent(snapshot.CandidateKernelVersion);
+        var path = Path.Combine(dir, $"{snapshot.CreatedAt:yyyyMMddHHmmss}_{safeKernelVersion}_{snapshot.SnapshotId}.json");
 
         await using var stream = File.Create(path);
         await JsonSerializer.SerializeAsync(stream, snapshot, cancellationToken: ct).ConfigureAwait(false);
