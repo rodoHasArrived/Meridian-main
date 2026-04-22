@@ -956,7 +956,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
 │   │   ├── audit-results-full.json
-│   │   └── prompt-generation-results.json
+│   │   ├── prompt-generation-results.json
+│   │   └── workspace-visual-audit-checklist-2026-04-22.md
 │   ├── development
 │   │   ├── README.md
 │   │   ├── adding-custom-rules.md
@@ -4797,6 +4798,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
 │   │   ├── governance-fund-ops-blueprint.md
+│   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
@@ -4856,6 +4858,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
+│   │   ├── export-preflight-rules.md
 │   │   ├── open-source-references.md
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
@@ -4925,6 +4928,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
 │   │   ├── IMPROVEMENTS.md
+│   │   ├── KERNEL_PARITY_STATUS.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── PROGRAM_STATE.md
 │   │   ├── README.md
@@ -6244,11 +6248,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AnalysisExportService.IO.cs
 │   │   │   ├── AnalysisExportService.cs
 │   │   │   ├── AnalysisQualityReport.cs
+│   │   │   ├── ExportPreflightRules.cs
 │   │   │   ├── ExportProfile.cs
 │   │   │   ├── ExportRequest.cs
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
-│   │   │   └── ExportVerificationReport.cs
+│   │   │   ├── ExportVerificationReport.cs
+│   │   │   └── PreflightRule.cs
 │   │   ├── FundAccounts
 │   │   │   ├── IFundAccountStore.cs
 │   │   │   └── Migrations
@@ -6700,10 +6706,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ShellNavigationCatalog.Workspaces.cs
 │       │   ├── ShellNavigationCatalog.cs
 │       │   ├── ShellNavigationModels.cs
+│       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
+│       │   ├── WorkspaceQueueRegionState.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   ├── WorkspaceShellChromeModels.cs
 │       │   ├── WorkspaceShellModels.cs
@@ -7721,6 +7729,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-607 directories, 6974 files
+607 directories, 6982 files
 ```
 <!-- readme-tree end -->
