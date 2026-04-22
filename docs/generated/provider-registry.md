@@ -1,16 +1,17 @@
 # Provider Registry
 
-> This file is auto-generated. Do not edit manually.
-> Auto-generated on 2026-04-20 04:11:08 UTC. Do not edit manually.
+> Auto-generated on 2026-04-22 15:47:08 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
 | `src/Meridian/Integrations/Lean/MeridianDataProvider.cs` |
+| `src/Meridian.Application/Commands/ProviderCalibrationCommand.cs` |
 | `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` |
 | `src/Meridian.Application/Composition/Features/ProviderRoutingFeatureRegistration.cs` |
 | `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` |
 | `src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs` |
 | `src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs` |
+| `src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs` |
 | `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs` |
 | `src/Meridian.Application/Monitoring/ProviderLatencyService.cs` |
 | `src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs` |

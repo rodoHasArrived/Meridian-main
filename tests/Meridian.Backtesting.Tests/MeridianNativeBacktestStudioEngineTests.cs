@@ -61,7 +61,34 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
     }
 
     [Fact]
-    public async Task StartAsync_WhenCallerCancels_CancelsNativeRun()
+    public async Task StartAsync_WhenStartTokenIsCanceledAfterScheduling_RunStillCompletes()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
+
+        using var cts = new CancellationTokenSource();
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "native-decoupled-cancel",
+            StrategyName: "NoOp",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: new BacktestRequest(
+                From: new DateOnly(2024, 1, 2),
+                To: new DateOnly(2024, 1, 2),
+                DataRoot: _dataRoot),
+            Strategy: new NoOpBacktestStrategy());
+
+        var handle = await _engine.StartAsync(request, cts.Token);
+        cts.Cancel();
+
+        var result = await _engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None)
+            .WaitAsync(TimeSpan.FromSeconds(5));
+        var status = await _engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None);
+
+        result.TotalEventsProcessed.Should().BeGreaterThan(0);
+        status.Status.Should().Be(StrategyRunStatus.Completed);
+    }
+
+    [Fact]
+    public async Task CancelAsync_WhenRunIsInFlight_TransitionsToCancelled()
     {
         WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
 
@@ -75,9 +102,8 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
             backtestEngine,
             NullLogger<MeridianNativeBacktestStudioEngine>.Instance);
 
-        using var cts = new CancellationTokenSource();
         var request = new BacktestStudioRunRequest(
-            StrategyId: "native-cancel",
+            StrategyId: "native-explicit-cancel",
             StrategyName: "NoOp",
             Engine: StrategyRunEngine.MeridianNative,
             NativeRequest: new BacktestRequest(
@@ -87,10 +113,10 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
                 AdjustForCorporateActions: true),
             Strategy: new NoOpBacktestStrategy());
 
-        var handle = await engine.StartAsync(request, cts.Token);
+        var handle = await engine.StartAsync(request, CancellationToken.None);
         await blockingAdjuster.Started.WaitAsync(TimeSpan.FromSeconds(5));
 
-        cts.Cancel();
+        await engine.CancelAsync(handle.EngineRunHandle, CancellationToken.None);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             async () => await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None)

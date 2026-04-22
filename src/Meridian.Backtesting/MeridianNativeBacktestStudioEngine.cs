@@ -61,7 +61,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
             throw new InvalidOperationException($"Unable to track native backtest run '{engineRunHandle}'.");
 
         registration.SetRunning();
-        _ = ExecuteAsync(request, registration, ct);
+        _ = ExecuteAsync(request, registration);
 
         return Task.FromResult(new BacktestStudioRunHandle(runId, engineRunHandle, Engine));
     }
@@ -94,9 +94,20 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         throw new InvalidOperationException($"Native Backtest Studio run '{runHandle}' was not found.");
     }
 
-    private async Task ExecuteAsync(BacktestStudioRunRequest request, NativeRunRegistration registration, CancellationToken ct)
+    public Task CancelAsync(string runHandle, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runHandle);
+        ct.ThrowIfCancellationRequested();
+
+        var registration = Resolve(runHandle);
+        registration.RequestCancellation();
+        return Task.CompletedTask;
+    }
+
+    private async Task ExecuteAsync(BacktestStudioRunRequest request, NativeRunRegistration registration)
     {
         var progress = new Progress<BacktestProgressEvent>(evt => registration.UpdateProgress(evt));
+        var runToken = registration.Token;
 
         try
         {
@@ -104,7 +115,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
                     request.NativeRequest,
                     request.Strategy!,
                     progress,
-                    ct)
+                    runToken)
                 .ConfigureAwait(false);
 
             registration.Complete(result with { EngineMetadata = new BacktestEngineMetadata("MeridianNative") });
@@ -194,6 +205,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
     private sealed class NativeRunRegistration
     {
         private readonly object _gate = new();
+        private readonly CancellationTokenSource _runCancellation = new();
         private StrategyRunStatus _status = StrategyRunStatus.Pending;
         private double _progress;
         private string? _message;
@@ -213,6 +225,8 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         public DateTimeOffset StartedAt { get; }
 
         public TaskCompletionSource<BacktestResult> Result { get; }
+
+        public CancellationToken Token => _runCancellation.Token;
 
         public void SetRunning()
         {
@@ -245,6 +259,8 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
 
             Result.TrySetResult(result);
         }
+
+        public void RequestCancellation() => _runCancellation.Cancel();
 
         public void Cancel(CancellationToken cancellationToken)
         {
