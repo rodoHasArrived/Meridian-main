@@ -4,14 +4,48 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:models="clr-namespace:Meridian.Wpf.Models"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Trading Cockpit"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellTitle}"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
+
+    <Page.Resources>
+        <DataTemplate x:Key="QueueRegionStateTemplate" DataType="{x:Type models:WorkspaceQueueRegionState}">
+            <Border Style="{StaticResource WorkspaceQueueStateCardStyle}">
+                <StackPanel>
+                    <Border Style="{StaticResource WorkspaceQueueStateIconContainerStyle}">
+                        <TextBlock Text="{Binding IconGlyph}" Style="{StaticResource WorkspaceQueueStateIconTextStyle}" />
+                    </Border>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource WorkspaceQueueStateTitleTextStyle}" />
+                    <TextBlock Text="{Binding Description}" Style="{StaticResource WorkspaceQueueStateDescriptionTextStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Tag="{Binding PrimaryActionId}" Content="{Binding PrimaryActionLabel}" Click="OnQueueStateActionClick" Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding PrimaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Tag="{Binding SecondaryActionId}" Content="{Binding SecondaryActionLabel}" Click="OnQueueStateActionClick">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding SecondaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -41,9 +75,9 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Trading Cockpit"
+                            <TextBlock Text="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellTitle}"
                                        Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Paper and live execution, active positions, and fund-aware risk posture from a single cockpit shell."
+                            <TextBlock Text="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellSubtitle}"
                                        Margin="0,6,0,0"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap" />
@@ -122,15 +156,11 @@
 
                                         <Border x:Name="TradingStatusBadgeBorder"
                                                 Grid.Column="1"
-                                                Padding="8,3"
-                                                CornerRadius="999"
-                                                Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                                BorderBrush="{StaticResource InfoColorBrush}"
-                                                BorderThickness="1">
+                                                Style="{StaticResource InfoBadgeInlineStyle}">
                                             <TextBlock x:Name="TradingStatusBadgeText"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       Foreground="{StaticResource BadgeInfoForegroundBrush}"
                                                        Text="Info" />
                                         </Border>
                                     </Grid>
@@ -150,16 +180,12 @@
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                             <Border x:Name="PromotionStatusPill"
                                                     Margin="0,8,0,0"
-                                                    Padding="8,3"
-                                                    CornerRadius="999"
-                                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                                    BorderBrush="{StaticResource InfoColorBrush}"
-                                                    BorderThickness="1"
+                                                    Style="{StaticResource InfoBadgeInlineStyle}"
                                                     HorizontalAlignment="Left">
                                                 <TextBlock x:Name="PromotionStatusLabelText"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
-                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                           Foreground="{StaticResource BadgeInfoForegroundBrush}"
                                                            Text="Awaiting runs" />
                                             </Border>
                                             <TextBlock x:Name="PromotionStatusDetailText"
@@ -179,16 +205,12 @@
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                             <Border x:Name="AuditStatusPill"
                                                     Margin="0,8,0,0"
-                                                    Padding="8,3"
-                                                    CornerRadius="999"
-                                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                                    BorderBrush="{StaticResource InfoColorBrush}"
-                                                    BorderThickness="1"
+                                                    Style="{StaticResource InfoBadgeInlineStyle}"
                                                     HorizontalAlignment="Left">
                                                 <TextBlock x:Name="AuditStatusLabelText"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
-                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                           Foreground="{StaticResource BadgeInfoForegroundBrush}"
                                                            Text="Awaiting runs" />
                                             </Border>
                                             <TextBlock x:Name="AuditStatusDetailText"
@@ -208,16 +230,12 @@
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                             <Border x:Name="ValidationStatusPill"
                                                     Margin="0,8,0,0"
-                                                    Padding="8,3"
-                                                    CornerRadius="999"
-                                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                                    BorderBrush="{StaticResource InfoColorBrush}"
-                                                    BorderThickness="1"
+                                                    Style="{StaticResource InfoBadgeInlineStyle}"
                                                     HorizontalAlignment="Left">
                                                 <TextBlock x:Name="ValidationStatusLabelText"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
-                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                           Foreground="{StaticResource BadgeInfoForegroundBrush}"
                                                            Text="Awaiting runs" />
                                             </Border>
                                             <TextBlock x:Name="ValidationStatusDetailText"
@@ -257,46 +275,64 @@
 
                 <UniformGrid Columns="3" Margin="0,0,0,20">
                     <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0">
-                        <StackPanel>
+                        <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
+                            <TextBlock Text="Paper Runs"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" />
                             <TextBlock x:Name="PaperRunsText"
                                        Text="—"
+                                       Margin="0,4,0,0"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource InfoColorBrush}"
                                        HorizontalAlignment="Center" />
-                            <TextBlock Text="Paper Runs"
+                            <TextBlock Text="Simulation coverage"
+                                       Margin="0,4,0,0"
                                        FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0">
-                        <StackPanel>
+                        <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
+                            <TextBlock Text="Live Runs"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" />
                             <TextBlock x:Name="LiveRunsText"
                                        Text="—"
+                                       Margin="0,4,0,0"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource SuccessColorBrush}"
                                        HorizontalAlignment="Center" />
-                            <TextBlock Text="Live Runs"
+                            <TextBlock Text="Production posture"
+                                       Margin="0,4,0,0"
                                        FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource WorkspaceKpiTileStyle}">
-                        <StackPanel>
+                        <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
+                            <TextBlock Text="Total Equity"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" />
                             <TextBlock x:Name="TotalEquityText"
                                        Text="—"
+                                       Margin="0,4,0,0"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                        HorizontalAlignment="Center" />
-                            <TextBlock Text="Total Equity"
+                            <TextBlock Text="Net account value"
+                                       Margin="0,4,0,0"
                                        FontSize="11"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>
@@ -331,7 +367,7 @@
                                        Margin="0,10,0,0"
                                        Style="{StaticResource StudioValueStyle}"
                                        Text="Live data, order book, portfolio, and accounting consequences are ready to dock below." />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Live Data"
                                         Click="OpenLiveData_Click"
                                         Style="{StaticResource GhostButtonStyle}"
@@ -354,7 +390,7 @@
                                        Margin="0,10,0,0"
                                        Style="{StaticResource StudioValueStyle}"
                                        Text="Risk, reconciliation, and audit surfaces become specific once an active run is selected." />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Risk Rail"
                                         Click="OpenRiskRail_Click"
                                         Style="{StaticResource GhostButtonStyle}"
@@ -395,9 +431,10 @@
                                         Style="{StaticResource LinkButtonStyle}" />
                             </Grid>
 
-                            <ItemsControl x:Name="ActivePositionsList"
-                                          AutomationProperties.AutomationId="ActivePositionsList"
-                                          AutomationProperties.Name="Active Positions">
+                            <Grid>
+                                <ItemsControl x:Name="ActivePositionsList"
+                                              AutomationProperties.AutomationId="ActivePositionsList"
+                                              AutomationProperties.Name="Active Positions">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -453,6 +490,10 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                                <ContentControl x:Name="ActivePositionsStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock x:Name="NoPositionsText"
                                        Margin="0,8,0,0"

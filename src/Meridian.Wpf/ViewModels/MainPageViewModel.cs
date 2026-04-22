@@ -1057,6 +1057,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         yield return descriptor.Subtitle;
         yield return descriptor.SectionLabel;
         yield return workspaceTitle;
+        yield return GetVisibilityLabel(descriptor.VisibilityTier);
 
         foreach (var keyword in descriptor.SearchKeywords)
         {
@@ -1134,9 +1135,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private static string GetVisibilityLabel(ShellNavigationVisibilityTier visibilityTier)
         => visibilityTier switch
         {
-            ShellNavigationVisibilityTier.Primary => "Primary",
-            ShellNavigationVisibilityTier.Secondary => "Secondary",
-            ShellNavigationVisibilityTier.Overflow => "Overflow",
+            ShellNavigationVisibilityTier.Primary => string.Empty,
+            ShellNavigationVisibilityTier.Secondary => "Advanced",
+            ShellNavigationVisibilityTier.Overflow => "Admin",
             _ => string.Empty
         };
 

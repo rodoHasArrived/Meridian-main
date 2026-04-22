@@ -1,3 +1,4 @@
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
@@ -8,40 +9,40 @@ public static partial class ShellNavigationCatalog
     public static readonly IReadOnlyList<WorkspaceShellDescriptor> Workspaces =
     [
         new(
-            Id: "research",
-            Title: "Research",
-            Description: "Configure backtests, review run evidence, and monitor model behavior.",
-            Summary: "Monitor simulations, compare outcomes, and promote vetted strategies.",
+            Id: WorkspaceCopyCatalog.Research.Descriptor.Id,
+            Title: WorkspaceCopyCatalog.Research.Descriptor.Title,
+            Description: WorkspaceCopyCatalog.Research.Descriptor.Description,
+            Summary: WorkspaceCopyCatalog.Research.Descriptor.Summary,
             HomePageTag: "ResearchShell",
-            TileSummary: "Runs · Compare · Promote"),
+            TileSummary: WorkspaceCopyCatalog.Research.Descriptor.TileSummary),
         new(
-            Id: "trading",
-            Title: "Trading",
-            Description: "Monitor live markets, review orders, and manage trading risk.",
-            Summary: "Monitor execution, reconcile positions, and review run-level risk.",
+            Id: WorkspaceCopyCatalog.Trading.Descriptor.Id,
+            Title: WorkspaceCopyCatalog.Trading.Descriptor.Title,
+            Description: WorkspaceCopyCatalog.Trading.Descriptor.Description,
+            Summary: WorkspaceCopyCatalog.Trading.Descriptor.Summary,
             HomePageTag: "TradingShell",
-            TileSummary: "Live · Orders · Risk"),
+            TileSummary: WorkspaceCopyCatalog.Trading.Descriptor.TileSummary),
         new(
-            Id: "data-operations",
-            Title: "Data Operations",
-            Description: "Configure providers, monitor collection jobs, and export trusted datasets.",
-            Summary: "Monitor ingestion, reconcile data quality issues, and export analysis packages.",
+            Id: WorkspaceCopyCatalog.DataOperations.Descriptor.Id,
+            Title: WorkspaceCopyCatalog.DataOperations.Descriptor.Title,
+            Description: WorkspaceCopyCatalog.DataOperations.Descriptor.Description,
+            Summary: WorkspaceCopyCatalog.DataOperations.Descriptor.Summary,
             HomePageTag: "DataOperationsShell",
-            TileSummary: "Providers · Storage · Jobs"),
+            TileSummary: WorkspaceCopyCatalog.DataOperations.Descriptor.TileSummary),
         new(
-            Id: "governance",
-            Title: "Governance",
-            Description: "Review fund controls, reconcile books, and monitor audit readiness.",
-            Summary: "Review ledgers, reconcile breaks, and configure operational safeguards.",
+            Id: WorkspaceCopyCatalog.Governance.Descriptor.Id,
+            Title: WorkspaceCopyCatalog.Governance.Descriptor.Title,
+            Description: WorkspaceCopyCatalog.Governance.Descriptor.Description,
+            Summary: WorkspaceCopyCatalog.Governance.Descriptor.Summary,
             HomePageTag: "GovernanceShell",
-            TileSummary: "Ledger · Audit · Controls")
+            TileSummary: WorkspaceCopyCatalog.Governance.Descriptor.TileSummary)
     ];
 
     private static readonly WorkspaceShellDefinition ResearchWorkspaceShellDefinition =
         new(
-            WorkspaceId: "research",
+            WorkspaceId: WorkspaceCopyCatalog.Research.WorkspaceId,
             LayoutId: "research-backtest-studio",
-            DisplayName: "Backtest Studio",
+            DisplayName: WorkspaceCopyCatalog.Research.Descriptor.ShellDisplayName,
             DefaultPanes:
             [
                 Pane("Backtest", PaneDropAction.Replace),
@@ -66,9 +67,9 @@ public static partial class ShellNavigationCatalog
 
     private static readonly WorkspaceShellDefinition TradingWorkspaceShellDefinition =
         new(
-            WorkspaceId: "trading",
+            WorkspaceId: WorkspaceCopyCatalog.Trading.WorkspaceId,
             LayoutId: "trading-cockpit",
-            DisplayName: "Trading Cockpit",
+            DisplayName: WorkspaceCopyCatalog.Trading.Descriptor.ShellDisplayName,
             DefaultPanes:
             [
                 Pane("LiveData", PaneDropAction.Replace),
@@ -96,9 +97,9 @@ public static partial class ShellNavigationCatalog
 
     private static readonly WorkspaceShellDefinition DataOperationsWorkspaceShellDefinition =
         new(
-            WorkspaceId: "data-operations",
+            WorkspaceId: WorkspaceCopyCatalog.DataOperations.WorkspaceId,
             LayoutId: "data-operations-workspace",
-            DisplayName: "Data Operations Workspace",
+            DisplayName: WorkspaceCopyCatalog.DataOperations.Descriptor.ShellDisplayName,
             DefaultPanes:
             [
                 Pane("Provider", PaneDropAction.Replace),
@@ -113,9 +114,9 @@ public static partial class ShellNavigationCatalog
 
     private static readonly WorkspaceShellDefinition GovernanceWorkspaceShellDefinition =
         new(
-            WorkspaceId: "governance",
+            WorkspaceId: WorkspaceCopyCatalog.Governance.WorkspaceId,
             LayoutId: "governance-workspace",
-            DisplayName: "Governance Workspace",
+            DisplayName: WorkspaceCopyCatalog.Governance.Descriptor.ShellDisplayName,
             DefaultPanes:
             [
                 Pane("FundLedger", PaneDropAction.Replace),

@@ -5,13 +5,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Governance Workspace"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.Governance.ShellTitle}"
       AutomationProperties.AutomationId="GovernanceWorkspaceShellPage">
 
     <Page.Resources>
@@ -37,7 +38,7 @@
                             <Border Style="{StaticResource InfoBadgeInlineStyle}">
                                 <TextBlock Text="{Binding CountLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}" />
+                                           Foreground="{StaticResource BadgeInfoForegroundBrush}" />
                             </Border>
                         </WrapPanel>
 
@@ -86,6 +87,37 @@
                         </Button>
                     </StackPanel>
                 </Grid>
+            </Border>
+        </DataTemplate>
+
+
+        <DataTemplate x:Key="QueueRegionStateTemplate" DataType="{x:Type models:WorkspaceQueueRegionState}">
+            <Border Style="{StaticResource WorkspaceQueueStateCardStyle}">
+                <StackPanel>
+                    <Border Style="{StaticResource WorkspaceQueueStateIconContainerStyle}">
+                        <TextBlock Text="{Binding IconGlyph}" Style="{StaticResource WorkspaceQueueStateIconTextStyle}" />
+                    </Border>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource WorkspaceQueueStateTitleTextStyle}" />
+                    <TextBlock Text="{Binding Description}" Style="{StaticResource WorkspaceQueueStateDescriptionTextStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Tag="{Binding PrimaryActionId}" Content="{Binding PrimaryActionLabel}" Click="OnQueueStateActionClick" Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding PrimaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Tag="{Binding SecondaryActionId}" Content="{Binding SecondaryActionLabel}" Click="OnQueueStateActionClick">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding SecondaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
             </Border>
         </DataTemplate>
 
@@ -150,27 +182,37 @@
                 Margin="0,0,0,16">
             <WrapPanel>
                 <Button x:Name="OperationsLaneButton"
-                        Content="Operations"
+                        Content="Open Operations"
+                        AutomationProperties.Name="Open Operations Lane"
+                        AutomationProperties.AutomationId="OpenOperationsLaneButton"
                         Click="OpenOperationsLane_Click"
                         Style="{StaticResource SecondaryButtonStyle}"
                         Margin="0,0,8,0" />
                 <Button x:Name="AccountingLaneButton"
-                        Content="Accounting"
+                        Content="Open Accounting"
+                        AutomationProperties.Name="Open Accounting Lane"
+                        AutomationProperties.AutomationId="OpenAccountingLaneButton"
                         Click="OpenAccountingLane_Click"
                         Style="{StaticResource GhostButtonStyle}"
                         Margin="0,0,8,0" />
                 <Button x:Name="ReconciliationLaneButton"
-                        Content="Reconciliation"
+                        Content="Review Breaks"
+                        AutomationProperties.Name="Review Reconciliation Breaks Lane"
+                        AutomationProperties.AutomationId="ReviewReconciliationBreaksLaneButton"
                         Click="OpenReconciliationLane_Click"
                         Style="{StaticResource GhostButtonStyle}"
                         Margin="0,0,8,0" />
                 <Button x:Name="ReportingLaneButton"
-                        Content="Reporting"
+                        Content="Open Reporting"
+                        AutomationProperties.Name="Open Reporting Lane"
+                        AutomationProperties.AutomationId="OpenReportingLaneButton"
                         Click="OpenReportingLane_Click"
                         Style="{StaticResource GhostButtonStyle}"
                         Margin="0,0,8,0" />
                 <Button x:Name="AuditLaneButton"
-                        Content="Audit"
+                        Content="Open Audit Trail"
+                        AutomationProperties.Name="Open Audit Trail Lane"
+                        AutomationProperties.AutomationId="OpenAuditTrailLaneButton"
                         Click="OpenAuditLane_Click"
                         Style="{StaticResource GhostButtonStyle}" />
             </WrapPanel>
@@ -190,7 +232,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -268,35 +310,60 @@
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
                         <StackPanel>
-                            <TextBlock Text="Operations"
+                            <TextBlock Text="Fund Ledger Operations"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,0,0,8" />
-                            <ItemsControl x:Name="OperationsQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="OperationsQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="OperationsQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
-                            <TextBlock Text="Accounting"
+                            <TextBlock Text="Trial Balance Accounting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AccountingQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="AccountingQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="AccountingQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Reconciliation"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="ReconciliationQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="ReconciliationQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="ReconciliationQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock Text="Reporting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="ReportingQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="ReportingQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="ReportingQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
-                            <TextBlock Text="Audit"
+                            <TextBlock Text="Audit Trail"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AuditQueueList"
-                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+                            <Grid>
+                                <ItemsControl x:Name="AuditQueueList"
+                                              ItemTemplate="{StaticResource QueueItemTemplate}" />
+                                <ContentControl x:Name="AuditQueueStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
@@ -329,7 +396,7 @@
 
                             <UniformGrid Columns="3" Margin="0,14,0,0">
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Cash"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -339,11 +406,15 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="—" />
+                                        <TextBlock Text="Available balance"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Open Breaks"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -353,11 +424,15 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource WarningColorBrush}"
                                                    Text="—" />
+                                        <TextBlock Text="Exceptions to resolve"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Journal"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -367,6 +442,10 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="—" />
+                                        <TextBlock Text="Posting readiness"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
@@ -375,7 +454,7 @@
 
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <Grid Margin="0,0,0,10">
+                            <Grid Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -401,7 +480,7 @@
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Audit Trail"
                                         Click="OpenAuditTrail_Click"
                                         Style="{StaticResource SecondaryButtonStyle}"

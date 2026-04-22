@@ -88,6 +88,7 @@ public sealed class TradingWorkspaceSummary
     public string ValidationStatusDetail => ValidationStatus.Detail;
     public ActiveRunContext? ActiveRunContext { get; set; }
     public IReadOnlyList<TradingActivePositionItem> ActivePositions { get; set; } = [];
+    public WorkspaceQueueRegionState ActivePositionsQueueState { get; set; } = WorkspaceQueueRegionState.None;
 }
 
 // ── Research Workspace ──────────────────────────────────────────────────────
