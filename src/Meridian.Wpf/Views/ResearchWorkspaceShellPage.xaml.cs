@@ -559,9 +559,9 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "RunDetail", Label = "Run Detail", Description = "Open run detail", Glyph = "\uE7C3" },
                 new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio Inspector", Description = "Open portfolio inspector", Glyph = "\uE8B5" },
                 new WorkspaceCommandItem { Id = "RunLedger", Label = "Ledger Inspector", Description = "Open ledger inspector", Glyph = "\uEE94" },
-                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting Impact", Description = "Open trial-balance impact view", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Accounting Impact", Description = "Open trial-balance impact view", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "LeanIntegration", Label = "Lean Integration", Description = "Open Lean integration", Glyph = "\uE943" }
             ]
         };

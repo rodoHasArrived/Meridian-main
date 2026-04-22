@@ -244,16 +244,16 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         {
             PrimaryCommands =
             [
-                new WorkspaceCommandItem { Id = "FundLedger", Label = "Operations", Description = "Open operations lane", ShortcutHint = "Ctrl+1", Glyph = "\uEE94", Tone = WorkspaceTone.Primary },
-                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting lane", ShortcutHint = "Ctrl+2", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation lane", ShortcutHint = "Ctrl+3", Glyph = "\uE895" }
+                new WorkspaceCommandItem { Id = "FundLedger", Label = "Open Fund Ledger", Description = "Open the fund-ledger operations lane", ShortcutHint = "Ctrl+1", Glyph = "\uEE94", Tone = WorkspaceTone.Primary },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Trial Balance", Description = "Open the accounting trial-balance lane", ShortcutHint = "Ctrl+2", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks and approvals", ShortcutHint = "Ctrl+3", Glyph = "\uE895" }
             ],
             SecondaryCommands =
             [
-                new WorkspaceCommandItem { Id = "FundAccounts", Label = "Accounts", Description = "Open account surfaces", Glyph = "\uE8D4" },
-                new WorkspaceCommandItem { Id = "FundCashFinancing", Label = "Reporting", Description = "Open cash and reporting view", Glyph = "\uE8C7" },
+                new WorkspaceCommandItem { Id = "FundAccounts", Label = "Open Accounts", Description = "Open account and banking surfaces", Glyph = "\uE8D4" },
+                new WorkspaceCommandItem { Id = "FundCashFinancing", Label = "Open Reporting", Description = "Open cash, financing, and reporting", Glyph = "\uE8C7" },
                 new WorkspaceCommandItem { Id = "FundReportPack", Label = "Report Pack", Description = "Open governance report-pack preview", Glyph = "\uE8A5" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "Diagnostics", Label = "Diagnostics", Description = "Open diagnostics", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Notifications", Description = "Open notifications", Glyph = "\uE7F4" },
                 new WorkspaceCommandItem { Id = "Settings", Label = "Settings", Description = "Open settings", Glyph = "\uE713" }

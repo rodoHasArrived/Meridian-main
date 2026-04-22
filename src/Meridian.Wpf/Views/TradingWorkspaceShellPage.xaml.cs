@@ -482,9 +482,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "EventReplay", Label = "Event Replay", Description = "Open event replay", Glyph = "\uE768" },
                 new WorkspaceCommandItem { Id = "CollectionSessions", Label = "Collection Sessions", Description = "Open collection sessions", Glyph = "\uE8EF" },
-                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting consequences", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Trial Balance", Description = "Open accounting consequences", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Alerts", Description = "Open alerts", Glyph = "\uE7F4" },
                 new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
             ]
