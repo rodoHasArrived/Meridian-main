@@ -291,6 +291,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
+        services.AddSingleton<Meridian.Application.UI.ConfigStore>();
 
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton<WpfServices.BackendServiceManager>(_ => WpfServices.BackendServiceManager.Instance);
@@ -402,11 +403,21 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
 
         // ── QuantScript services ─────────────────────────────────────────────
-        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
+        services.AddSingleton<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>(sp =>
+        {
+            var configService = sp.GetRequiredService<WpfServices.ConfigService>();
+            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            return Microsoft.Extensions.Options.Options.Create(new Meridian.QuantScript.QuantScriptOptions
+            {
+                DefaultDataRoot = resolvedDataRoot,
+                ScriptsDirectory = Path.Combine(AppContext.BaseDirectory, "scripts")
+            });
+        });
         services.AddSingleton(sp =>
         {
-            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
-            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>().Value;
+            return new Meridian.Storage.Store.JsonlMarketDataStore(options.DefaultDataRoot);
         });
         services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
                               Meridian.QuantScript.Api.QuantDataContext>();
@@ -420,6 +431,8 @@ public partial class App : System.Windows.Application
                 sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>().Value));
         services.AddSingleton<WpfServices.IQuantScriptLayoutService,
                               WpfServices.QuantScriptLayoutService>();
+        services.AddSingleton<WpfServices.QuantScriptTemplateCatalogService>();
+        services.AddSingleton<WpfServices.QuantScriptExecutionHistoryService>();
         services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
@@ -502,6 +515,12 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<ReconciliationProjectionService>();
+        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.AddSingleton<CashFlowProjectionService>();
+        services.AddSingleton<StrategyRunContinuityService>();
+        services.AddSingleton<WorkstationWorkflowSummaryService>();
         services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         services.AddSingleton<PromotionService>();
         services.AddSingleton<NavAttributionService>();

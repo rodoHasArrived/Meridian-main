@@ -14,12 +14,19 @@ public enum GovernanceReportKindDto
 /// <summary>
 /// Query for the shared governance and fund-operations workspace projection.
 /// </summary>
+/// <remarks>
+/// Selection semantics mirror <see cref="FundLedgerQuery"/>:
+/// null/empty selections keep the full fund ledger universe for the requested scope,
+/// populated selections constrain the ledger universe first, and unknown IDs are treated
+/// as no matches.
+/// </remarks>
 public sealed record FundOperationsWorkspaceQuery(
     string FundProfileId,
     DateTimeOffset? AsOf = null,
     string? Currency = null,
     FundLedgerScope ScopeKind = FundLedgerScope.Consolidated,
-    string? ScopeId = null);
+    string? ScopeId = null,
+    IReadOnlyList<string>? SelectedLedgerIds = null);
 
 /// <summary>
 /// Asset-class contribution within a NAV attribution summary.
@@ -75,6 +82,7 @@ public sealed record FundOperationsWorkspaceDto(
     IReadOnlyList<string> RelatedRunIds,
     FundWorkspaceSummary Workspace,
     FundLedgerSummary Ledger,
+    FundLedgerReconciliationSnapshot LedgerReconciliationSnapshot,
     IReadOnlyList<FundAccountSummary> Accounts,
     IReadOnlyList<BankAccountSnapshot> BankSnapshots,
     CashFinancingSummary CashFinancing,

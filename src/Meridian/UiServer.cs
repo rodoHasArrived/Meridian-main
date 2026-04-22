@@ -104,10 +104,16 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<LedgerReadService>();
         builder.Services.AddSingleton<StrategyRunReadService>();
         builder.Services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        builder.Services.AddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
+        builder.Services.AddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
+        builder.Services.AddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
+        builder.Services.AddSingleton<IExternalStatementSource, NullExternalStatementSource>();
+        builder.Services.AddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<StrategyRunContinuityService>();
+        builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
         builder.Services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService, Meridian.Application.SecurityMaster.SecurityMasterWorkbenchQueryService>();

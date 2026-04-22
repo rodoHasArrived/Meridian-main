@@ -12,7 +12,9 @@ public enum ReconciliationSourceKind : byte
     Unknown = 0,
     Portfolio = 1,
     Ledger = 2,
-    Bank = 3
+    Bank = 3,
+    ExternalStatement = Bank,
+    Cash = 4
 }
 
 /// <summary>
@@ -24,7 +26,21 @@ public enum ReconciliationBreakStatus : byte
     Open = 0,
     Matched = 1,
     Investigating = 2,
-    Resolved = 3
+    Resolved = 3,
+    PartialMatch = 4
+}
+
+/// <summary>
+/// Materiality level for a reconciliation break.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakSeverity>))]
+public enum ReconciliationBreakSeverity : byte
+{
+    Info = 0,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4
 }
 
 /// <summary>
@@ -38,7 +54,12 @@ public enum ReconciliationBreakCategory : byte
     MissingPortfolioCoverage = 2,
     ClassificationGap = 3,
     TimingMismatch = 4,
-    MissingBankCoverage = 5
+    MissingBankCoverage = 5,
+    CashMismatch = 6,
+    MissingCashCoverage = 7,
+    MissingExternalStatementCoverage = 8,
+    ExternalStatementMismatch = 9,
+    PartialMatch = 10
 }
 
 /// <summary>
@@ -101,6 +122,7 @@ public sealed record ReconciliationBreakDto(
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal Variance,
+    ReconciliationBreakSeverity Severity,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
     DateTimeOffset? ActualAsOf);
@@ -158,7 +180,8 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? ReviewedAt = null,
     string? ResolvedBy = null,
     DateTimeOffset? ResolvedAt = null,
-    string? ResolutionNote = null);
+    string? ResolutionNote = null,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium);
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

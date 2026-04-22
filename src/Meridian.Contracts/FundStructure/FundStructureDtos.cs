@@ -319,8 +319,6 @@ public sealed record FundOperatingViewDto(
     IReadOnlyList<AccountSummaryDto> UnassignedAccounts,
     FundStructureSharedDataAccessDto? SharedDataAccess = null);
 
-public readonly record struct LedgerGroupId(string Value);
-
 public sealed record LedgerGroupSummaryDto(
     LedgerGroupId LedgerGroupId,
     string DisplayName,

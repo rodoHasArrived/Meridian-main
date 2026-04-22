@@ -7,6 +7,8 @@ using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -46,6 +48,12 @@ public sealed class QuantScriptPageTests
             new PlotQueue(),
             new StubLayoutService(),
             new QuantScriptNotebookStore(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
+            new QuantScriptTemplateCatalogService(NullLogger<QuantScriptTemplateCatalogService>.Instance),
+            new QuantScriptExecutionHistoryService(
+                ConfigService.Instance,
+                new StrategyRunWorkspaceService(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService()),
+                NullLogger<QuantScriptExecutionHistoryService>.Instance),
+            NavigationService.Instance,
             Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
             NullLogger<QuantScriptViewModel>.Instance);
 

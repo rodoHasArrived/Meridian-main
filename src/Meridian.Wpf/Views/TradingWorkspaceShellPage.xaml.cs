@@ -2,6 +2,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -31,6 +33,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly WorkspaceShellContextService _shellContextService;
+    private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private WorkflowNextAction? _currentWorkflowAction;
 
     public TradingWorkspaceShellPage(
         NavigationService navigationService,
@@ -40,7 +44,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
         CashFinancingReadService cashFinancingReadService,
-        WorkspaceShellContextService shellContextService)
+        WorkspaceShellContextService shellContextService,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null)
         : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
@@ -49,6 +54,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         _operatingContextService = operatingContextService;
         _cashFinancingReadService = cashFinancingReadService;
         _shellContextService = shellContextService;
+        _workflowSummaryService = workflowSummaryService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -85,7 +91,12 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     {
         try
         {
-            var summary = await _runService.GetTradingSummaryAsync();
+            var summaryTask = _runService.GetTradingSummaryAsync();
+            var workflowTask = GetTradingWorkflowSummaryAsync();
+            await System.Threading.Tasks.Task.WhenAll(summaryTask, workflowTask).ConfigureAwait(true);
+
+            var summary = await summaryTask.ConfigureAwait(true);
+            var workflow = await workflowTask.ConfigureAwait(true);
 
             PaperRunsText.Text = summary.PaperRunCount.ToString();
             LiveRunsText.Text = summary.LiveRunCount.ToString();
@@ -156,6 +167,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
             UpdateActiveRun(summary.ActiveRunContext, summary);
             UpdateStatusCard(summary);
+            ApplyWorkflowGuidance(workflow);
             ViewModel.CommandGroup = BuildCommandGroup();
             CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
@@ -163,9 +175,96 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         {
             WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
             ApplyStatusCardPresentation(BuildDegradedStatusCardPresentation());
+            ApplyWorkflowGuidance(null);
             RiskRailText.Text = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.";
             DeskActionStatusText.Text = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.";
         }
+    }
+
+    private async Task<WorkspaceWorkflowSummary?> GetTradingWorkflowSummaryAsync()
+    {
+        if (_workflowSummaryService is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var summary = await _workflowSummaryService
+                .GetAsync(
+                    hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
+                    operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
+                    fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName)
+                .ConfigureAwait(true);
+
+            return summary.Workspaces.FirstOrDefault(static workspace =>
+                string.Equals(workspace.WorkspaceId, "trading", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void ApplyWorkflowGuidance(WorkspaceWorkflowSummary? workflow)
+    {
+        var effectiveWorkflow = workflow ?? new WorkspaceWorkflowSummary(
+            WorkspaceId: "trading",
+            WorkspaceTitle: "Trading",
+            StatusLabel: "Fallback trading guidance",
+            StatusDetail: "The desk is using deterministic fallback text until the shared workflow summary refresh succeeds.",
+            StatusTone: "Info",
+            NextAction: new WorkflowNextAction(
+                Label: "Open Strategy Runs",
+                Detail: "Review recorded runs and bring one into the trading lane.",
+                TargetPageTag: "StrategyRuns",
+                Tone: "Primary"),
+            PrimaryBlocker: new WorkflowBlockerSummary(
+                Code: "fallback",
+                Label: "Workflow summary unavailable",
+                Detail: "Fallback guidance keeps the trading shell actionable without depending on null-sensitive state.",
+                Tone: "Info",
+                IsBlocking: false),
+            Evidence: []);
+
+        _currentWorkflowAction = effectiveWorkflow.NextAction;
+        TradingStatusSummaryText.Text = effectiveWorkflow.StatusDetail;
+        TradingStatusBadgeText.Text = effectiveWorkflow.StatusLabel;
+        ApplyTone(TradingStatusBadgeBorder, TradingStatusBadgeText, ParseTone(effectiveWorkflow.StatusTone));
+        ApplyStatusItem(
+            PromotionStatusPill,
+            PromotionStatusLabelText,
+            PromotionStatusDetailText,
+            new TradingWorkspaceStatusItem
+            {
+                Label = effectiveWorkflow.StatusLabel,
+                Detail = effectiveWorkflow.StatusDetail,
+                Tone = ParseTone(effectiveWorkflow.StatusTone)
+            });
+        ApplyStatusItem(
+            AuditStatusPill,
+            AuditStatusLabelText,
+            AuditStatusDetailText,
+            new TradingWorkspaceStatusItem
+            {
+                Label = effectiveWorkflow.PrimaryBlocker.Label,
+                Detail = effectiveWorkflow.PrimaryBlocker.Detail,
+                Tone = ParseTone(effectiveWorkflow.PrimaryBlocker.Tone)
+            });
+        ApplyStatusItem(
+            ValidationStatusPill,
+            ValidationStatusLabelText,
+            ValidationStatusDetailText,
+            new TradingWorkspaceStatusItem
+            {
+                Label = effectiveWorkflow.NextAction.Label,
+                Detail = effectiveWorkflow.NextAction.Detail,
+                Tone = ParseTone(effectiveWorkflow.NextAction.Tone)
+            });
+
+        TradingWorkflowTargetText.Text = $"Target page: {effectiveWorkflow.NextAction.TargetPageTag}";
+        TradingWorkflowPrimaryButton.Content = effectiveWorkflow.NextAction.Label;
     }
 
     private void UpdateActiveRun(ActiveRunContext? activeRun, TradingWorkspaceSummary? summary = null)
@@ -296,6 +395,14 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private Brush GetBrush(string resourceKey)
         => TryFindResource(resourceKey) as Brush ?? Brushes.Transparent;
 
+    private static TradingWorkspaceStatusTone ParseTone(string? tone) => tone?.ToLowerInvariant() switch
+    {
+        "success" => TradingWorkspaceStatusTone.Success,
+        "warning" => TradingWorkspaceStatusTone.Warning,
+        "danger" => TradingWorkspaceStatusTone.Warning,
+        _ => TradingWorkspaceStatusTone.Info
+    };
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenWorkspacePage(TradingDockManager, e.PageTag, e.Action);
 
@@ -401,6 +508,43 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private void OpenAlerts_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "NotificationCenter", PaneDropAction.SplitBelow);
+
+    private void OpenWorkflowNextAction_Click(object sender, RoutedEventArgs e)
+    {
+        var action = _currentWorkflowAction;
+        if (action is null)
+        {
+            return;
+        }
+
+        switch (action.TargetPageTag)
+        {
+            case "TradingShell" when string.Equals(action.Label, "Choose Context", StringComparison.OrdinalIgnoreCase):
+                RequestContextSelection(_fundContextService, _operatingContextService);
+                return;
+            case "TradingShell" when string.Equals(action.Label, "Open Active Cockpit", StringComparison.OrdinalIgnoreCase):
+                OpenPortfolio_Click(sender, e);
+                return;
+            case "TradingShell":
+                NavigationService.NavigateTo(action.TargetPageTag);
+                return;
+            case "StrategyRuns":
+                NavigationService.NavigateTo("StrategyRuns");
+                return;
+            case "GovernanceShell":
+                NavigationService.NavigateTo("GovernanceShell");
+                return;
+            case "FundTrialBalance":
+                OpenAccountingConsequences_Click(sender, e);
+                return;
+            case "FundReconciliation":
+                OpenReconciliationReview_Click(sender, e);
+                return;
+            default:
+                NavigationService.NavigateTo(action.TargetPageTag);
+                return;
+        }
+    }
 
     private void OpenAccountingConsequences_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "FundTrialBalance", PaneDropAction.OpenTab);

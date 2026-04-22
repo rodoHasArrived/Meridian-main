@@ -1,4 +1,5 @@
 using Meridian.QuantScript.Documents;
+using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
 
@@ -122,7 +123,7 @@ public enum ConsoleEntryKind
 // ── Metrics tab ───────────────────────────────────────────────────────────────
 
 /// <summary>A single metric key/value pair shown in the Metrics tab.</summary>
-public sealed record MetricEntry(string Label, string Value, string? Category = null);
+public sealed record MetricEntry(string Label, string Value, string? Category = null, string? Source = null);
 
 // ── Trades tab ────────────────────────────────────────────────────────────────
 
@@ -171,21 +172,70 @@ public sealed class ChartLegendEntry
 /// </summary>
 public sealed class ParameterViewModel : BindableBase
 {
+    private readonly string _name;
+    private Type _parameterType;
+    private string _label;
+    private string? _description;
+    private double _min;
+    private double _max;
     private string _rawValue = string.Empty;
     private bool _isValid = true;
     private string? _validationMessage;
     private object? _parsedValue;
+    private bool _isUserModified;
+    private bool _suppressUserTracking;
 
-    public ParameterViewModel(string name, object? defaultValue, Type? parameterType = null)
+    public ParameterViewModel(
+        string name,
+        object? defaultValue,
+        Type? parameterType = null,
+        string? label = null,
+        string? description = null,
+        double min = double.MinValue,
+        double max = double.MaxValue)
     {
-        Name = name;
-        ParameterType = parameterType ?? typeof(string);
-        _parsedValue = defaultValue;
-        _rawValue = defaultValue?.ToString() ?? string.Empty;
+        _name = string.IsNullOrWhiteSpace(name) ? "param" : name.Trim();
+        _parameterType = parameterType ?? typeof(string);
+        _label = string.IsNullOrWhiteSpace(label) ? _name : label.Trim();
+        _description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        _min = min;
+        _max = max;
+        SetValue(defaultValue, markUserModified: false);
     }
 
-    public string Name { get; }
-    public Type ParameterType { get; }
+    public string Name => _name;
+
+    public Type ParameterType
+    {
+        get => _parameterType;
+        private set => SetProperty(ref _parameterType, value);
+    }
+
+    public string Label
+    {
+        get => _label;
+        private set => SetProperty(ref _label, value);
+    }
+
+    public string? Description
+    {
+        get => _description;
+        private set => SetProperty(ref _description, value);
+    }
+
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+    public double Min
+    {
+        get => _min;
+        private set => SetProperty(ref _min, value);
+    }
+
+    public double Max
+    {
+        get => _max;
+        private set => SetProperty(ref _max, value);
+    }
 
     public string RawValue
     {
@@ -193,19 +243,72 @@ public sealed class ParameterViewModel : BindableBase
         set
         {
             if (SetProperty(ref _rawValue, value))
+            {
+                if (!_suppressUserTracking)
+                    IsUserModified = true;
                 Validate();
+                RaisePropertyChanged(nameof(BooleanValue));
+            }
         }
+    }
+
+    public bool BooleanValue
+    {
+        get => ParsedValue as bool? ?? bool.TryParse(RawValue, out var parsed) && parsed;
+        set => SetValue(value, markUserModified: true);
     }
 
     public bool IsValid { get => _isValid; private set => SetProperty(ref _isValid, value); }
     public string? ValidationMessage { get => _validationMessage; private set => SetProperty(ref _validationMessage, value); }
     public object? ParsedValue { get => _parsedValue; private set => SetProperty(ref _parsedValue, value); }
+    public bool IsUserModified { get => _isUserModified; private set => SetProperty(ref _isUserModified, value); }
+
+    public void ApplyDescriptor(ParameterDescriptor descriptor, Type? parameterType = null, bool preserveUserValue = true)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+
+        var shouldPreserveValue = preserveUserValue && IsUserModified;
+        var preservedValue = shouldPreserveValue ? ParsedValue : null;
+        var preservedRawValue = shouldPreserveValue ? RawValue : null;
+
+        ParameterType = parameterType ?? typeof(string);
+        Label = string.IsNullOrWhiteSpace(descriptor.Label) ? descriptor.Name : descriptor.Label.Trim();
+        Description = string.IsNullOrWhiteSpace(descriptor.Description) ? null : descriptor.Description.Trim();
+        Min = descriptor.Min;
+        Max = descriptor.Max;
+
+        if (shouldPreserveValue && preservedValue is not null)
+        {
+            SetValue(preservedValue, markUserModified: true);
+            return;
+        }
+
+        if (shouldPreserveValue && preservedRawValue is not null)
+        {
+            SetRawValue(preservedRawValue, markUserModified: true);
+            return;
+        }
+
+        SetValue(descriptor.DefaultValue, markUserModified: false);
+    }
 
     private void Validate()
     {
         try
         {
-            ParsedValue = Convert.ChangeType(_rawValue, ParameterType);
+            if (ParameterType == typeof(string))
+            {
+                ParsedValue = _rawValue;
+            }
+            else if (string.IsNullOrWhiteSpace(_rawValue))
+            {
+                ParsedValue = null;
+            }
+            else
+            {
+                ParsedValue = Convert.ChangeType(_rawValue, ParameterType);
+            }
+
             IsValid = true;
             ValidationMessage = null;
         }
@@ -215,5 +318,32 @@ public sealed class ParameterViewModel : BindableBase
             ValidationMessage = $"Invalid {ParameterType.Name} value";
             ParsedValue = null;
         }
+    }
+
+    private void SetValue(object? value, bool markUserModified)
+    {
+        var text = value switch
+        {
+            bool booleanValue => booleanValue ? bool.TrueString : bool.FalseString,
+            null => string.Empty,
+            _ => value.ToString() ?? string.Empty
+        };
+
+        SetRawValue(text, markUserModified);
+    }
+
+    private void SetRawValue(string value, bool markUserModified)
+    {
+        _suppressUserTracking = true;
+        try
+        {
+            RawValue = value;
+        }
+        finally
+        {
+            _suppressUserTracking = false;
+        }
+
+        IsUserModified = markUserModified;
     }
 }

@@ -1,8 +1,10 @@
+using Meridian.Contracts.Workstation;
 using System.Windows;
 using System.Windows.Automation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -157,5 +159,55 @@ public sealed class MainPageUiWorkflowTests
 
             facade.CommandPaletteOverlay.Visibility.Should().Be(Visibility.Visible);
         });
+    }
+
+    [Fact]
+    public void MainPage_WorkflowSummaryStrip_ShouldRenderAndUpdateAfterContextSelection()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-workflow-{Guid.NewGuid():N}.json"));
+            using var facade = new MainPageUiAutomationFacade(fundContextService);
+
+            await WaitForConditionAsync(() => facade.WorkflowSummaryItemsControl.Items.Count == 4).ConfigureAwait(true);
+
+            facade.WorkflowSummaryStrip.Visibility.Should().Be(Visibility.Visible);
+            facade.ViewModel.WorkflowSummaries.Should().HaveCount(4);
+            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "trading").NextAction.Label.Should().Be("Choose Context");
+            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "governance").NextAction.Label.Should().Be("Choose Context");
+
+            await fundContextService.UpsertProfileAsync(new FundProfileDetail(
+                FundProfileId: "alpha-fund",
+                DisplayName: "Alpha Fund",
+                LegalEntityName: "Alpha Fund LP",
+                BaseCurrency: "USD",
+                DefaultWorkspaceId: "trading",
+                DefaultLandingPageTag: "TradingShell",
+                DefaultLedgerScope: FundLedgerScope.Consolidated)).ConfigureAwait(true);
+            await fundContextService.SelectFundProfileAsync("alpha-fund").ConfigureAwait(true);
+
+            await WaitForConditionAsync(() =>
+                facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "trading").NextAction.Label != "Choose Context").ConfigureAwait(true);
+
+            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "trading").NextAction.Label.Should().Be("Open Strategy Runs");
+            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "governance").NextAction.Label.Should().Be("Open Governance Shell");
+        });
+    }
+
+    private static async Task WaitForConditionAsync(Func<bool> predicate, int timeoutMs = 5000)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (DateTime.UtcNow < deadline)
+        {
+            RunMatUiAutomationFacade.DrainDispatcher();
+            if (predicate())
+            {
+                return;
+            }
+
+            await Task.Delay(50).ConfigureAwait(true);
+        }
+
+        predicate().Should().BeTrue("expected condition to become true within the timeout window");
     }
 }

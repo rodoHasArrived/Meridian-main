@@ -55,6 +55,17 @@ The context strip is powered by `WorkspaceShellContextService` and standardizes:
 
 This makes governance, trading, research, and data operations surfaces show the same trust vocabulary even when their working sets differ.
 
+## Workflow Summary Guidance
+
+The shell now has a second shared seam for operator guidance: `WorkstationWorkflowSummaryService`.
+
+- The main shell header renders a `Next Action` strip with one summary card per top-level workspace.
+- Each card answers the same three questions: the current workspace state, the primary blocker, and the next operator action with an explicit target page tag.
+- The WPF shell keeps `ShellNavigationCatalog`, the command palette, and the four-workspace model intact. The summary seam only changes what the shell emphasizes first.
+- `WorkspaceShellContextService` remains responsible for chrome, trust badges, and scope cues. It is not overloaded with cross-workspace workflow rules.
+
+The summary projection is shared with the workstation HTTP surface through `GET /api/workstation/workflow-summary`, so the next-action ordering stays consistent across shells and tests instead of being duplicated in WPF-specific page code.
+
 ## Shared Chrome Models
 
 The shell chrome uses shared WPF-only models in `src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs`:
@@ -78,18 +89,17 @@ Governance is the pilot shell. It uses:
 - a locked empty state when no fund-linked operating context is selected
 - a right rail for active governance context, recent governance work, and audit access
 - operating-context-scoped dock restore and bounded window-mode persistence
+- lane summaries for `Accounting`, `Reconciliation`, `Reporting`, and `Audit` that become distinct as soon as a fund-linked context exists
 
 ### Research
 
-Research keeps its dense run-comparison workspace but now uses the shared context strip and command bar for run scope, promotion posture, accounting impact, reconciliation preview, and workspace actions.
+Research keeps its dense run-comparison workspace but now uses the shared context strip, command bar, and workflow-handoff card for run scope, promotion posture, accounting impact, reconciliation preview, and workspace actions.
+The research handoff card exposes explicit `Start Backtest`, `Review Run`, and `Send to Trading Review` CTA states, backed by shared evidence badges from run, portfolio, ledger, and promotion seams.
 
 ### Trading
 
 Trading keeps the live-position, blotter, and capital-control surfaces while moving desk actions into the shared command bar, surfacing run or desk posture in the context strip, and exposing accounting and audit drill-ins from the cockpit.
-The cockpit shell now also carries a dedicated promotion/status card that keeps promotion readiness,
-audit linkage, and validation coverage visible above the KPI row, with direct `Run Review`,
-`Event Replay`, and `Collection Sessions` actions when operators need deeper session context from
-the same surface.
+The cockpit shell now also carries a workflow-status card that replaces generic `Awaiting runs` copy with summary-driven handoff, blocker, and next-action labels. This makes `no context selected`, `candidate awaiting paper review`, `active paper/live cockpit`, and `candidate awaiting governance review` visible without changing the surrounding workspace layout.
 
 ### Data Operations
 
@@ -123,6 +133,7 @@ Changes to workstation shells should continue to validate:
 - workspace switching and command palette navigation
 - keyboard-only navigation across sidebar, command bar, queue, and dock
 - trust-state rendering for fixture mode, offline mode, stale data, unread alerts, currency, and ledger scope
+- workflow-summary rendering for shell-wide next actions, blockers, and target page tags
 - fund-linked empty states where governance actions depend on accounting-compatible scope
 - operating-context switching and per-context layout restore
 - bounded window-mode behavior for focused, dock-float, and workbench-preset shells

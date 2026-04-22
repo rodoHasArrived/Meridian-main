@@ -89,7 +89,11 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
             OrderType.Market,
             OrderType.Limit,
             OrderType.StopMarket,
-            OrderType.StopLimit
+            OrderType.StopLimit,
+            OrderType.MarketOnOpen,
+            OrderType.MarketOnClose,
+            OrderType.LimitOnOpen,
+            OrderType.LimitOnClose
         },
         SupportedTimeInForce = new HashSet<TimeInForce>
         {
@@ -972,6 +976,8 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         public bool IsConnected => false;
         public string GuidanceMessage { get; }
 
+        // Required by IIBBrokerageClient contract so unsupported-runtime guidance mode remains substitutable.
+#pragma warning disable CS0067 // Event is never used
         public event EventHandler<int>? NextValidIdReceived;
         public event EventHandler<IBOrderStatusUpdate>? OrderStatusReceived;
         public event EventHandler<IBOpenOrderUpdate>? OpenOrderReceived;
@@ -982,6 +988,7 @@ public sealed class IBBrokerageGateway : IBrokerageGateway
         public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
         public event EventHandler<int>? AccountSummaryCompleted;
         public event EventHandler<IBApiError>? ErrorOccurred;
+#pragma warning restore CS0067
 
         public Task ConnectAsync(CancellationToken ct = default)
             => Task.FromException(CreateException());

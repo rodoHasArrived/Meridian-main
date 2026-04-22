@@ -458,6 +458,7 @@ public static class UiApiRoutes
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
+    public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";

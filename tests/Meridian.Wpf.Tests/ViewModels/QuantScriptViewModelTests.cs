@@ -6,6 +6,8 @@ using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -40,9 +42,28 @@ public sealed class QuantScriptViewModelTests
         var layout       = new StubLayoutService();
         var options      = Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() });
         var notebookStore = new QuantScriptNotebookStore(options.Value);
+        var templateCatalog = new QuantScriptTemplateCatalogService(NullLogger<QuantScriptTemplateCatalogService>.Instance);
+        var strategyRunWorkspace = new StrategyRunWorkspaceService(
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new LedgerReadService());
+        var executionHistory = new QuantScriptExecutionHistoryService(
+            ConfigService.Instance,
+            strategyRunWorkspace,
+            NullLogger<QuantScriptExecutionHistoryService>.Instance);
         var logger       = NullLogger<QuantScriptViewModel>.Instance;
 
-        return new QuantScriptViewModel(fakeRunner, fakeCompiler, plotQueue, layout, notebookStore, options, logger);
+        return new QuantScriptViewModel(
+            fakeRunner,
+            fakeCompiler,
+            plotQueue,
+            layout,
+            notebookStore,
+            templateCatalog,
+            executionHistory,
+            NavigationService.Instance,
+            options,
+            logger);
     }
 
     // ── Initial state ─────────────────────────────────────────────────────────
@@ -138,7 +159,7 @@ public sealed class QuantScriptViewModelTests
 
         vm.NewScriptCommand.Execute(null);
 
-        vm.ScriptSource.Should().Contain("New QuantScript");
+        vm.ScriptSource.Should().Contain("Data.PricesAsync");
     }
 
     // ── Dispose ───────────────────────────────────────────────────────────────

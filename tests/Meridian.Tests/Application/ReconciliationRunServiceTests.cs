@@ -68,6 +68,10 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityCoverageIssues.Should().NotBeNull();
         detail.SecurityCoverageIssues!.Should().Contain(issue => issue.Source == "portfolio" && issue.Symbol == "TSLA");
         detail.SecurityCoverageIssues.Should().Contain(issue => issue.Source == "ledger" && issue.Symbol == "TSLA");
+        detail.SecurityCoverageIssues.Should().OnlyContain(issue =>
+            issue.Reason.Contains("missing a Security Master match", StringComparison.OrdinalIgnoreCase));
+        detail.SecurityClassifications.Should().ContainKey("AAPL");
+        detail.SecurityClassifications.Should().NotContainKey("TSLA");
     }
 
     [Fact]
@@ -85,7 +89,10 @@ public sealed class ReconciliationRunServiceTests
             Currency: "USD",
             Status: SecurityStatusDto.Active,
             PrimaryIdentifier: "AAPL",
-            SubType: "CommonShare"));
+            SubType: "CommonShare",
+            MatchedIdentifierKind: "ISIN",
+            MatchedIdentifierValue: "US0378331005",
+            MatchedProvider: "OpenFIGI"));
         lookup.Register("TSLA", new WorkstationSecurityReference(
             SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
             DisplayName: "Tesla Inc.",
@@ -108,7 +115,47 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications!.Should().ContainKey("AAPL");
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
+        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("ISIN");
         detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
+        detail.SecurityClassifications["AAPL"].MatchedIdentifierKind.Should().Be("ISIN");
+        detail.SecurityClassifications["AAPL"].MatchedIdentifierValue.Should().Be("US0378331005");
+        detail.SecurityClassifications["AAPL"].MatchedProvider.Should().Be("OpenFIGI");
+        detail.SecurityClassifications["TSLA"].PrimaryIdentifierKind.Should().Be("Ticker");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithClassificationEdgeCases_ShouldPreservePrimaryIdentifierAndSubtypeValues()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-classification-edges"));
+
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL",
+            SubType: null));
+        lookup.Register("TSLA", new WorkstationSecurityReference(
+            SecurityId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            DisplayName: "Tesla Inc.",
+            AssetClass: "LegacyEquity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "88160R101",
+            SubType: "LegacyEquitySubtype"));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(), lookup);
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-classification-edges"));
+
+        detail.Should().NotBeNull();
+        detail!.SecurityClassifications.Should().NotBeNull();
+        detail.SecurityClassifications!["AAPL"].SubType.Should().BeNull("ambiguous equity subtype should stay explicitly null");
+        detail.SecurityClassifications["TSLA"].SubType.Should().Be("LegacyEquitySubtype");
+        detail.SecurityClassifications["TSLA"].PrimaryIdentifierValue.Should().Be("88160R101");
     }
 
     [Fact]
@@ -125,6 +172,47 @@ public sealed class ReconciliationRunServiceTests
         var hasClassifications = detail!.SecurityClassifications is { Count: > 0 };
         hasClassifications.Should().BeFalse(
             "no Security Master lookup was wired so no classifications can be resolved");
+    }
+
+    [Fact]
+    public async Task RunAsync_WithNearToleranceVariance_ShouldKeepPartialLikeResultInMatches()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun(
+            "run-partial-like",
+            portfolioCashOverride: 750.005m));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-partial-like", AmountTolerance: 0.01m));
+
+        detail.Should().NotBeNull();
+        detail!.Matches.Should().Contain(match =>
+            match.CheckId == "cash-balance" &&
+            match.Variance != 0m &&
+            Math.Abs(match.Variance) < 0.01m);
+    }
+
+    [Fact]
+    public async Task RunAsync_WithMaterialBreaks_ShouldSurfaceSeverityAndCanonicalReasonInDetail()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun(
+            "run-break-severity",
+            portfolioAsOfOffsetMinutes: 30,
+            portfolioCashOverride: 950m));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest("run-break-severity", AmountTolerance: 0.01m, MaxAsOfDriftMinutes: 5));
+
+        detail.Should().NotBeNull();
+        detail!.Breaks.Should().Contain(b => b.CheckId == "cash-balance"
+            && b.Category == ReconciliationBreakCategory.TimingMismatch
+            && b.Severity == ReconciliationBreakSeverity.High);
+        detail.Breaks.Should().Contain(b => b.CheckId == "net-equity"
+            && b.Category == ReconciliationBreakCategory.TimingMismatch
+            && b.Reason.Contains("drift beyond tolerance", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -299,10 +387,17 @@ public sealed class ReconciliationRunServiceTests
 
     private static class TestRunFactory
     {
-        public static StrategyRunEntry BuildReconciliationReadyRun(string runId)
+        public static StrategyRunEntry BuildReconciliationReadyRun(
+            string runId,
+            decimal? portfolioCashOverride = null,
+            int portfolioAsOfOffsetMinutes = 0,
+            int ledgerAsOfOffsetMinutes = 0)
         {
             var startedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero);
             var completedAt = startedAt.AddMinutes(30);
+            var portfolioAsOf = completedAt.AddMinutes(portfolioAsOfOffsetMinutes);
+            var ledgerAsOf = completedAt.AddMinutes(ledgerAsOfOffsetMinutes);
+            var portfolioCash = portfolioCashOverride ?? 750m;
             var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
             {
                 ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m),
@@ -313,21 +408,21 @@ public sealed class ReconciliationRunServiceTests
                 DisplayName: "Primary Brokerage",
                 Kind: FinancialAccountKind.Brokerage,
                 Institution: "Simulated Broker",
-                Cash: 750m,
+                Cash: portfolioCash,
                 MarginBalance: 0m,
                 LongMarketValue: 400m,
                 ShortMarketValue: -150m,
-                Equity: 1000m,
+                Equity: portfolioCash + 400m - 150m,
                 Positions: positions,
                 Rules: new FinancialAccountRules());
             var snapshot = new PortfolioSnapshot(
-                Timestamp: completedAt,
-                Date: DateOnly.FromDateTime(completedAt.UtcDateTime),
-                Cash: 750m,
+                Timestamp: portfolioAsOf,
+                Date: DateOnly.FromDateTime(portfolioAsOf.UtcDateTime),
+                Cash: portfolioCash,
                 MarginBalance: 0m,
                 LongMarketValue: 400m,
                 ShortMarketValue: -150m,
-                TotalEquity: 1000m,
+                TotalEquity: portfolioCash + 400m - 150m,
                 DailyReturn: 0m,
                 Positions: positions,
                 Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
@@ -372,7 +467,7 @@ public sealed class ReconciliationRunServiceTests
                 CashFlows: [],
                 Fills: [],
                 Metrics: metrics,
-                Ledger: CreateLedger(),
+                Ledger: CreateLedger(ledgerAsOf),
                 ElapsedTime: TimeSpan.FromMinutes(30),
                 TotalEventsProcessed: 100);
 
@@ -483,20 +578,20 @@ public sealed class ReconciliationRunServiceTests
             };
         }
 
-        private static IReadOnlyLedger CreateLedger()
+        private static IReadOnlyLedger CreateLedger(DateTimeOffset asOf)
         {
             var ledger = new global::Meridian.Ledger.Ledger();
-            PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero), "Initial capital",
+            PostBalancedEntry(ledger, asOf.AddMinutes(-30), "Initial capital",
             [
                 (LedgerAccounts.Cash, 1_000m, 0m),
                 (LedgerAccounts.CapitalAccount, 0m, 1_000m)
             ]);
-            PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, TimeSpan.Zero), "Buy AAPL",
+            PostBalancedEntry(ledger, asOf.AddMinutes(-20), "Buy AAPL",
             [
                 (LedgerAccounts.Securities("AAPL"), 400m, 0m),
                 (LedgerAccounts.Cash, 0m, 400m)
             ]);
-            PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, TimeSpan.Zero), "Open TSLA short",
+            PostBalancedEntry(ledger, asOf.AddMinutes(-10), "Open TSLA short",
             [
                 (LedgerAccounts.Cash, 150m, 0m),
                 (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)

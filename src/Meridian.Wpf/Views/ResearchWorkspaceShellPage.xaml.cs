@@ -1,7 +1,9 @@
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -23,6 +25,7 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService _shellContextService;
+    private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private bool _canPromoteActiveRun;
     private bool _canOpenTradingCockpit;
 
@@ -35,7 +38,8 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
         Meridian.Wpf.Services.WatchlistService watchlistService,
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
-        WorkspaceShellContextService shellContextService)
+        WorkspaceShellContextService shellContextService,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null)
         : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
@@ -45,6 +49,7 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
         _shellContextService = shellContextService;
+        _workflowSummaryService = workflowSummaryService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -86,11 +91,13 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
             var summaryTask = _runService.GetResearchSummaryAsync();
             var activeRunTask = _runService.GetActiveRunContextAsync();
             var briefingTask = _briefingService.GetBriefingAsync();
-            await System.Threading.Tasks.Task.WhenAll(summaryTask, activeRunTask, briefingTask);
+            var workflowTask = GetResearchWorkflowSummaryAsync();
+            await System.Threading.Tasks.Task.WhenAll(summaryTask, activeRunTask, briefingTask, workflowTask);
 
             var summary = await summaryTask;
             var activeRun = await activeRunTask;
             var briefing = await briefingTask;
+            var workflow = await workflowTask;
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(
                 BuildShellContextInput(summary, activeRun, briefing));
@@ -123,6 +130,7 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
             UpdateBriefing(briefing);
             UpdateActiveRunContext(activeRun);
+            UpdateWorkflowHandoff(workflow);
             ViewModel.CommandGroup = BuildCommandGroup();
             CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
@@ -130,6 +138,73 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
         {
             WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Refresh failed: {ex.Message}");
         }
+    }
+
+    private async Task<WorkspaceWorkflowSummary?> GetResearchWorkflowSummaryAsync()
+    {
+        if (_workflowSummaryService is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var summary = await _workflowSummaryService
+                .GetAsync(
+                    hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
+                    operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
+                    fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName)
+                .ConfigureAwait(true);
+
+            return summary.Workspaces.FirstOrDefault(static workspace =>
+                string.Equals(workspace.WorkspaceId, "research", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void UpdateWorkflowHandoff(WorkspaceWorkflowSummary? workflow)
+    {
+        var effectiveWorkflow = workflow ?? new WorkspaceWorkflowSummary(
+            WorkspaceId: "research",
+            WorkspaceTitle: "Research",
+            StatusLabel: "Ready for a new research cycle",
+            StatusDetail: "No live workflow summary is available, so the shell is using deterministic fallback guidance.",
+            StatusTone: "Info",
+            NextAction: new WorkflowNextAction(
+                Label: "Start Backtest",
+                Detail: "Launch a new simulation from the research workspace.",
+                TargetPageTag: "Backtest",
+                Tone: "Primary"),
+            PrimaryBlocker: new WorkflowBlockerSummary(
+                Code: "fallback",
+                Label: "Workflow summary unavailable",
+                Detail: "Fallback guidance keeps one stable next action visible while shared workflow data refreshes.",
+                Tone: "Info",
+                IsBlocking: false),
+            Evidence: []);
+
+        ResearchWorkflowStatusText.Text = effectiveWorkflow.StatusLabel;
+        ResearchWorkflowDetailText.Text = effectiveWorkflow.StatusDetail;
+        ResearchWorkflowBlockerLabelText.Text = effectiveWorkflow.PrimaryBlocker.Label;
+        ResearchWorkflowBlockerDetailText.Text = effectiveWorkflow.PrimaryBlocker.Detail;
+        ResearchWorkflowTargetText.Text = $"Target page: {effectiveWorkflow.NextAction.TargetPageTag}";
+        ResearchWorkflowEvidenceItems.ItemsSource = effectiveWorkflow.Evidence
+            .Select(static evidence => $"{evidence.Label}: {evidence.Value}")
+            .ToArray();
+
+        StartBacktestButton.Visibility = string.Equals(effectiveWorkflow.NextAction.TargetPageTag, "Backtest", StringComparison.OrdinalIgnoreCase)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        ReviewRunButton.Visibility = string.Equals(effectiveWorkflow.NextAction.TargetPageTag, "StrategyRuns", StringComparison.OrdinalIgnoreCase)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        SendToTradingReviewButton.Visibility = string.Equals(effectiveWorkflow.NextAction.TargetPageTag, "TradingShell", StringComparison.OrdinalIgnoreCase)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void UpdateActiveRunContext(ActiveRunContext? activeContext)
@@ -314,6 +389,9 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
     private void OpenRunMat_Click(object sender, RoutedEventArgs e)
         => NavigationService.NavigateTo("RunMat");
+
+    private void OpenBacktest_Click(object sender, RoutedEventArgs e)
+        => NavigationService.NavigateTo("Backtest");
 
     private void OpenCharts_Click(object sender, RoutedEventArgs e)
         => NavigationService.NavigateTo("Charts");

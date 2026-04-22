@@ -3,6 +3,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Meridian.Strategies.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 
@@ -149,6 +150,49 @@ public sealed class StrategyRunBrowserViewModelTests
 
         vm.Runs.Should().BeEmpty();
         vm.StatusText.Should().Contain("No strategy runs match");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithStrategyNavigationContext_FiltersRunsToRequestedStrategy()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(StrategyRunEntry.Start("alpha-strategy", "Alpha Strategy", RunType.Backtest));
+        await store.RecordRunAsync(StrategyRunEntry.Start("beta-strategy", "Beta Strategy", RunType.Backtest));
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance)
+        {
+            Parameter = new StrategyRunsNavigationContext(StrategyId: "alpha-strategy")
+        };
+
+        await vm.RefreshAsync();
+
+        vm.Runs.Should().ContainSingle();
+        vm.Runs[0].StrategyId.Should().Be("alpha-strategy");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithRunNavigationContext_PreselectsPrimaryAndComparisonRuns()
+    {
+        var store = new StrategyRunStore();
+        var primary = StrategyRunEntry.Start("alpha-strategy", "Alpha Strategy", RunType.Backtest, "run-alpha-1");
+        var comparison = StrategyRunEntry.Start("alpha-strategy", "Alpha Strategy", RunType.Backtest, "run-alpha-2");
+        await store.RecordRunAsync(primary);
+        await store.RecordRunAsync(comparison);
+
+        var runService = new StrategyRunWorkspaceService(store, new PortfolioReadService(), new LedgerReadService());
+        var vm = new StrategyRunBrowserViewModel(runService, NavigationService.Instance, WorkspaceService.Instance)
+        {
+            Parameter = new StrategyRunsNavigationContext(
+                StrategyId: "alpha-strategy",
+                PrimaryRunId: primary.RunId,
+                ComparisonRunId: comparison.RunId)
+        };
+
+        await vm.RefreshAsync();
+
+        vm.SelectedRun?.RunId.Should().Be(primary.RunId);
+        vm.ComparisonRun?.RunId.Should().Be(comparison.RunId);
     }
 
     // ── CanExecute / selection tests ──────────────────────────────────────

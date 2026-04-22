@@ -16,12 +16,15 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Meridian.ProviderSdk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -266,6 +269,114 @@ public sealed class WorkstationEndpointsTests
         briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-research-001");
         briefing.Alerts.Should().NotBeEmpty();
         briefing.WhatChanged.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutContext_ShouldPrioritizeChooseContextForTradingAndGovernance()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var client = app.GetTestClient();
+
+        var summary = await ReadWorkflowSummaryAsync(client, "/api/workstation/workflow-summary");
+
+        GetWorkspace(summary, "trading").NextAction.Label.Should().Be("Choose Context");
+        GetWorkspace(summary, "trading").NextAction.TargetPageTag.Should().Be("TradingShell");
+        GetWorkspace(summary, "governance").NextAction.Label.Should().Be("Choose Context");
+        GetWorkspace(summary, "governance").NextAction.TargetPageTag.Should().Be("GovernanceShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithPaperCandidate_ShouldReflectResearchToTradingHandoff()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("workflow-backtest-candidate") with
+        {
+            FundProfileId = "northwind-income",
+            FundDisplayName = "Northwind Income"
+        });
+
+        var client = app.GetTestClient();
+        var summary = await ReadWorkflowSummaryAsync(
+            client,
+            "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
+
+        var research = GetWorkspace(summary, "research");
+        research.StatusLabel.Should().Be("Candidate for paper review");
+        research.NextAction.Label.Should().Be("Send to Trading Review");
+        research.NextAction.TargetPageTag.Should().Be("TradingShell");
+
+        var trading = GetWorkspace(summary, "trading");
+        trading.StatusLabel.Should().Be("Candidate awaiting paper review");
+        trading.NextAction.Label.Should().Be("Review Candidate for Paper");
+        trading.NextAction.TargetPageTag.Should().Be("TradingShell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithActivePaperRunAndNoBreaks_ShouldKeepTradingActiveAndGovernanceReady()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-active", withBreaks: false));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("workflow-paper-active"));
+
+        var client = app.GetTestClient();
+        var summary = await ReadWorkflowSummaryAsync(
+            client,
+            "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
+
+        var trading = GetWorkspace(summary, "trading");
+        trading.StatusLabel.Should().Be("Active paper cockpit");
+        trading.NextAction.Label.Should().Be("Open Active Cockpit");
+
+        var governance = GetWorkspace(summary, "governance");
+        governance.StatusLabel.Should().Be("Governance review ready");
+        governance.NextAction.Label.Should().Be("Open Governance Shell");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithReconciliationBreaks_ShouldEscalateGovernanceNextAction()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("workflow-paper-breaks", withBreaks: true));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("workflow-paper-breaks"));
+
+        var client = app.GetTestClient();
+        var summary = await ReadWorkflowSummaryAsync(
+            client,
+            "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=Northwind%20Income&fundProfileId=northwind-income&fundDisplayName=Northwind%20Income");
+
+        var governance = GetWorkspace(summary, "governance");
+        governance.StatusLabel.Should().Be("Reconciliation breaks require review");
+        governance.NextAction.Label.Should().Be("Review Reconciliation Breaks");
+        governance.NextAction.TargetPageTag.Should().Be("FundReconciliation");
+        governance.PrimaryBlocker.IsBlocking.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WorkflowSummaryWithoutRuns_ShouldReturnStableNonNullContracts()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/workflow-summary");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+        summary!.Workspaces.Should().HaveCount(4);
+        foreach (var workspace in summary.Workspaces)
+        {
+            workspace.NextAction.Should().NotBeNull();
+            workspace.PrimaryBlocker.Should().NotBeNull();
+            workspace.Evidence.Should().NotBeNull();
+        }
+        GetWorkspace(summary, "research").NextAction.Label.Should().Be("Start Backtest");
     }
 
     [Fact]
@@ -667,6 +778,61 @@ public sealed class WorkstationEndpointsTests
         updated!.RunId.Should().Be(runId);
         updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
         updated.AssignedTo.Should().Be("ops-review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueResolveRoute_ShouldRequireReviewBeforeResolve()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-resolve-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+
+        var invalidResolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Skipping review should fail."));
+        invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var review = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating."));
+        review.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Issue resolved."));
+        resolve.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        resolved.Should().NotBeNull();
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved.ResolvedBy.Should().Be("qa-resolve");
     }
 
     [Fact]
@@ -1339,6 +1505,10 @@ public sealed class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
 
         var app = builder.Build();
         app.MapWorkstationEndpoints(new JsonSerializerOptions
@@ -1359,10 +1529,15 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
         services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         services.AddSingleton<ReconciliationProjectionService>();
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
+        services.AddSingleton<WorkstationWorkflowSummaryService>();
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(
@@ -1589,6 +1764,19 @@ public sealed class WorkstationEndpointsTests
         return await JsonDocument.ParseAsync(stream);
     }
 
+    private static async Task<OperatorWorkflowHomeSummary> ReadWorkflowSummaryAsync(HttpClient client, string path)
+    {
+        var response = await client.GetAsync(path, HttpCompletionOption.ResponseHeadersRead);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var summary = await response.Content.ReadFromJsonAsync<OperatorWorkflowHomeSummary>(ServerJsonOptions);
+        summary.Should().NotBeNull();
+        return summary!;
+    }
+
+    private static WorkspaceWorkflowSummary GetWorkspace(OperatorWorkflowHomeSummary summary, string workspaceId)
+        => summary.Workspaces.Single(workspace =>
+            string.Equals(workspace.WorkspaceId, workspaceId, StringComparison.OrdinalIgnoreCase));
+
     private static StrategyRunEntry BuildRun(
         string runId,
         string strategyId,
@@ -1608,6 +1796,116 @@ public sealed class WorkstationEndpointsTests
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
             LedgerReference = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
             AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static StrategyRunEntry BuildActivePaperRun(string runId, bool withBreaks)
+    {
+        if (withBreaks)
+        {
+            var mismatched = BuildReconciliationMismatchRun(runId);
+            return mismatched with
+            {
+                RunType = RunType.Paper,
+                EndedAt = mismatched.EndedAt,
+                Engine = "BrokerPaper",
+                TerminalStatus = StrategyRunStatus.Running,
+                ParentRunId = "workflow-backtest-candidate",
+                FundProfileId = "northwind-income",
+                FundDisplayName = "Northwind Income",
+                AuditReference = $"audit-{runId}"
+            };
+        }
+
+        var startedAt = new DateTimeOffset(2026, 3, 22, 14, 0, 0, TimeSpan.Zero);
+        var portfolioAsOf = startedAt.AddMinutes(30);
+        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m)
+        };
+        var accountSnapshot = new FinancialAccountSnapshot(
+            AccountId: BacktestDefaults.DefaultBrokerageAccountId,
+            DisplayName: "Primary Brokerage",
+            Kind: FinancialAccountKind.Brokerage,
+            Institution: "Simulated Broker",
+            Cash: 600m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: 0m,
+            Equity: 1_000m,
+            Positions: positions,
+            Rules: new FinancialAccountRules());
+        var snapshot = new PortfolioSnapshot(
+            Timestamp: portfolioAsOf,
+            Date: DateOnly.FromDateTime(portfolioAsOf.UtcDateTime),
+            Cash: 600m,
+            MarginBalance: 0m,
+            LongMarketValue: 400m,
+            ShortMarketValue: 0m,
+            TotalEquity: 1_000m,
+            DailyReturn: 0m,
+            Positions: positions,
+            Accounts: new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase)
+            {
+                [accountSnapshot.AccountId] = accountSnapshot
+            },
+            DayCashFlows: []);
+
+        var metrics = new BacktestMetrics(
+            InitialCapital: 1_000m,
+            FinalEquity: 1_000m,
+            GrossPnl: 0m,
+            NetPnl: 0m,
+            TotalReturn: 0m,
+            AnnualizedReturn: 0m,
+            SharpeRatio: 0d,
+            SortinoRatio: 0d,
+            CalmarRatio: 0d,
+            MaxDrawdown: 0m,
+            MaxDrawdownPercent: 0m,
+            MaxDrawdownRecoveryDays: 0,
+            ProfitFactor: 1d,
+            WinRate: 1d,
+            TotalTrades: 1,
+            WinningTrades: 1,
+            LosingTrades: 0,
+            TotalCommissions: 0m,
+            TotalMarginInterest: 0m,
+            TotalShortRebates: 0m,
+            Xirr: 0d,
+            SymbolAttribution: new Dictionary<string, SymbolAttribution>());
+        var result = new BacktestResult(
+            Request: new BacktestRequest(
+                From: new DateOnly(2026, 3, 21),
+                To: new DateOnly(2026, 3, 22),
+                Symbols: ["AAPL"],
+                InitialCash: 1_000m,
+                DataRoot: "./data"),
+            Universe: new HashSet<string>(["AAPL"], StringComparer.OrdinalIgnoreCase),
+            Snapshots: [snapshot],
+            CashFlows: [],
+            Fills: [],
+            Metrics: metrics,
+            Ledger: CreateWorkflowBalancedLedger(startedAt, portfolioAsOf),
+            ElapsedTime: TimeSpan.FromMinutes(30),
+            TotalEventsProcessed: 42);
+
+        return StrategyRunEntry.Start("workflow-paper-strategy", "Workflow Paper Strategy", RunType.Paper) with
+        {
+            RunId = runId,
+            StartedAt = startedAt,
+            EndedAt = portfolioAsOf,
+            Metrics = result,
+            DatasetReference = "dataset/us/equities",
+            FeedReference = "synthetic:equities",
+            PortfolioId = "workflow-paper-portfolio",
+            LedgerReference = "workflow-paper-ledger",
+            AuditReference = $"audit-{runId}",
+            Engine = "BrokerPaper",
+            TerminalStatus = StrategyRunStatus.Running,
+            ParentRunId = "workflow-backtest-candidate",
+            FundProfileId = "northwind-income",
+            FundDisplayName = "Northwind Income"
         };
     }
 
@@ -1936,6 +2234,7 @@ public sealed class WorkstationEndpointsTests
                 ExpectedAmount: 100m + index,
                 ActualAmount: 95m + index,
                 Variance: 5m,
+                Severity: ReconciliationBreakSeverity.Medium,
                 Reason: "Seeded mismatch for history coverage",
                 ExpectedAsOf: createdAt,
                 ActualAsOf: createdAt))
@@ -1990,6 +2289,24 @@ public sealed class WorkstationEndpointsTests
         [
             (LedgerAccounts.Securities("AAPL"), 350m, 0m),
             (LedgerAccounts.Cash, 0m, 350m)
+        ]);
+        return ledger;
+    }
+
+    private static global::Meridian.Ledger.Ledger CreateWorkflowBalancedLedger(
+        DateTimeOffset startedAt,
+        DateTimeOffset portfolioAsOf)
+    {
+        var ledger = new global::Meridian.Ledger.Ledger();
+        PostBalancedEntry(ledger, startedAt, "Initial capital",
+        [
+            (LedgerAccounts.Cash, 1_000m, 0m),
+            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+        ]);
+        PostBalancedEntry(ledger, portfolioAsOf, "Buy AAPL",
+        [
+            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Cash, 0m, 400m)
         ]);
         return ledger;
     }

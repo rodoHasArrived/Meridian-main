@@ -106,6 +106,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public Frame ContentFrame => GetRequired<Frame>("ContentFrame");
 
+    public Border WorkflowSummaryStrip => GetRequired<Border>("WorkflowSummaryStrip");
+
+    public ItemsControl WorkflowSummaryItemsControl => GetRequired<ItemsControl>("WorkflowSummaryItemsControl");
+
     public void ShowCommandPalette()
     {
         UpdateLayout();

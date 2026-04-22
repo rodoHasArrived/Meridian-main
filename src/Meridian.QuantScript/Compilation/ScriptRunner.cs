@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
 using Microsoft.CodeAnalysis;
@@ -66,7 +67,12 @@ public sealed class ScriptRunner : IScriptRunner
         var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
 
-        var compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+        var compilationResult = checkpoint is null
+            ? await _compiler.CompileAsync(source, ct).ConfigureAwait(false)
+            : new ScriptCompilationResult(
+                Success: true,
+                CompilationTime: TimeSpan.Zero,
+                Diagnostics: Array.Empty<ScriptDiagnostic>());
 
         if (!compilationResult.Success)
         {
@@ -81,6 +87,8 @@ public sealed class ScriptRunner : IScriptRunner
                 Metrics: Array.Empty<KeyValuePair<string, string>>(),
                 Plots: Array.Empty<PlotRequest>(),
                 TradesSummary: Array.Empty<string>(),
+                CapturedBacktests: Array.Empty<BacktestResult>(),
+                RuntimeParameters: Array.Empty<ParameterDescriptor>(),
                 Checkpoint: checkpoint);
         }
 
@@ -89,7 +97,7 @@ public sealed class ScriptRunner : IScriptRunner
         var runCt = runCts.Token;
         var ctProvider = () => runCt;
         var dataProxy = new DataProxy(_dataContext, ctProvider);
-        var backtestProxy = new BacktestProxy(_backtestEngine, _options);
+        var backtestProxy = new BacktestProxy(_backtestEngine, _options, ctProvider);
         var globals = checkpoint?.Globals ?? new QuantScriptGlobals(dataProxy, backtestProxy, ctProvider, parameters);
         globals.UpdateExecutionContext(parameters, ctProvider);
 
@@ -167,6 +175,8 @@ public sealed class ScriptRunner : IScriptRunner
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
         var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0;
+        var capturedBacktests = globals.Backtest.DrainCapturedResults();
+        var runtimeParameters = globals.SnapshotRuntimeParameters();
 
         return new ScriptRunResult(
             Success: resultSuccess,
@@ -179,6 +189,8 @@ public sealed class ScriptRunner : IScriptRunner
             Metrics: globals.DrainMetrics(),
             Plots: plots,
             TradesSummary: Array.Empty<string>(),
+            CapturedBacktests: capturedBacktests,
+            RuntimeParameters: runtimeParameters,
             Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
     }
 

@@ -62,6 +62,25 @@ public sealed class TradingWorkspaceShellPageTests
         xaml.Should().NotContain("OpenCollectionSessions_Click");
     }
 
+    [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldReplaceGenericAwaitingRunsCopyWithWorkflowGuidance()
+    {
+        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+
+        xaml.Should().Contain("Workflow Status");
+        xaml.Should().Contain("Handoff");
+        xaml.Should().Contain("Primary Blocker");
+        xaml.Should().Contain("Next Action");
+        xaml.Should().Contain("TradingWorkflowPrimaryButton");
+        xaml.Should().NotContain("Awaiting runs");
+
+        code.Should().Contain("GetTradingWorkflowSummaryAsync");
+        code.Should().Contain("ApplyWorkflowGuidance");
+        code.Should().Contain("OpenWorkflowNextAction_Click");
+        code.Should().Contain("Target page:");
+    }
+
     private static string GetRepositoryFilePath(string relativePath)
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

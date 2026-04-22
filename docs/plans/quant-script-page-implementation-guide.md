@@ -2,8 +2,8 @@
 
 **Owner:** Desktop / Research Engineering
 **Audience:** Implementers, architects, and product contributors
-**Last Updated:** 2026-04-16
-**Status:** Implemented — QuantScript page, ViewModel, compiler/runner, notebook document flow, checkpointed cell execution, tests, and sample script delivered
+**Last Updated:** 2026-04-21
+**Status:** Implemented — QuantScript page, ViewModel, compiler/runner, notebook document flow, async-first APIs, runtime parameters, local run history, shared Research run integration, templates, and tests delivered
 **Supersedes / extends:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint, 2026-03-18)
 
 ---
@@ -16,11 +16,29 @@ It covers:
 
 - What the screen does and how users experience it
 - The full interface contract: ViewModel, services, data flow, and XAML structure
-- Ten actionable design enhancements that polish the v1 blueprint before code is written
-- Alternative implementation strategies for the five most consequential architectural decisions
-- A prioritised implementation checklist
+- The post-baseline follow-on wave that connected QuantScript execution history to the wider Research workspace
+- Historical design notes and alternatives that still explain why the page looks the way it does
 
-Read the [v1 blueprint](quant-script-environment-blueprint.md) first for the foundational architecture; this guide assumes familiarity with it and focuses on refinement, alternatives, and polish.
+Read the [v1 blueprint](quant-script-environment-blueprint.md) first for the foundational architecture. The current sections at the top of this file describe the shipped behavior; later sections remain useful design rationale from the blueprint phase, but when they conflict with code or the implementation snapshot below, the implementation snapshot wins.
+
+---
+
+## 1.1 2026-04-21 Implementation Snapshot
+
+The current QuantScript page has moved beyond the original single-script design draft. The shipped behavior is:
+
+- **Document model.**
+  QuantScript supports both `.csx` scripts and notebook documents with explicit cells, selected-cell execution, stale-prefix replay, `Run All`, `Add Cell`, and `Delete Cell`.
+- **Async-first execution model.**
+  Built-in starter content and templates now use `await` plus `RunAsync()` by default. `DataProxy` exposes `PricesAsync`, `TradesAsync`, `OrderBookAsync`, `SecMasterAsync`, and `CorporateActionsAsync`. `BacktestProxy` exposes `RunAsync()` and forwards the script cancellation token into the backtest engine. The synchronous surface still exists as a compatibility wrapper.
+- **Parameter model.**
+  Pre-run sidebar discovery checks literal `Param<T>(...)` calls first, then `[ScriptParam]` declarations, then legacy `// @param` comments. After a run completes, runtime `Param<T>()` registrations are authoritative and update labels, defaults, bounds, and descriptions while preserving user overrides where possible.
+- **Run capture and persistence.**
+  Every execution is persisted locally under `<resolved DataRoot>/_quantscript/runs`. `ScriptRunResult` now carries captured backtests plus resolved runtime parameter descriptors. Exact single-backtest runs are mirrored into shared Strategy Runs infrastructure; zero-backtest and multi-backtest executions stay local-only.
+- **Research integration.**
+  QuantScript reuses `StrategyRunBrowserViewModel`, `RunDetail`, and the existing compare flow. The page does not maintain a duplicate comparison grid. Mirrored runs can be opened directly from the `Run History` tab, and newly mirrored runs update the active Research run context immediately.
+- **Templates and page chrome.**
+  The toolbar now includes `Templates`, and the `Local Data` tab includes `TEMPLATES`, `DOCUMENTS`, `CELLS`, and `PARAMETERS` sections. Selecting a built-in template immediately replaces the current untitled document and prompts before overwriting dirty content.
 
 ---
 
@@ -28,80 +46,95 @@ Read the [v1 blueprint](quant-script-environment-blueprint.md) first for the fou
 
 ### 2.1 Core Purpose
 
-QuantScript gives Meridian users a C# scripting surface that is directly connected to locally-collected market data, the backtesting engine, and the statistical analysis layer — all in a single window without leaving the desktop application. The current implementation supports both legacy single-file `.csx` scripts and notebook-style documents with multiple cells, replaying only the stale prefix needed to reach the selected cell.
+QuantScript gives Meridian users a C# scripting surface that is directly connected to locally-collected market data, the backtesting engine, and the statistical analysis layer — all in a single window without leaving the desktop application. The current implementation supports both legacy single-file `.csx` scripts and notebook-style documents with multiple cells, replaying only the stale prefix needed to reach the selected cell. It also captures local execution history and reuses the shared Research run browser for exact single-backtest executions.
 
 The primary user journeys are:
 
 | Journey | Steps | Result |
 |---------|-------|--------|
-| **Load and chart a symbol** | Select symbol range → `Data.Prices("SPY")` → `.DailyReturns().PlotCumulative()` | Cumulative return chart appears in Charts tab |
+| **Load and chart a symbol** | Select symbol range → `await Data.PricesAsync("SPY")` → `.DailyReturns().PlotCumulative()` | Cumulative return chart appears in the main results surface |
 | **Run a technical indicator** | Load `PriceSeries` → `.Sma(20)` → `.Plot("SMA-20")` | Indicator line chart rendered |
-| **Quick backtest from script** | Call `Backtest.WithSymbols(...).OnBar(...).RunAsync()` | Fill list, metrics table, and equity curve populated |
-| **Parameter sweep** | Define `[ScriptParam]` variables → Adjust sidebar → Re-run | Results update with new parameter values |
-| **Save and reuse** | Click Save → Script persists to `scripts/` directory → appears in browser | Script reloaded next session |
+| **Quick backtest from script** | Call `await Backtest.WithSymbols(...).OnBar(...).RunAsync()` | Fill list, metrics table, captured backtest, and mirrored Strategy Run when exactly one backtest is produced |
+| **Parameterised rerun** | Define `Param<T>(...)` values or legacy sidebar parameters → Adjust sidebar → Re-run | Results update, and runtime descriptors refresh the sidebar after execution |
+| **Save, template, and compare** | Load a built-in template or save a document → run it → open mirrored result from Run History | Script or notebook reopens next session and can jump into Research comparison flows |
 
 ### 2.2 Layout
 
-The page uses a **three-column split-pane** layout:
+The page uses a **two-row results/editor split** with tabbed supporting surfaces:
 
 ```
-┌─────────────────┬──────────────────────────────────────┬────────────────────────────┐
-│ Left (220 px)   │  Centre (flex)                       │  Right (380 px)            │
-│                 │                                      │                            │
-│  Script Browser │   AvalonEdit                         │  TabControl                │
-│  ─────────────  │   (C# syntax highlighting,           │  ┌─Console────────────────┐│
-│  scripts/       │    line numbers,                     │  │ timestamped output      ││
-│  ├ sharpe.csx   │    folding, monospace font)           │  │ error lines in red      ││
-│  ├ momentum.csx │                                      │  └────────────────────────┘│
-│  └ macd.csx     │                                      │  ┌─Charts─────────────────┐│
-│                 │                                      │  │ WpfPlot list            ││
-│  ─────────────  │   ─────────────────────────────────  │  │ (ScottPlot 5.x)         ││
-│  Parameters     │   [▶ Run] [■ Stop] [New] [Save] [⟳] │  └────────────────────────┘│
-│  ─────────────  │   ProgressBar ─────────────────────  │  ┌─Metrics────────────────┐│
-│  Lookback  [20] │   Status: Ready                      │  │ Label │ Value DataGrid  ││
-│  Threshold [0.02│                                      │  └────────────────────────┘│
-│  RiskFree  [0.04│                                      │  ┌─Trades─────────────────┐│
-│                 │                                      │  │ Fill list DataGrid      ││
-│                 │                                      │  └────────────────────────┘│
-│                 │                                      │  ┌─Diagnostics────────────┐│
-│                 │                                      │  │ timing/memory/ADR info  ││
-└─────────────────┴──────────────────────────────────────┴──└────────────────────────┘┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ Toolbar: document selector, interval, date range, Run / Run All / Stop,     │
+│ New / Notebook / Save / Refresh / Templates / Add Cell / Delete Cell         │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ Upper pane: primary chart / empty state / legend                             │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ Lower pane: TabControl                                                       │
+│  ┌─Expression Editor────────────────────────────────────────────────────────┐ │
+│  │ AvalonEdit for the active script or notebook cell                       │ │
+│  └──────────────────────────────────────────────────────────────────────────┘ │
+│  ┌─Metrics────────┬─Diagnostics────────┬─Local Data────────┬─Backtest────┐ │
+│  │ DataGrid       │ DataGrid           │ Templates         │ Trades +     │ │
+│  │                │                    │ Documents         │ Console      │ │
+│  │                │                    │ Cells             │              │ │
+│  │                │                    │ Parameters        │              │ │
+│  └────────────────┴────────────────────┴───────────────────┴──────────────┘ │
+│  ┌─Run History──────────────────────────────────────────────────────────────┐ │
+│  │ Local execution records + Open Run Browser / Run Detail / Compare       │ │
+│  └──────────────────────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-All three columns are resizable via `GridSplitter`. Column widths persist to user settings.
+The upper and lower panes are resizable via `GridSplitter`. The Local Data and Run History surfaces live inside the lower tab set instead of occupying a permanently-visible side rail.
 
 ### 2.3 Toolbar Actions
 
 | Button | Keyboard | Behaviour |
 |--------|----------|-----------|
-| ▶ Run | `F5` | Compile and execute the current script |
-| ■ Stop | `Shift+F5` | Cancel running script via `CancellationToken` |
-| New | `Ctrl+N` | Open blank script in editor |
-| Save | `Ctrl+S` | Write current script to selected `.csx` path (or prompt for name) |
-| ⟳ Refresh | — | Reload `.csx` file list from disk |
+| Run | `F5` | Compile and execute the active script or selected notebook cell |
+| Run All | — | Execute the current notebook top-to-bottom |
+| Stop | `Shift+F5` | Cancel the active execution via `CancellationToken` |
+| New | `Ctrl+N` | Open a blank script document |
+| Notebook | — | Open a new notebook document |
+| Save | `Ctrl+S` | Persist the current script or notebook |
+| Refresh | — | Reload document lists from disk |
+| Templates | — | Focus the built-in template catalog and allow immediate replacement of the current untitled document |
+| Add Cell / Delete Cell | — | Manage notebook cells within the current notebook document |
 
 ### 2.4 Tab Behaviour
 
-- **Console tab** — visible immediately; receives `Print()`, warning, and error output during execution. Tab header shows unread count: `Console (12)`.
-- **Charts tab** — activated automatically when the first plot is enqueued during a run. Shows a vertically-stacked list of `WpfPlot` controls, each with a title and an action menu.
-- **Metrics tab** — populated when `PrintMetric()` or a backtest completes. Formatted as a key/value table.
-- **Trades tab** — populated with `FillEvent` entries from a backtest run. Activated automatically if fills > 0.
-- **Diagnostics tab** — always available; shows per-run wall-clock time, peak memory, Roslyn compile time, event count, and any ADR compliance warnings.
+- **Expression Editor** — the active editor surface backed by AvalonEdit. Notebook-aware bindings allow run-current-cell and run-and-advance behavior.
+- **Metrics tab** — populated by `PrintMetric(...)` and also by captured `BacktestResult` metrics when a backtest-producing run completes.
+- **Diagnostics tab** — shows per-run wall-clock time, memory, and execution diagnostics.
+- **Local Data tab** — groups built-in templates, saved documents, notebook cells, and parameter inputs in one place.
+- **Backtest Output tab** — combines captured fills/trades with the console stream so a backtest-producing run has one obvious output area.
+- **Run History tab** — lists local execution records and exposes `Open Run Browser`, `Open Run Detail`, and `Compare in Research` actions when a mirrored Strategy Run exists.
 
-### 2.5 Script Browser
+### 2.5 Local Data Surface
 
-- Lists all `.csx` files found in the configured `QuantScript:ScriptsDirectory`.
-- Clicking a script loads its content into the editor. Unsaved changes prompt a discard confirmation.
-- Right-click menu: Rename, Duplicate, Delete, Open in Explorer.
-- A "New Script" entry at the top of the list opens a blank editor.
-- The list auto-refreshes when files change on disk (via `FileSystemWatcher`).
+- The `Local Data` tab groups four related rails: `TEMPLATES`, `DOCUMENTS`, `CELLS`, and `PARAMETERS`.
+- `TEMPLATES` is file-backed and currently ships with `Hello SPY`, an indicator example, and a backtest example.
+- Selecting a template replaces the current untitled document immediately and prompts before overwriting dirty content.
+- `DOCUMENTS` lists saved script and notebook documents.
+- `CELLS` shows the notebook cell list, selection state, and per-cell execution status for the active notebook document.
+- The page continues to reload persisted documents and react to filesystem changes through the existing document-loading flow.
 
 ### 2.6 Parameter Sidebar
 
-- Populated dynamically from `[ScriptParam]` attributes (or runtime `Param()` calls — see §4.2) found in the currently-loaded script.
-- Each parameter renders as a labelled input: `NumericUpDown` for numeric types, `TextBox` for string, `CheckBox` for bool, `ComboBox` for enum.
-- Parameters are sent to the script as a pre-populated globals dictionary before execution — the script does not need to re-declare them.
-- Changed parameter values do not re-run the script automatically; the user presses Run.
+- Populated dynamically from three sources in order: literal `Param<T>(...)` calls, `[ScriptParam]` declarations, then legacy `// @param` comments.
+- Each parameter renders as a labelled input using the descriptor metadata captured from static discovery or runtime registration.
+- Parameters are sent to the script as a pre-populated globals dictionary before execution, and runtime `Param<T>()` registration updates the descriptor set after execution.
+- Changed parameter values do not re-run the script automatically; the user presses `Run` or `Run All`.
+
+### 2.7 Current Persistence and Research Integration
+
+- Every execution writes a `QuantScriptExecutionRecord` JSON file under `<resolved DataRoot>/_quantscript/runs`.
+- Records capture document title/path/kind, timestamp, parameter snapshot, success/failure, console preview, metrics, plot titles, and captured backtest count.
+- If exactly one `BacktestResult` is captured, QuantScript mirrors it into shared Strategy Runs infrastructure and stores the mirrored run id in the local history record.
+- If zero backtests are captured, the run remains local-only.
+- If more than one backtest is captured, the run remains local-only and the history record carries a warning that shared Research mirroring was skipped until the backtests are split apart.
+
+Sections 3 onward remain useful for architectural background and tradeoff rationale, but they predate parts of the shipped implementation. Use the implementation snapshot above and the current code as the authoritative contract.
 
 ---
 

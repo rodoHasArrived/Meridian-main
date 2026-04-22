@@ -25,14 +25,18 @@ The authoritative current-state references are:
 | Low-boilerplate backtest path | **Partially implemented** | `BacktestProxy` already supports a fluent path via `WithSymbols(...).OnBar(...).RunAsync()` backed by `LambdaBacktestStrategy`. |
 | Flattened return-series stats and plotting | **Partially implemented** | `ReturnSeries` already owns instance-level stats plus `Plot()`, `PlotCumulative()`, and `PlotDrawdown()` helpers. |
 | Script and notebook persistence | **Implemented baseline** | The current page and notebook store persist reusable QuantScript artifacts, which removes one of the biggest adoption blockers called out below. |
+| Async-first script APIs | **Implemented in follow-on wave** | `DataProxy` now exposes async overloads across the current data surface, and `BacktestProxy` now leads with `RunAsync()`. |
+| Runtime `Param<T>()` registration | **Implemented in follow-on wave** | Static discovery now seeds the sidebar, while runtime `Param<T>()` metadata becomes authoritative after execution. |
+| Local run history plus shared compare reuse | **Implemented in follow-on wave** | Every execution is stored locally under the resolved data root, and exact single-backtest runs reuse Strategy Runs browser/detail/compare flows. |
+| Template gallery | **Implemented in follow-on wave** | The page now ships a file-backed template catalog with a toolbar entry point and Local Data template rail. |
 
-### What remains the highest-value post-baseline backlog
+### What remains the highest-value post-follow-on backlog
 
-- **Async-first script APIs still matter.** `DataProxy` and `BacktestProxy` still rely on synchronous `.GetAwaiter().GetResult()` wrappers, so the original async-native criticism remains valid.
-- **Parameter registration is still the old model.** `[ScriptParam]` remains the active extraction mechanism; the runtime `Param(...)` alternative is still worth evaluating if reliability or ergonomics become a problem.
-- **Run-history comparison is still open.** Persisted notebooks are not the same thing as saved run records with side-by-side metric and equity-curve comparison.
-- **Beginner guidance still needs to grow.** A baseline sample script exists, but the broader template-gallery idea remains good follow-on work for hobbyist adoption.
+- **Multi-backtest publication stays intentionally constrained.** Executions that capture more than one `BacktestResult` remain local-only and emit a warning instead of publishing ambiguous shared Research runs.
+- **Parent/child run lineage is still absent.** QuantScript does not yet establish explicit ancestry between related reruns or parameter sweeps.
 - **Richer multi-series alignment stays optional.** The heavier `AlignedSeries` / dataframe-style surface is still research-depth work, not a blocker for the shipped baseline.
+- **Optimization-specific UX is still open.** The current run history and Strategy Runs reuse solve comparison for ordinary backtest iterations, but not heatmaps or dedicated parameter-sweep surfaces.
+- **Beginner guidance can still grow.** The built-in templates improve the first-run experience, but a larger curated library would still raise adoption.
 
 ### Important interpretation note
 

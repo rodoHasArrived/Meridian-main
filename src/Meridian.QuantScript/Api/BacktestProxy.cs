@@ -8,8 +8,11 @@ namespace Meridian.QuantScript.Api;
 /// Fluent backtest builder for use inside scripts. Adapts lambda callbacks to
 /// <see cref="IBacktestStrategy"/> and delegates execution to the existing <see cref="BacktestEngine"/>.
 /// </summary>
-public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions options)
+public sealed class BacktestProxy
 {
+    private readonly BacktestEngine? _engine;
+    private readonly QuantScriptOptions _options;
+    private readonly List<BacktestResult> _capturedResults = [];
     private string[] _symbols = [];
     private DateOnly _from;
     private DateOnly _to;
@@ -17,6 +20,17 @@ public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions opt
     private string _fillModel = "midpoint";
     private string? _dataRoot;
     private readonly LambdaBacktestStrategy _strategy = new();
+    private Func<CancellationToken> _cancellationTokenProvider;
+
+    public BacktestProxy(
+        BacktestEngine? engine,
+        QuantScriptOptions options,
+        Func<CancellationToken>? cancellationTokenProvider = null)
+    {
+        _engine = engine;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _cancellationTokenProvider = cancellationTokenProvider ?? (() => CancellationToken.None);
+    }
 
     public BacktestProxy WithSymbols(params string[] symbols) { _symbols = symbols; return this; }
     public BacktestProxy From(DateOnly from) { _from = from; return this; }
@@ -41,22 +55,44 @@ public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions opt
 
     /// <summary>Runs with a progress callback (forwards <see cref="BacktestProgressEvent"/> to console).</summary>
     public BacktestResult Run(Action<BacktestProgressEvent>? onProgress)
+        => RunAsync(onProgress).GetAwaiter().GetResult();
+
+    /// <summary>Runs the configured backtest asynchronously using the current script cancellation scope.</summary>
+    public Task<BacktestResult> RunAsync()
+        => RunAsync(null);
+
+    /// <summary>Runs asynchronously with optional progress callbacks.</summary>
+    public async Task<BacktestResult> RunAsync(Action<BacktestProgressEvent>? onProgress)
     {
-        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(_engine);
 
         var request = new BacktestRequest(
             From: _from,
             To: _to,
             Symbols: _symbols.Length > 0 ? _symbols : null,
             InitialCash: _initialCash,
-            DataRoot: _dataRoot ?? options.DefaultDataRoot);
+            DataRoot: _dataRoot ?? _options.DefaultDataRoot);
 
         IProgress<BacktestProgressEvent>? progress = onProgress is null
             ? null
             : new Progress<BacktestProgressEvent>(onProgress);
 
-        var result = engine.RunAsync(request, _strategy, progress).GetAwaiter().GetResult();
+        var result = await _engine.RunAsync(request, _strategy, progress, _cancellationTokenProvider()).ConfigureAwait(false);
         _strategy.SetResult(result);
+        _capturedResults.Add(result);
         return result;
     }
+
+    internal IReadOnlyList<BacktestResult> DrainCapturedResults()
+    {
+        if (_capturedResults.Count == 0)
+            return Array.Empty<BacktestResult>();
+
+        var captured = _capturedResults.ToList();
+        _capturedResults.Clear();
+        return captured;
+    }
+
+    internal void UpdateCancellationTokenProvider(Func<CancellationToken> cancellationTokenProvider)
+        => _cancellationTokenProvider = cancellationTokenProvider ?? throw new ArgumentNullException(nameof(cancellationTokenProvider));
 }

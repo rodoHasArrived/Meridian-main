@@ -87,6 +87,10 @@ public sealed class ResearchWorkspaceShellWorkflowTests
                 }).ConfigureAwait(true);
 
                 GetRequired<TextBlock>(page, "BriefingSummaryText").Text.Should().Be(expectedSummary);
+                GetRequired<TextBlock>(page, "ResearchWorkflowStatusText").Text.Should().Be("Candidate for paper review");
+                GetRequired<TextBlock>(page, "ResearchWorkflowBlockerLabelText").Text.Should().Contain("Trading review");
+                GetRequired<Button>(page, "SendToTradingReviewButton").Visibility.Should().Be(Visibility.Visible);
+                GetRequired<Button>(page, "StartBacktestButton").Visibility.Should().Be(Visibility.Collapsed);
                 GetRequired<ItemsControl>(page, "BriefingInsightsList").Items.Count.Should().Be(1);
                 GetRequired<TextBlock>(page, "ActiveRunNameText").Text.Should().Be("No selected run");
 

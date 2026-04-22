@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -25,8 +26,6 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class WorkstationEndpoints
 {
     private const int SecurityCoveragePreviewLimit = 5;
-    private static readonly object BreakQueueSync = new();
-    private static readonly Dictionary<string, ReconciliationBreakQueueItem> BreakQueue = new(StringComparer.OrdinalIgnoreCase);
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -51,6 +50,33 @@ public static class WorkstationEndpoints
         })
         .WithName("GetWorkstationResearchBriefing")
         .Produces<ResearchBriefingDto>(200);
+
+        group.MapGet("/workflow-summary", async (
+            bool? hasOperatingContext,
+            string? operatingContext,
+            string? fundProfileId,
+            string? fundDisplayName,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<WorkstationWorkflowSummaryService>();
+            if (service is null)
+            {
+                return Results.Problem("Workflow summary service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var summary = await service
+                .GetAsync(
+                    hasOperatingContext: hasOperatingContext ?? false,
+                    operatingContextDisplayName: operatingContext,
+                    fundProfileId: fundProfileId,
+                    fundDisplayName: fundDisplayName,
+                    ct: context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(summary, jsonOptions);
+        })
+        .WithName("GetWorkstationWorkflowSummary")
+        .Produces<OperatorWorkflowHomeSummary>(200)
+        .Produces(501);
 
         group.MapGet("/trading", async (HttpContext context) =>
         {
@@ -141,7 +167,7 @@ public static class WorkstationEndpoints
         group.MapGet("/reconciliation/break-queue", async (string? status, HttpContext context) =>
         {
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var items = GetBreakQueueItems(status);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
@@ -155,8 +181,13 @@ public static class WorkstationEndpoints
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var updated = ReviewBreak(request);
-            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+            var transition = await ReviewBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            return transition.Status switch
+            {
+                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
+                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
+                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
+            };
         })
         .WithName("ReviewReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -176,8 +207,13 @@ public static class WorkstationEndpoints
             }
 
             await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
-            var updated = ResolveBreak(request);
-            return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+            var transition = await ResolveBreakAsync(context.RequestServices, request, context.RequestAborted).ConfigureAwait(false);
+            return transition.Status switch
+            {
+                ReconciliationBreakQueueTransitionStatus.Success => Results.Json(transition.Item, jsonOptions),
+                ReconciliationBreakQueueTransitionStatus.NotFound => Results.NotFound(),
+                _ => Results.BadRequest(new { error = transition.Error ?? "Illegal transition." })
+            };
         })
         .WithName("ResolveReconciliationBreak")
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -1608,7 +1644,7 @@ public static class WorkstationEndpoints
 
         var details = await Task.WhenAll(detailTasks).ConfigureAwait(false);
         var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
-        SeedBreakQueue(runs, reconciliations);
+        await SeedBreakQueueAsync(context.RequestServices, runs, reconciliations, context.RequestAborted).ConfigureAwait(false);
 
         var openBreaks = reconciliations.Sum(static detail => detail?.Summary.OpenBreakCount ?? 0);
         var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
@@ -1632,7 +1668,7 @@ public static class WorkstationEndpoints
                 .Zip(details, static (run, detail) => (run, detail))
                 .Zip(reconciliations, (pair, reconciliation) => BuildGovernanceRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
                 .ToArray(),
-            breakQueue = GetBreakQueueItems(status: null),
+            breakQueue = await GetBreakQueueItemsAsync(context.RequestServices, status: null, context.RequestAborted).ConfigureAwait(false),
             workspace = new
             {
                 totalRuns = allRuns.Length,
@@ -1785,7 +1821,8 @@ public static class WorkstationEndpoints
                     Reason: "Cash variance exceeds configured tolerance.",
                     AssignedTo: null,
                     DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18)),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                    Severity: ReconciliationBreakSeverity.Critical),
                 new ReconciliationBreakQueueItem(
                     BreakId: "BRK-gov-run-001-2",
                     RunId: "gov-run-001",
@@ -1799,7 +1836,8 @@ public static class WorkstationEndpoints
                     LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
                     ReviewedBy: "ops.gov",
                     ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                    ResolutionNote: "Investigating ticker reclassification.")
+                    ResolutionNote: "Investigating ticker reclassification.",
+                    Severity: ReconciliationBreakSeverity.Medium)
             },
             workspace = new
             {
@@ -2874,7 +2912,10 @@ public static class WorkstationEndpoints
                 AssetClass: summary.AssetClass,
                 SubType: DeriveSubType(summary.AssetClass),
                 PrimaryIdentifierKind: null,
-                PrimaryIdentifierValue: summary.PrimaryIdentifier),
+                PrimaryIdentifierValue: summary.PrimaryIdentifier,
+                MatchedIdentifierKind: null,
+                MatchedIdentifierValue: null,
+                MatchedProvider: null),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: summary.Currency,
                 Version: summary.Version,
@@ -2895,7 +2936,10 @@ public static class WorkstationEndpoints
                 AssetClass: detail.AssetClass,
                 SubType: DeriveSubType(detail.AssetClass),
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
-                PrimaryIdentifierValue: primaryIdentifier?.Value),
+                PrimaryIdentifierValue: primaryIdentifier?.Value,
+                MatchedIdentifierKind: null,
+                MatchedIdentifierValue: null,
+                MatchedProvider: null),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: detail.Currency,
                 Version: detail.Version,
@@ -2945,30 +2989,33 @@ public static class WorkstationEndpoints
         _ => null
     };
 
-    private static void SeedBreakQueue(
+    private static async Task SeedBreakQueueAsync(
+        IServiceProvider services,
         IReadOnlyList<StrategyRunSummary> runs,
-        IReadOnlyList<ReconciliationRunDetail?> reconciliations)
+        IReadOnlyList<ReconciliationRunDetail?> reconciliations,
+        CancellationToken ct)
     {
-        lock (BreakQueueSync)
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
         {
-            for (var i = 0; i < runs.Count; i++)
+            return;
+        }
+
+        for (var i = 0; i < runs.Count; i++)
+        {
+            var run = runs[i];
+            var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
+            if (reconciliation is null)
             {
-                var run = runs[i];
-                var reconciliation = i < reconciliations.Count ? reconciliations[i] : null;
-                if (reconciliation is null)
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                foreach (var reconciliationBreak in reconciliation.Breaks)
-                {
-                    var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
-                    if (BreakQueue.ContainsKey(breakId))
-                    {
-                        continue;
-                    }
-
-                    BreakQueue[breakId] = new ReconciliationBreakQueueItem(
+            foreach (var reconciliationBreak in reconciliation.Breaks)
+            {
+                var breakId = $"{run.RunId}:{reconciliationBreak.CheckId}";
+                var now = DateTimeOffset.UtcNow;
+                await repository.CreateIfMissingAsync(
+                    new ReconciliationBreakQueueItem(
                         BreakId: breakId,
                         RunId: run.RunId,
                         StrategyName: run.StrategyName,
@@ -2977,9 +3024,10 @@ public static class WorkstationEndpoints
                         Variance: Math.Abs(reconciliationBreak.Variance),
                         Reason: reconciliationBreak.Reason,
                         AssignedTo: null,
-                        DetectedAt: DateTimeOffset.UtcNow,
-                        LastUpdatedAt: DateTimeOffset.UtcNow);
-                }
+                        DetectedAt: now,
+                        LastUpdatedAt: now,
+                        Severity: reconciliationBreak.Severity),
+                    ct).ConfigureAwait(false);
             }
         }
     }
@@ -3001,72 +3049,61 @@ public static class WorkstationEndpoints
 
         var reconciliations = await Task.WhenAll(
             runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
-        SeedBreakQueue(runs, reconciliations);
+        await SeedBreakQueueAsync(services, runs, reconciliations, ct).ConfigureAwait(false);
     }
 
-    private static IReadOnlyList<ReconciliationBreakQueueItem> GetBreakQueueItems(string? status)
+    private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
+        IServiceProvider services,
+        string? status,
+        CancellationToken ct)
     {
-        lock (BreakQueueSync)
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
         {
-            IEnumerable<ReconciliationBreakQueueItem> items = BreakQueue.Values;
-            if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var parsed))
-            {
-                items = items.Where(item => item.Status == parsed);
-            }
-
-            return items
-                .OrderByDescending(item => item.LastUpdatedAt)
-                .ToArray();
+            return [];
         }
+
+        ReconciliationBreakQueueStatus? parsed = null;
+        if (Enum.TryParse<ReconciliationBreakQueueStatus>(status, ignoreCase: true, out var statusValue))
+        {
+            parsed = statusValue;
+        }
+
+        return await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
     }
 
-    private static ReconciliationBreakQueueItem? ReviewBreak(ReviewReconciliationBreakRequest request)
+    private static async Task<ReconciliationBreakQueueTransitionResult> ReviewBreakAsync(
+        IServiceProvider services,
+        ReviewReconciliationBreakRequest request,
+        CancellationToken ct)
     {
-        lock (BreakQueueSync)
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
         {
-            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
-            {
-                return null;
-            }
-
-            var now = DateTimeOffset.UtcNow;
-            var updated = item with
-            {
-                Status = ReconciliationBreakQueueStatus.InReview,
-                AssignedTo = request.AssignedTo,
-                ReviewedBy = request.ReviewedBy,
-                ReviewedAt = now,
-                ResolutionNote = request.ReviewNote,
-                LastUpdatedAt = now
-            };
-
-            BreakQueue[request.BreakId] = updated;
-            return updated;
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.NotFound,
+                Item: null,
+                Error: "Reconciliation break queue repository is not registered.");
         }
+
+        return await repository.StartReviewAsync(request, ct).ConfigureAwait(false);
     }
 
-    private static ReconciliationBreakQueueItem? ResolveBreak(ResolveReconciliationBreakRequest request)
+    private static async Task<ReconciliationBreakQueueTransitionResult> ResolveBreakAsync(
+        IServiceProvider services,
+        ResolveReconciliationBreakRequest request,
+        CancellationToken ct)
     {
-        lock (BreakQueueSync)
+        var repository = services.GetService<IReconciliationBreakQueueRepository>();
+        if (repository is null)
         {
-            if (!BreakQueue.TryGetValue(request.BreakId, out var item))
-            {
-                return null;
-            }
-
-            var now = DateTimeOffset.UtcNow;
-            var updated = item with
-            {
-                Status = request.Status,
-                ResolvedBy = request.ResolvedBy,
-                ResolvedAt = now,
-                LastUpdatedAt = now,
-                ResolutionNote = request.ResolutionNote
-            };
-
-            BreakQueue[request.BreakId] = updated;
-            return updated;
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.NotFound,
+                Item: null,
+                Error: "Reconciliation break queue repository is not registered.");
         }
+
+        return await repository.ResolveAsync(request, ct).ConfigureAwait(false);
     }
 
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)

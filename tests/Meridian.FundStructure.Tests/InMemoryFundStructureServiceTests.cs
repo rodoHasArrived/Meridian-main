@@ -174,6 +174,51 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task GetAccountingViewAsync_UsesNormalizedAssignedLedgerGroupForGrouping()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+
+        await fixture.StructureService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            AssignmentId: Guid.NewGuid(),
+            NodeId: fixture.FundAccountId,
+            AssignmentType: "LedgerGroup",
+            AssignmentReference: "  FUND.OPS:PRIMARY  ",
+            EffectiveFrom: new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero),
+            AssignedBy: "test"));
+
+        var view = await fixture.StructureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(BusinessId: fixture.FundBusinessId));
+
+        Assert.Contains(view.LedgerGroups, group =>
+            group.DisplayName == "FUND.OPS:PRIMARY"
+            && group.AccountIds.Contains(fixture.FundAccountId));
+    }
+
+    [Fact]
+    public async Task GetAccountingViewAsync_InvalidLedgerReferenceFallsBackToUnassignedGroup()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+
+        var unassignedAccount = await fixture.AccountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: "FUND-UNASSGN",
+            DisplayName: "Fund Unassigned Account",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "test",
+            FundId: fixture.FundId,
+            LedgerReference: "BAD/GROUP"));
+
+        var view = await fixture.StructureService.GetAccountingViewAsync(
+            new AccountingStructureQuery(BusinessId: fixture.FundBusinessId));
+
+        Assert.Contains(view.LedgerGroups, group =>
+            group.DisplayName == LedgerGroupId.UnassignedValue
+            && group.AccountIds.Contains(unassignedAccount.AccountId));
+    }
+
+    [Fact]
     public async Task GetCashFlowViewAsync_InvestmentPortfolio_ReturnsRealizedProjectedAndVariance()
     {
         var fixture = await CreateHybridFixtureAsync();

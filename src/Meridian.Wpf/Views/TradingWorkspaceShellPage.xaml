@@ -115,7 +115,7 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Text="Promotion &amp; Status"
+                                        <TextBlock Text="Workflow Status"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -140,11 +140,11 @@
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                TextWrapping="Wrap"
-                                               Text="Promotion handoff, audit traceability, and validation coverage appear here for the active run or workspace." />
+                                               Text="Role-first workflow guidance appears here for the active desk state." />
 
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,14,0,10">
                                         <StackPanel>
-                                            <TextBlock Text="Promotion"
+                                            <TextBlock Text="Handoff"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -160,20 +160,20 @@
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource InfoColorBrush}"
-                                                           Text="Awaiting runs" />
+                                                           Text="Context required" />
                                             </Border>
                                             <TextBlock x:Name="PromotionStatusDetailText"
                                                        Margin="0,8,0,0"
                                                        FontSize="12"
                                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                        TextWrapping="Wrap"
-                                                       Text="Record or select a run to surface promotion review posture." />
+                                                       Text="Trading review starts once an operating context and run handoff are both visible." />
                                         </StackPanel>
                                     </Border>
 
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
                                         <StackPanel>
-                                            <TextBlock Text="Audit"
+                                            <TextBlock Text="Primary Blocker"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -189,20 +189,20 @@
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource InfoColorBrush}"
-                                                           Text="Awaiting runs" />
+                                                           Text="No operating context selected" />
                                             </Border>
                                             <TextBlock x:Name="AuditStatusDetailText"
                                                        Margin="0,8,0,0"
                                                        FontSize="12"
                                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                        TextWrapping="Wrap"
-                                                       Text="Audit coverage appears after runs are recorded." />
+                                                       Text="Paper review, live posture, and governance consequences scope to the active context." />
                                         </StackPanel>
                                     </Border>
 
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}">
                                         <StackPanel>
-                                            <TextBlock Text="Validation"
+                                            <TextBlock Text="Next Action"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -218,16 +218,29 @@
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
                                                            Foreground="{StaticResource InfoColorBrush}"
-                                                           Text="Awaiting runs" />
+                                                           Text="Choose Context" />
                                             </Border>
                                             <TextBlock x:Name="ValidationStatusDetailText"
                                                        Margin="0,8,0,0"
                                                        FontSize="12"
                                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                        TextWrapping="Wrap"
-                                                       Text="Validation coverage appears after recorded runs project governance controls." />
+                                                       Text="Open the correct existing page instead of leaving the desk state implicit." />
                                         </StackPanel>
                                     </Border>
+
+                                    <TextBlock x:Name="TradingWorkflowTargetText"
+                                               Margin="0,12,0,0"
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Text="Target page: TradingShell" />
+
+                                    <Button x:Name="TradingWorkflowPrimaryButton"
+                                            Content="Choose Context"
+                                            Click="OpenWorkflowNextAction_Click"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Margin="0,12,0,0"
+                                            HorizontalAlignment="Left" />
 
                                 </StackPanel>
                             </Border>

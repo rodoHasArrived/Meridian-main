@@ -252,6 +252,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
                     ExpectedAmount: 150m,
                     ActualAmount: 125m,
                     Variance: 25m,
+                    Severity: ReconciliationBreakSeverity.High,
                     Reason: "Broker statement has not been normalized yet.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 29, 0, TimeSpan.Zero)),
@@ -264,6 +265,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
                     ExpectedAmount: 50m,
                     ActualAmount: 10m,
                     Variance: 40m,
+                    Severity: ReconciliationBreakSeverity.Medium,
                     Reason: "Statement timestamp drift exceeds tolerance.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 00, 0, TimeSpan.Zero)),
@@ -276,6 +278,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
                     ExpectedAmount: 25m,
                     ActualAmount: 20m,
                     Variance: 5m,
+                    Severity: ReconciliationBreakSeverity.Low,
                     Reason: "Ledger posting is late.",
                     ExpectedAsOf: new DateTimeOffset(2026, 3, 21, 16, 30, 0, TimeSpan.Zero),
                     ActualAsOf: new DateTimeOffset(2026, 3, 21, 16, 28, 0, TimeSpan.Zero))

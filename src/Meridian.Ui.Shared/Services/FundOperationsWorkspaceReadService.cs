@@ -59,6 +59,12 @@ public sealed class FundOperationsWorkspaceReadService
         await Task.WhenAll(runsTask, accountProjectionsTask, bankSnapshotsTask).ConfigureAwait(false);
 
         var runs = await runsTask.ConfigureAwait(false);
+        var selectedLedgerIds = NormalizeSelectedLedgerIds(query.SelectedLedgerIds);
+        if (selectedLedgerIds.Count > 0)
+        {
+            runs = runs.Where(run => selectedLedgerIds.Contains(run.RunId)).ToArray();
+        }
+
         var accountProjections = await accountProjectionsTask.ConfigureAwait(false);
         var bankSnapshots = await bankSnapshotsTask.ConfigureAwait(false);
         var accountSummaries = accountProjections
@@ -76,6 +82,7 @@ public sealed class FundOperationsWorkspaceReadService
             query.ScopeId,
             asOf,
             ledgerBook);
+        var ledgerReconciliationSnapshot = ProjectReconciliationSnapshot(ledgerBook.ReconciliationSnapshot(asOf));
 
         var cashTask = BuildCashFinancingSummaryAsync(
             baseCurrency,
@@ -118,6 +125,7 @@ public sealed class FundOperationsWorkspaceReadService
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             Workspace: workspace,
             Ledger: ledger,
+            LedgerReconciliationSnapshot: ledgerReconciliationSnapshot,
             Accounts: accountSummaries,
             BankSnapshots: bankSnapshots,
             CashFinancing: cashFinancing,
@@ -541,6 +549,42 @@ public sealed class FundOperationsWorkspaceReadService
             VehicleCount: vehicleCount);
     }
 
+    public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot)
+    {
+        return new FundLedgerReconciliationSnapshot(
+            FundProfileId: snapshot.FundId,
+            AsOf: snapshot.AsOf,
+            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Entities: snapshot.Entities.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Sleeves: snapshot.Sleeves.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Vehicles: snapshot.Vehicles.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+        new(
+            Timestamp: snapshot.Timestamp,
+            JournalEntryCount: snapshot.JournalEntryCount,
+            LedgerEntryCount: snapshot.LedgerEntryCount,
+            Balances: snapshot.Balances
+                .OrderBy(static pair => pair.Key.AccountType)
+                .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                    AccountName: pair.Key.Name,
+                    AccountType: pair.Key.AccountType.ToString(),
+                    Symbol: pair.Key.Symbol,
+                    FinancialAccountId: pair.Key.FinancialAccountId,
+                    Balance: pair.Value))
+                .ToArray());
+
     private static FundLedgerBook BuildLedgerBook(
         string fundProfileId,
         IReadOnlyList<StrategyRunEntry> runs)
@@ -643,6 +687,13 @@ public sealed class FundOperationsWorkspaceReadService
         => lines
             .Where(line => string.Equals(line.AccountType, accountType.ToString(), StringComparison.Ordinal))
             .Sum(static line => line.Balance);
+
+    private static HashSet<string> NormalizeSelectedLedgerIds(IReadOnlyList<string>? selectedLedgerIds) =>
+        selectedLedgerIds?
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Select(static id => id.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+        ?? [];
 
     private static FundWorkspaceSummary BuildWorkspaceSummary(
         string fundProfileId,

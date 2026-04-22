@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -22,6 +24,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService? _workspaceShellContextService;
+    private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
     private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _secondaryNavigationItems = [];
@@ -29,6 +32,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly ObservableCollection<ShellNavigationItem> _relatedWorkflowItems = [];
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
     private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
+    private readonly ObservableCollection<WorkspaceWorkflowSummary> _workflowSummaries = [];
     private readonly ObservableCollection<BoundedWindowMode> _windowModes =
     [
         BoundedWindowMode.Focused,
@@ -62,19 +66,22 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private WorkspaceShellContext _shellContext = new();
     private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
     private int _shellContextRevision;
+    private int _workflowSummaryRevision;
 
     public MainPageViewModel(
         INavigationService navigationService,
         FixtureModeDetector fixtureModeDetector,
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null,
-        WorkspaceShellContextService? workspaceShellContextService = null)
+        WorkspaceShellContextService? workspaceShellContextService = null,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
         _workspaceShellContextService = workspaceShellContextService;
+        _workflowSummaryService = workflowSummaryService;
 
         SplitPane = new SplitPaneViewModel();
         CommandPalettePages = new ReadOnlyObservableCollection<ShellCommandPaletteEntry>(_commandPalettePages);
@@ -84,6 +91,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RelatedWorkflowItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_relatedWorkflowItems);
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
         OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
+        WorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_workflowSummaries);
         WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
 
         SelectWorkspaceCommand = new RelayCommand<string>(workspace => SelectWorkspace(workspace, navigateToHome: true));
@@ -140,6 +148,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public ReadOnlyObservableCollection<RecentPageEntry> RecentPages { get; }
 
     public ReadOnlyObservableCollection<WorkstationOperatingContext> OperatingContexts { get; }
+
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries { get; }
 
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
 
@@ -871,9 +881,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private async Task RefreshShellContextAsync(CancellationToken ct = default)
     {
         var refreshRevision = System.Threading.Interlocked.Increment(ref _shellContextRevision);
+        var workflowRevision = System.Threading.Interlocked.Increment(ref _workflowSummaryRevision);
         var shellContext = _workspaceShellContextService is null
             ? BuildFallbackShellContext()
             : await _workspaceShellContextService.CreateAsync(BuildShellContextInput(), ct).ConfigureAwait(false);
+        var workflowSummaries = await BuildWorkflowSummariesAsync(ct).ConfigureAwait(false);
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is null || dispatcher.CheckAccess())
@@ -881,6 +893,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             if (refreshRevision == _shellContextRevision)
             {
                 ShellContext = shellContext;
+            }
+
+            if (workflowRevision == _workflowSummaryRevision)
+            {
+                ReplaceCollection(_workflowSummaries, workflowSummaries);
             }
 
             return;
@@ -892,7 +909,91 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             {
                 ShellContext = shellContext;
             }
+
+            if (workflowRevision == _workflowSummaryRevision)
+            {
+                ReplaceCollection(_workflowSummaries, workflowSummaries);
+            }
         });
+    }
+
+    private async Task<IReadOnlyCollection<WorkspaceWorkflowSummary>> BuildWorkflowSummariesAsync(CancellationToken ct)
+    {
+        if (_workflowSummaryService is null)
+        {
+            return BuildFallbackWorkflowSummaries();
+        }
+
+        try
+        {
+            var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
+            var operatingContextLabel = _operatingContextService?.CurrentContext?.DisplayName;
+            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
+            var fundDisplayName = _fundContextService.CurrentFundProfile?.DisplayName;
+
+            var summary = await _workflowSummaryService
+                .GetAsync(
+                    hasOperatingContext: hasOperatingContext,
+                    operatingContextDisplayName: operatingContextLabel,
+                    fundProfileId: fundProfileId,
+                    fundDisplayName: fundDisplayName,
+                    ct: ct)
+                .ConfigureAwait(false);
+
+            return summary.Workspaces;
+        }
+        catch
+        {
+            return BuildFallbackWorkflowSummaries();
+        }
+    }
+
+    private IReadOnlyCollection<WorkspaceWorkflowSummary> BuildFallbackWorkflowSummaries()
+    {
+        var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
+        var blocker = hasOperatingContext
+            ? new WorkflowBlockerSummary("fallback", "Fallback summary", "Shared workflow guidance is using deterministic fallback text.", WorkspaceTone.Info, false)
+            : new WorkflowBlockerSummary("choose-context", "No operating context selected", "Choose a context to unlock workflow guidance.", WorkspaceTone.Warning, true);
+
+        return
+        [
+            new WorkspaceWorkflowSummary(
+                "research",
+                "Research",
+                "Fallback workflow summary",
+                "Start a new backtest or review recorded research runs.",
+                WorkspaceTone.Info,
+                new WorkflowNextAction("Start Backtest", "Open the research backtest surface.", "Backtest", WorkspaceTone.Primary),
+                blocker,
+                []),
+            new WorkspaceWorkflowSummary(
+                "trading",
+                "Trading",
+                hasOperatingContext ? "Fallback trading guidance" : "Context required",
+                hasOperatingContext ? "Open the cockpit or review strategy runs." : "Trading guidance is waiting for a selected context.",
+                hasOperatingContext ? WorkspaceTone.Info : WorkspaceTone.Warning,
+                new WorkflowNextAction(hasOperatingContext ? "Open Trading Shell" : "Choose Context", "Open the trading workspace home.", "TradingShell", WorkspaceTone.Primary),
+                blocker,
+                []),
+            new WorkspaceWorkflowSummary(
+                "data-operations",
+                "Data Operations",
+                "Fallback queue overview",
+                "Open providers, backfill, or storage surfaces from the workspace home.",
+                WorkspaceTone.Info,
+                new WorkflowNextAction("Open Queue Overview", "Open the data operations shell.", "DataOperationsShell", WorkspaceTone.Primary),
+                new WorkflowBlockerSummary("fallback", "Deterministic fallback", "Live data-operations posture is unavailable, so the shell is rendering stable fallback text.", WorkspaceTone.Info, false),
+                []),
+            new WorkspaceWorkflowSummary(
+                "governance",
+                "Governance",
+                hasOperatingContext ? "Fallback governance guidance" : "Context required",
+                hasOperatingContext ? "Open the governance shell to review accounting and reconciliation posture." : "Governance guidance is waiting for a selected context.",
+                hasOperatingContext ? WorkspaceTone.Info : WorkspaceTone.Warning,
+                new WorkflowNextAction(hasOperatingContext ? "Open Governance Shell" : "Choose Context", "Open the governance workspace home.", "GovernanceShell", WorkspaceTone.Primary),
+                blocker,
+                [])
+        ];
     }
 
     private WorkspaceShellContextInput BuildShellContextInput()

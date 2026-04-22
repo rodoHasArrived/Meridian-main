@@ -6,6 +6,7 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -188,6 +189,12 @@ public static class FundStructureEndpoints
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
             }
 
+            request = NormalizeLedgerGroupAssignmentRequest(request, out var assignmentReferenceError);
+            if (assignmentReferenceError is not null)
+            {
+                return Results.Problem(assignmentReferenceError, statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var result = await service.AssignNodeAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
@@ -316,6 +323,12 @@ public static class FundStructureEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
+            var ledgerGroupId = ParseLedgerGroupId(q["ledgerGroupId"], out var ledgerGroupParseError);
+            if (ledgerGroupParseError is not null)
+            {
+                return Results.Problem(ledgerGroupParseError, statusCode: StatusCodes.Status400BadRequest);
+            }
+
             var query = new GovernanceCashFlowQuery(
                 scopeKind.Value,
                 OrganizationId: ParseGuid(q["organizationId"]),
@@ -326,7 +339,7 @@ public static class FundStructureEndpoints
                 VehicleId: ParseGuid(q["vehicleId"]),
                 InvestmentPortfolioId: ParseGuid(q["investmentPortfolioId"]),
                 AccountId: ParseGuid(q["accountId"]),
-                LedgerGroupId: ParseLedgerGroupId(q["ledgerGroupId"]),
+                LedgerGroupId: ledgerGroupId,
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]),
                 Currency: q["currency"].FirstOrDefault(),
@@ -427,8 +440,49 @@ public static class FundStructureEndpoints
     private static FundLedgerScope? ParseFundLedgerScope(string? value) =>
         Enum.TryParse<FundLedgerScope>(value, ignoreCase: true, out var parsed) ? parsed : null;
 
-    private static LedgerGroupId? ParseLedgerGroupId(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : new LedgerGroupId(value);
+    private static LedgerGroupId? ParseLedgerGroupId(StringValues values, out string? error)
+    {
+        error = null;
+        if (StringValues.IsNullOrEmpty(values))
+        {
+            return null;
+        }
+
+        var raw = values.ToString();
+        if (!LedgerGroupId.TryCreate(raw, out var parsed))
+        {
+            error = $"ledgerGroupId is invalid. {LedgerGroupId.ValidationMessage}";
+            return null;
+        }
+
+        return parsed;
+    }
+
+    private static AssignFundStructureNodeRequest NormalizeLedgerGroupAssignmentRequest(
+        AssignFundStructureNodeRequest request,
+        out string? error)
+    {
+        error = null;
+        if (!LedgerGroupingRules.IsLedgerGroupAssignmentType(request.AssignmentType))
+        {
+            return request;
+        }
+
+        try
+        {
+            return request with
+            {
+                AssignmentReference = LedgerGroupingRules.NormalizeAssignmentReference(
+                    request.AssignmentType,
+                    request.AssignmentReference)
+            };
+        }
+        catch (FormatException)
+        {
+            error = $"assignmentReference is invalid for '{LedgerGroupingRules.LedgerGroupAssignmentType}'. {LedgerGroupId.ValidationMessage}";
+            return request;
+        }
+    }
 
     private static int ParseInt(string? value, int defaultValue) =>
         int.TryParse(value, out var parsed) ? parsed : defaultValue;

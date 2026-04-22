@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Application.FundStructure;
 using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
 
@@ -1489,8 +1490,10 @@ public sealed partial class EnvironmentDesignerService :
             .Select(node => new FundStructureAssignmentDto(
                 CreateStableGuid($"ledger-assignment:{node.ParentNodeDefinitionId}:{node.NodeDefinitionId}"),
                 runtimeNodeIds[node.NodeDefinitionId],
-                AssignmentType: "LedgerGroup",
-                AssignmentReference: node.ParentNodeDefinitionId!,
+                AssignmentType: LedgerGroupingRules.LedgerGroupAssignmentType,
+                AssignmentReference: LedgerGroupingRules.NormalizeAssignmentReference(
+                    LedgerGroupingRules.LedgerGroupAssignmentType,
+                    node.ParentNodeDefinitionId!),
                 EffectiveFrom: publishedAt,
                 EffectiveTo: null,
                 IsPrimary: true))

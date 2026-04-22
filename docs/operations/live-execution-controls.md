@@ -36,7 +36,29 @@ If `MERIDIAN_EXECUTION_LIVE_ENABLED` is missing or `MERIDIAN_EXECUTION_GATEWAY` 
 
 Existing order/account seams remain in `/api/execution/*`.
 
+<<<<<<< ours
+<<<<<<< ours
 Wave 2 live-readiness endpoints:
+=======
+=======
+>>>>>>> theirs
+Current execution SDK order types available through `/api/execution/orders/submit`:
+
+- `Market`
+- `Limit`
+- `StopMarket`
+- `StopLimit`
+- `MarketOnOpen`
+- `MarketOnClose`
+- `LimitOnOpen`
+- `LimitOnClose`
+
+Broker adapters that do not offer native exchange-session qualifiers currently route the `*OnOpen`/`*OnClose`
+variants using their nearest base type (`Market` or `Limit`) so strategies can stay portable while provider
+capabilities evolve.
+
+New live-readiness endpoints:
+>>>>>>> theirs
 
 - `GET /api/execution/audit`
 - `GET /api/execution/controls`

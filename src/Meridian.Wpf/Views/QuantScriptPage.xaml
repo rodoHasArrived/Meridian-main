@@ -14,52 +14,49 @@
     <behaviors:ParameterTemplateSelector x:Key="ParamSelector">
       <behaviors:ParameterTemplateSelector.NumericTemplate>
         <DataTemplate DataType="{x:Type models:ParameterViewModel}">
-          <DockPanel Margin="0,3">
-            <TextBlock DockPanel.Dock="Left"
-                       Width="100"
-                       VerticalAlignment="Center"
-                       FontSize="11"
+          <StackPanel Margin="0,3">
+            <TextBlock FontSize="11"
                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                       Text="{Binding Name}" />
-            <TextBox FontSize="11"
+                       Text="{Binding Label}"
+                       ToolTip="{Binding Description}" />
+            <TextBox Margin="0,4,0,0"
+                     FontSize="11"
                      Padding="6,4"
                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
                      BorderBrush="{StaticResource ConsoleBorderBrush}"
                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                      Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}" />
-          </DockPanel>
+          </StackPanel>
         </DataTemplate>
       </behaviors:ParameterTemplateSelector.NumericTemplate>
       <behaviors:ParameterTemplateSelector.TextTemplate>
         <DataTemplate DataType="{x:Type models:ParameterViewModel}">
-          <DockPanel Margin="0,3">
-            <TextBlock DockPanel.Dock="Left"
-                       Width="100"
-                       VerticalAlignment="Center"
-                       FontSize="11"
+          <StackPanel Margin="0,3">
+            <TextBlock FontSize="11"
                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                       Text="{Binding Name}" />
-            <TextBox FontSize="11"
+                       Text="{Binding Label}"
+                       ToolTip="{Binding Description}" />
+            <TextBox Margin="0,4,0,0"
+                     FontSize="11"
                      Padding="6,4"
                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
                      BorderBrush="{StaticResource ConsoleBorderBrush}"
                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                      Text="{Binding RawValue, UpdateSourceTrigger=PropertyChanged}" />
-          </DockPanel>
+          </StackPanel>
         </DataTemplate>
       </behaviors:ParameterTemplateSelector.TextTemplate>
       <behaviors:ParameterTemplateSelector.BoolTemplate>
         <DataTemplate DataType="{x:Type models:ParameterViewModel}">
-          <DockPanel Margin="0,3">
-            <TextBlock DockPanel.Dock="Left"
-                       Width="100"
-                       VerticalAlignment="Center"
-                       FontSize="11"
+          <StackPanel Margin="0,3">
+            <TextBlock FontSize="11"
                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                       Text="{Binding Name}" />
-            <CheckBox VerticalAlignment="Center"
-                      IsChecked="{Binding RawValue}" />
-          </DockPanel>
+                       Text="{Binding Label}"
+                       ToolTip="{Binding Description}" />
+            <CheckBox Margin="0,4,0,0"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding BooleanValue, Mode=TwoWay}" />
+          </StackPanel>
         </DataTemplate>
       </behaviors:ParameterTemplateSelector.BoolTemplate>
     </behaviors:ParameterTemplateSelector>
@@ -229,6 +226,14 @@
                 Command="{Binding RefreshScriptsCommand}"
                 Style="{StaticResource GhostButtonStyle}">
           <TextBlock FontSize="11" Text="Refresh" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="4,0,0,0"
+                Padding="10,6"
+                Command="{Binding TemplatesCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Templates" />
         </Button>
 
         <Button DockPanel.Dock="Left"
@@ -532,14 +537,53 @@
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <DockPanel Grid.Column="0">
-              <TextBlock DockPanel.Dock="Top"
+            <Grid Grid.Column="0">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="180" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0"
                          Margin="0,0,0,6"
                          FontSize="11"
                          FontWeight="SemiBold"
                          Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                         Text="TEMPLATES" />
+              <ListBox Grid.Row="1"
+                       Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                       BorderBrush="{StaticResource ConsoleBorderBrush}"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       ItemsSource="{Binding Templates}"
+                       SelectedItem="{Binding SelectedTemplate}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="{x:Type models:QuantScriptTemplateDefinition}">
+                    <StackPanel Margin="4,3">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+                      <TextBlock Margin="0,2,0,0"
+                                 FontSize="10"
+                                 Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                 Text="{Binding Description}"
+                                 TextWrapping="Wrap" />
+                      <TextBlock Margin="0,2,0,0"
+                                 FontSize="10"
+                                 Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                 Text="{Binding Category}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+
+              <TextBlock Grid.Row="2"
+                         Margin="0,10,0,6"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                          Text="DOCUMENTS" />
-              <ListBox Background="{StaticResource ConsoleBackgroundMediumBrush}"
+              <ListBox Grid.Row="3"
+                       Background="{StaticResource ConsoleBackgroundMediumBrush}"
                        BorderBrush="{StaticResource ConsoleBorderBrush}"
                        FontSize="11"
                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -556,7 +600,7 @@
                   </DataTemplate>
                 </ListBox.ItemTemplate>
               </ListBox>
-            </DockPanel>
+            </Grid>
 
             <Grid Grid.Column="2">
               <Grid.RowDefinitions>
@@ -683,6 +727,154 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </ScrollViewer>
+          </Grid>
+        </TabItem>
+
+        <!-- Tab 5: Run History -->
+        <TabItem>
+          <TabItem.Header>
+            <TextBlock FontSize="12" Text="{Binding RunHistoryTabHeader}" />
+          </TabItem.Header>
+          <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="2*" />
+              <ColumnDefinition Width="12" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <DataGrid Grid.Column="0"
+                      AutoGenerateColumns="False"
+                      Background="{StaticResource ConsoleBackgroundDarkBrush}"
+                      BorderThickness="0"
+                      FontSize="12"
+                      Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                      GridLinesVisibility="None"
+                      HeadersVisibility="Column"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding RunHistory}"
+                      RowBackground="{StaticResource ConsoleBackgroundDarkBrush}"
+                      SelectedItem="{Binding SelectedExecutionRecord}">
+              <DataGrid.Columns>
+                <DataGridTextColumn Width="140" Binding="{Binding ExecutedAtText}" Header="Executed" />
+                <DataGridTextColumn Width="160" Binding="{Binding DocumentTitle}" Header="Document" />
+                <DataGridTextColumn Width="90" Binding="{Binding StatusText}" Header="Status" />
+                <DataGridTextColumn Width="90" Binding="{Binding DocumentKindLabel}" Header="Kind" />
+                <DataGridTextColumn Width="90" Binding="{Binding CapturedBacktestCount}" Header="Backtests" />
+                <DataGridTextColumn Width="*" Binding="{Binding MirroredRunLabel}" Header="Research Run" />
+              </DataGrid.Columns>
+            </DataGrid>
+
+            <Border Grid.Column="2"
+                    Padding="12"
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                           Text="{Binding SelectedExecutionRecord.DocumentTitle}" />
+
+                <WrapPanel Grid.Row="1" Margin="0,10,0,0">
+                  <Button Margin="0,0,8,0"
+                          Padding="10,6"
+                          Command="{Binding OpenRunBrowserCommand}"
+                          Style="{StaticResource GhostButtonStyle}">
+                    <TextBlock FontSize="11" Text="Open Run Browser" />
+                  </Button>
+                  <Button Margin="0,0,8,0"
+                          Padding="10,6"
+                          Command="{Binding OpenRunDetailCommand}"
+                          Style="{StaticResource GhostButtonStyle}">
+                    <TextBlock FontSize="11" Text="Open Run Detail" />
+                  </Button>
+                  <Button Padding="10,6"
+                          Command="{Binding CompareInResearchCommand}"
+                          Style="{StaticResource GhostButtonStyle}">
+                    <TextBlock FontSize="11" Text="Compare in Research" />
+                  </Button>
+                </WrapPanel>
+
+                <Grid Grid.Row="2" Margin="0,14,0,0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+
+                  <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,0,10,4" Foreground="{StaticResource ConsoleTextMutedBrush}" Text="Executed" />
+                  <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,0,0,4" Text="{Binding SelectedExecutionRecord.ExecutedAtText}" />
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,10,4" Foreground="{StaticResource ConsoleTextMutedBrush}" Text="Status" />
+                  <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,0,0,4" Text="{Binding SelectedExecutionRecord.StatusText}" />
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,0,10,4" Foreground="{StaticResource ConsoleTextMutedBrush}" Text="Parameters" />
+                  <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,0,0,4" Text="{Binding SelectedExecutionRecord.ParameterSummary}" TextWrapping="Wrap" />
+
+                  <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,0,10,0" Foreground="{StaticResource ConsoleTextMutedBrush}" Text="Research Run" />
+                  <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedExecutionRecord.MirroredRunLabel}" TextWrapping="Wrap" />
+                </Grid>
+
+                <Border Grid.Row="3"
+                        Margin="0,14,0,0"
+                        Padding="8"
+                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                  <TextBlock Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                             Text="{Binding SelectedExecutionRecord.ConsolePreview}"
+                             TextWrapping="Wrap" />
+                </Border>
+
+                <TextBlock Grid.Row="4"
+                           Margin="0,12,0,6"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                           Text="METRICS" />
+
+                <ItemsControl Grid.Row="5"
+                              ItemsSource="{Binding SelectedExecutionRecord.Metrics}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:QuantScriptExecutionMetricRecord}">
+                      <DockPanel Margin="0,0,0,4">
+                        <TextBlock DockPanel.Dock="Left"
+                                   Margin="0,0,10,0"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Text="{Binding Label}" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Text="{Binding Value}" />
+                      </DockPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Grid.Row="6"
+                           Margin="0,12,0,0"
+                           Foreground="{StaticResource WarningColorBrush}"
+                           Text="{Binding SelectedExecutionRecord.Warning}"
+                           TextWrapping="Wrap" />
+              </Grid>
+            </Border>
           </Grid>
         </TabItem>
 

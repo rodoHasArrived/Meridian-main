@@ -184,12 +184,25 @@ cat <<'JSON' > /tmp/backfill-request.json
   "to": "2024-01-31"
 }
 JSON
-
 curl -X POST http://localhost:8080/api/backfill/run \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: your-key" \
   --data-binary @/tmp/backfill-request.json
 ```
+
+### Fund Structure: `GET /api/fund-structure/cash-flow-view`
+
+For `scopeKind=LedgerGroup`, `ledgerGroupId` now uses the shared `LedgerGroupId` normalization contract:
+
+- leading/trailing whitespace is trimmed before lookup
+- the reserved `unassigned` ID is canonicalized to `unassigned`
+- blank values are rejected with HTTP `400`
+- only letters, digits, `-`, `_`, `.`, and `:` are valid characters
+- invalid values are rejected with HTTP `400`
+
+Grouping in application services uses the same normalization path so endpoint filtering and
+accounting-view ledger grouping resolve IDs consistently, and ledger-group assignments created
+through fund-structure workflows are normalized before storage.
 
 **Check data quality for a symbol:**
 
@@ -570,7 +583,7 @@ When adding or changing public APIs:
 ---
 
 **Version:** 1.6.2
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-21
 **Audience:** Contributors maintaining the HTTP API surface and AI assistants working on endpoint documentation.
 
 
@@ -586,3 +599,17 @@ The coverage audit also tracks workstation shell routes and compatibility aliase
 | GET | `/research` | Legacy/research route marker reported by coverage scanner; research payload is served at `/api/workstation/research`. |
 | GET | `/workstation` | Workstation shell entry point that serves the React index page. |
 | GET | `/workstation/{*path}` | SPA fallback route for workstation client-side navigation. |
+
+### Workstation Workflow Summary
+
+The workstation shell now exposes one shared workflow-summary projection for role-first shell guidance.
+
+| Method | Route | Description |
+| -------- | ------- | ------------- |
+| GET | `/api/workstation/workflow-summary` | Returns an `OperatorWorkflowHomeSummary` with one `WorkspaceWorkflowSummary` per top-level workspace, including status, primary blocker, next action, target page tag, and evidence badges. |
+
+Notes:
+
+- This endpoint is intended for shell-level orchestration, not page-specific workflow duplication.
+- The WPF shell and shared tests use the same ordering rules so `Research`, `Trading`, `Data Operations`, and `Governance` stay aligned on the same next-action guidance.
+- Trading and Governance callers can pass the current operating context and fund selection so the summary can switch cleanly between `choose context`, active handoff, and governance-review states.

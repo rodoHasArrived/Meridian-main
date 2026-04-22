@@ -37,6 +37,10 @@ public interface IQuantScriptCompiler
     /// <summary>Compiles the given source and returns success/failure with diagnostics.</summary>
     Task<ScriptCompilationResult> CompileAsync(string source, CancellationToken ct = default);
 
-    /// <summary>Extracts parameter descriptors by inspecting [ScriptParam] attributes in the source.</summary>
+    /// <summary>
+    /// Extracts parameter descriptors from static script source using, in order,
+    /// literal <c>Param&lt;T&gt;(...)</c> calls, <c>[ScriptParam]</c> declarations, and legacy
+    /// <c>// @param</c> comments.
+    /// </summary>
     IReadOnlyList<ParameterDescriptor> ExtractParameters(string source);
 }

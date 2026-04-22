@@ -295,6 +295,8 @@ let ``Portfolio ledger reconciliation marks exact match as matched`` () =
 
     result.IsMatch |> should equal true
     result.Category |> should equal "matched"
+    result.Status |> should equal "matched"
+    result.Severity |> should equal "Info"
 
 [<Fact>]
 let ``Portfolio ledger reconciliation flags amount mismatch`` () =
@@ -325,6 +327,40 @@ let ``Portfolio ledger reconciliation flags amount mismatch`` () =
 
     result.IsMatch |> should equal false
     result.Category |> should equal "amount_mismatch"
+    result.Status |> should equal "open"
+    result.Severity |> should equal "High"
+
+[<Fact>]
+let ``Portfolio ledger reconciliation surfaces partial match status explicitly`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "timing-partial"
+                Label = "Portfolio cash vs ledger cash timing drift"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 750m
+                ActualAmount = 750m
+                HasExpectedAmount = true
+                HasActualAmount = true
+                ExpectedPresent = true
+                ActualPresent = true
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-01T00:00:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-05T00:00:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "amount"
+                MissingSourceHint = ""
+                ActualKind = "amount"
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 4320, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal false
+    result.Category |> should equal "partial_match"
+    result.Status |> should equal "partial_match"
+    result.Severity |> should equal "Low"
 
 [<Fact>]
 let ``Portfolio ledger reconciliation flags missing ledger coverage`` () =
@@ -483,6 +519,27 @@ let ``ReconciliationRules apply returns NoMatch AmountBreak when amount exceeds 
     | other -> failwithf "Expected NoMatch AmountBreak but got %A" other
 
 [<Fact>]
+let ``ReconciliationRules apply returns PartialMatch when partial matching enabled and confidence clears threshold`` () =
+    let permissiveRule = {
+        MatchingRule.``default`` with
+            AllowPartialMatch = true
+            MinMatchConfidence = 0.65m
+    }
+
+    let c = candidate
+                (Guid.NewGuid())
+                1000m 989.5m // 1.05% variance: outside 1% tolerance but close enough for partial
+                "USD" "USD"
+                (DateTimeOffset.Parse("2026-06-01T00:00:00Z"))
+                (DateTimeOffset.Parse("2026-06-01T00:00:00Z"))
+
+    match ReconciliationRules.apply permissiveRule c with
+    | PartialMatch (conf, reason) ->
+        conf |> should (be greaterThanOrEqualTo) 0.65m
+        reason.Contains("Amount variance") |> should equal true
+    | other -> failwithf "Expected PartialMatch but got %A" other
+
+[<Fact>]
 let ``ReconciliationRules applyBest selects first matching rule from priority list`` () =
     let secId = Guid.NewGuid()
     let c = candidate
@@ -565,6 +622,23 @@ let ``LedgerBreakClassification severity marks large amount break as Critical`` 
 let ``LedgerBreakClassification severity marks small amount break as Medium`` () =
     // Within 1% variance
     LedgerBreakClassification.severity 1000m (AmountBreak(1000m, 1005m))
+    |> should equal Medium
+
+[<Fact>]
+let ``LedgerBreakClassification severity honors timing and missing-entry materiality thresholds`` () =
+    LedgerBreakClassification.severity 1000m (TimingBreak 2)
+    |> should equal Low
+
+    LedgerBreakClassification.severity 1000m (TimingBreak 10)
+    |> should equal Medium
+
+    LedgerBreakClassification.severity 1000m (TimingBreak 45)
+    |> should equal High
+
+    LedgerBreakClassification.severity 25_000m MissingEntry
+    |> should equal High
+
+    LedgerBreakClassification.severity 500m MissingEntry
     |> should equal Medium
 
 [<Fact>]
@@ -750,6 +824,122 @@ let ``LedgerInterop ToBreakRecordClassificationDtos preserves canonical classifi
 
     dtos.Length |> should equal 1
     dtos[0].BreakId |> should equal record.BreakId
+    dtos[0].TaxonomyVersion |> should equal "reconciliation-break-taxonomy/v1"
     dtos[0].CanonicalClass |> should equal "CashFlow"
     dtos[0].PrimaryReasonCode |> should equal "CashAmountMismatch"
+    dtos[0].ReasonCodes |> should equal [| "CashAmountMismatch" |]
+    dtos[0].Severity |> should equal "High"
     dtos[0].IsFallbackClassification |> should equal false
+
+[<Fact>]
+let ``LedgerInterop ToReconciliationResultDtos preserves status and outcome metadata for C# consumers`` () =
+    let results : ReconciliationResult array = [|
+        {
+            SecurityId = "bond-1"
+            FlowId = "coupon-1"
+            EventId = "evt-1"
+            ExpectedAmount = 100m
+            ActualAmount = 100m
+            Variance = 0m
+            ExpectedCurrency = "USD"
+            ActualCurrency = "USD"
+            DueDate = DateTimeOffset.Parse("2026-09-01T00:00:00Z")
+            PostedAt = DateTimeOffset.Parse("2026-09-01T00:00:00Z")
+            Outcome = ReconciliationOutcome.Matched
+            OutcomeLabel = "Matched"
+            Status = ReconciliationStatus.Matched
+        }
+        {
+            SecurityId = "bond-2"
+            FlowId = "coupon-2"
+            EventId = "evt-2"
+            ExpectedAmount = 250m
+            ActualAmount = 200m
+            Variance = -50m
+            ExpectedCurrency = "USD"
+            ActualCurrency = "USD"
+            DueDate = DateTimeOffset.Parse("2026-10-01T00:00:00Z")
+            PostedAt = DateTimeOffset.Parse("2026-10-01T00:00:00Z")
+            Outcome = ReconciliationOutcome.UnderPaid -50m
+            OutcomeLabel = "UnderPaid"
+            Status = ReconciliationStatus.UnderPaid
+        }
+        {
+            SecurityId = "bond-3"
+            FlowId = "coupon-3"
+            EventId = "evt-3"
+            ExpectedAmount = 300m
+            ActualAmount = 300m
+            Variance = 0m
+            ExpectedCurrency = "USD"
+            ActualCurrency = "USD"
+            DueDate = DateTimeOffset.Parse("2026-11-01T00:00:00Z")
+            PostedAt = DateTimeOffset.Parse("2026-11-05T00:00:00Z")
+            Outcome = ReconciliationOutcome.TimingMismatch 4
+            OutcomeLabel = "TimingMismatch"
+            Status = ReconciliationStatus.TimingMismatch
+        }
+    |]
+
+    let dtos = LedgerInterop.ToReconciliationResultDtos results
+
+    dtos.Length |> should equal 3
+    dtos[0].Status |> should equal "Matched"
+    dtos[0].Outcome.Outcome |> should equal "Matched"
+    dtos[1].Status |> should equal "UnderPaid"
+    dtos[1].Outcome.Variance |> should equal (Some -50m)
+    dtos[2].Status |> should equal "TimingMismatch"
+    dtos[2].Outcome.DaysLate |> should equal (Some 4)
+
+[<Fact>]
+let ``LedgerInterop ReconcilePortfolioLedgerChecks preserves category and status labels at C# boundary`` () =
+    let checks : PortfolioLedgerCheckDto array = [|
+        {
+            CheckId = "amount-break"
+            Label = "Amount break"
+            ExpectedSource = "portfolio"
+            ActualSource = "ledger"
+            ExpectedAmount = 100m
+            ActualAmount = 70m
+            HasExpectedAmount = true
+            HasActualAmount = true
+            ExpectedPresent = true
+            ActualPresent = true
+            ExpectedAsOf = DateTimeOffset.Parse("2026-03-01T00:00:00Z")
+            ActualAsOf = DateTimeOffset.Parse("2026-03-01T00:00:00Z")
+            HasExpectedAsOf = true
+            HasActualAsOf = true
+            CategoryHint = "amount"
+            MissingSourceHint = ""
+            ActualKind = "amount"
+        }
+        {
+            CheckId = "timing-break"
+            Label = "Timing break"
+            ExpectedSource = "portfolio"
+            ActualSource = "ledger"
+            ExpectedAmount = 100m
+            ActualAmount = 100m
+            HasExpectedAmount = true
+            HasActualAmount = true
+            ExpectedPresent = true
+            ActualPresent = true
+            ExpectedAsOf = DateTimeOffset.Parse("2026-03-01T00:00:00Z")
+            ActualAsOf = DateTimeOffset.Parse("2026-03-01T00:20:00Z")
+            HasExpectedAsOf = true
+            HasActualAsOf = true
+            CategoryHint = "amount"
+            MissingSourceHint = ""
+            ActualKind = "amount"
+        }
+    |]
+
+    let results = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 5, checks)
+
+    results.Length |> should equal 2
+    results |> Array.find (fun r -> r.CheckId = "amount-break") |> fun r ->
+        r.Category |> should equal "amount_mismatch"
+        r.Status |> should equal "open"
+    results |> Array.find (fun r -> r.CheckId = "timing-break") |> fun r ->
+        r.Category |> should equal "timing_mismatch"
+        r.Status |> should equal "open"

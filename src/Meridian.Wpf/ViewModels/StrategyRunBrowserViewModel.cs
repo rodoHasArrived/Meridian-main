@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -15,6 +16,29 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
     private readonly NavigationService _navigationService;
     private readonly WorkspaceService _workspaceService;
     private readonly List<StrategyRunSummary> _allRuns = new();
+    private object? _parameter;
+    private StrategyRunsNavigationContext? _navigationContext;
+    private bool _isInitialized;
+
+    public object? Parameter
+    {
+        get => _parameter;
+        set
+        {
+            if (!SetProperty(ref _parameter, value))
+                return;
+
+            _navigationContext = value switch
+            {
+                StrategyRunsNavigationContext context => context,
+                string strategyId when !string.IsNullOrWhiteSpace(strategyId) => new StrategyRunsNavigationContext(StrategyId: strategyId),
+                _ => null
+            };
+
+            if (_isInitialized)
+                _ = RefreshAsync();
+        }
+    }
 
     public ObservableCollection<StrategyRunSummary> Runs { get; } = [];
     public IReadOnlyList<string> ModeFilters { get; } = ["All", "Backtest", "Paper", "Live"];
@@ -183,6 +207,7 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
 
     public async Task InitializeAsync(CancellationToken ct = default)
     {
+        _isInitialized = true;
         SearchText = _workspaceService.GetPageFilterState("StrategyRuns", "SearchText") ?? string.Empty;
         SelectedModeFilter = _workspaceService.GetPageFilterState("StrategyRuns", "ModeFilter") ?? "All";
         await RefreshAsync(ct);
@@ -190,12 +215,13 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
 
     public async Task RefreshAsync(CancellationToken ct = default)
     {
-        var runs = await _runService.GetRunsAsync(null, ct);
+        var runs = await _runService.GetRunsAsync(_navigationContext?.StrategyId, ct);
 
         _allRuns.Clear();
         _allRuns.AddRange(runs);
 
         ApplyFilters();
+        await ApplyNavigationContextAsync(ct);
     }
 
     private void ApplyFilters()
@@ -224,13 +250,52 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
             Runs.Add(run);
         }
 
-        SelectedRun = Runs.FirstOrDefault();
+        if (SelectedRun is null || !Runs.Any(run => string.Equals(run.RunId, SelectedRun.RunId, StringComparison.Ordinal)))
+        {
+            SelectedRun = Runs.FirstOrDefault();
+        }
+
+        if (ComparisonRun is not null && !Runs.Any(run => string.Equals(run.RunId, ComparisonRun.RunId, StringComparison.Ordinal)))
+        {
+            ComparisonRun = null;
+        }
         StatusText = Runs.Count switch
         {
             0 when _allRuns.Count == 0 => "No recorded strategy runs yet. Complete a backtest to populate this browser.",
             0 => "No strategy runs match the current filters.",
+            _ when !string.IsNullOrWhiteSpace(_navigationContext?.StrategyId)
+                => $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded for {_navigationContext!.StrategyId}.",
             _ => $"{Runs.Count} strategy run{(Runs.Count == 1 ? string.Empty : "s")} loaded."
         };
+    }
+
+    private async Task ApplyNavigationContextAsync(CancellationToken ct)
+    {
+        if (_navigationContext is null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(_navigationContext.PrimaryRunId))
+        {
+            SelectedRun = Runs.FirstOrDefault(run =>
+                string.Equals(run.RunId, _navigationContext.PrimaryRunId, StringComparison.Ordinal));
+        }
+        else
+        {
+            SelectedRun ??= Runs.FirstOrDefault();
+        }
+
+        if (!string.IsNullOrWhiteSpace(_navigationContext.ComparisonRunId))
+        {
+            ComparisonRun = Runs.FirstOrDefault(run =>
+                string.Equals(run.RunId, _navigationContext.ComparisonRunId, StringComparison.Ordinal));
+        }
+        else if (ComparisonRun is not null && !Runs.Any(run => string.Equals(run.RunId, ComparisonRun.RunId, StringComparison.Ordinal)))
+        {
+            ComparisonRun = null;
+        }
+
+        if (_navigationContext.AutoCompare && CanCompareRuns)
+            await ExecuteCompareAsync(ct);
     }
 
     private async Task ExecuteCompareAsync(CancellationToken ct = default)

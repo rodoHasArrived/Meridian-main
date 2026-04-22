@@ -1,6 +1,13 @@
+using System.Text.Json;
+using Meridian.Application.Serialization;
+using Meridian.Backtesting.Engine;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
+using Meridian.Contracts.Domain.Models;
+using Meridian.Domain.Events;
+using Meridian.Storage;
+using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -14,26 +21,63 @@ public sealed class ScriptRunnerTests
     private static ScriptRunner BuildRunner(
         IQuantScriptCompiler? compiler = null,
         IQuantDataContext? dataContext = null,
-        PlotQueue? plotQueue = null)
+        PlotQueue? plotQueue = null,
+        QuantScriptOptions? options = null,
+        BacktestEngine? backtestEngine = null)
     {
         compiler ??= new RoslynScriptCompiler(
-            Options.Create(new QuantScriptOptions()),
+            Options.Create(options ?? new QuantScriptOptions()),
             NullLogger<RoslynScriptCompiler>.Instance);
 
         dataContext ??= new Mock<IQuantDataContext>().Object;
 
-        // BacktestEngine is sealed; pass null since the unit tests don't exercise backtest paths.
         return new ScriptRunner(
             compiler,
             dataContext,
             plotQueue ?? new PlotQueue(),
-            Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
+            Options.Create(options ?? new QuantScriptOptions { RunTimeoutSeconds = 10 }),
             NullLogger<ScriptRunner>.Instance,
-            null);
+            backtestEngine);
     }
 
     private static IReadOnlyDictionary<string, object?> NoParams =>
         new Dictionary<string, object?>();
+
+    private static BacktestEngine BuildBacktestEngine(string dataRoot)
+        => new(
+            NullLogger<BacktestEngine>.Instance,
+            new StorageCatalogService(dataRoot, new StorageOptions()));
+
+    private static void WriteBarJsonl(string dataRoot, string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m)
+    {
+        var symbolDir = Path.Combine(dataRoot, symbol.ToUpperInvariant());
+        Directory.CreateDirectory(symbolDir);
+        var filePath = Path.Combine(symbolDir, $"{symbol}_bars_{from:yyyy-MM-dd}.jsonl");
+
+        using var writer = new StreamWriter(filePath);
+        var date = from;
+        var sequence = 1L;
+        while (date <= to)
+        {
+            var open = basePrice + (date.DayNumber - from.DayNumber) * dailyGain;
+            var close = open + dailyGain;
+            var bar = new HistoricalBar(
+                Symbol: symbol,
+                SessionDate: date,
+                Open: open,
+                High: open + 2m,
+                Low: open - 2m,
+                Close: close,
+                Volume: 1_000_000L,
+                Source: "test",
+                SequenceNumber: sequence);
+
+            var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, sequence, "test");
+            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
+            sequence++;
+            date = date.AddDays(1);
+        }
+    }
 
     // ── Argument validation ───────────────────────────────────────────────────
 
@@ -233,6 +277,51 @@ public sealed class ScriptRunnerTests
         result.ConsoleOutput.Should().Contain("Bars:");
     }
 
+    [Fact]
+    public async Task RunAsync_DataPricesAsync_ReturnsNonEmptySeries()
+    {
+        var runner = BuildRunner(dataContext: new Helpers.FakeQuantDataContext());
+        const string source = """
+            var prices = await Data.PricesAsync("SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 31));
+            Print($"Async bars: {prices.Count}");
+            """;
+
+        var result = await runner.RunAsync(source, NoParams);
+
+        result.Success.Should().BeTrue();
+        result.ConsoleOutput.Should().Contain("Async bars:");
+    }
+
+    [Fact]
+    public async Task RunAsync_DataPricesAsync_WhenCancelled_ReturnsCancelledRuntimeError()
+    {
+        const string source = """var prices = await Data.PricesAsync("SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3));""";
+        var compiler = new RoslynScriptCompiler(
+            Options.Create(new QuantScriptOptions()),
+            NullLogger<RoslynScriptCompiler>.Instance);
+        await compiler.CompileAsync(source);
+
+        var mockCtx = new Mock<IQuantDataContext>();
+        mockCtx.Setup(c => c.PricesAsync(
+                It.IsAny<string>(),
+                It.IsAny<DateOnly>(),
+                It.IsAny<DateOnly>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(async (string symbol, DateOnly from, DateOnly to, CancellationToken token) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(30), token);
+                return new PriceSeries("SPY", []);
+            });
+
+        var runner = BuildRunner(compiler: compiler, dataContext: mockCtx.Object);
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        var result = await runner.RunAsync(source, NoParams, cts.Token);
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Contain("cancelled");
+    }
+
     // ── Parameter passing ─────────────────────────────────────────────────────
 
     [Fact]
@@ -249,6 +338,26 @@ public sealed class ScriptRunnerTests
 
         result.Success.Should().BeTrue();
         result.ConsoleOutput.Should().Contain("Lookback=50");
+    }
+
+    [Fact]
+    public async Task RunAsync_ParamCall_CapturesRuntimeParameterDescriptors()
+    {
+        var runner = BuildRunner();
+        const string source = """
+            var lookback = Param<int>("lookback", 20, 5, 100, "RSI window");
+            Print(lookback);
+            """;
+
+        var result = await runner.RunAsync(source, new Dictionary<string, object?> { ["lookback"] = 55 });
+
+        result.Success.Should().BeTrue();
+        result.RuntimeParameters.Should().ContainSingle();
+        result.RuntimeParameters[0].Name.Should().Be("lookback");
+        result.RuntimeParameters[0].DefaultValue.Should().Be(20);
+        result.RuntimeParameters[0].Min.Should().Be(5);
+        result.RuntimeParameters[0].Max.Should().Be(100);
+        result.RuntimeParameters[0].Description.Should().Be("RSI window");
     }
 
     // ── Null-parameters coercion ──────────────────────────────────────────────
@@ -287,5 +396,106 @@ public sealed class ScriptRunnerTests
         second.Success.Should().BeFalse();
         second.CompilationErrors.Should().NotBeEmpty();
         second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+    }
+
+    [Fact]
+    public async Task RunAsync_BacktestRunAsync_CapturesSingleBacktestResult()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-runner-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        WriteBarJsonl(dataRoot, "SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), 100m, 1m);
+
+        try
+        {
+            var options = new QuantScriptOptions
+            {
+                RunTimeoutSeconds = 10,
+                DefaultDataRoot = dataRoot
+            };
+            var runner = BuildRunner(
+                dataContext: new Helpers.FakeQuantDataContext(),
+                options: options,
+                backtestEngine: BuildBacktestEngine(dataRoot));
+
+            var source = $$"""
+                var result = await Backtest
+                    .WithSymbols("SPY")
+                    .From(new DateOnly(2024, 1, 2))
+                    .To(new DateOnly(2024, 1, 5))
+                    .WithDataRoot(@"{{dataRoot}}")
+                    .WithInitialCash(10_000m)
+                    .OnBar((bar, ctx) =>
+                    {
+                        var hasPosition = ctx.Positions.TryGetValue("SPY", out var position) && position.Quantity != 0;
+                        if (!hasPosition)
+                            ctx.PlaceMarketOrder("SPY", 1);
+                    })
+                    .RunAsync();
+
+                PrintMetric("Net PnL", result.Metrics.NetPnl);
+                """;
+
+            var result = await runner.RunAsync(source, NoParams);
+
+            result.Success.Should().BeTrue();
+            result.CapturedBacktests.Should().ContainSingle();
+            result.CapturedBacktests[0].Request.DataRoot.Should().Be(dataRoot);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_MultipleBacktests_CapturesEveryBacktestResult()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-runner-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        WriteBarJsonl(dataRoot, "SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), 100m, 1m);
+
+        try
+        {
+            var options = new QuantScriptOptions
+            {
+                RunTimeoutSeconds = 10,
+                DefaultDataRoot = dataRoot
+            };
+            var runner = BuildRunner(
+                dataContext: new Helpers.FakeQuantDataContext(),
+                options: options,
+                backtestEngine: BuildBacktestEngine(dataRoot));
+
+            var source = $$"""
+                async Task RunOnce()
+                {
+                    await Backtest
+                        .WithSymbols("SPY")
+                        .From(new DateOnly(2024, 1, 2))
+                        .To(new DateOnly(2024, 1, 5))
+                        .WithDataRoot(@"{{dataRoot}}")
+                        .WithInitialCash(10_000m)
+                        .OnBar((bar, ctx) =>
+                        {
+                            var hasPosition = ctx.Positions.TryGetValue("SPY", out var position) && position.Quantity != 0;
+                            if (!hasPosition)
+                                ctx.PlaceMarketOrder("SPY", 1);
+                        })
+                        .RunAsync();
+                }
+
+                await RunOnce();
+                await RunOnce();
+                """;
+
+            var result = await runner.RunAsync(source, NoParams);
+
+            result.Success.Should().BeTrue();
+            result.CapturedBacktests.Should().HaveCount(2);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
     }
 }

@@ -20,6 +20,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
+    private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private GovernanceSubarea _selectedSubarea = GovernanceSubarea.Operations;
 
     public GovernanceWorkspaceShellPage(
@@ -30,7 +31,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         WorkstationOperatingContextService? operatingContextService,
         WorkspaceShellContextService shellContextService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
-        Meridian.Wpf.Services.NotificationService notificationService)
+        Meridian.Wpf.Services.NotificationService notificationService,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null)
         : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
@@ -39,6 +41,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         _shellContextService = shellContextService;
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _notificationService = notificationService;
+        _workflowSummaryService = workflowSummaryService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -76,6 +79,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             var operatingContext = _operatingContextService?.CurrentContext;
             var unreadAlerts = _shellContextService.GetUnreadAlertCount();
             var notifications = _notificationService.GetHistory().Take(4).ToArray();
+            var workflowSummaryTask = GetGovernanceWorkflowSummaryAsync();
             UpdateSubareaButtons();
 
             if (profile is null)
@@ -102,6 +106,12 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 AttentionQueueScrollViewer.Visibility = Visibility.Collapsed;
                 QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
                 QueueSummaryText.Text = "Governance queues unlock after a fund-linked operating context is selected.";
+                var workflow = await workflowSummaryTask.ConfigureAwait(true);
+                ApplyGovernanceLaneSummaries(profile: null, workspace: null, workflow, notifications, unreadAlerts);
+                if (workflow is not null)
+                {
+                    QueueSummaryText.Text = workflow.StatusDetail;
+                }
                 PopulateQueues([], [], [], [], []);
                 PopulateInspector(operatingContext, null, null, null, null, notifications);
                 return;
@@ -116,6 +126,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             var ledger = workspace.Ledger;
             var reconciliation = workspace.Reconciliation;
             var cash = workspace.CashFinancing;
+            var governanceWorkflow = await workflowSummaryTask.ConfigureAwait(true);
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
@@ -138,7 +149,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             NoFundEmptyState.Visibility = Visibility.Collapsed;
             AttentionQueueScrollViewer.Visibility = Visibility.Visible;
             QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? profile.DisplayName;
-            QueueSummaryText.Text = $"Prioritize operations, accounting, reconciliation, reporting, and audit review for {(operatingContext?.DisplayName ?? profile.DisplayName)}.";
+            QueueSummaryText.Text = governanceWorkflow?.StatusDetail
+                ?? $"Prioritize operations, accounting, reconciliation, reporting, and audit review for {(operatingContext?.DisplayName ?? profile.DisplayName)}.";
 
             PopulateQueues(
                 BuildOperationsQueue(profile, workspace),
@@ -146,11 +158,38 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 BuildReconciliationQueue(reconciliation, ledger),
                 BuildReportingQueue(profile, workspace),
                 BuildAuditQueue(reconciliation, notifications, unreadAlerts));
+            ApplyGovernanceLaneSummaries(profile, workspace, governanceWorkflow, notifications, unreadAlerts);
             PopulateInspector(operatingContext, profile, ledger, reconciliation, cash, notifications);
         }
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[GovernanceWorkspaceShell] Refresh failed: {ex.Message}");
+        }
+    }
+
+    private async Task<WorkspaceWorkflowSummary?> GetGovernanceWorkflowSummaryAsync()
+    {
+        if (_workflowSummaryService is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var summary = await _workflowSummaryService
+                .GetAsync(
+                    hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
+                    operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
+                    fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName)
+                .ConfigureAwait(true);
+
+            return summary.Workspaces.FirstOrDefault(static workspace =>
+                string.Equals(workspace.WorkspaceId, "governance", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return null;
         }
     }
 
@@ -327,6 +366,75 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         new WorkspaceQueueItem { Title = "Diagnostics and provider trust checks", Detail = reconciliation.OpenBreakCount > 0 ? "Use diagnostics and provider health before releasing approvals with open reconciliation pressure." : "Diagnostics and provider health remain available as quick trust checks before operator handoff.", StatusLabel = unreadAlerts > 0 ? "Escalated" : "Available", CountLabel = unreadAlerts > 0 ? $"{unreadAlerts} alert-linked" : "Diagnostics ready", Tone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info, PrimaryActionId = "Diagnostics", PrimaryActionLabel = "Diagnostics", SecondaryActionId = "ProviderHealth", SecondaryActionLabel = "Provider Health" }
     ];
 
+    private void ApplyGovernanceLaneSummaries(
+        FundProfileDetail? profile,
+        FundOperationsWorkspaceDto? workspace,
+        WorkspaceWorkflowSummary? workflow,
+        IReadOnlyList<NotificationHistoryItem> notifications,
+        int unreadAlerts)
+    {
+        if (profile is null || workspace is null)
+        {
+            SetLaneSummary(
+                AccountingLaneSummaryText,
+                AccountingLaneDetailText,
+                "Locked",
+                "Select a fund-linked context to unlock accounting review.");
+            SetLaneSummary(
+                ReconciliationLaneSummaryText,
+                ReconciliationLaneDetailText,
+                workflow?.StatusLabel ?? "Locked",
+                workflow?.StatusDetail ?? "Select a fund-linked context to unlock reconciliation review.");
+            SetLaneSummary(
+                ReportingLaneSummaryText,
+                ReportingLaneDetailText,
+                "Locked",
+                "Select a fund-linked context to unlock reporting review.");
+            SetLaneSummary(
+                AuditLaneSummaryText,
+                AuditLaneDetailText,
+                "Locked",
+                "Select a fund-linked context to unlock audit review.");
+            return;
+        }
+
+        var ledger = workspace.Ledger;
+        var reconciliation = workspace.Reconciliation;
+        var reporting = workspace.Reporting;
+        var accountingSummary = ledger is null || ledger.TrialBalance.Count == 0
+            ? "Awaiting ledger snapshot"
+            : $"{ledger.TrialBalance.Count} trial-balance lines ready";
+        var accountingDetail = ledger is null
+            ? "Accounting review will become specific once the shared ledger snapshot is available."
+            : $"{ledger.JournalEntryCount} journal(s) are available for continuity, accrual, and sign-off review.";
+        var reconciliationSummary = reconciliation.OpenBreakCount > 0
+            ? $"{reconciliation.OpenBreakCount} break(s) open"
+            : workflow?.PrimaryBlocker.Code == "as-of-drift" || workflow?.PrimaryBlocker.Code == "missing-ledger" || workflow?.PrimaryBlocker.Code == "missing-reconciliation"
+                ? workflow.StatusLabel
+                : "Matched and review-ready";
+        var reconciliationDetail = reconciliation.OpenBreakCount > 0
+            ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+            : workflow?.PrimaryBlocker.Code == "as-of-drift" || workflow?.PrimaryBlocker.Code == "missing-ledger" || workflow?.PrimaryBlocker.Code == "missing-reconciliation"
+                ? workflow.PrimaryBlocker.Detail
+                : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current context.";
+        var reportingSummary = reporting.ProfileCount > 0
+            ? $"{reporting.ProfileCount} report profile(s) ready"
+            : "Reporting shell ready";
+        var reportingDetail = $"Cash {workspace.CashFinancing.TotalCash:C0}, financing {workspace.CashFinancing.FinancingCost:C0}, and report-pack exports stay in the same governance lane.";
+        var latestNotification = notifications.FirstOrDefault();
+        var auditSummary = unreadAlerts > 0
+            ? $"{unreadAlerts} unread alert(s)"
+            : workflow?.Evidence.FirstOrDefault(static evidence => string.Equals(evidence.Label, "Audit", StringComparison.OrdinalIgnoreCase))?.Value ?? "Audit trail ready";
+        var auditDetail = latestNotification is null
+            ? "Audit evidence and sign-off history remain available from the shared governance shell."
+            : $"Latest governance signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.";
+
+        SetLaneSummary(AccountingLaneSummaryText, AccountingLaneDetailText, accountingSummary, accountingDetail);
+        SetLaneSummary(ReconciliationLaneSummaryText, ReconciliationLaneDetailText, reconciliationSummary, reconciliationDetail);
+        SetLaneSummary(ReportingLaneSummaryText, ReportingLaneDetailText, reportingSummary, reportingDetail);
+        SetLaneSummary(AuditLaneSummaryText, AuditLaneDetailText, auditSummary, auditDetail);
+    }
+
     private void PopulateQueues(IReadOnlyList<WorkspaceQueueItem> operations, IReadOnlyList<WorkspaceQueueItem> accounting, IReadOnlyList<WorkspaceQueueItem> reconciliation, IReadOnlyList<WorkspaceQueueItem> reporting, IReadOnlyList<WorkspaceQueueItem> audit)
     {
         OperationsQueueList.ItemsSource = operations;
@@ -389,5 +497,11 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     {
         var resourceKey = isSelected ? "SecondaryButtonStyle" : "GhostButtonStyle";
         button.Style = (Style)System.Windows.Application.Current.FindResource(resourceKey);
+    }
+
+    private static void SetLaneSummary(TextBlock summaryText, TextBlock detailText, string summary, string detail)
+    {
+        summaryText.Text = summary;
+        detailText.Text = detail;
     }
 }
