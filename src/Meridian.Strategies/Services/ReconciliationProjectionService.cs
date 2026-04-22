@@ -219,10 +219,11 @@ public sealed class ReconciliationProjectionService
             return Array.Empty<PortfolioLedgerCheckDto>();
         }
 
+        var activeInternalCashMovements = internalCashMovements.Where(static row => !row.IsVoided).ToArray();
         var statementNet = statementRows.Sum(static row => row.Amount);
-        var internalNet = internalCashMovements.Where(static row => !row.IsVoided).Sum(static row => row.Amount);
+        var internalNet = activeInternalCashMovements.Sum(static row => row.Amount);
         var statementAsOf = statementRows.Count == 0 ? null : statementRows.Max(static row => row.AsOf);
-        var internalAsOf = internalCashMovements.Count == 0 ? null : internalCashMovements.Max(static row => row.AsOf);
+        var internalAsOf = activeInternalCashMovements.Length == 0 ? null : activeInternalCashMovements.Max(static row => row.AsOf);
 
         return
         [
