@@ -56,4 +56,9 @@ public interface IBacktestStudioEngine
     /// Implementations may await completion before returning.
     /// </summary>
     Task<BacktestResult> GetCanonicalResultAsync(string runHandle, CancellationToken ct);
+
+    /// <summary>
+    /// Requests cancellation for a previously started run.
+    /// </summary>
+    Task CancelAsync(string runHandle, CancellationToken ct);
 }

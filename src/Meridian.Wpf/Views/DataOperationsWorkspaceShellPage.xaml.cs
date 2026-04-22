@@ -6,6 +6,7 @@ using System.Windows.Media;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -97,10 +98,10 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         var notifications = _notificationService.GetHistory().Take(4).ToArray();
         var operatingContext = _operatingContextService?.CurrentContext;
         var scopeLabel = operatingContext is null
-            ? "Provider and storage posture"
+            ? WorkspaceCopyCatalog.DataOperations.DefaultScopeLabel
             : $"{operatingContext.ScopeKind.ToDisplayName()} · {operatingContext.DisplayName}";
         var scopeSummary = operatingContext is null
-            ? "Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell."
+            ? WorkspaceCopyCatalog.DataOperations.DefaultScopeSummary
             : $"Route providers, backfills, storage, and export jobs for {operatingContext.DisplayName} without leaving the shell.";
 
         var providersTask = LoadSafeAsync("provider catalog", async () => (await _statusService.GetAvailableProvidersAsync()).ToArray(), Array.Empty<ProviderInfoModel>());
@@ -165,13 +166,24 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
 
         OperationsSummaryTitleText.Text = presentation.OperationsSummaryTitleText;
         OperationsSummaryDetailText.Text = presentation.OperationsSummaryDetailText;
-        SummaryProvidersText.Text = presentation.SummaryProvidersText;
+        SummaryProvidersText.Text = NormalizeSummaryText(presentation.SummaryProvidersText, DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary);
         SummaryProvidersText.Foreground = ResolveToneBrush(presentation.SummaryProvidersTone);
-        SummaryBackfillText.Text = presentation.SummaryBackfillText;
+        SummaryBackfillText.Text = NormalizeSummaryText(presentation.SummaryBackfillText, DataOperationsWorkspacePresentationBuilder.BackfillUnavailableSummary);
         SummaryBackfillText.Foreground = ResolveToneBrush(presentation.SummaryBackfillTone);
-        SummaryStorageText.Text = presentation.SummaryStorageText;
+        SummaryStorageText.Text = NormalizeSummaryText(presentation.SummaryStorageText, DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary);
         SummaryStorageText.Foreground = ResolveToneBrush(presentation.SummaryStorageTone);
         RecentOperationsList.ItemsSource = presentation.RecentOperations;
+    }
+
+    private static string NormalizeSummaryText(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var normalized = value.Trim();
+        return normalized is "Loading..." or "Loading…" or "—" ? fallback : normalized;
     }
 
     private static async Task<T> LoadSafeAsync<T>(string operationName, Func<Task<T>> loader, T fallback)

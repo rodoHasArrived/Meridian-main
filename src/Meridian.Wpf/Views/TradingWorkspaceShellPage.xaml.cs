@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -127,9 +128,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Trading Cockpit",
-                WorkspaceSubtitle = "Risk-aware trading shell for live posture, blotter review, safe staging, and docked execution detail.",
-                PrimaryScopeLabel = "Desk",
+                WorkspaceTitle = WorkspaceCopyCatalog.Trading.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.Trading.ShellSubtitle,
+                PrimaryScopeLabel = WorkspaceCopyCatalog.Trading.PrimaryScopeLabel,
                 PrimaryScopeValue = summary.ActiveRunContext?.StrategyName ?? (_fundContextService.CurrentFundProfile?.DisplayName ?? "No active trading run"),
                 AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = summary.ActiveRunContext is null ? "Awaiting active run" : $"{summary.ActiveRunContext.ModeLabel} · {summary.ActiveRunContext.StatusLabel}",
@@ -529,9 +530,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "EventReplay", Label = "Event Replay", Description = "Open event replay", Glyph = "\uE768" },
                 new WorkspaceCommandItem { Id = "CollectionSessions", Label = "Collection Sessions", Description = "Open collection sessions", Glyph = "\uE8EF" },
-                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting consequences", Glyph = "\uE9D9" },
-                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
-                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Open Trial Balance", Description = "Open accounting consequences", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Review Recon Breaks", Description = "Review reconciliation breaks", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Open Audit Trail", Description = "Open audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Alerts", Description = "Open alerts", Glyph = "\uE7F4" },
                 new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
             ]

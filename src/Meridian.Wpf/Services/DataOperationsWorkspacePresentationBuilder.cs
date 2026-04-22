@@ -2,6 +2,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Session;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using ProviderInfoModel = Meridian.Ui.Services.Services.ProviderInfo;
 using StatusProviderInfoModel = Meridian.Ui.Services.Services.StatusProviderInfo;
@@ -11,6 +12,10 @@ namespace Meridian.Wpf.Services;
 
 public static class DataOperationsWorkspacePresentationBuilder
 {
+    internal const string ProvidersUnavailableSummary = "No providers";
+    internal const string BackfillUnavailableSummary = "No active backfill";
+    internal const string StorageUnavailableSummary = "Storage OK";
+
     public static DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data)
     {
         ArgumentNullException.ThrowIfNull(data);
@@ -53,14 +58,14 @@ public static class DataOperationsWorkspacePresentationBuilder
                         ? ($"{data.LastBackfillStatus.BarsWritten:N0} bars", WorkspaceTone.Info)
                         : latestExecution is not null
                             ? ($"{latestExecution.BarsDownloaded:N0} bars", WorkspaceTone.Info)
-                            : ("Idle", WorkspaceTone.Neutral);
+                            : (BackfillUnavailableSummary, WorkspaceTone.Neutral);
         var (storageText, storageTone) = criticalStorageIssueCount > 0
             ? ($"{criticalStorageIssueCount} issues", WorkspaceTone.Danger)
             : storageIssueCount > 0
                 ? ($"{storageIssueCount} issues", WorkspaceTone.Warning)
                 : data.StorageStats is not null
                     ? ($"{data.StorageStats.UsedPercentage:F0}% used", WorkspaceTone.Info)
-                    : ("No data", WorkspaceTone.Warning);
+                    : (StorageUnavailableSummary, WorkspaceTone.Success);
         var freshnessValue = data.ActiveSession is not null
             ? $"{data.ActiveSession.Name} active · {(data.ActiveSession.Provider ?? "No provider")}"
             : data.ProviderStatus?.IsConnected == true && !string.IsNullOrWhiteSpace(data.ProviderStatus.ActiveProvider)
@@ -181,9 +186,9 @@ public static class DataOperationsWorkspacePresentationBuilder
         {
             Context = new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Data Operations Workspace",
-                WorkspaceSubtitle = "Provider freshness, backfill pressure, storage posture, and export job visibility in one fixed operator shell.",
-                PrimaryScopeLabel = "Queue",
+                WorkspaceTitle = WorkspaceCopyCatalog.DataOperations.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.DataOperations.ShellSubtitle,
+                PrimaryScopeLabel = WorkspaceCopyCatalog.DataOperations.PrimaryScopeLabel,
                 PrimaryScopeValue = data.ScopeLabel,
                 AsOfValue = data.RetrievedAt.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = freshnessValue,
@@ -211,7 +216,7 @@ public static class DataOperationsWorkspacePresentationBuilder
             ],
             OperationsSummaryTitleText = "Data Operations",
             OperationsSummaryDetailText = operationsDetail,
-            SummaryProvidersText = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : "No data",
+            SummaryProvidersText = providerCount > 0 ? $"{healthyProviderCount}/{providerCount} ready" : ProvidersUnavailableSummary,
             SummaryProvidersTone = providersTone,
             SummaryBackfillText = backfillText,
             SummaryBackfillTone = backfillTone,
@@ -525,12 +530,12 @@ public sealed class DataOperationsWorkspacePresentation
     public IReadOnlyList<WorkspaceQueueItem> StorageQueueItems { get; init; } = Array.Empty<WorkspaceQueueItem>();
     public string OperationsSummaryTitleText { get; init; } = "Data Operations";
     public string OperationsSummaryDetailText { get; init; } = string.Empty;
-    public string SummaryProvidersText { get; init; } = "No data";
+    public string SummaryProvidersText { get; init; } = DataOperationsWorkspacePresentationBuilder.ProvidersUnavailableSummary;
     public string SummaryProvidersTone { get; init; } = WorkspaceTone.Warning;
-    public string SummaryBackfillText { get; init; } = "Idle";
+    public string SummaryBackfillText { get; init; } = DataOperationsWorkspacePresentationBuilder.BackfillUnavailableSummary;
     public string SummaryBackfillTone { get; init; } = WorkspaceTone.Neutral;
-    public string SummaryStorageText { get; init; } = "No data";
-    public string SummaryStorageTone { get; init; } = WorkspaceTone.Warning;
+    public string SummaryStorageText { get; init; } = DataOperationsWorkspacePresentationBuilder.StorageUnavailableSummary;
+    public string SummaryStorageTone { get; init; } = WorkspaceTone.Success;
     public IReadOnlyList<WorkspaceRecentItem> RecentOperations { get; init; } = Array.Empty<WorkspaceRecentItem>();
     public WorkspaceQueueRegionState ProviderQueueState { get; init; } = WorkspaceQueueRegionState.None;
     public WorkspaceQueueRegionState BackfillQueueState { get; init; } = WorkspaceQueueRegionState.None;

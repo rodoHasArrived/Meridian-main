@@ -6665,6 +6665,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NullToCollapsedConverter.cs
 │       │   ├── StringToBoolConverter.cs
 │       │   └── StringToVisibilityConverter.cs
+│       ├── Copy
+│       │   └── WorkspaceCopyCatalog.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
@@ -7626,6 +7628,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── WatchlistServiceCollection.cs
 │   │       └── WatchlistServiceTests.cs
 │   ├── Meridian.Wpf.Tests
+│   │   ├── Copy
+│   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   ├── Models
@@ -7717,6 +7721,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-605 directories, 6972 files
+607 directories, 6974 files
 ```
 <!-- readme-tree end -->

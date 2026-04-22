@@ -5,13 +5,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Data Operations Workspace"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.DataOperations.ShellTitle}"
       AutomationProperties.AutomationId="DataOperationsWorkspaceShellPage">
 
     <Page.Resources>
@@ -37,7 +38,7 @@
                             <Border Style="{StaticResource InfoBadgeInlineStyle}">
                                 <TextBlock Text="{Binding CountLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}" />
+                                           Foreground="{StaticResource BadgeInfoForegroundBrush}" />
                             </Border>
                         </WrapPanel>
 
@@ -184,7 +185,7 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid Grid.Row="0" Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -271,7 +272,7 @@
                                        Text="Provider readiness, historical coverage, and storage posture live in the same operator shell." />
                             <UniformGrid Columns="3" Margin="0,14,0,0">
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Providers"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -281,10 +282,14 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="3" />
+                                        <TextBlock Text="Connectivity posture"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Backfill"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -294,10 +299,14 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource WarningColorBrush}"
                                                    Text="Queue" />
+                                        <TextBlock Text="Historical coverage"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                    <StackPanel>
+                                    <StackPanel Style="{StaticResource WorkspaceSummaryTileContentStyle}">
                                         <TextBlock Text="Storage"
                                                    FontSize="10"
                                                    Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -307,6 +316,10 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    Text="Watch" />
+                                        <TextBlock Text="Durability health"
+                                                   Margin="0,4,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                     </StackPanel>
                                 </Border>
                             </UniformGrid>
@@ -315,7 +328,7 @@
 
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <Grid Margin="0,0,0,10">
+                            <Grid Style="{StaticResource WorkspaceCardHeaderGridStyle}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -341,7 +354,7 @@
                                        FontSize="11"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap" />
-                            <WrapPanel Margin="0,14,0,0">
+                            <WrapPanel Style="{StaticResource WorkspaceCardFooterPanelStyle}">
                                 <Button Content="Storage"
                                         Click="OpenStorage_Click"
                                         Style="{StaticResource SecondaryButtonStyle}"
