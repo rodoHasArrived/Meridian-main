@@ -29,7 +29,8 @@ public sealed record FundTrialBalanceLine(
     string? Symbol,
     string? FinancialAccountId,
     decimal Balance,
-    int EntryCount);
+    int EntryCount,
+    WorkstationSecurityReference? Security = null);
 
 /// <summary>
 /// Journal row for a fund ledger view.
@@ -73,7 +74,8 @@ public sealed record FundLedgerSnapshotBalanceLine(
     string AccountType,
     string? Symbol,
     string? FinancialAccountId,
-    decimal Balance);
+    decimal Balance,
+    WorkstationSecurityReference? Security = null);
 
 /// <summary>
 /// Point-in-time ledger snapshot used by reconciliation views.

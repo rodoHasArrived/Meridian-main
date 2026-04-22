@@ -206,14 +206,14 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     }
 
     /// <summary>
-    /// Builds a symbol-keyed Security Master classification map from security references that
-    /// were already resolved by <see cref="PortfolioReadService"/> and <see cref="LedgerReadService"/>.
+    /// Builds a symbol-keyed authoritative Security Master map from security references that were
+    /// already resolved by <see cref="PortfolioReadService"/> and <see cref="LedgerReadService"/>.
     /// Only symbols with a non-null <c>Security</c> property are included.
     /// </summary>
-    private static IReadOnlyDictionary<string, SecurityClassificationSummaryDto> BuildSecurityClassifications(
+    private static IReadOnlyDictionary<string, WorkstationSecurityReference> BuildSecurityClassifications(
         StrategyRunDetail detail)
     {
-        var map = new Dictionary<string, SecurityClassificationSummaryDto>(StringComparer.OrdinalIgnoreCase);
+        var map = new Dictionary<string, WorkstationSecurityReference>(StringComparer.OrdinalIgnoreCase);
 
         if (detail.Portfolio is not null)
         {
@@ -223,14 +223,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     !string.IsNullOrWhiteSpace(position.Symbol) &&
                     !map.ContainsKey(position.Symbol))
                 {
-                    map[position.Symbol] = new SecurityClassificationSummaryDto(
-                        AssetClass: position.Security.AssetClass,
-                        SubType: position.Security.SubType,
-                        PrimaryIdentifierKind: position.Security.MatchedIdentifierKind ?? "Ticker",
-                        PrimaryIdentifierValue: position.Security.PrimaryIdentifier ?? position.Symbol,
-                        MatchedIdentifierKind: position.Security.MatchedIdentifierKind,
-                        MatchedIdentifierValue: position.Security.MatchedIdentifierValue,
-                        MatchedProvider: position.Security.MatchedProvider);
+                    map[position.Symbol] = position.Security;
                 }
             }
         }
@@ -243,14 +236,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                     !string.IsNullOrWhiteSpace(line.Symbol) &&
                     !map.ContainsKey(line.Symbol))
                 {
-                    map[line.Symbol] = new SecurityClassificationSummaryDto(
-                        AssetClass: line.Security.AssetClass,
-                        SubType: line.Security.SubType,
-                        PrimaryIdentifierKind: line.Security.MatchedIdentifierKind ?? "Ticker",
-                        PrimaryIdentifierValue: line.Security.PrimaryIdentifier ?? line.Symbol,
-                        MatchedIdentifierKind: line.Security.MatchedIdentifierKind,
-                        MatchedIdentifierValue: line.Security.MatchedIdentifierValue,
-                        MatchedProvider: line.Security.MatchedProvider);
+                    map[line.Symbol] = line.Security;
                 }
             }
         }
