@@ -124,11 +124,15 @@ public sealed class StrategyRunReadService
 
             await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
 
+            var scope = StrategyRunScopeMetadataResolver.Resolve(run);
+            var portfolio = ApplyScopeFallback(await portfolioTask.ConfigureAwait(false), scope);
+            var ledger = ApplyScopeFallback(await ledgerTask.ConfigureAwait(false), scope);
+
             return new StrategyRunDetail(
                 Summary: ToSummary(run),
                 Parameters: run.ParameterSet ?? EmptyParameters,
-                Portfolio: await portfolioTask.ConfigureAwait(false),
-                Ledger: await ledgerTask.ConfigureAwait(false),
+                Portfolio: portfolio,
+                Ledger: ledger,
                 Execution: BuildExecutionSummary(run),
                 Promotion: BuildPromotionSummary(run),
                 Governance: BuildGovernanceSummary(run));
@@ -296,6 +300,47 @@ public sealed class StrategyRunReadService
             FundProfileId: run.FundProfileId,
             FundDisplayName: run.FundDisplayName,
             ParentRunId: run.ParentRunId);
+    }
+
+
+    private static PortfolioSummary? ApplyScopeFallback(PortfolioSummary? summary, StrategyRunScopeMetadata scope)
+    {
+        if (summary is null)
+        {
+            return null;
+        }
+
+        return summary with
+        {
+            AccountScopeId = summary.AccountScopeId ?? scope.AccountId,
+            AccountScopeDisplayName = summary.AccountScopeDisplayName ?? scope.AccountDisplayName,
+            EntityScopeId = summary.EntityScopeId ?? scope.EntityId,
+            EntityScopeDisplayName = summary.EntityScopeDisplayName ?? scope.EntityDisplayName,
+            SleeveScopeId = summary.SleeveScopeId ?? scope.SleeveId,
+            SleeveScopeDisplayName = summary.SleeveScopeDisplayName ?? scope.SleeveDisplayName,
+            VehicleScopeId = summary.VehicleScopeId ?? scope.VehicleId,
+            VehicleScopeDisplayName = summary.VehicleScopeDisplayName ?? scope.VehicleDisplayName
+        };
+    }
+
+    private static LedgerSummary? ApplyScopeFallback(LedgerSummary? summary, StrategyRunScopeMetadata scope)
+    {
+        if (summary is null)
+        {
+            return null;
+        }
+
+        return summary with
+        {
+            AccountScopeId = summary.AccountScopeId ?? scope.AccountId,
+            AccountScopeDisplayName = summary.AccountScopeDisplayName ?? scope.AccountDisplayName,
+            EntityScopeId = summary.EntityScopeId ?? scope.EntityId,
+            EntityScopeDisplayName = summary.EntityScopeDisplayName ?? scope.EntityDisplayName,
+            SleeveScopeId = summary.SleeveScopeId ?? scope.SleeveId,
+            SleeveScopeDisplayName = summary.SleeveScopeDisplayName ?? scope.SleeveDisplayName,
+            VehicleScopeId = summary.VehicleScopeId ?? scope.VehicleId,
+            VehicleScopeDisplayName = summary.VehicleScopeDisplayName ?? scope.VehicleDisplayName
+        };
     }
 
     private static StrategyRunExecutionSummary BuildExecutionSummary(StrategyRunEntry run)

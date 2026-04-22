@@ -67,15 +67,25 @@ public sealed class LedgerReadService
             return null;
         }
 
+        var scope = StrategyRunScopeMetadataResolver.Resolve(entry);
+
         var journal = ledger.Journal
             .OrderByDescending(static item => item.Timestamp)
-            .Select(static item => new LedgerJournalLine(
+            .Select(item => new LedgerJournalLine(
                 JournalEntryId: item.JournalEntryId,
                 Timestamp: item.Timestamp,
                 Description: item.Description,
                 TotalDebits: item.Lines.Sum(static line => line.Debit),
                 TotalCredits: item.Lines.Sum(static line => line.Credit),
-                LineCount: item.Lines.Count))
+                LineCount: item.Lines.Count,
+                AccountScopeId: scope.AccountId,
+                AccountScopeDisplayName: scope.AccountDisplayName,
+                EntityScopeId: scope.EntityId,
+                EntityScopeDisplayName: scope.EntityDisplayName,
+                SleeveScopeId: scope.SleeveId,
+                SleeveScopeDisplayName: scope.SleeveDisplayName,
+                VehicleScopeId: scope.VehicleId,
+                VehicleScopeDisplayName: scope.VehicleDisplayName))
             .ToArray();
 
         var accountSummaries = ledger.SummarizeAccounts()
@@ -84,13 +94,21 @@ public sealed class LedgerReadService
             .ToArray();
 
         var trialBalance = accountSummaries
-            .Select(static summary => new LedgerTrialBalanceLine(
+            .Select(summary => new LedgerTrialBalanceLine(
                 AccountName: summary.Account.Name,
                 AccountType: summary.Account.AccountType.ToString(),
                 Symbol: summary.Account.Symbol,
                 FinancialAccountId: summary.Account.FinancialAccountId,
                 Balance: summary.Balance,
-                EntryCount: summary.EntryCount))
+                EntryCount: summary.EntryCount,
+                AccountScopeId: string.IsNullOrWhiteSpace(scope.AccountId) ? summary.Account.FinancialAccountId : scope.AccountId,
+                AccountScopeDisplayName: scope.AccountDisplayName,
+                EntityScopeId: scope.EntityId,
+                EntityScopeDisplayName: scope.EntityDisplayName,
+                SleeveScopeId: scope.SleeveId,
+                SleeveScopeDisplayName: scope.SleeveDisplayName,
+                VehicleScopeId: scope.VehicleId,
+                VehicleScopeDisplayName: scope.VehicleDisplayName))
             .ToArray();
 
         return new LedgerSummary(
@@ -105,7 +123,15 @@ public sealed class LedgerReadService
             RevenueBalance: SumBalance(accountSummaries, LedgerAccountType.Revenue),
             ExpenseBalance: SumBalance(accountSummaries, LedgerAccountType.Expense),
             TrialBalance: trialBalance,
-            Journal: journal);
+            Journal: journal,
+            AccountScopeId: scope.AccountId,
+            AccountScopeDisplayName: scope.AccountDisplayName,
+            EntityScopeId: scope.EntityId,
+            EntityScopeDisplayName: scope.EntityDisplayName,
+            SleeveScopeId: scope.SleeveId,
+            SleeveScopeDisplayName: scope.SleeveDisplayName,
+            VehicleScopeId: scope.VehicleId,
+            VehicleScopeDisplayName: scope.VehicleDisplayName);
     }
 
     private static decimal SumBalance(
