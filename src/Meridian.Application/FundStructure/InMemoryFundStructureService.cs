@@ -1030,15 +1030,10 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             ? scoped.Businesses.FirstOrDefault(candidate => candidate.BusinessId == query.BusinessId.Value)
             : scoped.Businesses.FirstOrDefault();
         var portfolioById = portfolios.ToDictionary(static portfolio => portfolio.InvestmentPortfolioId);
-        var ledgerAssignments = scoped.Assignments
-            .Where(assignment => AssignmentComparer.Equals(assignment.AssignmentType, "LedgerGroup"))
-            .GroupBy(static assignment => assignment.NodeId)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group.Select(static assignment => assignment.AssignmentReference).First());
+        var ledgerAssignments = LedgerGroupingRules.BuildLedgerAssignments(scoped.Assignments);
 
         var ledgerGroups = accounts
-            .GroupBy(account => ResolveLedgerGroup(account, ledgerAssignments))
+            .GroupBy(account => LedgerGroupingRules.ResolveLedgerGroupId(account, ledgerAssignments))
             .Select(group =>
             {
                 var accountIds = group.Select(static account => account.AccountId).ToList();
@@ -1056,8 +1051,8 @@ public sealed class InMemoryFundStructureService : IFundStructureService
                     .ToList();
 
                 return new LedgerGroupSummaryDto(
-                    new LedgerGroupId(group.Key),
-                    DisplayName: group.Key,
+                    group.Key,
+                    DisplayName: group.Key.Value,
                     accountIds,
                     relatedPortfolioIds,
                     relatedPortfolios.Where(static portfolio => portfolio.ClientId.HasValue).Select(static portfolio => portfolio.ClientId!.Value).Distinct().ToList(),
@@ -1234,19 +1229,14 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         }
     }
 
-    private static IReadOnlyDictionary<Guid, string> BuildLedgerAssignments(
+    private static IReadOnlyDictionary<Guid, LedgerGroupId> BuildLedgerAssignments(
         IReadOnlyList<FundStructureAssignmentDto> assignments) =>
-        assignments
-            .Where(assignment => AssignmentComparer.Equals(assignment.AssignmentType, "LedgerGroup"))
-            .GroupBy(static assignment => assignment.NodeId)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group.Select(static assignment => assignment.AssignmentReference).First());
+        LedgerGroupingRules.BuildLedgerAssignments(assignments);
 
     private static ResolvedCashFlowScope? ResolveCashFlowScope(
         GovernanceCashFlowQuery query,
         StructureScope scoped,
-        IReadOnlyDictionary<Guid, string> ledgerAssignments)
+        IReadOnlyDictionary<Guid, LedgerGroupId> ledgerAssignments)
     {
         return query.ScopeKind switch
         {
@@ -1623,7 +1613,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
     private static ResolvedCashFlowScope? ResolveLedgerGroupCashFlowScope(
         GovernanceCashFlowQuery query,
         StructureScope scoped,
-        IReadOnlyDictionary<Guid, string> ledgerAssignments)
+        IReadOnlyDictionary<Guid, LedgerGroupId> ledgerAssignments)
     {
         if (!query.LedgerGroupId.HasValue)
         {
@@ -1631,10 +1621,7 @@ public sealed class InMemoryFundStructureService : IFundStructureService
         }
 
         var accounts = scoped.Accounts
-            .Where(account => string.Equals(
-                ResolveLedgerGroup(account, ledgerAssignments),
-                query.LedgerGroupId.Value.Value,
-                StringComparison.OrdinalIgnoreCase))
+            .Where(account => LedgerGroupingRules.ResolveLedgerGroupId(account, ledgerAssignments) == query.LedgerGroupId.Value)
             .ToList();
         var portfolioIds = GetRelatedPortfolioIds(accounts, scoped.OwnershipLinks, scoped.InvestmentPortfolios);
 
@@ -3270,24 +3257,6 @@ public sealed class InMemoryFundStructureService : IFundStructureService
 
     private static bool TryParseGuid(string? value, out Guid guid) =>
         Guid.TryParse(value, out guid);
-
-    private static string ResolveLedgerGroup(
-        AccountSummaryDto account,
-        IReadOnlyDictionary<Guid, string> ledgerAssignments)
-    {
-        if (!string.IsNullOrWhiteSpace(account.LedgerReference))
-        {
-            return account.LedgerReference!;
-        }
-
-        if (ledgerAssignments.TryGetValue(account.AccountId, out var assignedLedger)
-            && !string.IsNullOrWhiteSpace(assignedLedger))
-        {
-            return assignedLedger;
-        }
-
-        return "unassigned";
-    }
 
     private static void EnsureSingleOperatingParent(CreateInvestmentPortfolioRequest request)
     {

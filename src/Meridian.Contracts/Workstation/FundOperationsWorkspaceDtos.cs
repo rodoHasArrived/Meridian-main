@@ -95,6 +95,7 @@ public sealed record FundOperationsWorkspaceDto(
     IReadOnlyList<string> RelatedRunIds,
     FundWorkspaceSummary Workspace,
     FundLedgerSummary Ledger,
+    FundLedgerReconciliationSnapshot LedgerReconciliationSnapshot,
     IReadOnlyList<FundAccountSummary> Accounts,
     IReadOnlyList<BankAccountSnapshot> BankSnapshots,
     CashFinancingSummary CashFinancing,

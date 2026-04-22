@@ -9,7 +9,10 @@ public sealed record SecurityClassificationSummaryDto(
     string AssetClass,
     string? SubType,
     string? PrimaryIdentifierKind,
-    string? PrimaryIdentifierValue);
+    string? PrimaryIdentifierValue,
+    string? MatchedIdentifierKind = null,
+    string? MatchedIdentifierValue = null,
+    string? MatchedProvider = null);
 
 /// <summary>
 /// Workstation-facing Security Master economic definition summary.

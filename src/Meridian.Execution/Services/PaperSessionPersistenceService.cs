@@ -352,7 +352,7 @@ public sealed class PaperSessionPersistenceService
             ? detail.OrderHistory.Count
             : persistedOrders.Count;
         var comparedLedgerEntryCount = _store is null
-            ? detail.Portfolio?.Ledger.JournalEntryCount ?? detail.ReconstructedLedger?.JournalEntryCount ?? 0
+            ? 0
             : persistedLedgerEntries.Count;
         var lastPersistedFillAt = persistedFills.Count > 0
             ? persistedFills.Max(fill => fill.Timestamp)

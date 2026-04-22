@@ -150,7 +150,7 @@ jobs:
       # Always upload as a GitHub Actions artifact so the zip is accessible even
       # when the run is not associated with a versioned release.
       - name: Upload Actions artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Meridian.Desktop-${{ steps.version.outputs.version }}-${{ matrix.rid }}-standalone
           path: ${{ steps.archive.outputs.archive_name }}

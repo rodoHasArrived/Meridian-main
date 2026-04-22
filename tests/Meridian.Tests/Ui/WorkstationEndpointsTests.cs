@@ -18,7 +18,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -601,6 +603,61 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueResolveRoute_ShouldRequireReviewBeforeResolve()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-resolve-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+
+        var invalidResolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Skipping review should fail."));
+        invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var review = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating."));
+        review.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolve = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/resolve",
+            new ResolveReconciliationBreakRequest(
+                BreakId: breakId,
+                Status: ReconciliationBreakQueueStatus.Resolved,
+                ResolvedBy: "qa-resolve",
+                ResolutionNote: "Issue resolved."));
+        resolve.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        resolved.Should().NotBeNull();
+        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolved.ResolvedBy.Should().Be("qa-resolve");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnSharedContinuityPayload()
     {
         await using var app = await CreateAppAsync(services =>
@@ -977,6 +1034,10 @@ public sealed class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        builder.Services.TryAddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
 
         var app = builder.Build();
         app.MapWorkstationEndpoints(new JsonSerializerOptions
@@ -997,6 +1058,10 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
         services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<IReconciliationBreakQueueRepository>(_ =>
+            new FileReconciliationBreakQueueRepository(
+                Path.Combine(Path.GetTempPath(), "meridian-tests", "break-queue", Guid.NewGuid().ToString("N")),
+                NullLogger<FileReconciliationBreakQueueRepository>.Instance));
         services.AddSingleton<ReconciliationProjectionService>();
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();

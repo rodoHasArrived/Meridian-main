@@ -117,6 +117,15 @@ public static class UiEndpoints
         // InMemoryReconciliationRunRepository is the default; a persistent implementation can
         // override it by registering before AddUiSharedServices is called (TryAdd semantics).
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileReconciliationBreakQueueRepository>>();
+            var dataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "workstation");
+            return new FileReconciliationBreakQueueRepository(dataDir, logger);
+        });
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
     }
