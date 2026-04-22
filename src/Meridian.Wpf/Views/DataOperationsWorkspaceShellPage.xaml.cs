@@ -6,6 +6,7 @@ using System.Windows.Media;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -91,10 +92,10 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         var notifications = _notificationService.GetHistory().Take(4).ToArray();
         var operatingContext = _operatingContextService?.CurrentContext;
         var scopeLabel = operatingContext is null
-            ? "Provider and storage posture"
+            ? WorkspaceCopyCatalog.DataOperations.DefaultScopeLabel
             : $"{operatingContext.ScopeKind.ToDisplayName()} · {operatingContext.DisplayName}";
         var scopeSummary = operatingContext is null
-            ? "Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell."
+            ? WorkspaceCopyCatalog.DataOperations.DefaultScopeSummary
             : $"Route providers, backfills, storage, and export jobs for {operatingContext.DisplayName} without leaving the shell.";
 
         var providersTask = LoadSafeAsync("provider catalog", async () => (await _statusService.GetAvailableProvidersAsync()).ToArray(), Array.Empty<ProviderInfoModel>());

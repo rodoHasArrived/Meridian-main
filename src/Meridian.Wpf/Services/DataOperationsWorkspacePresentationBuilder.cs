@@ -2,6 +2,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Session;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using ProviderInfoModel = Meridian.Ui.Services.Services.ProviderInfo;
 using StatusProviderInfoModel = Meridian.Ui.Services.Services.StatusProviderInfo;
@@ -124,9 +125,9 @@ public static class DataOperationsWorkspacePresentationBuilder
         {
             Context = new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Data Operations Workspace",
-                WorkspaceSubtitle = "Provider freshness, backfill pressure, storage posture, and export job visibility in one fixed operator shell.",
-                PrimaryScopeLabel = "Queue",
+                WorkspaceTitle = WorkspaceCopyCatalog.DataOperations.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.DataOperations.ShellSubtitle,
+                PrimaryScopeLabel = WorkspaceCopyCatalog.DataOperations.PrimaryScopeLabel,
                 PrimaryScopeValue = data.ScopeLabel,
                 AsOfValue = data.RetrievedAt.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = freshnessValue,

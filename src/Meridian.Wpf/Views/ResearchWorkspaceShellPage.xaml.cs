@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Copy;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -188,9 +189,9 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
 
         return new WorkspaceShellContextInput
         {
-            WorkspaceTitle = "Research Workspace",
-            WorkspaceSubtitle = "Market briefing, run studio, and promotion-aware research workflow.",
-            PrimaryScopeLabel = "Research",
+            WorkspaceTitle = WorkspaceCopyCatalog.Research.ShellTitle,
+            WorkspaceSubtitle = WorkspaceCopyCatalog.Research.ShellSubtitle,
+            PrimaryScopeLabel = WorkspaceCopyCatalog.Research.PrimaryScopeLabel,
             PrimaryScopeValue = activeRun?.StrategyName
                 ?? briefing.Workspace.LatestStrategyName
                 ?? "No active research run",
