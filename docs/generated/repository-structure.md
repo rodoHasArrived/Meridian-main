@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-22 15:47:08 UTC. Do not edit manually.
+> Auto-generated on 2026-04-22 16:50:38 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -750,7 +750,8 @@ Meridian-main
 │   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── prompt-generation-results.json
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── workspace-visual-audit-checklist-2026-04-22.md
 │   ├── development
 │   │   ├── policies
 │   │   │   ├── desktop-support-policy.md
@@ -4590,6 +4591,7 @@ Meridian-main
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
 │   │   ├── governance-fund-ops-blueprint.md
+│   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
@@ -4649,6 +4651,7 @@ Meridian-main
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
+│   │   ├── export-preflight-rules.md
 │   │   ├── open-source-references.md
 │   │   ├── README.md
 │   │   ├── reconciliation-break-taxonomy.md
@@ -4731,6 +4734,7 @@ Meridian-main
 │   │   ├── health-dashboard.md
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── kernel-readiness-dashboard.md
+│   │   ├── KERNEL_PARITY_STATUS.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
@@ -6039,11 +6043,13 @@ Meridian-main
 │   │   │   ├── AnalysisExportService.Formats.Xlsx.cs
 │   │   │   ├── AnalysisExportService.IO.cs
 │   │   │   ├── AnalysisQualityReport.cs
+│   │   │   ├── ExportPreflightRules.cs
 │   │   │   ├── ExportProfile.cs
 │   │   │   ├── ExportRequest.cs
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
-│   │   │   └── ExportVerificationReport.cs
+│   │   │   ├── ExportVerificationReport.cs
+│   │   │   └── PreflightRule.cs
 │   │   ├── FundAccounts
 │   │   │   ├── Migrations
 │   │   │   │   └── 001_fund_accounts.sql
@@ -6457,6 +6463,8 @@ Meridian-main
 │       │   ├── NullToCollapsedConverter.cs
 │       │   ├── StringToBoolConverter.cs
 │       │   └── StringToVisibilityConverter.cs
+│       ├── Copy
+│       │   └── WorkspaceCopyCatalog.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -6486,10 +6494,12 @@ Meridian-main
 │       │   ├── ShellNavigationCatalog.Trading.cs
 │       │   ├── ShellNavigationCatalog.Workspaces.cs
 │       │   ├── ShellNavigationModels.cs
+│       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
+│       │   ├── WorkspaceQueueRegionState.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   ├── WorkspaceShellChromeModels.cs
 │       │   ├── WorkspaceShellModels.cs
@@ -7420,6 +7430,8 @@ Meridian-main
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
 │   ├── Meridian.Wpf.Tests
+│   │   ├── Copy
+│   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── Models
 │   │   │   └── ShellNavigationCatalogTests.cs
 │   │   ├── Services
