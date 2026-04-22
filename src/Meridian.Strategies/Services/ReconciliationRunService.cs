@@ -91,8 +91,15 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.Variance,
                 result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                result.HasActualAsOf ? result.ActualAsOf : null,
-                MapSeverity(result.Category, result.MissingSource, result.CheckId, result.ExpectedSource, result.ActualSource)));
+                result.HasActualAsOf ? result.ActualAsOf : null)
+            {
+                Severity = MapSeverity(
+                    result.Category,
+                    result.MissingSource,
+                    result.CheckId,
+                    result.ExpectedSource,
+                    result.ActualSource)
+            });
         }
 
         var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
