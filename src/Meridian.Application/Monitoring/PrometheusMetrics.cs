@@ -583,7 +583,14 @@ public static class PrometheusMetrics
     /// Sets current critical severity rate for a domain and optionally records alert count.
     /// </summary>
     public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool raiseJumpAlert)
-        => SetKernelCriticalSeverityRate(domain, criticalRate, jumpActive: false, raiseJumpAlert);
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
+        if (raiseJumpAlert)
+        {
+            KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
+        }
+    }
 
     /// <summary>
     /// Sets current critical severity rate and jump activity state for a domain, with optional alert increment.
