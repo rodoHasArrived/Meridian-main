@@ -66,6 +66,8 @@ public sealed class WorkspaceDeepPageChromeTests
     [InlineData(@"src\Meridian.Wpf\Views\NotificationCenterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml", "EmbeddedShellHeroCardStyle")]
+    [InlineData(@"src\Meridian.Wpf\Views\DataQualityPage.xaml", "WorkspaceCommandBarControl")]
+    [InlineData(@"src\Meridian.Wpf\Views\DataQualityPage.xaml", "WorkspaceInteractionPanel")]
     [InlineData(@"src\Meridian.Wpf\Views\PositionBlotterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     public void LegacyDeepPages_ShouldOptIntoSharedEmbeddedShellChrome(string relativePath, string expectedMarker)
     {
@@ -86,5 +88,16 @@ public sealed class WorkspaceDeepPageChromeTests
     {
         var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(relativePath);
         File.ReadAllText(absolutePath).Should().Contain(automationId);
+    }
+
+    [Fact]
+    public void DataQualityPage_ShouldAvoidBlockingPromptsInsideHostedWorkspaceExperience()
+    {
+        var pageCodePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml.cs");
+        var code = File.ReadAllText(pageCodePath);
+
+        code.Should().NotContain("MessageBox.Show");
+        code.Should().NotContain("Interaction.InputBox");
+        code.Should().Contain("OpenWorkflow(");
     }
 }
