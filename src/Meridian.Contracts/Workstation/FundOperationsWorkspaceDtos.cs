@@ -25,9 +25,22 @@ public sealed record FundOperationsWorkspaceQuery(
     DateTimeOffset? AsOf = null,
     string? Currency = null,
     FundLedgerScope ScopeKind = FundLedgerScope.Consolidated,
-    string? ScopeId = null,
-    IReadOnlyList<string>? SelectedLedgerIds = null);
+    string? ScopeId = null)
+{
+    public IReadOnlyList<string>? SelectedLedgerIds { get; init; } = null;
 
+    public FundOperationsWorkspaceQuery(
+        string FundProfileId,
+        DateTimeOffset? AsOf,
+        string? Currency,
+        FundLedgerScope ScopeKind,
+        string? ScopeId,
+        IReadOnlyList<string>? SelectedLedgerIds)
+        : this(FundProfileId, AsOf, Currency, ScopeKind, ScopeId)
+    {
+        this.SelectedLedgerIds = SelectedLedgerIds;
+    }
+}
 /// <summary>
 /// Asset-class contribution within a NAV attribution summary.
 /// </summary>
