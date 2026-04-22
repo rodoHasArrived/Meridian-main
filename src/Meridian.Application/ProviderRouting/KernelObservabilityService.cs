@@ -43,7 +43,7 @@ public sealed class KernelObservabilityService
         IReadOnlyDictionary<string, ProviderConnectionHealthSnapshot> healthByConnection,
         in KernelExecutionScope scope)
     {
-        var domain = context.Capability.ToString();
+        var domain = scope.Domain;
         var state = _states.GetOrAdd(domain, static _ => new DomainKernelState());
         var latencyMs = Stopwatch.GetElapsedTime(scope.StartTimestamp).TotalMilliseconds;
         var selectedScore = ResolveTrustScore(result, healthByConnection);
@@ -187,6 +187,7 @@ internal sealed class DomainKernelState
     private long _withReasons;
     private long _determinismMismatches;
     private int _criticalJumpAlertCount;
+    private bool _criticalJumpActive;
     private DateTimeOffset _lastUpdatedUtc;
 
     public DomainKernelSnapshotState Record(
@@ -213,10 +214,7 @@ internal sealed class DomainKernelState
             }
 
             _throughputWindow.Enqueue(now);
-            while (_throughputWindow.Count > 0 && now - _throughputWindow.Peek() > ThroughputWindowSize)
-            {
-                _throughputWindow.Dequeue();
-            }
+            PruneThroughputWindow(now);
 
             var sample = _points.ToArray();
             var shortWindow = sample.TakeLast(Math.Min(30, sample.Length)).ToArray();
@@ -237,7 +235,9 @@ internal sealed class DomainKernelState
                 ? criticalShort
                 : longWindow.Count(static p => p.Severity == KernelSeverityLevel.Critical) / (double)longWindow.Length;
 
-            var jumpTriggered = IsCriticalJump(criticalShort, criticalLong);
+            var jumpActive = IsCriticalJump(criticalShort, criticalLong);
+            var jumpTriggered = jumpActive && !_criticalJumpActive;
+            _criticalJumpActive = jumpActive;
             if (jumpTriggered)
             {
                 _criticalJumpAlertCount++;
@@ -260,6 +260,7 @@ internal sealed class DomainKernelState
     {
         lock (_sync)
         {
+            PruneThroughputWindow(DateTimeOffset.UtcNow);
             var latencies = _points.Select(static p => p.LatencyMs).OrderBy(static value => value).ToArray();
             var shortWindow = _points.TakeLast(Math.Min(30, _points.Count)).ToArray();
             var longWindow = _points.TakeLast(Math.Min(120, _points.Count)).ToArray();
@@ -283,9 +284,17 @@ internal sealed class DomainKernelState
                 CriticalRateShortWindow: criticalShort,
                 CriticalRateLongWindow: criticalLong,
                 CriticalJumpAlertCount: _criticalJumpAlertCount,
-                CriticalJumpActive: IsCriticalJump(criticalShort, criticalLong),
+                CriticalJumpActive: _criticalJumpActive,
                 DeterminismMismatches: _determinismMismatches,
                 LastUpdatedUtc: _lastUpdatedUtc);
+        }
+    }
+
+    private void PruneThroughputWindow(DateTimeOffset now)
+    {
+        while (_throughputWindow.Count > 0 && now - _throughputWindow.Peek() > ThroughputWindowSize)
+        {
+            _throughputWindow.Dequeue();
         }
     }
 

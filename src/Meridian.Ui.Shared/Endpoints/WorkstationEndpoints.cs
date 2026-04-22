@@ -1703,8 +1703,7 @@ public static class WorkstationEndpoints
                     hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
                     lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
                     tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
-            },
-            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
+            }
         };
     }
 
