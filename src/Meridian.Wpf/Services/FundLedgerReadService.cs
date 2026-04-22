@@ -195,7 +195,7 @@ public sealed class FundLedgerReadService
                 Journal: consolidatedJournal,
                 Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["group"] = "consolidated"
+                    ["group"] = FundLedgerScope.Consolidated.ToString()
                 })
         };
 
