@@ -222,7 +222,7 @@ public sealed class ReconciliationProjectionService
         var activeInternalCashMovements = internalCashMovements.Where(static row => !row.IsVoided).ToArray();
         var statementNet = statementRows.Sum(static row => row.Amount);
         var internalNet = activeInternalCashMovements.Sum(static row => row.Amount);
-        var statementAsOf = statementRows.Count == 0 ? null : statementRows.Max(static row => row.AsOf);
+        var statementAsOf = statementRows.Max(static row => row.AsOf);
         var internalAsOf = activeInternalCashMovements.Length == 0 ? null : activeInternalCashMovements.Max(static row => row.AsOf);
 
         return
