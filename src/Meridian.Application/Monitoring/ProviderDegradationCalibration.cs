@@ -183,7 +183,7 @@ public sealed class ProviderDegradationCalibrationRunner
 
                 if (predicted)
                 {
-                    alerts += window.AlertVolumeObserved > 0 ? window.AlertVolumeObserved : 1;
+                    alerts += window.AlertVolumeObserved;
                 }
 
                 if (predicted && actual) tp++;
