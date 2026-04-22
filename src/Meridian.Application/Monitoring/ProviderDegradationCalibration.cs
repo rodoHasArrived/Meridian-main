@@ -191,8 +191,8 @@ public sealed class ProviderDegradationCalibrationRunner
                 else if (!predicted && actual) fn++;
             }
 
-            var precision = tp + fp == 0 ? 1.0 : (double)tp / (tp + fp);
-            var recall = tp + fn == 0 ? 1.0 : (double)tp / (tp + fn);
+            var precision = tp + fp == 0 ? 0.0 : (double)tp / (tp + fp);
+            var recall = tp + fn == 0 ? 0.0 : (double)tp / (tp + fn);
 
             metrics.Add(new SeverityThresholdMetrics(
                 Severity: severity,
