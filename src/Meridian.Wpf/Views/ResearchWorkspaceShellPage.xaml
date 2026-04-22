@@ -4,13 +4,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Research Workspace"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.Research.ShellTitle}"
       AutomationProperties.AutomationId="ResearchWorkspaceShellPage">
 
     <Page.Resources>

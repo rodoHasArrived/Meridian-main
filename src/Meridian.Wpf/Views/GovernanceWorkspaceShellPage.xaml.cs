@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -82,8 +83,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             {
                 ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
                 {
-                    WorkspaceTitle = "Governance Workspace",
-                    WorkspaceSubtitle = "Organization-aware review shell for operations, accounting, reconciliation, reporting, and audit posture.",
+                    WorkspaceTitle = WorkspaceCopyCatalog.Governance.ShellTitle,
+                    WorkspaceSubtitle = WorkspaceCopyCatalog.Governance.ShellSubtitleNoFund,
                     PrimaryScopeLabel = "Context",
                     PrimaryScopeValue = operatingContext?.DisplayName ?? "Awaiting fund-linked scope",
                     AsOfValue = "Awaiting fund-linked scope",
@@ -119,8 +120,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                WorkspaceTitle = "Governance Workspace",
-                WorkspaceSubtitle = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.",
+                WorkspaceTitle = WorkspaceCopyCatalog.Governance.ShellTitle,
+                WorkspaceSubtitle = WorkspaceCopyCatalog.Governance.ShellSubtitleFund,
                 PrimaryScopeLabel = "Governance Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",
                 AsOfValue = ledger?.AsOf.ToLocalTime().ToString("MMM dd yyyy HH:mm") ?? "Awaiting ledger snapshot",
