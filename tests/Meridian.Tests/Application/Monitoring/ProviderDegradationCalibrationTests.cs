@@ -75,7 +75,7 @@ public sealed class ProviderDegradationCalibrationTests
         snapshot.CandidateMetrics.Single(m => m.Severity == IncidentSeverity.Critical).Threshold
             .Should().Be(candidate.Config.DegradationThreshold);
         snapshot.Comparison.ExpectedAlertCountCandidate.Should().BeGreaterThan(0);
-        snapshot.Comparison.ExpectedAlertVolumeChangePercent.Should().NotBe(double.NaN);
+        snapshot.Comparison.ExpectedAlertVolumeChangePercent.Should().BeFinite();
     }
 
     [Fact]
