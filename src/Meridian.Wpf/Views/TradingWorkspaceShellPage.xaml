@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:models="clr-namespace:Meridian.Wpf.Models"
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="1400"
@@ -12,6 +13,39 @@
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Trading Cockpit"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
+
+    <Page.Resources>
+        <DataTemplate x:Key="QueueRegionStateTemplate" DataType="{x:Type models:WorkspaceQueueRegionState}">
+            <Border Style="{StaticResource WorkspaceQueueStateCardStyle}">
+                <StackPanel>
+                    <Border Style="{StaticResource WorkspaceQueueStateIconContainerStyle}">
+                        <TextBlock Text="{Binding IconGlyph}" Style="{StaticResource WorkspaceQueueStateIconTextStyle}" />
+                    </Border>
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource WorkspaceQueueStateTitleTextStyle}" />
+                    <TextBlock Text="{Binding Description}" Style="{StaticResource WorkspaceQueueStateDescriptionTextStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <Button Tag="{Binding PrimaryActionId}" Content="{Binding PrimaryActionLabel}" Click="OnQueueStateActionClick" Margin="0,0,8,0">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding PrimaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button Tag="{Binding SecondaryActionId}" Content="{Binding SecondaryActionLabel}" Click="OnQueueStateActionClick">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers><DataTrigger Binding="{Binding SecondaryActionLabel}" Value=""><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -395,9 +429,10 @@
                                         Style="{StaticResource LinkButtonStyle}" />
                             </Grid>
 
-                            <ItemsControl x:Name="ActivePositionsList"
-                                          AutomationProperties.AutomationId="ActivePositionsList"
-                                          AutomationProperties.Name="Active Positions">
+                            <Grid>
+                                <ItemsControl x:Name="ActivePositionsList"
+                                              AutomationProperties.AutomationId="ActivePositionsList"
+                                              AutomationProperties.Name="Active Positions">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
@@ -453,6 +488,10 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+                                <ContentControl x:Name="ActivePositionsStateContainer"
+                                                ContentTemplate="{StaticResource QueueRegionStateTemplate}"
+                                                Visibility="Collapsed" />
+                            </Grid>
 
                             <TextBlock x:Name="NoPositionsText"
                                        Margin="0,8,0,0"

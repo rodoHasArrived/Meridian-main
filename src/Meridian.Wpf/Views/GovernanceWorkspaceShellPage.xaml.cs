@@ -70,6 +70,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
 
     private async Task RefreshAsync()
     {
+        SetQueueLoadingStates();
+
         try
         {
             var profile = _fundContextService.CurrentFundProfile;
@@ -103,6 +105,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
                 QueueSummaryText.Text = "Governance queues unlock after a fund-linked operating context is selected.";
                 PopulateQueues([], [], [], [], []);
+                SetNoContextQueueStates();
                 PopulateInspector(operatingContext, null, null, null, null, notifications);
                 return;
             }
@@ -140,17 +143,24 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? profile.DisplayName;
             QueueSummaryText.Text = $"Prioritize operations, accounting, reconciliation, reporting, and audit review for {(operatingContext?.DisplayName ?? profile.DisplayName)}.";
 
-            PopulateQueues(
-                BuildOperationsQueue(profile, workspace),
-                BuildAccountingQueue(profile, workspace),
-                BuildReconciliationQueue(reconciliation, ledger),
-                BuildReportingQueue(profile, workspace),
-                BuildAuditQueue(reconciliation, notifications, unreadAlerts));
+            var operationsQueue = BuildOperationsQueue(profile, workspace);
+            var accountingQueue = BuildAccountingQueue(profile, workspace);
+            var reconciliationQueue = BuildReconciliationQueue(reconciliation, ledger);
+            var reportingQueue = BuildReportingQueue(profile, workspace);
+            var auditQueue = BuildAuditQueue(reconciliation, notifications, unreadAlerts);
+
+            PopulateQueues(operationsQueue, accountingQueue, reconciliationQueue, reportingQueue, auditQueue);
+            ApplyQueueState(OperationsQueueList, OperationsQueueStateContainer, BuildQueueState(operationsQueue, "Operations queue", "No operations queue work.", "FundLedger"));
+            ApplyQueueState(AccountingQueueList, AccountingQueueStateContainer, BuildQueueState(accountingQueue, "Accounting queue", "No accounting queue work.", "FundTrialBalance"));
+            ApplyQueueState(ReconciliationQueueList, ReconciliationQueueStateContainer, BuildQueueState(reconciliationQueue, "Reconciliation queue", "No reconciliation queue work.", "FundReconciliation"));
+            ApplyQueueState(ReportingQueueList, ReportingQueueStateContainer, BuildQueueState(reportingQueue, "Reporting queue", "No reporting queue work.", "FundCashFinancing"));
+            ApplyQueueState(AuditQueueList, AuditQueueStateContainer, BuildQueueState(auditQueue, "Audit queue", "No audit queue work.", "FundAuditTrail"));
             PopulateInspector(operatingContext, profile, ledger, reconciliation, cash, notifications);
         }
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[GovernanceWorkspaceShell] Refresh failed: {ex.Message}");
+            SetQueueErrorStates();
         }
     }
 
@@ -187,6 +197,14 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         }
     }
 
+    private void OnQueueStateActionClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: string actionId })
+        {
+            ExecuteAction(actionId, navigate: false);
+        }
+    }
+
     private void OnRecentActionClick(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string actionId })
@@ -219,6 +237,12 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         if (actionId == "SwitchContext")
         {
             RequestContextSelection();
+            return;
+        }
+
+        if (actionId == "Retry")
+        {
+            DispatchRefresh(RefreshAsync);
             return;
         }
 
@@ -348,6 +372,61 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         RecentWorkList.ItemsSource = notifications.Count > 0
             ? notifications.Take(3).Select(notification => new WorkspaceRecentItem { Title = notification.Title, Detail = notification.Message, Meta = $"{notification.Timestamp:g} · {notification.Type}", Tone = notification.IsRead ? WorkspaceTone.Neutral : WorkspaceTone.Warning, ActionId = "NotificationCenter", ActionLabel = "Open Alerts" }).ToArray()
             : new[] { new WorkspaceRecentItem { Title = profile is null ? "Select the active context" : "Audit trail ready", Detail = profile is null ? "A fund-linked operating context is the main trust signal for governance review. Choose the context before working breaks or approvals." : "Open the audit trail to inspect recent governance activity and sign-off context.", Meta = profile is null ? "Locked shell" : "No recent notifications", Tone = profile is null ? WorkspaceTone.Warning : WorkspaceTone.Info, ActionId = profile is null ? "SwitchContext" : "FundAuditTrail", ActionLabel = profile is null ? "Switch Context" : "Open Audit Trail" } };
+    }
+
+
+    private void ApplyQueueState(ItemsControl queueList, ContentControl stateContainer, WorkspaceQueueRegionState state)
+    {
+        if (state.IsVisible)
+        {
+            queueList.Visibility = Visibility.Collapsed;
+            stateContainer.Visibility = Visibility.Visible;
+            stateContainer.Content = state;
+            return;
+        }
+
+        queueList.Visibility = Visibility.Visible;
+        stateContainer.Visibility = Visibility.Collapsed;
+        stateContainer.Content = null;
+    }
+
+    private static WorkspaceQueueRegionState BuildQueueState(IReadOnlyList<WorkspaceQueueItem> queueItems, string queueName, string emptyDescription, string actionId)
+    {
+        if (queueItems.Count == 0)
+        {
+            return WorkspaceQueueRegionState.Empty($"{queueName} is empty", emptyDescription, "Switch Context", "SwitchContext", "Open Queue", actionId);
+        }
+
+        return WorkspaceQueueRegionState.None;
+    }
+
+    private void SetQueueLoadingStates()
+    {
+        ApplyQueueState(OperationsQueueList, OperationsQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading operations queue", "Refreshing governance operations posture."));
+        ApplyQueueState(AccountingQueueList, AccountingQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading accounting queue", "Refreshing accounting and ledger posture."));
+        ApplyQueueState(ReconciliationQueueList, ReconciliationQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading reconciliation queue", "Refreshing breaks and coverage posture."));
+        ApplyQueueState(ReportingQueueList, ReportingQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading reporting queue", "Refreshing reporting and handoff posture."));
+        ApplyQueueState(AuditQueueList, AuditQueueStateContainer, WorkspaceQueueRegionState.Loading("Loading audit queue", "Refreshing audit and diagnostics posture."));
+    }
+
+    private void SetNoContextQueueStates()
+    {
+        var state = WorkspaceQueueRegionState.Empty("Governance queues locked", "Choose a fund-linked context to unlock governance work queues.", "Switch Context", "SwitchContext", "Open Diagnostics", "Diagnostics");
+        ApplyQueueState(OperationsQueueList, OperationsQueueStateContainer, state);
+        ApplyQueueState(AccountingQueueList, AccountingQueueStateContainer, state);
+        ApplyQueueState(ReconciliationQueueList, ReconciliationQueueStateContainer, state);
+        ApplyQueueState(ReportingQueueList, ReportingQueueStateContainer, state);
+        ApplyQueueState(AuditQueueList, AuditQueueStateContainer, state);
+    }
+
+    private void SetQueueErrorStates()
+    {
+        var state = WorkspaceQueueRegionState.Error("Governance queue degraded", "Queue telemetry is unavailable. Retry or inspect diagnostics.", "Retry", "Retry", "Open Diagnostics", "Diagnostics");
+        ApplyQueueState(OperationsQueueList, OperationsQueueStateContainer, state);
+        ApplyQueueState(AccountingQueueList, AccountingQueueStateContainer, state);
+        ApplyQueueState(ReconciliationQueueList, ReconciliationQueueStateContainer, state);
+        ApplyQueueState(ReportingQueueList, ReportingQueueStateContainer, state);
+        ApplyQueueState(AuditQueueList, AuditQueueStateContainer, state);
     }
 
     private void RequestContextSelection()
