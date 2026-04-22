@@ -523,7 +523,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open. Guardrail: Security Master is the sole instrument source, and governance DTOs with instrument terms must carry Security Master identity/provenance references. |
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
-| Shared ledger read-model baseline | Partial | Ledger summaries now expose consolidated totals plus per-ledger slices (entity/sleeve/vehicle) with trial-balance/journal payloads for WPF drill-in binding; account-summary and richer reconciliation UX remain |
+| Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
 | Security Master platform baseline | Complete | The current Security Master mechanics are delivered and workstation productization is live: hardened WPF activation, canonical `WorkstationSecurityReference` coverage/provenance, and shared research/trading/governance/portfolio/ledger propagation |
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
@@ -635,5 +635,6 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 ---
 
 *Last Updated: 2026-04-17*
+
 
 
