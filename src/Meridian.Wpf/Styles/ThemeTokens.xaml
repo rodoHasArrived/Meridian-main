@@ -216,4 +216,30 @@
     <SolidColorBrush x:Key="CommandBarBackground"    Color="#F8F9FA" />
     <SolidColorBrush x:Key="CommandBarBorderBrush"   Color="{StaticResource ConsoleBorderColor}" />
 
+    <!-- ── Layout rhythm tokens ── -->
+    <x:Double x:Key="WorkspaceSectionGap">24</x:Double>
+    <x:Double x:Key="WorkspaceCardInternalGap">16</x:Double>
+    <x:Double x:Key="WorkspaceCompactGap">12</x:Double>
+    <x:Double x:Key="WorkspaceTightGap">8</x:Double>
+    <Thickness x:Key="WorkspaceCardPaddingStandard">20</Thickness>
+    <Thickness x:Key="WorkspaceCardPaddingCompact">16</Thickness>
+    <Thickness x:Key="WorkspaceSectionCardMargin">0,0,0,24</Thickness>
+    <Thickness x:Key="WorkspaceCardHeaderToBodyMargin">0,0,0,16</Thickness>
+    <Thickness x:Key="WorkspaceCardBodyToFooterMargin">0,16,0,0</Thickness>
+    <Thickness x:Key="WorkspaceSectionDividerMargin">0,16,0,14</Thickness>
+
+    <!-- ── Semantic badge tokens ── -->
+    <SolidColorBrush x:Key="BadgeInfoBackgroundBrush" Color="{StaticResource ConsoleAccentBlueAlpha10}" />
+    <SolidColorBrush x:Key="BadgeInfoBorderBrush"     Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="BadgeInfoForegroundBrush" Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="BadgeSuccessBackgroundBrush" Color="{StaticResource ConsoleAccentGreenAlpha10}" />
+    <SolidColorBrush x:Key="BadgeSuccessBorderBrush"     Color="{StaticResource ConsoleAccentGreen}" />
+    <SolidColorBrush x:Key="BadgeSuccessForegroundBrush" Color="{StaticResource ConsoleAccentGreenDim}" />
+    <SolidColorBrush x:Key="BadgeWarningBackgroundBrush" Color="{StaticResource ConsoleAccentOrangeAlpha10}" />
+    <SolidColorBrush x:Key="BadgeWarningBorderBrush"     Color="{StaticResource ConsoleAccentOrange}" />
+    <SolidColorBrush x:Key="BadgeWarningForegroundBrush" Color="{StaticResource ConsoleAccentOrangeDim}" />
+    <SolidColorBrush x:Key="BadgeDangerBackgroundBrush" Color="{StaticResource ConsoleAccentRedAlpha10}" />
+    <SolidColorBrush x:Key="BadgeDangerBorderBrush"     Color="{StaticResource ConsoleAccentRed}" />
+    <SolidColorBrush x:Key="BadgeDangerForegroundBrush" Color="{StaticResource ConsoleAccentRedDim}" />
+
 </ResourceDictionary>
