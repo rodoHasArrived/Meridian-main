@@ -120,8 +120,10 @@ public sealed record ReconciliationBreakDto(
     decimal Variance,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf,
-    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Warning);
+    DateTimeOffset? ActualAsOf)
+{
+    public ReconciliationBreakSeverity Severity { get; init; } = ReconciliationBreakSeverity.Warning;
+}
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
