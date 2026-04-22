@@ -232,7 +232,7 @@ jobs:
       if: steps.kernel-filter.outputs.kernel == 'true'
       run: |
         dotnet test tests/Meridian.FSharp.Tests \
-          --filter "Category=KernelParity|Name~KernelParity" \
+          --filter "Category=KernelParity|FullyQualifiedName~KernelParity|DisplayName~KernelParity" \
           -c Release \
           /p:EnableWindowsTargeting=true \
           --logger "trx;LogFileName=kernel-parity-fsharp.trx" \
