@@ -71,9 +71,7 @@ public sealed record ShellNavigationItem(
     string Glyph,
     string VisibilityLabel)
 {
-    public string MetaLine => string.IsNullOrWhiteSpace(VisibilityLabel)
-        ? $"{WorkspaceTitle} · {SectionLabel}"
-        : $"{WorkspaceTitle} · {SectionLabel} · {VisibilityLabel}";
+    public string MetaLine => ShellNavigationMetaFormatter.FormatMetaLine(WorkspaceTitle, SectionLabel, VisibilityLabel);
 }
 
 public sealed record WorkspaceShellState(
@@ -95,7 +93,31 @@ public sealed record ShellCommandPaletteEntry(
     string Glyph,
     string VisibilityLabel)
 {
-    public string MetaLine => string.IsNullOrWhiteSpace(VisibilityLabel)
-        ? $"{WorkspaceTitle} · {SectionLabel}"
-        : $"{WorkspaceTitle} · {SectionLabel} · {VisibilityLabel}";
+    public string MetaLine => ShellNavigationMetaFormatter.FormatMetaLine(WorkspaceTitle, SectionLabel, VisibilityLabel);
+}
+
+internal static class ShellNavigationMetaFormatter
+{
+    public static string FormatMetaLine(string workspaceTitle, string sectionLabel, string visibilityLabel)
+    {
+        var normalizedVisibility = NormalizeToken(visibilityLabel);
+        var parts = new List<string>(3)
+        {
+            NormalizeToken(sectionLabel),
+            NormalizeToken(workspaceTitle)
+        };
+
+        if (!string.IsNullOrWhiteSpace(normalizedVisibility) &&
+            !Contains(parts, normalizedVisibility))
+        {
+            parts.Add(normalizedVisibility);
+        }
+
+        return string.Join(" · ", parts.Where(static part => !string.IsNullOrWhiteSpace(part)));
+    }
+
+    private static string NormalizeToken(string value) => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+
+    private static bool Contains(IEnumerable<string> values, string candidate)
+        => values.Any(value => string.Equals(value, candidate, StringComparison.OrdinalIgnoreCase));
 }
