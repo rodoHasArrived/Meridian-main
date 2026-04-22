@@ -77,10 +77,22 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellTitle}"
                                        Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="{x:Static copy:WorkspaceCopyCatalog.Trading.ShellSubtitle}"
-                                       Margin="0,6,0,0"
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       TextWrapping="Wrap" />
+                            <StackPanel Margin="0,6,0,0">
+                                <TextBlock Style="{StaticResource PanelIntro}"
+                                           Text="Run paper and live trading from one execution workspace." />
+                                <TextBlock Style="{StaticResource PanelBullet}"
+                                           Margin="0,4,0,0"
+                                           Text="• Start or resume paper and live runs from the action panels below." />
+                                <TextBlock Style="{StaticResource PanelBullet}"
+                                           Margin="0,2,0,0"
+                                           Text="• Track active positions, equity, and run progression at a glance." />
+                                <TextBlock Style="{StaticResource PanelBullet}"
+                                           Margin="0,2,0,0"
+                                           Text="• Keep risk controls aligned to the selected operating context." />
+                                <TextBlock Style="{StaticResource PanelStatus}"
+                                           Margin="0,8,0,0"
+                                           Text="Status: Confirm context and active run before promoting signals." />
+                            </StackPanel>
 
                             <Border Margin="0,16,0,0"
                                     Padding="14,12"
@@ -100,10 +112,9 @@
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                Text="No operating context selected" />
                                     <TextBlock x:Name="ActiveFundDetailText"
-                                               Margin="0,4,0,0"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                               Text="Runs, allocations, and accounting posture scope to the active operating context." />
+                                               Margin="0,6,0,0"
+                                               Style="{StaticResource PanelStatus}"
+                                               Text="Status: Run scope, allocations, and accounting controls follow this context." />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -167,10 +178,20 @@
 
                                     <TextBlock x:Name="TradingStatusSummaryText"
                                                Margin="0,8,0,0"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                               TextWrapping="Wrap"
-                                               Text="Promotion handoff, audit traceability, and validation coverage appear here for the active run or workspace." />
+                                               Style="{StaticResource PanelIntro}"
+                                               Text="Monitor promotion readiness, audit coverage, and validation health." />
+                                    <TextBlock Style="{StaticResource PanelBullet}"
+                                               Margin="0,4,0,0"
+                                               Text="• Check each queue card for readiness gates and missing evidence." />
+                                    <TextBlock Style="{StaticResource PanelBullet}"
+                                               Margin="0,2,0,0"
+                                               Text="• Open deeper review tools when a run needs trace-level inspection." />
+                                    <TextBlock Style="{StaticResource PanelBullet}"
+                                               Margin="0,2,0,0"
+                                               Text="• Resolve blockers before promotion or live escalation." />
+                                    <TextBlock Style="{StaticResource PanelStatus}"
+                                               Margin="0,8,0,0"
+                                               Text="Status: Awaiting scoped run evidence to clear governance checks." />
 
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,14,0,10">
                                         <StackPanel>
@@ -189,11 +210,18 @@
                                                            Text="Awaiting runs" />
                                             </Border>
                                             <TextBlock x:Name="PromotionStatusDetailText"
+                                                       Margin="0,6,0,0"
+                                                       Style="{StaticResource PanelIntro}"
+                                                       Text="Prepare run evidence for promotion decisions." />
+                                            <TextBlock Style="{StaticResource PanelBullet}"
+                                                       Margin="0,4,0,0"
+                                                       Text="• Record or select a run to load promotion checks." />
+                                            <TextBlock Style="{StaticResource PanelBullet}"
+                                                       Margin="0,2,0,0"
+                                                       Text="• Review signal provenance and handoff completeness." />
+                                            <TextBlock Style="{StaticResource PanelStatus}"
                                                        Margin="0,8,0,0"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                       TextWrapping="Wrap"
-                                                       Text="Record or select a run to surface promotion review posture." />
+                                                       Text="Status: Promotion cannot advance until a scoped run is selected." />
                                         </StackPanel>
                                     </Border>
 
@@ -214,11 +242,18 @@
                                                            Text="Awaiting runs" />
                                             </Border>
                                             <TextBlock x:Name="AuditStatusDetailText"
+                                                       Margin="0,6,0,0"
+                                                       Style="{StaticResource PanelIntro}"
+                                                       Text="Track audit traceability for recorded runs." />
+                                            <TextBlock Style="{StaticResource PanelBullet}"
+                                                       Margin="0,4,0,0"
+                                                       Text="• Confirm event trails include fills, overrides, and notes." />
+                                            <TextBlock Style="{StaticResource PanelBullet}"
+                                                       Margin="0,2,0,0"
+                                                       Text="• Flag gaps before final governance sign-off." />
+                                            <TextBlock Style="{StaticResource PanelStatus}"
                                                        Margin="0,8,0,0"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                       TextWrapping="Wrap"
-                                                       Text="Audit coverage appears after runs are recorded." />
+                                                       Text="Status: Audit checks activate after at least one run is recorded." />
                                         </StackPanel>
                                     </Border>
 
@@ -239,11 +274,18 @@
                                                            Text="Awaiting runs" />
                                             </Border>
                                             <TextBlock x:Name="ValidationStatusDetailText"
+                                                       Margin="0,6,0,0"
+                                                       Style="{StaticResource PanelIntro}"
+                                                       Text="Review validation coverage for active trading controls." />
+                                            <TextBlock Style="{StaticResource PanelBullet}"
+                                                       Margin="0,4,0,0"
+                                                       Text="• Verify control checks map to the selected run." />
+                                            <TextBlock Style="{StaticResource PanelBullet}"
+                                                       Margin="0,2,0,0"
+                                                       Text="• Inspect failures before promotion or deployment." />
+                                            <TextBlock Style="{StaticResource PanelStatus}"
                                                        Margin="0,8,0,0"
-                                                       FontSize="12"
-                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                       TextWrapping="Wrap"
-                                                       Text="Validation coverage appears after recorded runs project governance controls." />
+                                                       Text="Status: Validation evidence appears after run telemetry is recorded." />
                                         </StackPanel>
                                     </Border>
 

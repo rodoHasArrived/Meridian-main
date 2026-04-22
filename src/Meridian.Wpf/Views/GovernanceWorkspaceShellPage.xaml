@@ -241,11 +241,23 @@
                         <StackPanel>
                             <TextBlock Text="Needs Attention"
                                        Style="{StaticResource CardHeaderStyle}" />
-                            <TextBlock x:Name="QueueSummaryText"
-                                       Margin="0,6,0,0"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Governance work queues for operations, accounting, reconciliation, reporting, and audit review." />
+                            <StackPanel Margin="0,6,0,0">
+                                <TextBlock Style="{StaticResource PanelIntro}"
+                                           Text="Review fund governance queues and clear today’s blockers." />
+                                <TextBlock Style="{StaticResource PanelBullet}"
+                                           Margin="0,4,0,0"
+                                           Text="• Open operations, accounting, reconciliation, reporting, or audit lanes." />
+                                <TextBlock Style="{StaticResource PanelBullet}"
+                                           Margin="0,2,0,0"
+                                           Text="• Launch primary actions directly from each queue card." />
+                                <TextBlock Style="{StaticResource PanelBullet}"
+                                           Margin="0,2,0,0"
+                                           Text="• Triage scope, ownership, and due dates before handoffs." />
+                                <TextBlock x:Name="QueueSummaryText"
+                                           Style="{StaticResource PanelStatus}"
+                                           Margin="0,8,0,0"
+                                           Text="Status: Select a fund context to load scoped governance items." />
+                            </StackPanel>
                         </StackPanel>
 
                         <Border Grid.Column="1"
