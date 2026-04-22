@@ -237,7 +237,7 @@ module Reconciliation =
                         if check.ExpectedAmount = 0m then 1m else check.ExpectedAmount
 
                     let timingToleranceDays =
-                        max 1 (int (System.Math.Ceiling(float maxAsOfDriftMinutes / 1440.0)))
+                        max 0 (int (System.Math.Ceiling(float maxAsOfDriftMinutes / 1440.0)))
 
                     let candidate: MatchCandidate = {
                         CandidateId = System.Guid.NewGuid()
