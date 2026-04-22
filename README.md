@@ -6369,7 +6369,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
-│   │   │   └── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunReadService.cs
+│   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   └── Storage
 │   │       ├── IPromotionRecordStore.cs
 │   │       ├── JsonlPromotionRecordStore.cs
@@ -7729,6 +7730,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-607 directories, 6982 files
+607 directories, 6983 files
 ```
 <!-- readme-tree end -->
