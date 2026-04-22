@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealthSnapshot
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveFailures
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveSuccesses
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastFailureTime
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSuccessTime
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageLatencyMs
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentIssues
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs

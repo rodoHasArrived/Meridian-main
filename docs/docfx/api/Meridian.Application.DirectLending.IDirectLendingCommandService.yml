@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IDirectLendingCommandService
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateLoanAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ActivateLoanAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BookDrawdownAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyRateResetAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyPrincipalPaymentAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyMixedPaymentAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssessFeeAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -376,7 +376,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyWriteOffAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -416,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostDailyAccrualAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -456,7 +456,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequestProjectionAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -496,7 +496,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostJournalAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -529,7 +529,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconcileAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -567,7 +567,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateServicerReportBatchAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -605,7 +605,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChargePrepaymentPenaltyAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
@@ -645,7 +645,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RebuildAllAsync
     path: ../../src/Meridian.Application/DirectLending/IDirectLendingCommandService.cs

@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/PublishResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PublishResult
     path: ../../src/Meridian.Domain/Events/PublishResult.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/PublishResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accepted
     path: ../../src/Meridian.Domain/Events/PublishResult.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/PublishResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AcceptedUnderPressure
     path: ../../src/Meridian.Domain/Events/PublishResult.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/PublishResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dropped
     path: ../../src/Meridian.Domain/Events/PublishResult.cs

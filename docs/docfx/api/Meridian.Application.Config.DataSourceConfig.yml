@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceConfig
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -331,7 +331,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -360,7 +360,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IB
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -418,7 +418,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
@@ -447,7 +447,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs

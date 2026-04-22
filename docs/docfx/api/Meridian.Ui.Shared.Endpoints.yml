@@ -17,8 +17,6 @@ items:
   - Meridian.Ui.Shared.Endpoints.CanonicalizationEndpoints
   - Meridian.Ui.Shared.Endpoints.CatalogEndpoints
   - Meridian.Ui.Shared.Endpoints.CheckpointEndpoints
-  - Meridian.Ui.Shared.Endpoints.CircuitBreakerCommandRequest
-  - Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
   - Meridian.Ui.Shared.Endpoints.ConfigEndpoints
   - Meridian.Ui.Shared.Endpoints.CppTraderEndpoints
   - Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest
@@ -26,6 +24,7 @@ items:
   - Meridian.Ui.Shared.Endpoints.CronEndpoints
   - Meridian.Ui.Shared.Endpoints.DiagnosticsEndpoints
   - Meridian.Ui.Shared.Endpoints.DirectLendingEndpoints
+  - Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints
   - Meridian.Ui.Shared.Endpoints.ExecutionAccountSnapshot
   - Meridian.Ui.Shared.Endpoints.ExecutionEndpoints
   - Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
@@ -33,6 +32,7 @@ items:
   - Meridian.Ui.Shared.Endpoints.ExportEndpoints
   - Meridian.Ui.Shared.Endpoints.FailoverEndpoints
   - Meridian.Ui.Shared.Endpoints.FundAccountEndpoints
+  - Meridian.Ui.Shared.Endpoints.FundStructureEndpoints
   - Meridian.Ui.Shared.Endpoints.HealthEndpoints
   - Meridian.Ui.Shared.Endpoints.HistoricalEndpoints
   - Meridian.Ui.Shared.Endpoints.IBEndpoints
@@ -42,14 +42,12 @@ items:
   - Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware
   - Meridian.Ui.Shared.Endpoints.LoginSessionMiddlewareExtensions
   - Meridian.Ui.Shared.Endpoints.MaintenanceScheduleEndpoints
-  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
   - Meridian.Ui.Shared.Endpoints.MessagingEndpoints
   - Meridian.Ui.Shared.Endpoints.MetricsDiff
   - Meridian.Ui.Shared.Endpoints.MoneyMarketFundEndpoints
   - Meridian.Ui.Shared.Endpoints.OptionsEndpoints
   - Meridian.Ui.Shared.Endpoints.ParameterDiff
   - Meridian.Ui.Shared.Endpoints.PositionDiffEntry
-  - Meridian.Ui.Shared.Endpoints.PositionLimitCommandRequest
   - Meridian.Ui.Shared.Endpoints.PromotionEndpoints
   - Meridian.Ui.Shared.Endpoints.ProviderEndpoints
   - Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints
@@ -71,6 +69,7 @@ items:
   - Meridian.Ui.Shared.Endpoints.SymbolMappingEndpoints
   - Meridian.Ui.Shared.Endpoints.TradingActionResult
   - Meridian.Ui.Shared.Endpoints.UiEndpoints
+  - Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
   - Meridian.Ui.Shared.Endpoints.WorkstationEndpoints
   langs:
   - csharp
@@ -196,6 +195,12 @@ references:
   name: DirectLendingEndpoints
   nameWithType: DirectLendingEndpoints
   fullName: Meridian.Ui.Shared.Endpoints.DirectLendingEndpoints
+- uid: Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints
+  commentId: T:Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints
+  href: Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints.html
+  name: EnvironmentDesignerEndpoints
+  nameWithType: EnvironmentDesignerEndpoints
+  fullName: Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints
 - uid: Meridian.Ui.Shared.Endpoints.ExecutionEndpoints
   commentId: T:Meridian.Ui.Shared.Endpoints.ExecutionEndpoints
   href: Meridian.Ui.Shared.Endpoints.ExecutionEndpoints.html
@@ -220,30 +225,6 @@ references:
   name: ExecutionGatewayHealth
   nameWithType: ExecutionGatewayHealth
   fullName: Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth
-- uid: Meridian.Ui.Shared.Endpoints.CircuitBreakerCommandRequest
-  commentId: T:Meridian.Ui.Shared.Endpoints.CircuitBreakerCommandRequest
-  href: Meridian.Ui.Shared.Endpoints.CircuitBreakerCommandRequest.html
-  name: CircuitBreakerCommandRequest
-  nameWithType: CircuitBreakerCommandRequest
-  fullName: Meridian.Ui.Shared.Endpoints.CircuitBreakerCommandRequest
-- uid: Meridian.Ui.Shared.Endpoints.PositionLimitCommandRequest
-  commentId: T:Meridian.Ui.Shared.Endpoints.PositionLimitCommandRequest
-  href: Meridian.Ui.Shared.Endpoints.PositionLimitCommandRequest.html
-  name: PositionLimitCommandRequest
-  nameWithType: PositionLimitCommandRequest
-  fullName: Meridian.Ui.Shared.Endpoints.PositionLimitCommandRequest
-- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
-  commentId: T:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
-  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html
-  name: ManualOverrideCommandRequest
-  nameWithType: ManualOverrideCommandRequest
-  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
-- uid: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
-  commentId: T:Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
-  href: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.html
-  name: ClearManualOverrideCommandRequest
-  nameWithType: ClearManualOverrideCommandRequest
-  fullName: Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest
 - uid: Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest
   commentId: T:Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest
   href: Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest.html
@@ -256,6 +237,12 @@ references:
   name: TradingActionResult
   nameWithType: TradingActionResult
   fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult
+- uid: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
+  commentId: T:Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
+  href: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest.html
+  name: UpdateExecutionCircuitBreakerRequest
+  nameWithType: UpdateExecutionCircuitBreakerRequest
+  fullName: Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest
 - uid: Meridian.Ui.Shared.Endpoints.ExportEndpoints
   commentId: T:Meridian.Ui.Shared.Endpoints.ExportEndpoints
   href: Meridian.Ui.Shared.Endpoints.ExportEndpoints.html
@@ -274,6 +261,12 @@ references:
   name: FundAccountEndpoints
   nameWithType: FundAccountEndpoints
   fullName: Meridian.Ui.Shared.Endpoints.FundAccountEndpoints
+- uid: Meridian.Ui.Shared.Endpoints.FundStructureEndpoints
+  commentId: T:Meridian.Ui.Shared.Endpoints.FundStructureEndpoints
+  href: Meridian.Ui.Shared.Endpoints.FundStructureEndpoints.html
+  name: FundStructureEndpoints
+  nameWithType: FundStructureEndpoints
+  fullName: Meridian.Ui.Shared.Endpoints.FundStructureEndpoints
 - uid: Meridian.Ui.Shared.Endpoints.HealthEndpoints
   commentId: T:Meridian.Ui.Shared.Endpoints.HealthEndpoints
   href: Meridian.Ui.Shared.Endpoints.HealthEndpoints.html

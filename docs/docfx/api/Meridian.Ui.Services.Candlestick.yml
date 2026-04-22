@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Candlestick
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Open
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: High
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Low
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Close
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Volume
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBullish
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Body
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -294,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpperWick
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowerWick
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
@@ -352,7 +352,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ChartingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Range
     path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs

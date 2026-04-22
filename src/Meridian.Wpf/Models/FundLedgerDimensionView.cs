@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Wpf.Models;
 
@@ -13,4 +14,5 @@ public sealed record FundLedgerDimensionView(
     int JournalEntryCount,
     bool IsConsolidated,
     bool HasScopedLedgerData,
-    IReadOnlySet<string> FinancialAccountIds);
+    IReadOnlySet<string> FinancialAccountIds,
+    IReadOnlyList<FundLedgerSliceDto> LedgerSlices);

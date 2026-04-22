@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientNames
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiClient
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillClient
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CredentialTest
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetupWizard
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Alpaca
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Polygon
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tiingo
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Finnhub
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlphaVantage
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenFigi
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NasdaqDataLink
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs

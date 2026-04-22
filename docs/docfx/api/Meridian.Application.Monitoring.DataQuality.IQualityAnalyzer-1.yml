@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IQualityAnalyzer
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Categories
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -260,7 +260,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeAsync
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfig
     path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs

@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TemplateBrokerageGateway
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -292,7 +292,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -364,7 +364,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -404,7 +404,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -446,7 +446,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -481,7 +481,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -516,7 +516,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -551,7 +551,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -586,7 +586,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
@@ -624,7 +624,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs

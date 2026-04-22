@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResourceLimits
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxCpuPct
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMemoryPct
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDiskIoMbps
     path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs

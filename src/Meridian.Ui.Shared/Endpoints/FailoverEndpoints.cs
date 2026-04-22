@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Config;
+using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Ui.Shared.Services;
@@ -220,21 +221,31 @@ public static class FailoverEndpoints
             .Produces(404);
 
         // Get provider health — returns live data from StreamingFailoverService when available
-        group.MapGet(UiApiRoutes.FailoverHealth, (ConfigStore store, [FromServices] StreamingFailoverRegistry? registry) =>
+        group.MapGet(UiApiRoutes.FailoverHealth, (ConfigStore store, [FromServices] StreamingFailoverRegistry? registry, [FromServices] ProviderDegradationScorer? scorer) =>
         {
             if (registry?.Service is { } svc)
             {
                 var healthSnapshots = svc.GetProviderHealthSnapshots();
-                var health = healthSnapshots.Select(h => new
+                var health = healthSnapshots.Select(h =>
                 {
-                    providerId = h.ProviderId,
-                    consecutiveFailures = h.ConsecutiveFailures,
-                    consecutiveSuccesses = h.ConsecutiveSuccesses,
-                    lastIssueTime = h.LastFailureTime,
-                    lastSuccessTime = h.LastSuccessTime,
-                    averageLatencyMs = h.AverageLatencyMs,
-                    recentIssues = h.RecentIssues,
-                    isSimulated = false
+                    var degradationScore = scorer?.GetScore(h.ProviderId);
+                    var score = degradationScore?.CompositeScore ?? 0.0;
+                    var reasons = degradationScore?.Reasons
+                        .Select(r => new ProviderScoreReasonResponse(r.Code, r.Contribution))
+                        .ToArray() ?? Array.Empty<ProviderScoreReasonResponse>();
+
+                    return new ProviderHealthResponse(
+                        ProviderId: h.ProviderId,
+                        ConsecutiveFailures: (int)h.ConsecutiveFailures,
+                        ConsecutiveSuccesses: (int)h.ConsecutiveSuccesses,
+                        LastIssueTime: h.LastFailureTime,
+                        LastSuccessTime: h.LastSuccessTime,
+                        DegradationScore: score,
+                        Reasons: reasons,
+                        RecentIssues: h.RecentIssues.Select(issue => new HealthIssueResponse(
+                            Type: "provider_health_issue",
+                            Message: issue,
+                            Timestamp: DateTimeOffset.UtcNow)).ToArray());
                 }).ToArray();
 
                 return Results.Json(health, jsonOptions);
@@ -250,18 +261,21 @@ public static class FailoverEndpoints
                     string.Equals(p.ProviderId, s.Id, StringComparison.OrdinalIgnoreCase));
 
                 var hasRealData = realMetrics is not null;
+                var degradationScore = scorer?.GetScore(s.Id);
+                var score = degradationScore?.CompositeScore ?? 0.0;
+                var reasons = degradationScore?.Reasons
+                    .Select(r => new ProviderScoreReasonResponse(r.Code, r.Contribution))
+                    .ToArray() ?? Array.Empty<ProviderScoreReasonResponse>();
 
-                return new
-                {
-                    providerId = s.Id,
-                    consecutiveFailures = hasRealData ? realMetrics!.ConnectionFailures : 0L,
-                    consecutiveSuccesses = hasRealData ? (realMetrics!.ConnectionAttempts - realMetrics.ConnectionFailures) : 0L,
-                    lastIssueTime = (DateTimeOffset?)null,
-                    lastSuccessTime = hasRealData ? realMetrics!.Timestamp : (DateTimeOffset?)null,
-                    averageLatencyMs = 0.0,
-                    recentIssues = Array.Empty<string>(),
-                    isSimulated = !hasRealData
-                };
+                return new ProviderHealthResponse(
+                    ProviderId: s.Id,
+                    ConsecutiveFailures: hasRealData ? (int)realMetrics!.ConnectionFailures : 0,
+                    ConsecutiveSuccesses: hasRealData ? (int)(realMetrics!.ConnectionAttempts - realMetrics.ConnectionFailures) : 0,
+                    LastIssueTime: null,
+                    LastSuccessTime: hasRealData ? realMetrics!.Timestamp : null,
+                    DegradationScore: score,
+                    Reasons: reasons,
+                    RecentIssues: Array.Empty<HealthIssueResponse>());
             }).ToArray();
 
             return Results.Json(fallbackHealth, jsonOptions);

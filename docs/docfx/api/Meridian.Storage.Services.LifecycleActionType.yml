@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LifecycleActionType
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierMigration
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionUpgrade
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Delete
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Archive
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatConversion
     path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs

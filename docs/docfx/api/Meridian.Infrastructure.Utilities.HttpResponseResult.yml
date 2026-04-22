@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpResponseResult
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSuccess
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsNotFound
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs

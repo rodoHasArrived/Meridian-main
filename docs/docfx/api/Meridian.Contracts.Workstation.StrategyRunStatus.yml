@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyRunStatus
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pending
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Running
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -113,7 +113,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paused
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completed
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stopped
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs

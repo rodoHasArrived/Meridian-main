@@ -40,7 +40,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventType
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: L2Snapshot
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BboQuote
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Trade
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderFlow
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Heartbeat
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionStatus
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Integrity
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalBar
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalQuote
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -347,7 +347,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalTrade
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -375,7 +375,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalAuction
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -403,7 +403,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggregateBar
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -431,7 +431,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quote
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -459,7 +459,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Depth
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -487,7 +487,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionQuote
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -515,7 +515,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionTrade
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -543,7 +543,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionGreeks
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -571,7 +571,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionChain
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -599,7 +599,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenInterest
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -627,7 +627,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderAdd
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -655,7 +655,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderModify
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -683,7 +683,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderCancel
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -711,7 +711,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderExecute
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
@@ -739,7 +739,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderReplace
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs

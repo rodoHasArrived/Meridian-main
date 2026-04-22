@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeSide
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Buy
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sell
     path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs

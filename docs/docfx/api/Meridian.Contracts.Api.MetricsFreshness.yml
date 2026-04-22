@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MetricsFreshness
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 282
+    startLine: 288
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Key
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 287
+    startLine: 293
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -104,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastDataPointUtc
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 293
+    startLine: 299
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -147,11 +147,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 299
+    startLine: 305
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -190,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsStale
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 305
+    startLine: 311
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -233,11 +233,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreshnessState
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 311
+    startLine: 317
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -276,11 +276,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AgeSeconds
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 317
+    startLine: 323
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -319,11 +319,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThresholdSeconds
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 323
+    startLine: 329
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

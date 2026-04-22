@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchivePolicyConfig
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Immutable
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresEncryption
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinRetention
     path: ../../src/Meridian.Storage/StorageOptions.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApproversForDelete
     path: ../../src/Meridian.Storage/StorageOptions.cs

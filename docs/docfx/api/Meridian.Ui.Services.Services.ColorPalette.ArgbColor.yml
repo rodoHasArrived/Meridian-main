@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ColorPalette.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArgbColor
     path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ColorPalette.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ColorPalette.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: A
     path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ColorPalette.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: R
     path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ColorPalette.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: G
     path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ColorPalette.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: B
     path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs

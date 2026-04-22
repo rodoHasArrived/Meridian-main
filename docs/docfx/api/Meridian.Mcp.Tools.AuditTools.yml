@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuditTools
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunCodeAuditAsync
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunProviderAuditAsync
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
@@ -194,7 +194,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunTestAuditAsync
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
@@ -239,7 +239,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDiffSummaryAsync
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
@@ -284,7 +284,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AuditTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunFullAuditAsync
     path: ../../src/Meridian.Mcp/Tools/AuditTools.cs

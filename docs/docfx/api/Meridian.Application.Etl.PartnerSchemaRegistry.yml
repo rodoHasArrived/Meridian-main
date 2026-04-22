@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PartnerSchemaRegistry
     path: ../../src/Meridian.Application/Etl/EtlServices.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCsvSchema
     path: ../../src/Meridian.Application/Etl/EtlServices.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Etl/EtlServices.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSupported
     path: ../../src/Meridian.Application/Etl/EtlServices.cs

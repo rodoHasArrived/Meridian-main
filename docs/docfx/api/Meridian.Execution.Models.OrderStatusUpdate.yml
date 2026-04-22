@@ -5,7 +5,7 @@ items:
   id: OrderStatusUpdate
   parent: Meridian.Execution.Models
   children:
-  - Meridian.Execution.Models.OrderStatusUpdate.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Int64,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)
+  - Meridian.Execution.Models.OrderStatusUpdate.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Decimal,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)
   - Meridian.Execution.Models.OrderStatusUpdate.AverageFillPrice
   - Meridian.Execution.Models.OrderStatusUpdate.ClientOrderId
   - Meridian.Execution.Models.OrderStatusUpdate.FilledQuantity
@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderStatusUpdate
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -51,21 +51,21 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Execution.Models.OrderStatusUpdate.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Int64,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)
-  commentId: M:Meridian.Execution.Models.OrderStatusUpdate.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Int64,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)
-  id: '#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Int64,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)'
+- uid: Meridian.Execution.Models.OrderStatusUpdate.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Decimal,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Execution.Models.OrderStatusUpdate.#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Decimal,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Execution.Models.OrderStatus,System.Decimal,System.Nullable{System.Decimal},System.String,System.DateTimeOffset)'
   parent: Meridian.Execution.Models.OrderStatusUpdate
   langs:
   - csharp
   - vb
-  name: OrderStatusUpdate(string, string, string, OrderStatus, long, decimal?, string?, DateTimeOffset)
-  nameWithType: OrderStatusUpdate.OrderStatusUpdate(string, string, string, OrderStatus, long, decimal?, string?, DateTimeOffset)
-  fullName: Meridian.Execution.Models.OrderStatusUpdate.OrderStatusUpdate(string, string, string, Meridian.Execution.Models.OrderStatus, long, decimal?, string?, System.DateTimeOffset)
+  name: OrderStatusUpdate(string, string, string, OrderStatus, decimal, decimal?, string?, DateTimeOffset)
+  nameWithType: OrderStatusUpdate.OrderStatusUpdate(string, string, string, OrderStatus, decimal, decimal?, string?, DateTimeOffset)
+  fullName: Meridian.Execution.Models.OrderStatusUpdate.OrderStatusUpdate(string, string, string, Meridian.Execution.Models.OrderStatus, decimal, decimal?, string?, System.DateTimeOffset)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -79,7 +79,7 @@ items:
     <xref href="Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
   example: []
   syntax:
-    content: public OrderStatusUpdate(string OrderId, string ClientOrderId, string Symbol, OrderStatus Status, long FilledQuantity, decimal? AverageFillPrice, string? RejectReason, DateTimeOffset Timestamp)
+    content: public OrderStatusUpdate(string OrderId, string ClientOrderId, string Symbol, OrderStatus Status, decimal FilledQuantity, decimal? AverageFillPrice, string? RejectReason, DateTimeOffset Timestamp)
     parameters:
     - id: OrderId
       type: System.String
@@ -90,18 +90,18 @@ items:
     - id: Status
       type: Meridian.Execution.Models.OrderStatus
     - id: FilledQuantity
-      type: System.Int64
+      type: System.Decimal
     - id: AverageFillPrice
       type: System.Nullable{System.Decimal}
     - id: RejectReason
       type: System.String
     - id: Timestamp
       type: System.DateTimeOffset
-    content.vb: Public Sub New(OrderId As String, ClientOrderId As String, Symbol As String, Status As OrderStatus, FilledQuantity As Long, AverageFillPrice As Decimal?, RejectReason As String, Timestamp As DateTimeOffset)
+    content.vb: Public Sub New(OrderId As String, ClientOrderId As String, Symbol As String, Status As OrderStatus, FilledQuantity As Decimal, AverageFillPrice As Decimal?, RejectReason As String, Timestamp As DateTimeOffset)
   overload: Meridian.Execution.Models.OrderStatusUpdate.#ctor*
-  nameWithType.vb: OrderStatusUpdate.New(String, String, String, OrderStatus, Long, Decimal?, String, DateTimeOffset)
-  fullName.vb: Meridian.Execution.Models.OrderStatusUpdate.New(String, String, String, Meridian.Execution.Models.OrderStatus, Long, Decimal?, String, System.DateTimeOffset)
-  name.vb: New(String, String, String, OrderStatus, Long, Decimal?, String, DateTimeOffset)
+  nameWithType.vb: OrderStatusUpdate.New(String, String, String, OrderStatus, Decimal, Decimal?, String, DateTimeOffset)
+  fullName.vb: Meridian.Execution.Models.OrderStatusUpdate.New(String, String, String, Meridian.Execution.Models.OrderStatus, Decimal, Decimal?, String, System.DateTimeOffset)
+  name.vb: New(String, String, String, OrderStatus, Decimal, Decimal?, String, DateTimeOffset)
 - uid: Meridian.Execution.Models.OrderStatusUpdate.OrderId
   commentId: P:Meridian.Execution.Models.OrderStatusUpdate.OrderId
   id: OrderId
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledQuantity
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -241,11 +241,11 @@ items:
   - Meridian.Execution
   namespace: Meridian.Execution.Models
   syntax:
-    content: public long FilledQuantity { get; init; }
+    content: public decimal FilledQuantity { get; init; }
     parameters: []
     return:
-      type: System.Int64
-    content.vb: Public Property FilledQuantity As Long
+      type: System.Decimal
+    content.vb: Public Property FilledQuantity As Decimal
   overload: Meridian.Execution.Models.OrderStatusUpdate.FilledQuantity*
 - uid: Meridian.Execution.Models.OrderStatusUpdate.AverageFillPrice
   commentId: P:Meridian.Execution.Models.OrderStatusUpdate.AverageFillPrice
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageFillPrice
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectReason
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderStatusUpdate.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Execution/Models/OrderStatusUpdate.cs
@@ -706,7 +706,7 @@ references:
     href: Meridian.Execution.Interfaces.html
 - uid: Meridian.Execution.Models.OrderStatusUpdate.#ctor*
   commentId: Overload:Meridian.Execution.Models.OrderStatusUpdate.#ctor
-  href: Meridian.Execution.Models.OrderStatusUpdate.html#Meridian_Execution_Models_OrderStatusUpdate__ctor_System_String_System_String_System_String_Meridian_Execution_Models_OrderStatus_System_Int64_System_Nullable_System_Decimal__System_String_System_DateTimeOffset_
+  href: Meridian.Execution.Models.OrderStatusUpdate.html#Meridian_Execution_Models_OrderStatusUpdate__ctor_System_String_System_String_System_String_Meridian_Execution_Models_OrderStatus_System_Decimal_System_Nullable_System_Decimal__System_String_System_DateTimeOffset_
   name: OrderStatusUpdate
   nameWithType: OrderStatusUpdate.OrderStatusUpdate
   fullName: Meridian.Execution.Models.OrderStatusUpdate.OrderStatusUpdate
@@ -731,17 +731,17 @@ references:
   name: OrderStatus
   nameWithType: OrderStatus
   fullName: Meridian.Execution.Models.OrderStatus
-- uid: System.Int64
-  commentId: T:System.Int64
+- uid: System.Decimal
+  commentId: T:System.Decimal
   parent: System
   isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.int64
-  name: long
-  nameWithType: long
-  fullName: long
-  nameWithType.vb: Long
-  fullName.vb: Long
-  name.vb: Long
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
 - uid: System.Nullable{System.Decimal}
   commentId: T:System.Nullable{System.Decimal}
   parent: System

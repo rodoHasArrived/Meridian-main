@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawTradeEvent
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampTicks
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolHash
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Price
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Size
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aggressor
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sequence
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs

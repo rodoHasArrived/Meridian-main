@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationRunDetail
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Summary
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Matches
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Breaks
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityCoverageIssues
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankTransactions
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityClassifications
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportRequest
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagePath
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DestinationDirectory
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateChecksums
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MergeWithExisting
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs

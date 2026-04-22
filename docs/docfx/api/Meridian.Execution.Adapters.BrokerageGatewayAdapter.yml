@@ -24,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageGatewayAdapter
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 19
+    startLine: 18
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -70,11 +70,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 26
+    startLine: 25
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -104,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 33
+    startLine: 32
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -137,11 +137,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 36
+    startLine: 35
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -170,11 +170,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 39
+    startLine: 38
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -206,11 +206,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 60
+    startLine: 59
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -246,11 +246,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitAsync
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 87
+    startLine: 86
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -286,11 +286,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAsync
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 111
+    startLine: 110
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -329,11 +329,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamOrderUpdatesAsync
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 129
+    startLine: 128
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters
@@ -367,11 +367,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
-    startLine: 156
+    startLine: 146
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Adapters

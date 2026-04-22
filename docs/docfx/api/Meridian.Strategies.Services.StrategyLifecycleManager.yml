@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyLifecycleManager
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PauseAsync
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatuses
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs

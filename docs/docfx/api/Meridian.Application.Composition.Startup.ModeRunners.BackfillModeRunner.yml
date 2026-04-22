@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillModeRunner
     path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs

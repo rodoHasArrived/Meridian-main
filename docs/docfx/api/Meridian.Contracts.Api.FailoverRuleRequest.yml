@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverRuleRequest
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryProviderId
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupProviderIds
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverThreshold
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoveryThreshold
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityThreshold
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyMs
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs

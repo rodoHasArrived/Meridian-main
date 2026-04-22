@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioSnapshot
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarginBalance
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LongMarketValue
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShortMarketValue
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEquity
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyReturn
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -351,7 +351,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -380,7 +380,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accounts
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
@@ -409,7 +409,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DayCashFlows
     path: ../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs

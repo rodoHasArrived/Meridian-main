@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSymbol
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -234,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Deconstruct
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Equals
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -346,7 +346,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHashCode
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompareTo
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -418,7 +418,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -449,7 +449,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Equality
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs
@@ -488,7 +488,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/ProviderSymbol.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Inequality
     path: ../../src/Meridian.Contracts/Domain/ProviderSymbol.cs

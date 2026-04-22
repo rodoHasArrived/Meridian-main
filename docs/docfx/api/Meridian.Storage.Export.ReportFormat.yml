@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReportFormat
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Markdown
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Json
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Csv
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
     path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs

@@ -35,7 +35,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsOverwriteParams
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinStrike
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverwriteRatio
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDelta
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDte
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDte
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinIvPercentile
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinOpenInterest
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinVolume
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -462,7 +462,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxSpreadPct
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -512,7 +512,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakeProfitCapture
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -560,7 +560,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RollDelta
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -608,7 +608,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExDivWindowDays
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -656,7 +656,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoringMode
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -706,7 +706,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthBonusWeight
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -754,7 +754,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskFreeRate
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -802,7 +802,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMinStrike
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -838,7 +838,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithOverwriteRatio
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -874,7 +874,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMaxDelta
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -910,7 +910,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMinIvPercentile
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
@@ -946,7 +946,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMaxDte
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs

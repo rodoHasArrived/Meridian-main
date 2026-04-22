@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalysisExportService
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressChanged
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAvailableFormatsAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAggregationOptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateQualityReportAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportOrderFlowAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportIntegrityEventsAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateResearchPackageAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs
@@ -349,7 +349,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AnalysisExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExportTemplatesAsync
     path: ../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs

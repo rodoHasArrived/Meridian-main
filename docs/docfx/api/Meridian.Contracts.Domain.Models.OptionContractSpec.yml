@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionContractSpec
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Expiration
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Style
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -227,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Multiplier
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -289,7 +289,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -320,7 +320,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccSymbol
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -356,7 +356,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -387,7 +387,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -439,7 +439,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToString
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToOccSymbol
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -506,7 +506,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DaysToExpiration
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
@@ -539,7 +539,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExpired
     path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs

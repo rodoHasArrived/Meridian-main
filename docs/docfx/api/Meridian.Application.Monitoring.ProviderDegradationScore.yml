@@ -5,9 +5,10 @@ items:
   id: ProviderDegradationScore
   parent: Meridian.Application.Monitoring
   children:
-  - Meridian.Application.Monitoring.ProviderDegradationScore.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.ProviderDegradationScore.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason},System.DateTimeOffset,Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})
   - Meridian.Application.Monitoring.ProviderDegradationScore.CompositeScore
   - Meridian.Application.Monitoring.ProviderDegradationScore.ConnectionScore
+  - Meridian.Application.Monitoring.ProviderDegradationScore.Decision
   - Meridian.Application.Monitoring.ProviderDegradationScore.ErrorRate
   - Meridian.Application.Monitoring.ProviderDegradationScore.ErrorRateScore
   - Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt
@@ -16,6 +17,7 @@ items:
   - Meridian.Application.Monitoring.ProviderDegradationScore.LatencyScore
   - Meridian.Application.Monitoring.ProviderDegradationScore.P95LatencyMs
   - Meridian.Application.Monitoring.ProviderDegradationScore.ProviderName
+  - Meridian.Application.Monitoring.ProviderDegradationScore.Reasons
   - Meridian.Application.Monitoring.ProviderDegradationScore.ReconnectScore
   langs:
   - csharp
@@ -27,11 +29,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDegradationScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 388
+    startLine: 521
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -49,32 +51,32 @@ items:
   - System.Object.Equals(System.Object,System.Object)
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
-- uid: Meridian.Application.Monitoring.ProviderDegradationScore.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.DateTimeOffset)
-  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScore.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.DateTimeOffset)
-  id: '#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.DateTimeOffset)'
+- uid: Meridian.Application.Monitoring.ProviderDegradationScore.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason},System.DateTimeOffset,Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScore.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason},System.DateTimeOffset,Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})
+  id: '#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Double,System.Boolean,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason},System.DateTimeOffset,Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double})'
   parent: Meridian.Application.Monitoring.ProviderDegradationScore
   langs:
   - csharp
   - vb
-  name: ProviderDegradationScore(string, double, double, double, double, double, double, bool, double, bool, DateTimeOffset)
-  nameWithType: ProviderDegradationScore.ProviderDegradationScore(string, double, double, double, double, double, double, bool, double, bool, DateTimeOffset)
-  fullName: Meridian.Application.Monitoring.ProviderDegradationScore.ProviderDegradationScore(string, double, double, double, double, double, double, bool, double, bool, System.DateTimeOffset)
+  name: ProviderDegradationScore(string, double, double, double, double, double, double, bool, double, bool, IReadOnlyList<ProviderScoreReason>, DateTimeOffset, DecisionResult<double>)
+  nameWithType: ProviderDegradationScore.ProviderDegradationScore(string, double, double, double, double, double, double, bool, double, bool, IReadOnlyList<ProviderScoreReason>, DateTimeOffset, DecisionResult<double>)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScore.ProviderDegradationScore(string, double, double, double, double, double, double, bool, double, bool, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderScoreReason>, System.DateTimeOffset, Meridian.Contracts.RuleEvaluation.DecisionResult<double>)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 388
+    startLine: 521
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
   summary: Degradation score for a single provider.
   example: []
   syntax:
-    content: public ProviderDegradationScore(string ProviderName, double CompositeScore, double ConnectionScore, double LatencyScore, double ErrorRateScore, double ReconnectScore, double ErrorRate, bool IsDegraded, double P95LatencyMs, bool IsConnected, DateTimeOffset EvaluatedAt)
+    content: public ProviderDegradationScore(string ProviderName, double CompositeScore, double ConnectionScore, double LatencyScore, double ErrorRateScore, double ReconnectScore, double ErrorRate, bool IsDegraded, double P95LatencyMs, bool IsConnected, IReadOnlyList<ProviderScoreReason> Reasons, DateTimeOffset EvaluatedAt, DecisionResult<double> Decision)
     parameters:
     - id: ProviderName
       type: System.String
@@ -96,13 +98,17 @@ items:
       type: System.Double
     - id: IsConnected
       type: System.Boolean
+    - id: Reasons
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason}
     - id: EvaluatedAt
       type: System.DateTimeOffset
-    content.vb: Public Sub New(ProviderName As String, CompositeScore As Double, ConnectionScore As Double, LatencyScore As Double, ErrorRateScore As Double, ReconnectScore As Double, ErrorRate As Double, IsDegraded As Boolean, P95LatencyMs As Double, IsConnected As Boolean, EvaluatedAt As DateTimeOffset)
+    - id: Decision
+      type: Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+    content.vb: Public Sub New(ProviderName As String, CompositeScore As Double, ConnectionScore As Double, LatencyScore As Double, ErrorRateScore As Double, ReconnectScore As Double, ErrorRate As Double, IsDegraded As Boolean, P95LatencyMs As Double, IsConnected As Boolean, Reasons As IReadOnlyList(Of ProviderScoreReason), EvaluatedAt As DateTimeOffset, Decision As DecisionResult(Of Double))
   overload: Meridian.Application.Monitoring.ProviderDegradationScore.#ctor*
-  nameWithType.vb: ProviderDegradationScore.New(String, Double, Double, Double, Double, Double, Double, Boolean, Double, Boolean, DateTimeOffset)
-  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScore.New(String, Double, Double, Double, Double, Double, Double, Boolean, Double, Boolean, System.DateTimeOffset)
-  name.vb: New(String, Double, Double, Double, Double, Double, Double, Boolean, Double, Boolean, DateTimeOffset)
+  nameWithType.vb: ProviderDegradationScore.New(String, Double, Double, Double, Double, Double, Double, Boolean, Double, Boolean, IReadOnlyList(Of ProviderScoreReason), DateTimeOffset, DecisionResult(Of Double))
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScore.New(String, Double, Double, Double, Double, Double, Double, Boolean, Double, Boolean, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderScoreReason), System.DateTimeOffset, Meridian.Contracts.RuleEvaluation.DecisionResult(Of Double))
+  name.vb: New(String, Double, Double, Double, Double, Double, Double, Boolean, Double, Boolean, IReadOnlyList(Of ProviderScoreReason), DateTimeOffset, DecisionResult(Of Double))
 - uid: Meridian.Application.Monitoring.ProviderDegradationScore.ProviderName
   commentId: P:Meridian.Application.Monitoring.ProviderDegradationScore.ProviderName
   id: ProviderName
@@ -117,11 +123,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 389
+    startLine: 522
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -146,11 +152,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 390
+    startLine: 523
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -175,11 +181,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 391
+    startLine: 524
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -204,11 +210,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 392
+    startLine: 525
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -233,11 +239,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorRateScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 393
+    startLine: 526
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -262,11 +268,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 394
+    startLine: 527
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -291,11 +297,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorRate
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 395
+    startLine: 528
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -320,11 +326,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDegraded
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 396
+    startLine: 529
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -349,11 +355,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P95LatencyMs
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 397
+    startLine: 530
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -378,11 +384,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 398
+    startLine: 531
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -393,6 +399,35 @@ items:
       type: System.Boolean
     content.vb: Public Property IsConnected As Boolean
   overload: Meridian.Application.Monitoring.ProviderDegradationScore.IsConnected*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScore.Reasons
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScore.Reasons
+  id: Reasons
+  parent: Meridian.Application.Monitoring.ProviderDegradationScore
+  langs:
+  - csharp
+  - vb
+  name: Reasons
+  nameWithType: ProviderDegradationScore.Reasons
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScore.Reasons
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reasons
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyList<ProviderScoreReason> Reasons { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason}
+    content.vb: Public Property Reasons As IReadOnlyList(Of ProviderScoreReason)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScore.Reasons*
 - uid: Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt
   commentId: P:Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt
   id: EvaluatedAt
@@ -407,11 +442,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluatedAt
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 399
+    startLine: 533
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -422,6 +457,35 @@ items:
       type: System.DateTimeOffset
     content.vb: Public Property EvaluatedAt As DateTimeOffset
   overload: Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScore.Decision
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScore.Decision
+  id: Decision
+  parent: Meridian.Application.Monitoring.ProviderDegradationScore
+  langs:
+  - csharp
+  - vb
+  name: Decision
+  nameWithType: ProviderDegradationScore.Decision
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScore.Decision
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Decision
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 534
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DecisionResult<double> Decision { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+    content.vb: Public Property Decision As DecisionResult(Of Double)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScore.Decision*
 references:
 - uid: Meridian.Application.Monitoring
   commentId: N:Meridian.Application.Monitoring
@@ -733,7 +797,7 @@ references:
   name.vb: Object
 - uid: Meridian.Application.Monitoring.ProviderDegradationScore.#ctor*
   commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScore.#ctor
-  href: Meridian.Application.Monitoring.ProviderDegradationScore.html#Meridian_Application_Monitoring_ProviderDegradationScore__ctor_System_String_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Boolean_System_Double_System_Boolean_System_DateTimeOffset_
+  href: Meridian.Application.Monitoring.ProviderDegradationScore.html#Meridian_Application_Monitoring_ProviderDegradationScore__ctor_System_String_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_Boolean_System_Double_System_Boolean_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_ProviderScoreReason__System_DateTimeOffset_Meridian_Contracts_RuleEvaluation_DecisionResult_System_Double__
   name: ProviderDegradationScore
   nameWithType: ProviderDegradationScore.ProviderDegradationScore
   fullName: Meridian.Application.Monitoring.ProviderDegradationScore.ProviderDegradationScore
@@ -773,6 +837,39 @@ references:
   nameWithType.vb: Boolean
   fullName.vb: Boolean
   name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderScoreReason}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderScoreReason>
+  nameWithType: IReadOnlyList<ProviderScoreReason>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderScoreReason>
+  nameWithType.vb: IReadOnlyList(Of ProviderScoreReason)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderScoreReason)
+  name.vb: IReadOnlyList(Of ProviderScoreReason)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderScoreReason
+    name: ProviderScoreReason
+    href: Meridian.Application.Monitoring.ProviderScoreReason.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderScoreReason
+    name: ProviderScoreReason
+    href: Meridian.Application.Monitoring.ProviderScoreReason.html
+  - name: )
 - uid: System.DateTimeOffset
   commentId: T:System.DateTimeOffset
   parent: System
@@ -781,6 +878,159 @@ references:
   name: DateTimeOffset
   nameWithType: DateTimeOffset
   fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult{System.Double}
+  parent: Meridian.Contracts.RuleEvaluation
+  definition: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<double>
+  nameWithType: DecisionResult<double>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<double>
+  nameWithType.vb: DecisionResult(Of Double)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of Double)
+  name.vb: DecisionResult(Of Double)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  commentId: T:Meridian.Contracts.RuleEvaluation.DecisionResult`1
+  href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  name: DecisionResult<TScore>
+  nameWithType: DecisionResult<TScore>
+  fullName: Meridian.Contracts.RuleEvaluation.DecisionResult<TScore>
+  nameWithType.vb: DecisionResult(Of TScore)
+  fullName.vb: Meridian.Contracts.RuleEvaluation.DecisionResult(Of TScore)
+  name.vb: DecisionResult(Of TScore)
+  spec.csharp:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: <
+  - name: TScore
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.RuleEvaluation.DecisionResult`1
+    name: DecisionResult
+    href: Meridian.Contracts.RuleEvaluation.DecisionResult-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TScore
+  - name: )
+- uid: Meridian.Contracts.RuleEvaluation
+  commentId: N:Meridian.Contracts.RuleEvaluation
+  href: Meridian.html
+  name: Meridian.Contracts.RuleEvaluation
+  nameWithType: Meridian.Contracts.RuleEvaluation
+  fullName: Meridian.Contracts.RuleEvaluation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.RuleEvaluation
+    name: RuleEvaluation
+    href: Meridian.Contracts.RuleEvaluation.html
 - uid: Meridian.Application.Monitoring.ProviderDegradationScore.ProviderName*
   commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScore.ProviderName
   href: Meridian.Application.Monitoring.ProviderDegradationScore.html#Meridian_Application_Monitoring_ProviderDegradationScore_ProviderName
@@ -841,9 +1091,21 @@ references:
   name: IsConnected
   nameWithType: ProviderDegradationScore.IsConnected
   fullName: Meridian.Application.Monitoring.ProviderDegradationScore.IsConnected
+- uid: Meridian.Application.Monitoring.ProviderDegradationScore.Reasons*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScore.Reasons
+  href: Meridian.Application.Monitoring.ProviderDegradationScore.html#Meridian_Application_Monitoring_ProviderDegradationScore_Reasons
+  name: Reasons
+  nameWithType: ProviderDegradationScore.Reasons
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScore.Reasons
 - uid: Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt*
   commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt
   href: Meridian.Application.Monitoring.ProviderDegradationScore.html#Meridian_Application_Monitoring_ProviderDegradationScore_EvaluatedAt
   name: EvaluatedAt
   nameWithType: ProviderDegradationScore.EvaluatedAt
   fullName: Meridian.Application.Monitoring.ProviderDegradationScore.EvaluatedAt
+- uid: Meridian.Application.Monitoring.ProviderDegradationScore.Decision*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScore.Decision
+  href: Meridian.Application.Monitoring.ProviderDegradationScore.html#Meridian_Application_Monitoring_ProviderDegradationScore_Decision
+  name: Decision
+  nameWithType: ProviderDegradationScore.Decision
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScore.Decision

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageSchemaField
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Nullable
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Example
     path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs

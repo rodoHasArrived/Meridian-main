@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaskSafetyExtensions
     path: ../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ObserveException
     path: ../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs
@@ -109,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ObserveException
     path: ../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs

@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertService
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertRaised
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertResolved
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RaiseAlert
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveAlert
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SnoozeAlert
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSuppressionRule
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGroupedAlerts
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveAlerts
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetResolvedAlerts
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -404,7 +404,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterPlaybook
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
@@ -440,7 +440,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/AlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Ui.Services/Services/AlertService.cs

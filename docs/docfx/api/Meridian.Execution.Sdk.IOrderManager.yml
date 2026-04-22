@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IOrderManager
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlaceOrderAsync
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrders
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOrder
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAllAsync
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IOrderManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCompletedOrders
     path: ../../src/Meridian.Execution.Sdk/IOrderManager.cs

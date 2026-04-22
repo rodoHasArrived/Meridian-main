@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectionErrorCategory
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: None
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NetworkUnreachable
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceNotRunning
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticationFailed
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimited
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeout
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EndpointNotFound
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServerError
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
@@ -259,7 +259,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs

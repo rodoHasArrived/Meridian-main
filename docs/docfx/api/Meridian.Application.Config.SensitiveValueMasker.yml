@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultPrefixLength
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DefaultSuffixLength
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskChar
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinLengthForPartialMask
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mask
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -229,7 +229,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskCompletely
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSensitiveProperty
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -301,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSensitiveEnvVar
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -337,7 +337,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskIfSensitive
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskDictionary
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskConnectionString
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -450,7 +450,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaskAlpacaOptions
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -492,7 +492,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FormatMaskedCredential
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs
@@ -530,7 +530,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/SensitiveValueMasker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaskedEnvironmentVariables
     path: ../../src/Meridian.Application/Config/SensitiveValueMasker.cs

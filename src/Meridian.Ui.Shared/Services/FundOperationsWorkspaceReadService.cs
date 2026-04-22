@@ -21,6 +21,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly IFundAccountService _fundAccountService;
     private readonly IStrategyRepository _strategyRepository;
     private readonly PortfolioReadService _portfolioReadService;
+    private readonly ISecurityReferenceLookup? _securityReferenceLookup;
     private readonly IReconciliationRunService? _strategyReconciliationService;
     private readonly NavAttributionService _navAttributionService;
     private readonly ReportGenerationService _reportGenerationService;
@@ -31,6 +32,7 @@ public sealed class FundOperationsWorkspaceReadService
         PortfolioReadService portfolioReadService,
         NavAttributionService navAttributionService,
         ReportGenerationService reportGenerationService,
+        ISecurityReferenceLookup? securityReferenceLookup = null,
         IReconciliationRunService? strategyReconciliationService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -38,6 +40,7 @@ public sealed class FundOperationsWorkspaceReadService
         _portfolioReadService = portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService));
         _navAttributionService = navAttributionService ?? throw new ArgumentNullException(nameof(navAttributionService));
         _reportGenerationService = reportGenerationService ?? throw new ArgumentNullException(nameof(reportGenerationService));
+        _securityReferenceLookup = securityReferenceLookup;
         _strategyReconciliationService = strategyReconciliationService;
     }
 
@@ -59,6 +62,12 @@ public sealed class FundOperationsWorkspaceReadService
         await Task.WhenAll(runsTask, accountProjectionsTask, bankSnapshotsTask).ConfigureAwait(false);
 
         var runs = await runsTask.ConfigureAwait(false);
+        var selectedLedgerIds = NormalizeSelectedLedgerIds(query.SelectedLedgerIds);
+        if (selectedLedgerIds.Count > 0)
+        {
+            runs = runs.Where(run => selectedLedgerIds.Contains(run.RunId)).ToArray();
+        }
+
         var accountProjections = await accountProjectionsTask.ConfigureAwait(false);
         var bankSnapshots = await bankSnapshotsTask.ConfigureAwait(false);
         var accountSummaries = accountProjections
@@ -69,13 +78,15 @@ public sealed class FundOperationsWorkspaceReadService
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
         var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
-        var ledger = BuildLedgerSummary(
+        var ledger = await BuildLedgerSummaryAsync(
             normalizedFundProfileId,
             displayName,
             query.ScopeKind,
             query.ScopeId,
             asOf,
-            ledgerBook);
+            ledgerBook,
+            ct).ConfigureAwait(false);
+        var ledgerReconciliationSnapshot = ProjectReconciliationSnapshot(ledgerBook.ReconciliationSnapshot(asOf));
 
         var cashTask = BuildCashFinancingSummaryAsync(
             baseCurrency,
@@ -118,6 +129,7 @@ public sealed class FundOperationsWorkspaceReadService
             RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
             Workspace: workspace,
             Ledger: ledger,
+            LedgerReconciliationSnapshot: ledgerReconciliationSnapshot,
             Accounts: accountSummaries,
             BankSnapshots: bankSnapshots,
             CashFinancing: cashFinancing,
@@ -507,16 +519,17 @@ public sealed class FundOperationsWorkspaceReadService
             AssetClassExposure: assetClassExposure);
     }
 
-    private static FundLedgerSummary BuildLedgerSummary(
+    private async Task<FundLedgerSummary> BuildLedgerSummaryAsync(
         string fundProfileId,
         string displayName,
         FundLedgerScope scopeKind,
         string? scopeId,
         DateTimeOffset asOf,
-        FundLedgerBook fundLedgerBook)
+        FundLedgerBook fundLedgerBook,
+        CancellationToken ct)
     {
         var journal = BuildJournal(fundLedgerBook, scopeKind, scopeId, asOf);
-        var trialBalance = BuildTrialBalance(fundLedgerBook, scopeKind, scopeId, asOf);
+        var trialBalance = await BuildTrialBalanceAsync(fundLedgerBook, scopeKind, scopeId, asOf, ct).ConfigureAwait(false);
         var entityCount = fundLedgerBook.EntitySnapshotsAsOf(asOf).Count;
         var sleeveCount = fundLedgerBook.SleeveSnapshotsAsOf(asOf).Count;
         var vehicleCount = fundLedgerBook.VehicleSnapshotsAsOf(asOf).Count;
@@ -541,6 +554,42 @@ public sealed class FundOperationsWorkspaceReadService
             VehicleCount: vehicleCount);
     }
 
+    public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot)
+    {
+        return new FundLedgerReconciliationSnapshot(
+            FundProfileId: snapshot.FundId,
+            AsOf: snapshot.AsOf,
+            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Entities: snapshot.Entities.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Sleeves: snapshot.Sleeves.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Vehicles: snapshot.Vehicles.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+        new(
+            Timestamp: snapshot.Timestamp,
+            JournalEntryCount: snapshot.JournalEntryCount,
+            LedgerEntryCount: snapshot.LedgerEntryCount,
+            Balances: snapshot.Balances
+                .OrderBy(static pair => pair.Key.AccountType)
+                .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                    AccountName: pair.Key.Name,
+                    AccountType: pair.Key.AccountType.ToString(),
+                    Symbol: pair.Key.Symbol,
+                    FinancialAccountId: pair.Key.FinancialAccountId,
+                    Balance: pair.Value))
+                .ToArray());
+
     private static FundLedgerBook BuildLedgerBook(
         string fundProfileId,
         IReadOnlyList<StrategyRunEntry> runs)
@@ -558,11 +607,12 @@ public sealed class FundOperationsWorkspaceReadService
         return fundLedgerBook;
     }
 
-    private static IReadOnlyList<FundTrialBalanceLine> BuildTrialBalance(
+    private async Task<IReadOnlyList<FundTrialBalanceLine>> BuildTrialBalanceAsync(
         FundLedgerBook book,
         FundLedgerScope scopeKind,
         string? scopeId,
-        DateTimeOffset asOf)
+        DateTimeOffset asOf,
+        CancellationToken ct)
     {
         IReadOnlyDictionary<LedgerAccount, decimal> balances = scopeKind switch
         {
@@ -574,6 +624,12 @@ public sealed class FundOperationsWorkspaceReadService
         };
 
         var entryCounts = BuildEntryCounts(book, scopeKind, scopeId, asOf);
+        var securityLookup = await ResolveSecurityReferencesAsync(
+            balances.Keys
+                .Select(static account => account.Symbol)
+                .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))!
+                .Select(static symbol => symbol!),
+            ct).ConfigureAwait(false);
 
         return balances
             .OrderBy(static pair => pair.Key.AccountType)
@@ -584,7 +640,8 @@ public sealed class FundOperationsWorkspaceReadService
                 Symbol: pair.Key.Symbol,
                 FinancialAccountId: pair.Key.FinancialAccountId,
                 Balance: pair.Value,
-                EntryCount: entryCounts.TryGetValue(pair.Key, out var count) ? count : 0))
+                EntryCount: entryCounts.TryGetValue(pair.Key, out var count) ? count : 0,
+                Security: pair.Key.Symbol is not null ? securityLookup.GetValueOrDefault(pair.Key.Symbol) : null))
             .ToArray();
     }
 
@@ -644,6 +701,13 @@ public sealed class FundOperationsWorkspaceReadService
             .Where(line => string.Equals(line.AccountType, accountType.ToString(), StringComparison.Ordinal))
             .Sum(static line => line.Balance);
 
+    private static HashSet<string> NormalizeSelectedLedgerIds(IReadOnlyList<string>? selectedLedgerIds) =>
+        selectedLedgerIds?
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Select(static id => id.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+        ?? [];
+
     private static FundWorkspaceSummary BuildWorkspaceSummary(
         string fundProfileId,
         string displayName,
@@ -657,6 +721,11 @@ public sealed class FundOperationsWorkspaceReadService
         var totalEquity = cashFinancing.TotalEquity != 0m
             ? cashFinancing.TotalEquity
             : accounts.Sum(static account => account.NetAssetValue);
+
+        var securityResolvedCount = ledger.TrialBalance.Count(static line => line.Security is not null);
+        var securityMissingCount = ledger.TrialBalance.Count(static line =>
+            !string.IsNullOrWhiteSpace(line.Symbol) &&
+            line.Security is null);
 
         return new FundWorkspaceSummary(
             FundProfileId: fundProfileId,
@@ -677,9 +746,30 @@ public sealed class FundOperationsWorkspaceReadService
             ReconciliationRuns: reconciliation.RunCount,
             JournalEntryCount: ledger.JournalEntryCount,
             TrialBalanceLineCount: ledger.TrialBalance.Count,
-            SecurityResolvedCount: 0,
-            SecurityMissingCount: 0,
+            SecurityResolvedCount: securityResolvedCount,
+            SecurityMissingCount: securityMissingCount,
             SecurityCoverageIssues: reconciliation.SecurityCoverageIssueCount);
+    }
+
+    private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecurityReferencesAsync(
+        IEnumerable<string> symbols,
+        CancellationToken ct)
+    {
+        var lookup = new Dictionary<string, WorkstationSecurityReference?>(StringComparer.OrdinalIgnoreCase);
+        if (_securityReferenceLookup is null)
+        {
+            return lookup;
+        }
+
+        foreach (var symbol in symbols.Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            ct.ThrowIfCancellationRequested();
+            lookup[symbol] = await _securityReferenceLookup
+                .GetBySymbolAsync(symbol, ct)
+                .ConfigureAwait(false);
+        }
+
+        return lookup;
     }
 
     private static FundReportingSummaryDto BuildReportingSummary()

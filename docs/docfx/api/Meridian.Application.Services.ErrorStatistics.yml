@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorStatistics
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalErrors
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorsInWindow
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowStart
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowEnd
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByExceptionType
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByContext
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ByHour
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ErrorTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MostRecentError
     path: ../../src/Meridian.Application/Services/ErrorTracker.cs

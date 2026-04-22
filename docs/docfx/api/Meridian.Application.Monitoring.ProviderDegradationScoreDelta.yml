@@ -1,0 +1,696 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  id: ProviderDegradationScoreDelta
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta.#ctor(System.String,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta})
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName
+  - Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationScoreDelta
+  nameWithType: ProviderDegradationScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDegradationScoreDelta
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 557
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: 'public readonly record struct ProviderDegradationScoreDelta : IEquatable<ProviderDegradationScoreDelta>'
+    content.vb: Public Structure ProviderDegradationScoreDelta Implements IEquatable(Of ProviderDegradationScoreDelta)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationScoreDelta}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.#ctor(System.String,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta})
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.#ctor(System.String,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta})
+  id: '#ctor(System.String,System.Double,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta})'
+  parent: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationScoreDelta(string, double, double, double, IReadOnlyList<ProviderReasonDelta>)
+  nameWithType: ProviderDegradationScoreDelta.ProviderDegradationScoreDelta(string, double, double, double, IReadOnlyList<ProviderReasonDelta>)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderDegradationScoreDelta(string, double, double, double, System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderReasonDelta>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 557
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ProviderDegradationScoreDelta(string ProviderName, double PreviousCompositeScore, double CurrentCompositeScore, double CompositeScoreDelta, IReadOnlyList<ProviderReasonDelta> ReasonDeltas)
+    parameters:
+    - id: ProviderName
+      type: System.String
+    - id: PreviousCompositeScore
+      type: System.Double
+    - id: CurrentCompositeScore
+      type: System.Double
+    - id: CompositeScoreDelta
+      type: System.Double
+    - id: ReasonDeltas
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta}
+    content.vb: Public Sub New(ProviderName As String, PreviousCompositeScore As Double, CurrentCompositeScore As Double, CompositeScoreDelta As Double, ReasonDeltas As IReadOnlyList(Of ProviderReasonDelta))
+  overload: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.#ctor*
+  nameWithType.vb: ProviderDegradationScoreDelta.New(String, Double, Double, Double, IReadOnlyList(Of ProviderReasonDelta))
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.New(String, Double, Double, Double, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderReasonDelta))
+  name.vb: New(String, Double, Double, Double, IReadOnlyList(Of ProviderReasonDelta))
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName
+  id: ProviderName
+  parent: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  langs:
+  - csharp
+  - vb
+  name: ProviderName
+  nameWithType: ProviderDegradationScoreDelta.ProviderName
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderName
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string ProviderName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderName As String
+  overload: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore
+  id: PreviousCompositeScore
+  parent: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  langs:
+  - csharp
+  - vb
+  name: PreviousCompositeScore
+  nameWithType: ProviderDegradationScoreDelta.PreviousCompositeScore
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousCompositeScore
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 559
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double PreviousCompositeScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property PreviousCompositeScore As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore
+  id: CurrentCompositeScore
+  parent: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  langs:
+  - csharp
+  - vb
+  name: CurrentCompositeScore
+  nameWithType: ProviderDegradationScoreDelta.CurrentCompositeScore
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentCompositeScore
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 560
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double CurrentCompositeScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CurrentCompositeScore As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta
+  id: CompositeScoreDelta
+  parent: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  langs:
+  - csharp
+  - vb
+  name: CompositeScoreDelta
+  nameWithType: ProviderDegradationScoreDelta.CompositeScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeScoreDelta
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 561
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double CompositeScoreDelta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CompositeScoreDelta As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas
+  id: ReasonDeltas
+  parent: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  langs:
+  - csharp
+  - vb
+  name: ReasonDeltas
+  nameWithType: ProviderDegradationScoreDelta.ReasonDeltas
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReasonDeltas
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 562
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public IReadOnlyList<ProviderReasonDelta> ReasonDeltas { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta}
+    content.vb: Public Property ReasonDeltas As IReadOnlyList(Of ProviderReasonDelta)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationScoreDelta}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationScoreDelta}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderDegradationScoreDelta>
+  nameWithType: IEquatable<ProviderDegradationScoreDelta>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ProviderDegradationScoreDelta>
+  nameWithType.vb: IEquatable(Of ProviderDegradationScoreDelta)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ProviderDegradationScoreDelta)
+  name.vb: IEquatable(Of ProviderDegradationScoreDelta)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+    name: ProviderDegradationScoreDelta
+    href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+    name: ProviderDegradationScoreDelta
+    href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.#ctor
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html#Meridian_Application_Monitoring_ProviderDegradationScoreDelta__ctor_System_String_System_Double_System_Double_System_Double_System_Collections_Generic_IReadOnlyList_Meridian_Application_Monitoring_ProviderReasonDelta__
+  name: ProviderDegradationScoreDelta
+  nameWithType: ProviderDegradationScoreDelta.ProviderDegradationScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderDegradationScoreDelta
+  nameWithType.vb: ProviderDegradationScoreDelta.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderReasonDelta}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderReasonDelta>
+  nameWithType: IReadOnlyList<ProviderReasonDelta>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderReasonDelta>
+  nameWithType.vb: IReadOnlyList(Of ProviderReasonDelta)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderReasonDelta)
+  name.vb: IReadOnlyList(Of ProviderReasonDelta)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderReasonDelta
+    name: ProviderReasonDelta
+    href: Meridian.Application.Monitoring.ProviderReasonDelta.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderReasonDelta
+    name: ProviderReasonDelta
+    href: Meridian.Application.Monitoring.ProviderReasonDelta.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html#Meridian_Application_Monitoring_ProviderDegradationScoreDelta_ProviderName
+  name: ProviderName
+  nameWithType: ProviderDegradationScoreDelta.ProviderName
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ProviderName
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html#Meridian_Application_Monitoring_ProviderDegradationScoreDelta_PreviousCompositeScore
+  name: PreviousCompositeScore
+  nameWithType: ProviderDegradationScoreDelta.PreviousCompositeScore
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.PreviousCompositeScore
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html#Meridian_Application_Monitoring_ProviderDegradationScoreDelta_CurrentCompositeScore
+  name: CurrentCompositeScore
+  nameWithType: ProviderDegradationScoreDelta.CurrentCompositeScore
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CurrentCompositeScore
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html#Meridian_Application_Monitoring_ProviderDegradationScoreDelta_CompositeScoreDelta
+  name: CompositeScoreDelta
+  nameWithType: ProviderDegradationScoreDelta.CompositeScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.CompositeScoreDelta
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html#Meridian_Application_Monitoring_ProviderDegradationScoreDelta_ReasonDeltas
+  name: ReasonDeltas
+  nameWithType: ProviderDegradationScoreDelta.ReasonDeltas
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.ReasonDeltas

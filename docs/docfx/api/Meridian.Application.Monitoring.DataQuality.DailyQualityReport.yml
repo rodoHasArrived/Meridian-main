@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyQualityReport
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Date
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratedAt
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsAnalyzed
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntegrityScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimelinessScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSummaries
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantGaps
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SignificantErrors
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Anomalies
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Recommendations
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Statistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs

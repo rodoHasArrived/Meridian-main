@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityDimension
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weight
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WeightedScore
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Completeness
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Accuracy
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -317,7 +317,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timeliness
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -351,7 +351,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consistency
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
@@ -385,7 +385,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validity
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IConnectivityProbeService
     path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOnline
     path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectivityChanged
     path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs

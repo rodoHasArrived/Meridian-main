@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMonotonicityStats
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalViolations
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGaps
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastViolationTime
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastEventTimestamp
     path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs

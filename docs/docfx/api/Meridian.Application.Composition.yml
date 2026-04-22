@@ -15,7 +15,6 @@ items:
   - Meridian.Application.Composition.PipelinePublisher
   - Meridian.Application.Composition.ServiceCompositionRoot
   - Meridian.Application.Composition.StreamingHostAdapter
-  - Meridian.Application.Composition.WebHostAdapter
   langs:
   - csharp
   - vb
@@ -33,12 +32,6 @@ references:
   name: IHostAdapter
   nameWithType: IHostAdapter
   fullName: Meridian.Application.Composition.IHostAdapter
-- uid: Meridian.Application.Composition.WebHostAdapter
-  commentId: T:Meridian.Application.Composition.WebHostAdapter
-  href: Meridian.Application.Composition.WebHostAdapter.html
-  name: WebHostAdapter
-  nameWithType: WebHostAdapter
-  fullName: Meridian.Application.Composition.WebHostAdapter
 - uid: Meridian.Application.Composition.ConsoleHostAdapter
   commentId: T:Meridian.Application.Composition.ConsoleHostAdapter
   href: Meridian.Application.Composition.ConsoleHostAdapter.html

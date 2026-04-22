@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapConfigEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs

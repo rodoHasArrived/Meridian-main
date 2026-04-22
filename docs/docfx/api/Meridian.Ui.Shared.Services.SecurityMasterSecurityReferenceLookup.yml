@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterSecurityReferenceLookup
     path: ../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs
-    startLine: 10
+    startLine: 9
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs
-    startLine: 14
+    startLine: 13
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services
@@ -87,11 +87,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBySymbolAsync
     path: ../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs
-    startLine: 19
+    startLine: 18
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Services

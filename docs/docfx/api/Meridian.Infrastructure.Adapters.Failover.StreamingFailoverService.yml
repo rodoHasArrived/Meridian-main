@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFailoverService
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnFailoverTriggered
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnFailoverRecovered
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSuccess
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordFailure
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -327,7 +327,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLatency
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForceFailover
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -405,7 +405,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -441,7 +441,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRuleSnapshots
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -471,7 +471,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderHealthSnapshots
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
@@ -501,7 +501,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs

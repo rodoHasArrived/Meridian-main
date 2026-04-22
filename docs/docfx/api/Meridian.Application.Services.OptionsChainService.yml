@@ -12,6 +12,7 @@ items:
   - Meridian.Application.Services.OptionsChainService.GetCachedChain(System.String,System.DateOnly)
   - Meridian.Application.Services.OptionsChainService.GetCachedChainsForUnderlying(System.String)
   - Meridian.Application.Services.OptionsChainService.GetExpirationsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Services.OptionsChainService.GetProviderStatus
   - Meridian.Application.Services.OptionsChainService.GetQuotesForUnderlying(System.String)
   - Meridian.Application.Services.OptionsChainService.GetStrikesAsync(System.String,System.DateOnly,System.Threading.CancellationToken)
   - Meridian.Application.Services.OptionsChainService.GetSummary
@@ -27,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionsChainService
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
@@ -91,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
@@ -127,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsProviderAvailable
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
@@ -144,6 +145,36 @@ items:
       type: System.Boolean
     content.vb: Public ReadOnly Property IsProviderAvailable As Boolean
   overload: Meridian.Application.Services.OptionsChainService.IsProviderAvailable*
+- uid: Meridian.Application.Services.OptionsChainService.GetProviderStatus
+  commentId: M:Meridian.Application.Services.OptionsChainService.GetProviderStatus
+  id: GetProviderStatus
+  parent: Meridian.Application.Services.OptionsChainService
+  langs:
+  - csharp
+  - vb
+  name: GetProviderStatus()
+  nameWithType: OptionsChainService.GetProviderStatus()
+  fullName: Meridian.Application.Services.OptionsChainService.GetProviderStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/OptionsChainService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderStatus
+    path: ../../src/Meridian.Application/Services/OptionsChainService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns a UI-friendly status summary for the active options provider.
+  example: []
+  syntax:
+    content: public OptionsProviderStatus GetProviderStatus()
+    return:
+      type: Meridian.Application.Services.OptionsProviderStatus
+    content.vb: Public Function GetProviderStatus() As OptionsProviderStatus
+  overload: Meridian.Application.Services.OptionsChainService.GetProviderStatus*
 - uid: Meridian.Application.Services.OptionsChainService.GetExpirationsAsync(System.String,System.Threading.CancellationToken)
   commentId: M:Meridian.Application.Services.OptionsChainService.GetExpirationsAsync(System.String,System.Threading.CancellationToken)
   id: GetExpirationsAsync(System.String,System.Threading.CancellationToken)
@@ -158,11 +189,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 40
+    startLine: 69
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -196,11 +227,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 58
+    startLine: 87
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -236,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchChainSnapshotAsync
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 78
+    startLine: 107
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -281,11 +312,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchOptionQuoteAsync
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 109
+    startLine: 138
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -316,11 +347,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchConfiguredChainsAsync
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 135
+    startLine: 164
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -354,11 +385,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCachedChain
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 192
+    startLine: 221
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -392,11 +423,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCachedChainsForUnderlying
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 201
+    startLine: 230
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -428,11 +459,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQuotesForUnderlying
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 210
+    startLine: 239
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -464,11 +495,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 219
+    startLine: 248
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -494,11 +525,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/OptionsChainService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTrackedUnderlyings
     path: ../../src/Meridian.Application/Services/OptionsChainService.cs
-    startLine: 225
+    startLine: 254
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -997,6 +1028,19 @@ references:
   nameWithType.vb: Boolean
   fullName.vb: Boolean
   name.vb: Boolean
+- uid: Meridian.Application.Services.OptionsChainService.GetProviderStatus*
+  commentId: Overload:Meridian.Application.Services.OptionsChainService.GetProviderStatus
+  href: Meridian.Application.Services.OptionsChainService.html#Meridian_Application_Services_OptionsChainService_GetProviderStatus
+  name: GetProviderStatus
+  nameWithType: OptionsChainService.GetProviderStatus
+  fullName: Meridian.Application.Services.OptionsChainService.GetProviderStatus
+- uid: Meridian.Application.Services.OptionsProviderStatus
+  commentId: T:Meridian.Application.Services.OptionsProviderStatus
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.OptionsProviderStatus.html
+  name: OptionsProviderStatus
+  nameWithType: OptionsProviderStatus
+  fullName: Meridian.Application.Services.OptionsProviderStatus
 - uid: Meridian.Application.Services.OptionsChainService.GetExpirationsAsync*
   commentId: Overload:Meridian.Application.Services.OptionsChainService.GetExpirationsAsync
   href: Meridian.Application.Services.OptionsChainService.html#Meridian_Application_Services_OptionsChainService_GetExpirationsAsync_System_String_System_Threading_CancellationToken_

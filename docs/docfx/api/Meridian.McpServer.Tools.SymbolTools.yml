@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/SymbolTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolTools
     path: ../../src/Meridian.McpServer/Tools/SymbolTools.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/SymbolTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Tools/SymbolTools.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/SymbolTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListConfiguredSymbols
     path: ../../src/Meridian.McpServer/Tools/SymbolTools.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/SymbolTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbol
     path: ../../src/Meridian.McpServer/Tools/SymbolTools.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Tools/SymbolTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSymbol
     path: ../../src/Meridian.McpServer/Tools/SymbolTools.cs

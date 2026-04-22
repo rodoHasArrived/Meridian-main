@@ -5,6 +5,8 @@ items:
   id: IBHistoricalDataProvider
   parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
   children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager,System.Int32,Serilog.ILogger)
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.Capabilities
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.Description
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.DisplayName
@@ -34,11 +36,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBHistoricalDataProvider
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 545
+    startLine: 544
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -121,6 +123,71 @@ items:
       value: ADR-005
     - type: System.String
       value: Attribute-based provider discovery
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor
+  id: '#ctor'
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: IBHistoricalDataProvider()
+  nameWithType: IBHistoricalDataProvider.IBHistoricalDataProvider()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.IBHistoricalDataProvider()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public IBHistoricalDataProvider()
+    content.vb: Public Sub New()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor*
+  nameWithType.vb: IBHistoricalDataProvider.New()
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.New()
+  name.vb: New()
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager,System.Int32,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager,System.Int32,Serilog.ILogger)
+  id: '#ctor(Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager,System.Int32,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: IBHistoricalDataProvider(EnhancedIBConnectionManager, int, ILogger?)
+  nameWithType: IBHistoricalDataProvider.IBHistoricalDataProvider(EnhancedIBConnectionManager, int, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.IBHistoricalDataProvider(Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager, int, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
+    startLine: 555
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public IBHistoricalDataProvider(EnhancedIBConnectionManager connectionManager, int priority = 10, ILogger? log = null)
+    parameters:
+    - id: connectionManager
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+    - id: priority
+      type: System.Int32
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(connectionManager As EnhancedIBConnectionManager, priority As Integer = 10, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor*
+  nameWithType.vb: IBHistoricalDataProvider.New(EnhancedIBConnectionManager, Integer, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.New(Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager, Integer, Serilog.ILogger)
+  name.vb: New(EnhancedIBConnectionManager, Integer, ILogger)
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.Name
   commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.Name
   id: Name
@@ -135,11 +202,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 554
+    startLine: 564
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -168,11 +235,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 555
+    startLine: 565
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -201,11 +268,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 556
+    startLine: 566
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -234,11 +301,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 560
+    startLine: 570
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -270,11 +337,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 561
+    startLine: 571
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -306,11 +373,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 562
+    startLine: 572
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -342,11 +409,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 563
+    startLine: 573
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -378,11 +445,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 565
+    startLine: 575
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -414,11 +481,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 569
+    startLine: 579
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -447,11 +514,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 570
+    startLine: 580
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -480,11 +547,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 571
+    startLine: 581
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -513,11 +580,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 572
+    startLine: 582
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -546,11 +613,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 574
+    startLine: 584
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -579,11 +646,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 582
+    startLine: 592
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -615,11 +682,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 588
+    startLine: 598
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -648,11 +715,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 594
+    startLine: 604
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -681,11 +748,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 600
+    startLine: 610
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -719,11 +786,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 606
+    startLine: 616
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -763,11 +830,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs
-    startLine: 613
+    startLine: 623
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -1091,6 +1158,46 @@ references:
   - uid: Meridian.Infrastructure.Adapters.Core
     name: Core
     href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBHistoricalDataProvider__ctor
+  name: IBHistoricalDataProvider
+  nameWithType: IBHistoricalDataProvider.IBHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.IBHistoricalDataProvider
+  nameWithType.vb: IBHistoricalDataProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html
+  name: EnhancedIBConnectionManager
+  nameWithType: EnhancedIBConnectionManager
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.Name*
   commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.Name
   href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBHistoricalDataProvider_Name
@@ -1154,17 +1261,6 @@ references:
   name: Priority
   nameWithType: IHistoricalDataProvider.Priority
   fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.Priority
-- uid: System.Int32
-  commentId: T:System.Int32
-  parent: System
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.int32
-  name: int
-  nameWithType: int
-  fullName: int
-  nameWithType.vb: Integer
-  fullName.vb: Integer
-  name.vb: Integer
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.RateLimitDelay*
   commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.RateLimitDelay
   href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBHistoricalDataProvider_RateLimitDelay

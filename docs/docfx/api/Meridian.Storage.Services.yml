@@ -92,6 +92,7 @@ items:
   - Meridian.Storage.Services.PlannedMigrationAction
   - Meridian.Storage.Services.QualityAlert
   - Meridian.Storage.Services.QualityAssessment
+  - Meridian.Storage.Services.QualityAssessmentMetadataUpdate
   - Meridian.Storage.Services.QualityDimension
   - Meridian.Storage.Services.QualityIssue
   - Meridian.Storage.Services.QualityIssueSeverity
@@ -705,6 +706,12 @@ references:
   name: IMetadataTagService
   nameWithType: IMetadataTagService
   fullName: Meridian.Storage.Services.IMetadataTagService
+- uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  commentId: T:Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+  href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html
+  name: QualityAssessmentMetadataUpdate
+  nameWithType: QualityAssessmentMetadataUpdate
+  fullName: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
 - uid: Meridian.Storage.Services.FileMetadataRecord
   commentId: T:Meridian.Storage.Services.FileMetadataRecord
   parent: Meridian.Storage.Services

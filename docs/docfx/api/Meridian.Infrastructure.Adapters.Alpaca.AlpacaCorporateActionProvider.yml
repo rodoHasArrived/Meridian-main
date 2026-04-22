@@ -16,13 +16,9 @@ items:
   fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
   type: Class
   source:
-    remote:
-      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaCorporateActionProvider
-    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
-    startLine: 26
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Infrastructure\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaCorporateActionJsonContext.PropertyNames.g.cs
+    startLine: 10
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -113,7 +109,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
@@ -149,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
@@ -185,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs

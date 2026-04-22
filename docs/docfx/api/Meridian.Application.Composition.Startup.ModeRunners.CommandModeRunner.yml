@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandModeRunner
     path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRunAsync
     path: ../../src/Meridian.Application/Composition/Startup/ModeRunners/CommandModeRunner.cs

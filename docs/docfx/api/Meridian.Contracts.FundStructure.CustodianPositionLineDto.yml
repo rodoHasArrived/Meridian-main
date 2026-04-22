@@ -5,19 +5,19 @@ items:
   id: CustodianPositionLineDto
   parent: Meridian.Contracts.FundStructure
   children:
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Boolean)
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.String,System.String,System.Boolean)
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccountId
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto.AsOfDate
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto.BatchId
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto.IdentifierType
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValue
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId
   - Meridian.Contracts.FundStructure.CustodianPositionLineDto.Quantity
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier
-  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending
+  - Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName
   langs:
   - csharp
   - vb
@@ -27,15 +27,16 @@ items:
   type: Class
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodianPositionLineDto
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 101
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 18
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: A single position line from a custodian statement.
   example: []
   syntax:
     content: 'public sealed record CustodianPositionLineDto : IEquatable<CustodianPositionLineDto>'
@@ -51,33 +52,34 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Boolean)
-  commentId: M:Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Boolean)
-  id: '#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Boolean)'
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.String,System.String,System.Boolean)
+  commentId: M:Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.String,System.String,System.Boolean)
+  id: '#ctor(System.Guid,System.Guid,System.Guid,System.DateOnly,System.String,System.String,System.Decimal,System.Decimal,System.String,System.String,System.String,System.Boolean)'
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: CustodianPositionLineDto(Guid, Guid, Guid, DateOnly, string, string, decimal, decimal, string, decimal?, decimal?, bool)
-  nameWithType: CustodianPositionLineDto.CustodianPositionLineDto(Guid, Guid, Guid, DateOnly, string, string, decimal, decimal, string, decimal?, decimal?, bool)
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CustodianPositionLineDto(System.Guid, System.Guid, System.Guid, System.DateOnly, string, string, decimal, decimal, string, decimal?, decimal?, bool)
+  name: CustodianPositionLineDto(Guid, Guid, Guid, DateOnly, string, string, decimal, decimal, string, string?, string?, bool)
+  nameWithType: CustodianPositionLineDto.CustodianPositionLineDto(Guid, Guid, Guid, DateOnly, string, string, decimal, decimal, string, string?, string?, bool)
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CustodianPositionLineDto(System.Guid, System.Guid, System.Guid, System.DateOnly, string, string, decimal, decimal, string, string?, string?, bool)
   type: Constructor
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 101
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 18
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
+  summary: A single position line from a custodian statement.
   example: []
   syntax:
-    content: public CustodianPositionLineDto(Guid PositionLineId, Guid BatchId, Guid AccountId, DateOnly AsOfDate, string SecurityIdentifier, string IdentifierType, decimal Quantity, decimal MarketValue, string MarketValueCurrency, decimal? CostBasis, decimal? AccruedIncome, bool SettlementPending)
+    content: public CustodianPositionLineDto(Guid LineId, Guid BatchId, Guid AccountId, DateOnly AsOfDate, string Identifier, string IdentifierType, decimal Quantity, decimal MarketValue, string Currency, string? SecurityName, string? AssetClass, bool IsShort)
     parameters:
-    - id: PositionLineId
+    - id: LineId
       type: System.Guid
     - id: BatchId
       type: System.Guid
@@ -85,7 +87,7 @@ items:
       type: System.Guid
     - id: AsOfDate
       type: System.DateOnly
-    - id: SecurityIdentifier
+    - id: Identifier
       type: System.String
     - id: IdentifierType
       type: System.String
@@ -93,48 +95,48 @@ items:
       type: System.Decimal
     - id: MarketValue
       type: System.Decimal
-    - id: MarketValueCurrency
+    - id: Currency
       type: System.String
-    - id: CostBasis
-      type: System.Nullable{System.Decimal}
-    - id: AccruedIncome
-      type: System.Nullable{System.Decimal}
-    - id: SettlementPending
+    - id: SecurityName
+      type: System.String
+    - id: AssetClass
+      type: System.String
+    - id: IsShort
       type: System.Boolean
-    content.vb: Public Sub New(PositionLineId As Guid, BatchId As Guid, AccountId As Guid, AsOfDate As DateOnly, SecurityIdentifier As String, IdentifierType As String, Quantity As Decimal, MarketValue As Decimal, MarketValueCurrency As String, CostBasis As Decimal?, AccruedIncome As Decimal?, SettlementPending As Boolean)
+    content.vb: Public Sub New(LineId As Guid, BatchId As Guid, AccountId As Guid, AsOfDate As DateOnly, Identifier As String, IdentifierType As String, Quantity As Decimal, MarketValue As Decimal, Currency As String, SecurityName As String, AssetClass As String, IsShort As Boolean)
   overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor*
-  nameWithType.vb: CustodianPositionLineDto.New(Guid, Guid, Guid, DateOnly, String, String, Decimal, Decimal, String, Decimal?, Decimal?, Boolean)
-  fullName.vb: Meridian.Contracts.FundStructure.CustodianPositionLineDto.New(System.Guid, System.Guid, System.Guid, System.DateOnly, String, String, Decimal, Decimal, String, Decimal?, Decimal?, Boolean)
-  name.vb: New(Guid, Guid, Guid, DateOnly, String, String, Decimal, Decimal, String, Decimal?, Decimal?, Boolean)
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId
-  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId
-  id: PositionLineId
+  nameWithType.vb: CustodianPositionLineDto.New(Guid, Guid, Guid, DateOnly, String, String, Decimal, Decimal, String, String, String, Boolean)
+  fullName.vb: Meridian.Contracts.FundStructure.CustodianPositionLineDto.New(System.Guid, System.Guid, System.Guid, System.DateOnly, String, String, Decimal, Decimal, String, String, String, Boolean)
+  name.vb: New(Guid, Guid, Guid, DateOnly, String, String, Decimal, Decimal, String, String, String, Boolean)
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId
+  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId
+  id: LineId
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: PositionLineId
-  nameWithType: CustodianPositionLineDto.PositionLineId
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId
+  name: LineId
+  nameWithType: CustodianPositionLineDto.LineId
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: PositionLineId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 102
+    id: LineId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 19
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public Guid PositionLineId { get; init; }
+    content: public Guid LineId { get; init; }
     parameters: []
     return:
       type: System.Guid
-    content.vb: Public Property PositionLineId As Guid
-  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId*
+    content.vb: Public Property LineId As Guid
+  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId*
 - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.BatchId
   commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.BatchId
   id: BatchId
@@ -148,12 +150,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 103
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 20
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -177,12 +179,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 104
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 21
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -206,12 +208,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOfDate
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 105
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 22
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -222,35 +224,35 @@ items:
       type: System.DateOnly
     content.vb: Public Property AsOfDate As DateOnly
   overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AsOfDate*
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier
-  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier
-  id: SecurityIdentifier
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier
+  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier
+  id: Identifier
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: SecurityIdentifier
-  nameWithType: CustodianPositionLineDto.SecurityIdentifier
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier
+  name: Identifier
+  nameWithType: CustodianPositionLineDto.Identifier
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: SecurityIdentifier
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 106
+    id: Identifier
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 23
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public string SecurityIdentifier { get; init; }
+    content: public string Identifier { get; init; }
     parameters: []
     return:
       type: System.String
-    content.vb: Public Property SecurityIdentifier As String
-  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier*
+    content.vb: Public Property Identifier As String
+  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier*
 - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IdentifierType
   commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.IdentifierType
   id: IdentifierType
@@ -264,12 +266,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifierType
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 107
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 24
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -293,12 +295,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 108
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 25
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -322,12 +324,12 @@ items:
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketValue
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 109
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 26
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -338,122 +340,122 @@ items:
       type: System.Decimal
     content.vb: Public Property MarketValue As Decimal
   overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValue*
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency
-  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency
-  id: MarketValueCurrency
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency
+  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency
+  id: Currency
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: MarketValueCurrency
-  nameWithType: CustodianPositionLineDto.MarketValueCurrency
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency
+  name: Currency
+  nameWithType: CustodianPositionLineDto.Currency
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: MarketValueCurrency
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 110
+    id: Currency
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 27
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public string MarketValueCurrency { get; init; }
+    content: public string Currency { get; init; }
     parameters: []
     return:
       type: System.String
-    content.vb: Public Property MarketValueCurrency As String
-  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency*
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis
-  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis
-  id: CostBasis
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency*
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName
+  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName
+  id: SecurityName
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: CostBasis
-  nameWithType: CustodianPositionLineDto.CostBasis
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis
+  name: SecurityName
+  nameWithType: CustodianPositionLineDto.SecurityName
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: CostBasis
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 111
+    id: SecurityName
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 28
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public decimal? CostBasis { get; init; }
+    content: public string? SecurityName { get; init; }
     parameters: []
     return:
-      type: System.Nullable{System.Decimal}
-    content.vb: Public Property CostBasis As Decimal?
-  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis*
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome
-  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome
-  id: AccruedIncome
+      type: System.String
+    content.vb: Public Property SecurityName As String
+  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName*
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass
+  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass
+  id: AssetClass
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: AccruedIncome
-  nameWithType: CustodianPositionLineDto.AccruedIncome
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome
+  name: AssetClass
+  nameWithType: CustodianPositionLineDto.AssetClass
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: AccruedIncome
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 112
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 29
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public decimal? AccruedIncome { get; init; }
+    content: public string? AssetClass { get; init; }
     parameters: []
     return:
-      type: System.Nullable{System.Decimal}
-    content.vb: Public Property AccruedIncome As Decimal?
-  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome*
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending
-  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending
-  id: SettlementPending
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass*
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort
+  commentId: P:Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort
+  id: IsShort
   parent: Meridian.Contracts.FundStructure.CustodianPositionLineDto
   langs:
   - csharp
   - vb
-  name: SettlementPending
-  nameWithType: CustodianPositionLineDto.SettlementPending
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending
+  name: IsShort
+  nameWithType: CustodianPositionLineDto.IsShort
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort
   type: Property
   source:
     remote:
-      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: SettlementPending
-    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 113
+    id: IsShort
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 30
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public bool SettlementPending { get; init; }
+    content: public bool IsShort { get; init; }
     parameters: []
     return:
       type: System.Boolean
-    content.vb: Public Property SettlementPending As Boolean
-  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending*
+    content.vb: Public Property IsShort As Boolean
+  overload: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort*
 references:
 - uid: Meridian.Contracts.FundStructure
   commentId: N:Meridian.Contracts.FundStructure
@@ -761,7 +763,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor*
   commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.#ctor
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto__ctor_System_Guid_System_Guid_System_Guid_System_DateOnly_System_String_System_String_System_Decimal_System_Decimal_System_String_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Boolean_
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto__ctor_System_Guid_System_Guid_System_Guid_System_DateOnly_System_String_System_String_System_Decimal_System_Decimal_System_String_System_String_System_String_System_Boolean_
   name: CustodianPositionLineDto
   nameWithType: CustodianPositionLineDto.CustodianPositionLineDto
   fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CustodianPositionLineDto
@@ -806,29 +808,6 @@ references:
   nameWithType.vb: Decimal
   fullName.vb: Decimal
   name.vb: Decimal
-- uid: System.Nullable{System.Decimal}
-  commentId: T:System.Nullable{System.Decimal}
-  parent: System
-  definition: System.Nullable`1
-  href: https://learn.microsoft.com/dotnet/api/system.decimal
-  name: decimal?
-  nameWithType: decimal?
-  fullName: decimal?
-  nameWithType.vb: Decimal?
-  fullName.vb: Decimal?
-  name.vb: Decimal?
-  spec.csharp:
-  - uid: System.Decimal
-    name: decimal
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.decimal
-  - name: '?'
-  spec.vb:
-  - uid: System.Decimal
-    name: Decimal
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.decimal
-  - name: '?'
 - uid: System.Boolean
   commentId: T:System.Boolean
   parent: System
@@ -840,40 +819,12 @@ references:
   nameWithType.vb: Boolean
   fullName.vb: Boolean
   name.vb: Boolean
-- uid: System.Nullable`1
-  commentId: T:System.Nullable`1
-  isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
-  name: Nullable<T>
-  nameWithType: Nullable<T>
-  fullName: System.Nullable<T>
-  nameWithType.vb: Nullable(Of T)
-  fullName.vb: System.Nullable(Of T)
-  name.vb: Nullable(Of T)
-  spec.csharp:
-  - uid: System.Nullable`1
-    name: Nullable
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
-  - name: <
-  - name: T
-  - name: '>'
-  spec.vb:
-  - uid: System.Nullable`1
-    name: Nullable
-    isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
-  - name: (
-  - name: Of
-  - name: " "
-  - name: T
-  - name: )
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId*
-  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_PositionLineId
-  name: PositionLineId
-  nameWithType: CustodianPositionLineDto.PositionLineId
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.PositionLineId
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_LineId
+  name: LineId
+  nameWithType: CustodianPositionLineDto.LineId
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.LineId
 - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.BatchId*
   commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.BatchId
   href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_BatchId
@@ -892,12 +843,12 @@ references:
   name: AsOfDate
   nameWithType: CustodianPositionLineDto.AsOfDate
   fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AsOfDate
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier*
-  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_SecurityIdentifier
-  name: SecurityIdentifier
-  nameWithType: CustodianPositionLineDto.SecurityIdentifier
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityIdentifier
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_Identifier
+  name: Identifier
+  nameWithType: CustodianPositionLineDto.Identifier
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Identifier
 - uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IdentifierType*
   commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.IdentifierType
   href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_IdentifierType
@@ -916,27 +867,27 @@ references:
   name: MarketValue
   nameWithType: CustodianPositionLineDto.MarketValue
   fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValue
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency*
-  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_MarketValueCurrency
-  name: MarketValueCurrency
-  nameWithType: CustodianPositionLineDto.MarketValueCurrency
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.MarketValueCurrency
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis*
-  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_CostBasis
-  name: CostBasis
-  nameWithType: CustodianPositionLineDto.CostBasis
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.CostBasis
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome*
-  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_AccruedIncome
-  name: AccruedIncome
-  nameWithType: CustodianPositionLineDto.AccruedIncome
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AccruedIncome
-- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending*
-  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending
-  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_SettlementPending
-  name: SettlementPending
-  nameWithType: CustodianPositionLineDto.SettlementPending
-  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SettlementPending
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_Currency
+  name: Currency
+  nameWithType: CustodianPositionLineDto.Currency
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.Currency
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_SecurityName
+  name: SecurityName
+  nameWithType: CustodianPositionLineDto.SecurityName
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.SecurityName
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_AssetClass
+  name: AssetClass
+  nameWithType: CustodianPositionLineDto.AssetClass
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.AssetClass
+- uid: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort*
+  commentId: Overload:Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort
+  href: Meridian.Contracts.FundStructure.CustodianPositionLineDto.html#Meridian_Contracts_FundStructure_CustodianPositionLineDto_IsShort
+  name: IsShort
+  nameWithType: CustodianPositionLineDto.IsShort
+  fullName: Meridian.Contracts.FundStructure.CustodianPositionLineDto.IsShort

@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityArchiveStore
     path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordAsync
     path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs

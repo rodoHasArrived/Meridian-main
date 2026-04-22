@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogIntegrity
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastVerifiedAt
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesVerified
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumFailures
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MissingFiles
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogChecksum
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs

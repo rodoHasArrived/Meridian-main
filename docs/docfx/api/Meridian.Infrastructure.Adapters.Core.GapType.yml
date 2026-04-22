@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapType
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Missing
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Partial
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Holiday
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weekend
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Halted
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Suspicious
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs

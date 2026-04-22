@@ -14,6 +14,7 @@ public partial class QuantScriptPage : Page
 
     public QuantScriptPage(QuantScriptViewModel viewModel)
     {
+        EnsureFallbackResources();
         InitializeComponent();
         _vm = viewModel;
         DataContext = _vm;
@@ -37,5 +38,24 @@ public partial class QuantScriptPage : Page
         if (_vm is null) return;
         _vm.SaveLayout(ChartRow.Height.Value, EditorRow.Height.Value);
         _vm.Dispose();
+    }
+
+    private void EnsureFallbackResources()
+    {
+        if (TryFindResource("ConsoleBackgroundDarkBrush") is null)
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Meridian.Desktop;component/Styles/ThemeTokens.xaml", UriKind.Relative)
+            });
+        }
+
+        if (TryFindResource("PrimaryButtonStyle") is null)
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Relative)
+            });
+        }
     }
 }

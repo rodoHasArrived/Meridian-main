@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthCheckOptions
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateChecksums
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckSequenceContinuity
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSchemas
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -193,7 +193,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckFilePermissions
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IdentifyCorruption
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckManifestConsistency
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paths
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -309,7 +309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParallelChecks
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs

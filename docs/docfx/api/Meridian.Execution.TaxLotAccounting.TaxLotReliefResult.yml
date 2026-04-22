@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaxLotReliefResult
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RelievedLots
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemainingLots
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRealizedPnl
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRelievedQuantity
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs

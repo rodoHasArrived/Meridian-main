@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITierMigrationService
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrateAsync
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlanMigrationAsync
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetermineTargetTier
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTierStatisticsAsync
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs

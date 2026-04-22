@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RiskValidationResult
     path: ../../src/Meridian.Execution/IRiskValidator.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsApproved
     path: ../../src/Meridian.Execution/IRiskValidator.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RejectReason
     path: ../../src/Meridian.Execution/IRiskValidator.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Approved
     path: ../../src/Meridian.Execution/IRiskValidator.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/IRiskValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Rejected
     path: ../../src/Meridian.Execution/IRiskValidator.cs

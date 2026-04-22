@@ -42,7 +42,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MigrationDiagnostics
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFactoryHits
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillFactoryHits
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchFactoryHits
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncStreamingFactoryHit
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncBackfillFactoryHit
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -246,7 +246,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncSymbolSearchFactoryHit
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamingFactoryHitsByKind
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -308,7 +308,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectAttempts
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -337,7 +337,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectSuccesses
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconnectFailures
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -395,7 +395,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncReconnectAttempt
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -427,7 +427,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncReconnectSuccess
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -459,7 +459,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncReconnectFailure
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -491,7 +491,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconnectAttemptsByProvider
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -527,7 +527,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetReconnectSuccessesByProvider
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -563,7 +563,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAttempts
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -592,7 +592,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeSuccesses
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -621,7 +621,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeFailures
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -650,7 +650,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncResubscribeAttempt
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -676,7 +676,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncResubscribeSuccess
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -702,7 +702,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncResubscribeFailure
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -728,7 +728,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProvidersRegistered
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -757,7 +757,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamingFactoriesRegistered
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -786,7 +786,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncProviderRegistered
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -812,7 +812,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncStreamingFactoryRegistered
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -838,7 +838,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
@@ -868,7 +868,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/MigrationDiagnostics.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reset
     path: ../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs

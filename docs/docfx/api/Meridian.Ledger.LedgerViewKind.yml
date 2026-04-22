@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerViewKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerViewKind
     path: ../../src/Meridian.Ledger/LedgerViewKind.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerViewKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Actual
     path: ../../src/Meridian.Ledger/LedgerViewKind.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerViewKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Historical
     path: ../../src/Meridian.Ledger/LedgerViewKind.cs
@@ -104,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerViewKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterizedPnL
     path: ../../src/Meridian.Ledger/LedgerViewKind.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerViewKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMaster
     path: ../../src/Meridian.Ledger/LedgerViewKind.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ledger/LedgerViewKind.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Other
     path: ../../src/Meridian.Ledger/LedgerViewKind.cs

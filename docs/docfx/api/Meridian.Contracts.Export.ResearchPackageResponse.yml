@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResearchPackageResponse
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagePath
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestPath
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs

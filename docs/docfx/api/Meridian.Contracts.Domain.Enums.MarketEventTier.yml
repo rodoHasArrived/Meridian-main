@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketEventTier
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Raw
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Derived
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enriched
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Processed
     path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs

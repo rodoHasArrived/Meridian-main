@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderLiveFeedAdapter
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribedSymbols
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastTrade
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastQuote
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLastOrderBook
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyTrade
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplySnapshot
     path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs

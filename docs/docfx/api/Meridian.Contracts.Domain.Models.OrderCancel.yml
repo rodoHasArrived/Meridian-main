@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderCancel
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanceledSize
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
@@ -197,7 +197,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderCancel.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs

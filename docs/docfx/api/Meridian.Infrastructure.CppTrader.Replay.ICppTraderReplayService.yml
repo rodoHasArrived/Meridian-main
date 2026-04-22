@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderReplayService
     path: ../../src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
@@ -43,7 +43,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateReplaySessionAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Replay/ICppTraderReplayService.cs

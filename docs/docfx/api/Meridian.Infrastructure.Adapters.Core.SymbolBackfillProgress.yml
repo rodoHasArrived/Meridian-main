@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolBackfillProgress
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatesToFill
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilledDates
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedDates
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsRetrieved
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessfulProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastError
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -404,7 +404,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -435,7 +435,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -466,7 +466,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressPercent
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs

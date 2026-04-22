@@ -183,6 +183,82 @@ jobs:
         echo "## Golden Fixture Regression" >> $GITHUB_STEP_SUMMARY
         echo "Canonicalization golden fixtures detected a regression. Check test output for details." >> $GITHUB_STEP_SUMMARY
 
+  kernel-parity:
+    name: Kernel Parity Suite
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    if: always() && needs.build-and-test.result == 'success'
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Detect kernel-related changes
+      id: kernel-filter
+      uses: dorny/paths-filter@v3
+      with:
+        filters: |
+          kernel:
+            - 'src/Meridian.FSharp/**'
+            - 'src/Meridian.FSharp.Ledger/**'
+            - 'src/Meridian.Ledger/**'
+            - 'src/Meridian.Risk/**'
+            - 'src/Meridian.Application/**'
+            - 'tests/Meridian.FSharp.Tests/**'
+            - 'tests/Meridian.Tests/Application/FSharpParity/**'
+
+    - name: Setup .NET with Cache
+      if: steps.kernel-filter.outputs.kernel == 'true'
+      uses: ./.github/actions/setup-dotnet-cache
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      if: steps.kernel-filter.outputs.kernel == 'true'
+      run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+    - name: Run C# kernel parity tests
+      if: steps.kernel-filter.outputs.kernel == 'true'
+      run: |
+        dotnet test tests/Meridian.Tests \
+          --filter "Category=KernelParity|FullyQualifiedName~KernelParity" \
+          -c Release \
+          /p:EnableWindowsTargeting=true \
+          --logger "trx;LogFileName=kernel-parity-csharp.trx" \
+          --verbosity normal
+
+    - name: Run F# kernel parity tests
+      if: steps.kernel-filter.outputs.kernel == 'true'
+      run: |
+        dotnet test tests/Meridian.FSharp.Tests \
+          --filter "Category=KernelParity|FullyQualifiedName~KernelParity|DisplayName~KernelParity" \
+          -c Release \
+          /p:EnableWindowsTargeting=true \
+          --logger "trx;LogFileName=kernel-parity-fsharp.trx" \
+          --verbosity normal
+
+    - name: Upload kernel parity results
+      if: always() && steps.kernel-filter.outputs.kernel == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: kernel-parity-results
+        path: |
+          tests/Meridian.Tests/TestResults/kernel-parity-csharp.trx
+          tests/Meridian.FSharp.Tests/TestResults/kernel-parity-fsharp.trx
+        retention-days: 7
+
+    - name: Skip note when no kernel files changed
+      if: steps.kernel-filter.outputs.kernel != 'true'
+      run: echo "Kernel parity suite skipped because this PR does not touch kernel-related paths." >> $GITHUB_STEP_SUMMARY
+
+    - name: Kernel parity failure hint
+      if: failure() && steps.kernel-filter.outputs.kernel == 'true'
+      run: |
+        echo "::error::Kernel parity suite failed. Investigate score/severity/reason mismatches or update expected divergence annotations."
+        echo "## Kernel Parity Regression" >> $GITHUB_STEP_SUMMARY
+        echo "Kernel-related changes must preserve C# and F# behavior parity unless an expected divergence is explicitly documented." >> $GITHUB_STEP_SUMMARY
+
   # ─── AI PR Review ──────────────────────────────────────────────────────
 
   ai-pr-review:
@@ -250,7 +326,7 @@ jobs:
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [lint, build-and-test, config-schema, ibapi-smoke, golden-fixtures, ai-pr-review]
+    needs: [lint, build-and-test, config-schema, ibapi-smoke, golden-fixtures, kernel-parity, ai-pr-review]
     if: always()
     timeout-minutes: 30
 
@@ -266,6 +342,7 @@ jobs:
         echo "| Config Schema | ${{ needs.config-schema.result == 'success' && 'Passed' || (needs.config-schema.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| IBAPI Smoke Build | ${{ needs.ibapi-smoke.result == 'success' && 'Passed' || (needs.ibapi-smoke.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Golden Fixtures | ${{ needs.golden-fixtures.result == 'success' && 'Passed' || (needs.golden-fixtures.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Kernel Parity | ${{ needs.kernel-parity.result == 'success' && 'Passed' || (needs.kernel-parity.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| AI PR Review | ${{ needs.ai-pr-review.result == 'success' && 'Completed' || (needs.ai-pr-review.result == 'skipped' && 'Skipped' || 'Unavailable') }} |" >> $GITHUB_STEP_SUMMARY
 
 
@@ -273,7 +350,8 @@ jobs:
            [[ "${{ needs.build-and-test.result }}" == "failure" ]] || \
            [[ "${{ needs.config-schema.result }}" == "failure" ]] || \
            [[ "${{ needs.ibapi-smoke.result }}" == "failure" ]] || \
-           [[ "${{ needs.golden-fixtures.result }}" == "failure" ]]; then
+           [[ "${{ needs.golden-fixtures.result }}" == "failure" ]] || \
+           [[ "${{ needs.kernel-parity.result }}" == "failure" ]]; then
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ❌ Some checks failed" >> $GITHUB_STEP_SUMMARY
           exit 1

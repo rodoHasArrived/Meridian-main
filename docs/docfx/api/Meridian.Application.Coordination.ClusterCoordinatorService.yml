@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClusterCoordinatorService
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsLeader
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeadershipChanged
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -243,7 +243,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryBecomeLeaderAsync
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ClusterCoordinatorService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StepDownAsync
     path: ../../src/Meridian.Application/Coordination/ClusterCoordinatorService.cs

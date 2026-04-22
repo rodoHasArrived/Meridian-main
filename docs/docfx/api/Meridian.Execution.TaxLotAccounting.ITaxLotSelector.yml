@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ITaxLotSelector
     path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Method
     path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Relieve
     path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs

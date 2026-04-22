@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlannedMigrationAction
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourcePath
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetTier
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileAge
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/TierMigrationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedSavings
     path: ../../src/Meridian.Storage/Services/TierMigrationService.cs

@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/Publishers/CompositePublisher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositePublisher
     path: ../../src/Meridian.Domain/Events/Publishers/CompositePublisher.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/Publishers/CompositePublisher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Domain/Events/Publishers/CompositePublisher.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Events/Publishers/CompositePublisher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryPublish
     path: ../../src/Meridian.Domain/Events/Publishers/CompositePublisher.cs

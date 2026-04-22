@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReconciliationSourceKind
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unknown
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bank
     path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs

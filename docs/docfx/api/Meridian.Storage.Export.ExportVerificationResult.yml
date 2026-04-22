@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExportVerificationResult
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecksumsValid
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordCountsValid
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaValid
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Issues
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileResults
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportVerificationReport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failure
     path: ../../src/Meridian.Storage/Export/ExportVerificationReport.cs

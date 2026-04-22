@@ -32,11 +32,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaMarketDataClient
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 29
+    startLine: 31
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -188,11 +188,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 63
+    startLine: 59
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -224,11 +224,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 78
+    startLine: 74
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -255,11 +255,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 81
+    startLine: 77
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -287,11 +287,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 84
+    startLine: 80
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -319,11 +319,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 87
+    startLine: 83
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -351,11 +351,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 90
+    startLine: 86
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -383,11 +383,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 93
+    startLine: 89
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -415,11 +415,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 105
+    startLine: 101
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -445,11 +445,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 112
+    startLine: 108
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -475,11 +475,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildWebSocketUri
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 122
+    startLine: 118
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -506,11 +506,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AuthenticateAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 136
+    startLine: 132
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -547,11 +547,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleMessageAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 144
+    startLine: 140
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -588,11 +588,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResubscribeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 180
+    startLine: 176
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -626,11 +626,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 212
+    startLine: 198
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -660,11 +660,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 226
+    startLine: 212
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -695,11 +695,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 237
+    startLine: 223
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca
@@ -729,11 +729,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaMarketDataClient.cs
-    startLine: 256
+    startLine: 242
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Alpaca

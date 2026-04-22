@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessSummary
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSymbolDates
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -206,7 +206,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxScore
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -235,7 +235,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsTracked
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatesTracked
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalExpectedEvents
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -351,7 +351,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallCoverage
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -380,7 +380,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GradeDistribution
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
@@ -409,7 +409,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
     path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs

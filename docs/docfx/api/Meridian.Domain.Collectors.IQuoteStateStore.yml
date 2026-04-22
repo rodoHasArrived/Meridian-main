@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IQuoteStateStore
     path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGet
     path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upsert
     path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRemove
     path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Domain/Collectors/IQuoteStateStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
     path: ../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs

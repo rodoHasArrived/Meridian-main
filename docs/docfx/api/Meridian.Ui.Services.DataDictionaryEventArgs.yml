@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataDictionaryEventArgs
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dictionary
     path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs

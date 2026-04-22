@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/VenueMicMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VenueMicMapper
     path: ../../src/Meridian.Application/Canonicalization/VenueMicMapper.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/VenueMicMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Version
     path: ../../src/Meridian.Application/Canonicalization/VenueMicMapper.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/VenueMicMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromFile
     path: ../../src/Meridian.Application/Canonicalization/VenueMicMapper.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/VenueMicMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadFromJson
     path: ../../src/Meridian.Application/Canonicalization/VenueMicMapper.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/VenueMicMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryMapVenue
     path: ../../src/Meridian.Application/Canonicalization/VenueMicMapper.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Canonicalization/VenueMicMapper.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MappingCount
     path: ../../src/Meridian.Application/Canonicalization/VenueMicMapper.cs

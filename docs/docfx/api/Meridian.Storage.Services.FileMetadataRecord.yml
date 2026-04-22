@@ -24,11 +24,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileMetadataRecord
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 299
+    startLine: 422
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePath
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 301
+    startLine: 424
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -89,11 +89,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedUtc
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 302
+    startLine: 425
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -118,11 +118,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastModifiedUtc
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 303
+    startLine: 426
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -147,11 +147,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tags
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 304
+    startLine: 427
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -176,11 +176,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lineage
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 305
+    startLine: 428
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -205,11 +205,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Insights
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 306
+    startLine: 429
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -234,11 +234,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityScore
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 307
+    startLine: 430
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -263,11 +263,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityScoredBy
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 308
+    startLine: 431
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -292,11 +292,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityScoredAtUtc
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 309
+    startLine: 432
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services

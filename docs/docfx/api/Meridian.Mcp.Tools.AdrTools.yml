@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AdrTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrTools
     path: ../../src/Meridian.Mcp/Tools/AdrTools.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AdrTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Tools/AdrTools.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AdrTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListAdrs
     path: ../../src/Meridian.Mcp/Tools/AdrTools.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/AdrTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdr
     path: ../../src/Meridian.Mcp/Tools/AdrTools.cs

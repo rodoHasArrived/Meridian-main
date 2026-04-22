@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingOutboxMessageWrite
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Topic
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MessageKey
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -158,7 +158,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PayloadJson
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HeadersJson
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OccurredAt
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VisibleAfter
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs

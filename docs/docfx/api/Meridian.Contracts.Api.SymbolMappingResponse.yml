@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolMappingResponse
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 159
+    startLine: 166
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -62,11 +62,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 159
+    startLine: 166
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -108,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbol
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 160
+    startLine: 167
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -137,11 +137,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IbSymbol
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 161
+    startLine: 168
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -166,11 +166,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaSymbol
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 162
+    startLine: 169
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -195,11 +195,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSymbol
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 163
+    startLine: 170
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -224,11 +224,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YahooSymbol
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 164
+    startLine: 171
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -253,11 +253,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 165
+    startLine: 172
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -282,11 +282,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 166
+    startLine: 173
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

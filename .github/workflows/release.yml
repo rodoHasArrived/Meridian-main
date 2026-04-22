@@ -70,6 +70,20 @@ jobs:
           exit 1
         fi
 
+    - name: Contract compatibility gate
+      run: |
+        LATEST_TAG=$(git tag --sort=-creatordate | head -n 1)
+        if [ -n "$LATEST_TAG" ]; then
+          BASE_REF="$LATEST_TAG"
+        else
+          BASE_REF="HEAD~1"
+        fi
+
+        echo "Comparing contract compatibility from $BASE_REF to HEAD"
+        python3 scripts/check_contract_compatibility_gate.py \
+          --base "$BASE_REF" \
+          --head "HEAD"
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v5.2.0
       with:

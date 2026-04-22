@@ -8,6 +8,7 @@ items:
   - Meridian.Ui.Services.BatchExportSchedulerService.#ctor(System.Int32,System.String)
   - Meridian.Ui.Services.BatchExportSchedulerService.CancelJob(System.String)
   - Meridian.Ui.Services.BatchExportSchedulerService.CreateJob(Meridian.Ui.Services.ExportJobRequest)
+  - Meridian.Ui.Services.BatchExportSchedulerService.Dispose
   - Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
   - Meridian.Ui.Services.BatchExportSchedulerService.GetJob(System.String)
   - Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(System.String,System.Int32)
@@ -17,6 +18,7 @@ items:
   - Meridian.Ui.Services.BatchExportSchedulerService.JobStarted
   - Meridian.Ui.Services.BatchExportSchedulerService.Jobs
   - Meridian.Ui.Services.BatchExportSchedulerService.QueueJob(System.String)
+  - Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob(System.String)
   - Meridian.Ui.Services.BatchExportSchedulerService.StartAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.BatchExportSchedulerService.StopAsync(System.Threading.CancellationToken)
@@ -30,7 +32,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchExportSchedulerService
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
@@ -44,12 +46,13 @@ items:
     Implements Feature #40: Batch Export Scheduler
   example: []
   syntax:
-    content: 'public sealed class BatchExportSchedulerService : IAsyncDisposable'
-    content.vb: Public NotInheritable Class BatchExportSchedulerService Implements IAsyncDisposable
+    content: 'public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable'
+    content.vb: Public NotInheritable Class BatchExportSchedulerService Implements IAsyncDisposable, IDisposable
   inheritance:
   - System.Object
   implements:
   - System.IAsyncDisposable
+  - System.IDisposable
   inheritedMembers:
   - System.Object.Equals(System.Object)
   - System.Object.Equals(System.Object,System.Object)
@@ -71,11 +74,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 26
+    startLine: 27
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -105,11 +108,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobStarted
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 37
+    startLine: 38
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -134,11 +137,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobCompleted
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 42
+    startLine: 43
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -163,11 +166,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobFailed
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 47
+    startLine: 48
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -192,11 +195,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobProgress
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 52
+    startLine: 53
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -221,11 +224,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Jobs
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 57
+    startLine: 58
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -252,11 +255,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 62
+    startLine: 63
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -285,11 +288,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 79
+    startLine: 80
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -318,11 +321,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateJob
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 89
+    startLine: 90
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -351,11 +354,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueueJob
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 123
+    startLine: 124
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -387,11 +390,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelJob
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 137
+    startLine: 138
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -423,11 +426,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveJob
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 154
+    startLine: 155
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -459,11 +462,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJob
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 163
+    startLine: 164
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -495,11 +498,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetJobHistory
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 172
+    startLine: 173
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -519,6 +522,74 @@ items:
   nameWithType.vb: BatchExportSchedulerService.GetJobHistory(String, Integer)
   fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(String, Integer)
   name.vb: GetJobHistory(String, Integer)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  id: ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: ReadPersistedJobsAsync(CancellationToken)
+  nameWithType: BatchExportSchedulerService.ReadPersistedJobsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadPersistedJobsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 569
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Reads the persisted export jobs without starting the scheduler workers.
+
+    This is used by shell surfaces that need job visibility but do not own
+
+    export execution.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<ExportJob>> ReadPersistedJobsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ExportJob}}
+    content.vb: Public Function ReadPersistedJobsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ExportJob))
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync*
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: BatchExportSchedulerService.Dispose()
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
 - uid: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
   commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
   id: DisposeAsync
@@ -533,11 +604,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
-    startLine: 580
+    startLine: 622
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -605,6 +676,14 @@ references:
   name: IAsyncDisposable
   nameWithType: IAsyncDisposable
   fullName: System.IAsyncDisposable
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
 - uid: System.Object.Equals(System.Object)
   commentId: M:System.Object.Equals(System.Object)
   parent: System.Object
@@ -1267,6 +1346,115 @@ references:
   - name: Of
   - name: " "
   - name: T
+  - name: )
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_ReadPersistedJobsAsync_System_Threading_CancellationToken_
+  name: ReadPersistedJobsAsync
+  nameWithType: BatchExportSchedulerService.ReadPersistedJobsAsync
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ExportJob}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ExportJob}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ExportJob>>
+  nameWithType: Task<IReadOnlyList<ExportJob>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.ExportJob>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ExportJob))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.ExportJob))
+  name.vb: Task(Of IReadOnlyList(Of ExportJob))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportJob
+    name: ExportJob
+    href: Meridian.Ui.Services.ExportJob.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJob
+    name: ExportJob
+    href: Meridian.Ui.Services.ExportJob.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.Dispose*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_Dispose
+  name: Dispose
+  nameWithType: BatchExportSchedulerService.Dispose
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
   - name: )
 - uid: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync*
   commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync

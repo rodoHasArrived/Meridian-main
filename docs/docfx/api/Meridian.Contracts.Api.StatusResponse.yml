@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusResponse
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimestampUtc
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uptime
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pipeline
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs

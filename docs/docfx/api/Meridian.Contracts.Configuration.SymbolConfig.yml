@@ -36,7 +36,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolConfig
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -238,7 +238,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeDepth
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DepthLevels
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityType
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -325,7 +325,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryExchange
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -412,7 +412,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LocalSymbol
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -441,7 +441,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingClass
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -470,7 +470,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConId
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -499,7 +499,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstrumentType
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -528,7 +528,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiquidityProfile
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -557,7 +557,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UseRelaxedValidation
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -586,7 +586,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Strike
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -615,7 +615,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Right
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -644,7 +644,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastTradeDateOrContractMonth
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -673,7 +673,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionStyle
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -702,7 +702,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Multiplier
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
@@ -731,7 +731,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
     path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs

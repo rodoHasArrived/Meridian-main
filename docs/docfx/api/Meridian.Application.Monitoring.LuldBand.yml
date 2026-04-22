@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LuldBand
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LowerLimit
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpperLimit
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReferencePrice
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BadTickFilter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpiresAt
     path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs

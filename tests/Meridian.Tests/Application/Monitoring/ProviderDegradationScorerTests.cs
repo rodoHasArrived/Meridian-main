@@ -83,6 +83,10 @@ public sealed class ProviderDegradationScorerTests : IDisposable
         // Assert
         score.LatencyScore.Should().BeGreaterThan(0.5);
         score.P95LatencyMs.Should().BeGreaterThan(200);
+        score.Reasons.Should().NotBeEmpty();
+        score.Reasons.Should().BeInDescendingOrder(r => Math.Abs(r.Contribution));
+        var latencyReason = score.Decision.Reasons.Single(r => r.RuleId == "provider-degradation.latency-p95");
+        latencyReason.Weight.Should().BeApproximately(score.LatencyScore * ProviderDegradationConfig.Default.LatencyWeight, 0.0001);
     }
 
     [Fact]
@@ -106,6 +110,22 @@ public sealed class ProviderDegradationScorerTests : IDisposable
         // Assert
         score.ErrorRateScore.Should().BeGreaterThan(0.5);
         score.ErrorRate.Should().BeGreaterThan(0.5);
+    }
+
+    [Fact]
+    public void GetScore_IncludesStandardDecisionEnvelope()
+    {
+        _healthMonitor.RegisterConnection("trace-provider", "trace-provider");
+        _healthMonitor.MarkDisconnected("trace-provider", "network outage");
+        _scorer.RecordError("trace-provider", "timeout");
+
+        var score = _scorer.GetScore("trace-provider");
+
+        score.Decision.Score.Should().Be(score.CompositeScore);
+        score.Decision.Trace.SchemaVersion.Should().Be(ProviderDegradationScorer.DecisionSchemaVersion);
+        score.Decision.Trace.KernelVersion.Should().Be(ProviderDegradationScorer.KernelVersion);
+        score.Decision.Reasons.Should().Contain(r => r.RuleId == "provider-degradation.connection-connectivity");
+        score.Decision.Reasons.Should().OnlyContain(r => !string.IsNullOrWhiteSpace(r.ReasonCode));
     }
 
     [Fact]
@@ -346,6 +366,27 @@ public sealed class ProviderDegradationScorerTests : IDisposable
 
         // Assert
         score.CompositeScore.Should().BeInRange(0.0, 1.0);
+    }
+
+    [Fact]
+    public void ComputeDelta_WhenCompositeChanges_IncludesReasonDeltas()
+    {
+        // Arrange
+        _healthMonitor.RegisterConnection("delta-conn", "delta-provider");
+        _latencyService.RecordLatency("delta-provider", 20.0);
+        var before = _scorer.GetScore("delta-provider");
+
+        _healthMonitor.MarkDisconnected("delta-conn", "simulated disconnect");
+        for (var i = 0; i < 25; i++)
+            _scorer.RecordError("delta-provider", "timeout");
+
+        // Act
+        var after = _scorer.GetScore("delta-provider");
+        var delta = ProviderDegradationScorer.ComputeDelta(before, after);
+
+        // Assert
+        delta.CompositeScoreDelta.Should().NotBe(0.0);
+        delta.ReasonDeltas.Should().NotBeEmpty("score changes must include reason deltas");
     }
 
     [Fact]

@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISchemaUpcaster
     path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromSchemaVersion
     path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToSchemaVersion
     path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Schema/ISchemaUpcaster.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Upcast
     path: ../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderExecute
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RestingOrderId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecPrice
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecSize
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggressorSide
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TakerOrderId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -300,7 +300,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -329,7 +329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamId
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs
@@ -358,7 +358,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Models/OrderExecute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs

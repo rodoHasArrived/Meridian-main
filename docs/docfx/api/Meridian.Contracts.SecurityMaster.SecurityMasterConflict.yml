@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterConflict
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConflictId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConflictKind
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldPath
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderA
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueA
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderB
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValueB
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedAt
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs

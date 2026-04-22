@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMarketDataClient
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -66,7 +66,6 @@ items:
   - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
   - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
-  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
   - Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
   - Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient
   - Meridian.Infrastructure.NoOpMarketDataClient
@@ -111,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -140,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -171,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -202,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -235,7 +234,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -269,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs
@@ -302,7 +301,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
     path: ../../src/Meridian.ProviderSdk/IMarketDataClient.cs

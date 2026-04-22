@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapDirectLendingEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs

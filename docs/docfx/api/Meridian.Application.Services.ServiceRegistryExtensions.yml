@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceRegistryExtensions
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSetupServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterValidationServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterDiagnosticServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterLifecycleServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterDataServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -265,7 +265,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterCalendarServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ServiceRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterReportingServices
     path: ../../src/Meridian.Application/Services/ServiceRegistry.cs

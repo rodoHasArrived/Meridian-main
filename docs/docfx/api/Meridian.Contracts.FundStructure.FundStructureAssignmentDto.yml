@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundStructureAssignmentDto
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 219
+    startLine: 258
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 219
+    startLine: 258
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -103,11 +103,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssignmentId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 220
+    startLine: 259
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -132,11 +132,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NodeId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 221
+    startLine: 260
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -161,11 +161,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssignmentType
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 222
+    startLine: 261
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -190,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssignmentReference
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 223
+    startLine: 262
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -219,11 +219,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 224
+    startLine: 263
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -248,11 +248,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 225
+    startLine: 264
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -277,11 +277,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPrimary
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 226
+    startLine: 265
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure

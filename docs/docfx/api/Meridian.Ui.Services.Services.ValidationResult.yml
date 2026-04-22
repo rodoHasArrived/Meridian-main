@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationResult
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsWarning
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -151,7 +151,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Error
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FormValidationRules.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: op_Implicit
     path: ../../src/Meridian.Ui.Services/Services/FormValidationRules.cs

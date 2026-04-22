@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandPaletteService
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandExecuted
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CommandsChanged
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Search
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Execute
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterCommand
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -255,7 +255,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllCommands
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterContextualProvider
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -321,7 +321,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnregisterContextualProvider
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -355,7 +355,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetActiveContext
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearActiveContext
     path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs

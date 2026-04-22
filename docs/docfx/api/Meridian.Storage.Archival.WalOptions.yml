@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WalOptions
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxWalFileSizeBytes
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxWalFileAge
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncMode
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SyncBatchSize
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFlushDelay
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveAfterTruncate
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UncommittedSizeWarningThreshold
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Archival/WriteAheadLog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorruptionMode
     path: ../../src/Meridian.Storage/Archival/WriteAheadLog.cs

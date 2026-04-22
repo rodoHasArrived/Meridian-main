@@ -5,7 +5,7 @@ items:
   id: ConfigValidatorCli
   parent: Meridian.Application.Config
   children:
-  - Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger)
+  - Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)
   - Meridian.Application.Config.ConfigValidatorCli.Validate(System.String)
   - Meridian.Application.Config.ConfigValidatorCli.ValidateJson(System.String)
   langs:
@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigValidatorCli.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigValidatorCli
     path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
@@ -43,38 +43,40 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger)
-  commentId: M:Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger)
-  id: '#ctor(Serilog.ILogger)'
+- uid: Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)
+  commentId: M:Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)
+  id: '#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)'
   parent: Meridian.Application.Config.ConfigValidatorCli
   langs:
   - csharp
   - vb
-  name: ConfigValidatorCli(ILogger?)
-  nameWithType: ConfigValidatorCli.ConfigValidatorCli(ILogger?)
-  fullName: Meridian.Application.Config.ConfigValidatorCli.ConfigValidatorCli(Serilog.ILogger?)
+  name: ConfigValidatorCli(ILogger?, ConfigurationPipeline?)
+  nameWithType: ConfigValidatorCli.ConfigValidatorCli(ILogger?, ConfigurationPipeline?)
+  fullName: Meridian.Application.Config.ConfigValidatorCli.ConfigValidatorCli(Serilog.ILogger?, Meridian.Application.Config.ConfigurationPipeline?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigValidatorCli.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
-    startLine: 16
+    startLine: 17
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
   syntax:
-    content: public ConfigValidatorCli(ILogger? log = null)
+    content: public ConfigValidatorCli(ILogger? log = null, ConfigurationPipeline? pipeline = null)
     parameters:
     - id: log
       type: Serilog.ILogger
-    content.vb: Public Sub New(log As ILogger = Nothing)
+    - id: pipeline
+      type: Meridian.Application.Config.ConfigurationPipeline
+    content.vb: Public Sub New(log As ILogger = Nothing, pipeline As ConfigurationPipeline = Nothing)
   overload: Meridian.Application.Config.ConfigValidatorCli.#ctor*
-  nameWithType.vb: ConfigValidatorCli.New(ILogger)
-  fullName.vb: Meridian.Application.Config.ConfigValidatorCli.New(Serilog.ILogger)
-  name.vb: New(ILogger)
+  nameWithType.vb: ConfigValidatorCli.New(ILogger, ConfigurationPipeline)
+  fullName.vb: Meridian.Application.Config.ConfigValidatorCli.New(Serilog.ILogger, Meridian.Application.Config.ConfigurationPipeline)
+  name.vb: New(ILogger, ConfigurationPipeline)
 - uid: Meridian.Application.Config.ConfigValidatorCli.Validate(System.String)
   commentId: M:Meridian.Application.Config.ConfigValidatorCli.Validate(System.String)
   id: Validate(System.String)
@@ -89,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigValidatorCli.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
     path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
-    startLine: 26
+    startLine: 28
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -127,11 +129,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/ConfigValidatorCli.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateJson
     path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
-    startLine: 133
+    startLine: 136
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -395,7 +397,7 @@ references:
   fullName: System
 - uid: Meridian.Application.Config.ConfigValidatorCli.#ctor*
   commentId: Overload:Meridian.Application.Config.ConfigValidatorCli.#ctor
-  href: Meridian.Application.Config.ConfigValidatorCli.html#Meridian_Application_Config_ConfigValidatorCli__ctor_Serilog_ILogger_
+  href: Meridian.Application.Config.ConfigValidatorCli.html#Meridian_Application_Config_ConfigValidatorCli__ctor_Serilog_ILogger_Meridian_Application_Config_ConfigurationPipeline_
   name: ConfigValidatorCli
   nameWithType: ConfigValidatorCli.ConfigValidatorCli
   fullName: Meridian.Application.Config.ConfigValidatorCli.ConfigValidatorCli
@@ -409,6 +411,13 @@ references:
   name: ILogger
   nameWithType: ILogger
   fullName: Serilog.ILogger
+- uid: Meridian.Application.Config.ConfigurationPipeline
+  commentId: T:Meridian.Application.Config.ConfigurationPipeline
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationPipeline.html
+  name: ConfigurationPipeline
+  nameWithType: ConfigurationPipeline
+  fullName: Meridian.Application.Config.ConfigurationPipeline
 - uid: Serilog
   commentId: N:Serilog
   isExternal: true

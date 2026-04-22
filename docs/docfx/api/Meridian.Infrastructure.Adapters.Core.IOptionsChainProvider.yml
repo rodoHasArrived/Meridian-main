@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IOptionsChainProvider
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -48,6 +48,11 @@ items:
       <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
 
       Public Interface IOptionsChainProvider Inherits IProviderMetadata
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider
   inheritedMembers:
   - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
   - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
@@ -88,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetExpirationsAsync
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -129,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStrikesAsync
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -173,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetChainSnapshotAsync
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -223,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionQuoteAsync
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs
@@ -261,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IOptionsChainProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.ProviderSdk/IOptionsChainProvider.cs

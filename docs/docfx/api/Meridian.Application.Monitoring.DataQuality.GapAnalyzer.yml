@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapAnalyzer
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnGapDetected
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolLiquidity
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolLiquidity
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordEvent
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeGaps
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -288,7 +288,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapsForSymbolDate
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetGapsForDate
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRecentGaps
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -397,7 +397,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolsWithSignificantGaps
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -465,7 +465,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateTimeline
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -505,7 +505,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResetSymbol
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -541,7 +541,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalGapsDetected
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -572,7 +572,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEventsProcessed
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
@@ -603,7 +603,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/DataQuality/GapAnalyzer.cs

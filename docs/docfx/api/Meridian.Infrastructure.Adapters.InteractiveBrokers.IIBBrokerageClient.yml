@@ -1,0 +1,1335 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  id: IIBBrokerageClient
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryCompleted
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryReceived
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary(System.Int32)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ErrorOccurred
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ExecutionDetailsReceived
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.NextValidIdReceived
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrderReceived
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrdersCompleted
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OrderStatusReceived
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync(System.Int32,Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionReceived
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionsCompleted
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions
+  langs:
+  - csharp
+  - vb
+  name: IIBBrokerageClient
+  nameWithType: IIBBrokerageClient
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IIBBrokerageClient
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: >-
+    Compile-neutral brokerage-facing contract that abstracts the native IB socket client.
+
+    The real implementation is provided by <xref href="Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager" data-throw-if-not-resolved="false"></xref> in IBAPI builds,
+
+    while tests can inject a fake implementation without referencing the vendor SDK.
+  example: []
+  syntax:
+    content: 'public interface IIBBrokerageClient : IDisposable'
+    content.vb: Public Interface IIBBrokerageClient Inherits IDisposable
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  inheritedMembers:
+  - System.IDisposable.Dispose
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host
+  id: Host
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: Host
+  nameWithType: IIBBrokerageClient.Host
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Host
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: string Host { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Host As String
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port
+  id: Port
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: Port
+  nameWithType: IIBBrokerageClient.Port
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Port
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: int Port { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property Port As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId
+  id: ClientId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: ClientId
+  nameWithType: IIBBrokerageClient.ClientId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: int ClientId { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property ClientId As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected
+  commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected
+  id: IsConnected
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: IIBBrokerageClient.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: bool IsConnected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsConnected As Boolean
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.NextValidIdReceived
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.NextValidIdReceived
+  id: NextValidIdReceived
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: NextValidIdReceived
+  nameWithType: IIBBrokerageClient.NextValidIdReceived
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.NextValidIdReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextValidIdReceived
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<int>? NextValidIdReceived
+    return:
+      type: System.EventHandler{System.Int32}
+    content.vb: Event NextValidIdReceived As EventHandler(Of Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OrderStatusReceived
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OrderStatusReceived
+  id: OrderStatusReceived
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: OrderStatusReceived
+  nameWithType: IIBBrokerageClient.OrderStatusReceived
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OrderStatusReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderStatusReceived
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<IBOrderStatusUpdate>? OrderStatusReceived
+    return:
+      type: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate}
+    content.vb: Event OrderStatusReceived As EventHandler(Of IBOrderStatusUpdate)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrderReceived
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrderReceived
+  id: OpenOrderReceived
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: OpenOrderReceived
+  nameWithType: IIBBrokerageClient.OpenOrderReceived
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrderReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenOrderReceived
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<IBOpenOrderUpdate>? OpenOrderReceived
+    return:
+      type: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate}
+    content.vb: Event OpenOrderReceived As EventHandler(Of IBOpenOrderUpdate)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrdersCompleted
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrdersCompleted
+  id: OpenOrdersCompleted
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: OpenOrdersCompleted
+  nameWithType: IIBBrokerageClient.OpenOrdersCompleted
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.OpenOrdersCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenOrdersCompleted
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler? OpenOrdersCompleted
+    return:
+      type: System.EventHandler
+    content.vb: Event OpenOrdersCompleted As EventHandler
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ExecutionDetailsReceived
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ExecutionDetailsReceived
+  id: ExecutionDetailsReceived
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: ExecutionDetailsReceived
+  nameWithType: IIBBrokerageClient.ExecutionDetailsReceived
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ExecutionDetailsReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionDetailsReceived
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<IBExecutionUpdate>? ExecutionDetailsReceived
+    return:
+      type: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate}
+    content.vb: Event ExecutionDetailsReceived As EventHandler(Of IBExecutionUpdate)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionReceived
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionReceived
+  id: PositionReceived
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: PositionReceived
+  nameWithType: IIBBrokerageClient.PositionReceived
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionReceived
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<IBPositionUpdate>? PositionReceived
+    return:
+      type: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate}
+    content.vb: Event PositionReceived As EventHandler(Of IBPositionUpdate)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionsCompleted
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionsCompleted
+  id: PositionsCompleted
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: PositionsCompleted
+  nameWithType: IIBBrokerageClient.PositionsCompleted
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PositionsCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionsCompleted
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler? PositionsCompleted
+    return:
+      type: System.EventHandler
+    content.vb: Event PositionsCompleted As EventHandler
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryReceived
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryReceived
+  id: AccountSummaryReceived
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: AccountSummaryReceived
+  nameWithType: IIBBrokerageClient.AccountSummaryReceived
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountSummaryReceived
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived
+    return:
+      type: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate}
+    content.vb: Event AccountSummaryReceived As EventHandler(Of IBAccountSummaryUpdate)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryCompleted
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryCompleted
+  id: AccountSummaryCompleted
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: AccountSummaryCompleted
+  nameWithType: IIBBrokerageClient.AccountSummaryCompleted
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.AccountSummaryCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountSummaryCompleted
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<int>? AccountSummaryCompleted
+    return:
+      type: System.EventHandler{System.Int32}
+    content.vb: Event AccountSummaryCompleted As EventHandler(Of Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ErrorOccurred
+  commentId: E:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ErrorOccurred
+  id: ErrorOccurred
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: ErrorOccurred
+  nameWithType: IIBBrokerageClient.ErrorOccurred
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ErrorOccurred
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorOccurred
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: event EventHandler<IBApiError>? ErrorOccurred
+    return:
+      type: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError}
+    content.vb: Event ErrorOccurred As EventHandler(Of IBApiError)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IIBBrokerageClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IIBBrokerageClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId
+  id: RequestNextValidId
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: RequestNextValidId()
+  nameWithType: IIBBrokerageClient.RequestNextValidId()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestNextValidId
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: void RequestNextValidId()
+    content.vb: Sub RequestNextValidId()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync(System.Int32,Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync(System.Int32,Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: PlaceOrderAsync(System.Int32,Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: PlaceOrderAsync(int, OrderRequest, CancellationToken)
+  nameWithType: IIBBrokerageClient.PlaceOrderAsync(int, OrderRequest, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync(int, Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceOrderAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Task PlaceOrderAsync(int orderId, OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: orderId
+      type: System.Int32
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function PlaceOrderAsync(orderId As Integer, request As OrderRequest, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync*
+  nameWithType.vb: IIBBrokerageClient.PlaceOrderAsync(Integer, OrderRequest, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync(Integer, Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  name.vb: PlaceOrderAsync(Integer, OrderRequest, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync(System.Int32,System.Threading.CancellationToken)
+  id: CancelOrderAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: CancelOrderAsync(int, CancellationToken)
+  nameWithType: IIBBrokerageClient.CancelOrderAsync(int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelOrderAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Task CancelOrderAsync(int orderId, CancellationToken ct = default)
+    parameters:
+    - id: orderId
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function CancelOrderAsync(orderId As Integer, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync*
+  nameWithType.vb: IIBBrokerageClient.CancelOrderAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync(Integer, System.Threading.CancellationToken)
+  name.vb: CancelOrderAsync(Integer, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary
+  id: RequestAccountSummary
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: RequestAccountSummary()
+  nameWithType: IIBBrokerageClient.RequestAccountSummary()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestAccountSummary
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: int RequestAccountSummary()
+    return:
+      type: System.Int32
+    content.vb: Function RequestAccountSummary() As Integer
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary(System.Int32)
+  id: CancelAccountSummary(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: CancelAccountSummary(int)
+  nameWithType: IIBBrokerageClient.CancelAccountSummary(int)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelAccountSummary
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: void CancelAccountSummary(int requestId)
+    parameters:
+    - id: requestId
+      type: System.Int32
+    content.vb: Sub CancelAccountSummary(requestId As Integer)
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary*
+  nameWithType.vb: IIBBrokerageClient.CancelAccountSummary(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary(Integer)
+  name.vb: CancelAccountSummary(Integer)
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions
+  id: RequestPositions
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: RequestPositions()
+  nameWithType: IIBBrokerageClient.RequestPositions()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestPositions
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: void RequestPositions()
+    content.vb: Sub RequestPositions()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions
+  id: CancelPositions
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: CancelPositions()
+  nameWithType: IIBBrokerageClient.CancelPositions()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelPositions
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: void CancelPositions()
+    content.vb: Sub CancelPositions()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions*
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders
+  id: RequestOpenOrders
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient
+  langs:
+  - csharp
+  - vb
+  name: RequestOpenOrders()
+  nameWithType: IIBBrokerageClient.RequestOpenOrders()
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestOpenOrders
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: void RequestOpenOrders()
+    content.vb: Sub RequestOpenOrders()
+  overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders*
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager.html
+  name: EnhancedIBConnectionManager
+  nameWithType: EnhancedIBConnectionManager
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.EnhancedIBConnectionManager
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_Host
+  name: Host
+  nameWithType: IIBBrokerageClient.Host
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Host
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_Port
+  name: Port
+  nameWithType: IIBBrokerageClient.Port
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.Port
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_ClientId
+  name: ClientId
+  nameWithType: IIBBrokerageClient.ClientId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ClientId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_IsConnected
+  name: IsConnected
+  nameWithType: IIBBrokerageClient.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.IsConnected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.EventHandler{System.Int32}
+  commentId: T:System.EventHandler{System.Int32}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<int>
+  nameWithType: EventHandler<int>
+  fullName: System.EventHandler<int>
+  nameWithType.vb: EventHandler(Of Integer)
+  fullName.vb: System.EventHandler(Of Integer)
+  name.vb: EventHandler(Of Integer)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate}
+  commentId: T:System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<IBOrderStatusUpdate>
+  nameWithType: EventHandler<IBOrderStatusUpdate>
+  fullName: System.EventHandler<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate>
+  nameWithType.vb: EventHandler(Of IBOrderStatusUpdate)
+  fullName.vb: System.EventHandler(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate)
+  name.vb: EventHandler(Of IBOrderStatusUpdate)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
+    name: IBOrderStatusUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate
+    name: IBOrderStatusUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOrderStatusUpdate.html
+  - name: )
+- uid: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate}
+  commentId: T:System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<IBOpenOrderUpdate>
+  nameWithType: EventHandler<IBOpenOrderUpdate>
+  fullName: System.EventHandler<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate>
+  nameWithType.vb: EventHandler(Of IBOpenOrderUpdate)
+  fullName.vb: System.EventHandler(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate)
+  name.vb: EventHandler(Of IBOpenOrderUpdate)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+    name: IBOpenOrderUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate
+    name: IBOpenOrderUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBOpenOrderUpdate.html
+  - name: )
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate}
+  commentId: T:System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<IBExecutionUpdate>
+  nameWithType: EventHandler<IBExecutionUpdate>
+  fullName: System.EventHandler<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate>
+  nameWithType.vb: EventHandler(Of IBExecutionUpdate)
+  fullName.vb: System.EventHandler(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate)
+  name.vb: EventHandler(Of IBExecutionUpdate)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+    name: IBExecutionUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate
+    name: IBExecutionUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBExecutionUpdate.html
+  - name: )
+- uid: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate}
+  commentId: T:System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<IBPositionUpdate>
+  nameWithType: EventHandler<IBPositionUpdate>
+  fullName: System.EventHandler<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate>
+  nameWithType.vb: EventHandler(Of IBPositionUpdate)
+  fullName.vb: System.EventHandler(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate)
+  name.vb: EventHandler(Of IBPositionUpdate)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
+    name: IBPositionUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate
+    name: IBPositionUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate.html
+  - name: )
+- uid: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate}
+  commentId: T:System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<IBAccountSummaryUpdate>
+  nameWithType: EventHandler<IBAccountSummaryUpdate>
+  fullName: System.EventHandler<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate>
+  nameWithType.vb: EventHandler(Of IBAccountSummaryUpdate)
+  fullName.vb: System.EventHandler(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate)
+  name.vb: EventHandler(Of IBAccountSummaryUpdate)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
+    name: IBAccountSummaryUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate
+    name: IBAccountSummaryUpdate
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBAccountSummaryUpdate.html
+  - name: )
+- uid: System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError}
+  commentId: T:System.EventHandler{Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<IBApiError>
+  nameWithType: EventHandler<IBApiError>
+  fullName: System.EventHandler<Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError>
+  nameWithType.vb: EventHandler(Of IBApiError)
+  fullName.vb: System.EventHandler(Of Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError)
+  name.vb: EventHandler(Of IBApiError)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+    name: IBApiError
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError
+    name: IBApiError
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBApiError.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: IIBBrokerageClient.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.ConnectAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: IIBBrokerageClient.DisconnectAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.DisconnectAsync
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_RequestNextValidId
+  name: RequestNextValidId
+  nameWithType: IIBBrokerageClient.RequestNextValidId
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestNextValidId
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_PlaceOrderAsync_System_Int32_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: PlaceOrderAsync
+  nameWithType: IIBBrokerageClient.PlaceOrderAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.PlaceOrderAsync
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_CancelOrderAsync_System_Int32_System_Threading_CancellationToken_
+  name: CancelOrderAsync
+  nameWithType: IIBBrokerageClient.CancelOrderAsync
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelOrderAsync
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_RequestAccountSummary
+  name: RequestAccountSummary
+  nameWithType: IIBBrokerageClient.RequestAccountSummary
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestAccountSummary
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_CancelAccountSummary_System_Int32_
+  name: CancelAccountSummary
+  nameWithType: IIBBrokerageClient.CancelAccountSummary
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelAccountSummary
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_RequestPositions
+  name: RequestPositions
+  nameWithType: IIBBrokerageClient.RequestPositions
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestPositions
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_CancelPositions
+  name: CancelPositions
+  nameWithType: IIBBrokerageClient.CancelPositions
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.CancelPositions
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IIBBrokerageClient_RequestOpenOrders
+  name: RequestOpenOrders
+  nameWithType: IIBBrokerageClient.RequestOpenOrders
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient.RequestOpenOrders

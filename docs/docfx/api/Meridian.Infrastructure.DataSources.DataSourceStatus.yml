@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSourceStatus
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Uninitialized
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -79,7 +79,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initializing
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Connected
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -135,7 +135,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disconnected
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reconnecting
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationError
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimited
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Unavailable
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disabled
     path: ../../src/Meridian.ProviderSdk/IDataSource.cs

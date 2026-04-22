@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackageStage
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initializing
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -80,7 +80,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scanning
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validating
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Processing
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Writing
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GeneratingManifest
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ComputingChecksums
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Finalizing
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Complete
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
@@ -304,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PackageResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Storage/Packaging/PackageResult.cs

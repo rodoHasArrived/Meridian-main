@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonCorporateActionFetcher
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAndPersistAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAndPersistAllAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs

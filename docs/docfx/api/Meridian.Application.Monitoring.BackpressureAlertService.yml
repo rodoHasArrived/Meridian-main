@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackpressureAlertService
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBackpressureDetected
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBackpressureResolved
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -120,7 +120,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterPipelineProvider
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatus
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs

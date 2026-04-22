@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScoreComponent
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weight
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Score
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WeightedScore
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs

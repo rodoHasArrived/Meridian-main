@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ConventionTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConventionTools
     path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ConventionTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ConventionTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCodingConventions
     path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Mcp/Tools/ConventionTools.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAntiPatterns
     path: ../../src/Meridian.Mcp/Tools/ConventionTools.cs

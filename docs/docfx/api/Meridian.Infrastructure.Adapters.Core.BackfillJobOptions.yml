@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobOptions
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentRequests
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryDelay
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipExistingData
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FillGapsOnly
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreferAdjustedPrices
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoPauseOnRateLimit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -281,7 +281,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoResumeAfterRateLimit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -312,7 +312,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRateLimitWait
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -343,7 +343,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSizeDays
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs

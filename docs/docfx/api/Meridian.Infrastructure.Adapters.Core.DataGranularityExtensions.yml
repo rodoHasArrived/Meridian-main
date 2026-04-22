@@ -5,9 +5,15 @@ items:
   id: DataGranularityExtensions
   parent: Meridian.Infrastructure.Adapters.Core
   children:
+  - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity)
   - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity@)
   langs:
   - csharp
   - vb
@@ -18,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGranularityExtensions
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
@@ -41,6 +47,110 @@ items:
   - System.Object.MemberwiseClone
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity@)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity@)
+  id: TryParseValue(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity@)
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  langs:
+  - csharp
+  - vb
+  name: TryParseValue(string?, out DataGranularity)
+  nameWithType: DataGranularityExtensions.TryParseValue(string?, out DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue(string?, out Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryParseValue
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static bool TryParseValue(string? value, out DataGranularity granularity)
+    parameters:
+    - id: value
+      type: System.String
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function TryParseValue(value As String, granularity As DataGranularity) As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue*
+  nameWithType.vb: DataGranularityExtensions.TryParseValue(String, DataGranularity)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue(String, Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  name.vb: TryParseValue(String, DataGranularity)
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: ParseValueOrDefault(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  langs:
+  - csharp
+  - vb
+  name: ParseValueOrDefault(string?, DataGranularity)
+  nameWithType: DataGranularityExtensions.ParseValueOrDefault(string?, DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault(string?, Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseValueOrDefault
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 435
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static DataGranularity ParseValueOrDefault(string? value, DataGranularity defaultValue = DataGranularity.Daily)
+    parameters:
+    - id: value
+      type: System.String
+    - id: defaultValue
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    content.vb: Public Shared Function ParseValueOrDefault(value As String, defaultValue As DataGranularity = DataGranularity.Daily) As DataGranularity
+  overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault*
+  nameWithType.vb: DataGranularityExtensions.ParseValueOrDefault(String, DataGranularity)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault(String, Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  name.vb: ParseValueOrDefault(String, DataGranularity)
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  langs:
+  - csharp
+  - vb
+  name: IsIntraday(DataGranularity)
+  nameWithType: DataGranularityExtensions.IsIntraday(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsIntraday
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static bool IsIntraday(this DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function IsIntraday(granularity As DataGranularity) As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday*
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   id: ToAlpacaTimeframe(Meridian.Infrastructure.Adapters.Core.DataGranularity)
@@ -56,11 +166,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToAlpacaTimeframe
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-    startLine: 397
+    startLine: 449
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -88,11 +198,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToTimeSpan
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-    startLine: 411
+    startLine: 463
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -105,6 +215,102 @@ items:
       type: System.TimeSpan
     content.vb: Public Shared Function ToTimeSpan(granularity As DataGranularity) As TimeSpan
   overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan*
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToUiValue(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToUiValue(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToUiValue
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static string ToUiValue(this DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.String
+    content.vb: Public Shared Function ToUiValue(granularity As DataGranularity) As String
+  overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue*
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToConfigValue(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToConfigValue(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToConfigValue
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 491
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static string ToConfigValue(this DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.String
+    content.vb: Public Shared Function ToConfigValue(granularity As DataGranularity) As String
+  overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue*
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToStorageFilePrefix(DataGranularity)
+  nameWithType: DataGranularityExtensions.ToStorageFilePrefix(DataGranularity)
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToStorageFilePrefix
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 505
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static string ToStorageFilePrefix(this DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.String
+    content.vb: Public Shared Function ToStorageFilePrefix(granularity As DataGranularity) As String
+  overload: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix*
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   commentId: M:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName(Meridian.Infrastructure.Adapters.Core.DataGranularity)
   id: ToDisplayName(Meridian.Infrastructure.Adapters.Core.DataGranularity)
@@ -120,11 +326,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
-    startLine: 425
+    startLine: 516
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -413,19 +619,12 @@ references:
   name: System
   nameWithType: System
   fullName: System
-- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe*
-  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe
-  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToAlpacaTimeframe_Meridian_Infrastructure_Adapters_Core_DataGranularity_
-  name: ToAlpacaTimeframe
-  nameWithType: DataGranularityExtensions.ToAlpacaTimeframe
-  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe
-- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
-  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
-  parent: Meridian.Infrastructure.Adapters.Core
-  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
-  name: DataGranularity
-  nameWithType: DataGranularity
-  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_TryParseValue_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity__
+  name: TryParseValue
+  nameWithType: DataGranularityExtensions.TryParseValue
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.TryParseValue
 - uid: System.String
   commentId: T:System.String
   parent: System
@@ -437,6 +636,42 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ParseValueOrDefault_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ParseValueOrDefault
+  nameWithType: DataGranularityExtensions.ParseValueOrDefault
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ParseValueOrDefault
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_IsIntraday_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: IsIntraday
+  nameWithType: DataGranularityExtensions.IsIntraday
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.IsIntraday
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToAlpacaTimeframe_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToAlpacaTimeframe
+  nameWithType: DataGranularityExtensions.ToAlpacaTimeframe
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToAlpacaTimeframe
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan*
   commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToTimeSpan
   href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToTimeSpan_Meridian_Infrastructure_Adapters_Core_DataGranularity_
@@ -451,6 +686,24 @@ references:
   name: TimeSpan
   nameWithType: TimeSpan
   fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToUiValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToUiValue
+  nameWithType: DataGranularityExtensions.ToUiValue
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToUiValue
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToConfigValue_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToConfigValue
+  nameWithType: DataGranularityExtensions.ToConfigValue
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToConfigValue
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToStorageFilePrefix_Meridian_Infrastructure_Adapters_Core_DataGranularity_
+  name: ToStorageFilePrefix
+  nameWithType: DataGranularityExtensions.ToStorageFilePrefix
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToStorageFilePrefix
 - uid: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName*
   commentId: Overload:Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.ToDisplayName
   href: Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions.html#Meridian_Infrastructure_Adapters_Core_DataGranularityExtensions_ToDisplayName_Meridian_Infrastructure_Adapters_Core_DataGranularity_

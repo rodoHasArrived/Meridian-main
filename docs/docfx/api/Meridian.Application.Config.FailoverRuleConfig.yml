@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverRuleConfig
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 220
+    startLine: 241
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -61,11 +61,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 220
+    startLine: 241
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -107,11 +107,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 224
+    startLine: 245
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -136,11 +136,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrimaryProviderId
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 229
+    startLine: 250
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -165,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackupProviderIds
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 234
+    startLine: 255
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -194,11 +194,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailoverThreshold
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 239
+    startLine: 260
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -223,11 +223,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecoveryThreshold
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 244
+    startLine: 265
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -252,11 +252,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataQualityThreshold
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 249
+    startLine: 270
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -281,11 +281,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/DataSourceConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxLatencyMs
     path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
-    startLine: 254
+    startLine: 275
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config

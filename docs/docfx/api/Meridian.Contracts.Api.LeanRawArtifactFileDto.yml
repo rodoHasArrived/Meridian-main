@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanRawArtifactFileDto
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArtifactType
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exists
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -181,7 +181,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/LeanApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastWriteTimeUtc
     path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs

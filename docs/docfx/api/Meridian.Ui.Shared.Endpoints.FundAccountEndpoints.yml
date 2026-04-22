@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundAccountEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapFundAccountEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs

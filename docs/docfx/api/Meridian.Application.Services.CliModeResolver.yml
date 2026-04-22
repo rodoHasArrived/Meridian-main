@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CliModeResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CliModeResolver
     path: ../../src/Meridian.Application/Services/CliModeResolver.cs
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CliModeResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TranslateLegacyFlags
     path: ../../src/Meridian.Application/Services/CliModeResolver.cs
-    startLine: 31
+    startLine: 28
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -72,10 +72,7 @@ items:
     Translates legacy CLI flags to the unified --mode system.
 
     This provides backwards compatibility while funneling all modes through a single code path.
-  remarks: >-
-    Legacy flag mappings:
-
-    - --ui → --mode web
+  remarks: Legacy flag mappings that still participate in mode resolution.
   example: []
   syntax:
     content: public static string? TranslateLegacyFlags(string[] args)
@@ -105,11 +102,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CliModeResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Resolve
     path: ../../src/Meridian.Application/Services/CliModeResolver.cs
-    startLine: 50
+    startLine: 43
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -143,11 +140,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CliModeResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveWithError
     path: ../../src/Meridian.Application/Services/CliModeResolver.cs
-    startLine: 61
+    startLine: 54
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -181,11 +178,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CliModeResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasFlag
     path: ../../src/Meridian.Application/Services/CliModeResolver.cs
-    startLine: 80
+    startLine: 81
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services
@@ -219,11 +216,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CliModeResolver.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetArgValue
     path: ../../src/Meridian.Application/Services/CliModeResolver.cs
-    startLine: 86
+    startLine: 87
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Services

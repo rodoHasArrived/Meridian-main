@@ -20,11 +20,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFactory
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-    startLine: 38
+    startLine: 39
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -77,11 +77,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-    startLine: 45
+    startLine: 46
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -113,11 +113,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateAndRegisterAllAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-    startLine: 62
+    startLine: 63
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -154,11 +154,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBackfillProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-    startLine: 102
+    startLine: 103
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -184,11 +184,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSymbolSearchProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-    startLine: 296
+    startLine: 319
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -217,11 +217,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateCompositeBackfillProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
-    startLine: 398
+    startLine: 418
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core

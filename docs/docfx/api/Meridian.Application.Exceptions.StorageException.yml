@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/StorageException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageException
     path: ../../src/Meridian.Core/Exceptions/StorageException.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/StorageException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Path
     path: ../../src/Meridian.Core/Exceptions/StorageException.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/StorageException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/StorageException.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/StorageException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/StorageException.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/StorageException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/StorageException.cs

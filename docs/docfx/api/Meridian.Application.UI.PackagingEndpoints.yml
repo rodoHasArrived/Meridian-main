@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PackagingEndpoints
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapPackagingEndpoints
     path: ../../src/Meridian.Application/Http/Endpoints/PackagingEndpoints.cs

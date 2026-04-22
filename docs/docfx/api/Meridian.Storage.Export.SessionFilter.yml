@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionFilter
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: All
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegularHours
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PreMarket
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AfterHours
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Export/ExportRequest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExtendedHours
     path: ../../src/Meridian.Storage/Export/ExportRequest.cs

@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartupOrchestrator
     path: ../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
-    startLine: 19
+    startLine: 18
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -29,7 +29,7 @@ items:
   remarks: >-
     <p><b>Phase sequence:</b></p>
 
-    <ol><li>Command dispatch — one-shot CLI commands exit here.</li><li>Web mode check — HTTP-only dashboard exits here (skips validation).</li><li>Validation — configuration, file permissions, schema compatibility.</li><li>Runtime selection — desktop, backfill, or streaming collector.</li></ol>
+    <ol><li>Command dispatch — one-shot CLI commands exit here.</li><li>Validation — configuration, file permissions, schema compatibility.</li><li>Runtime selection — desktop, backfill, or streaming collector.</li></ol>
   example: []
   syntax:
     content: public sealed class StartupOrchestrator
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
-    startLine: 24
+    startLine: 23
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup
@@ -91,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunAsync
     path: ../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
-    startLine: 34
+    startLine: 33
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup

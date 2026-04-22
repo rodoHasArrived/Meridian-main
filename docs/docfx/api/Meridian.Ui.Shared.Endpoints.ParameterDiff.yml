@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterDiff
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2340
+    startLine: 3070
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -57,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2340
+    startLine: 3070
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -95,11 +95,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Key
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2341
+    startLine: 3071
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -124,11 +124,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseValue
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2342
+    startLine: 3072
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -153,11 +153,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetValue
     path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
-    startLine: 2343
+    startLine: 3073
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

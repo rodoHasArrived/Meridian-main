@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBDurationStrings
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seconds60
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seconds1800
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Seconds3600
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Day1
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -171,7 +171,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Days5
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Week1
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Weeks2
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Month1
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Months3
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -306,7 +306,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Months6
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
@@ -333,7 +333,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Year1
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs

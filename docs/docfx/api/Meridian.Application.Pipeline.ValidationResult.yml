@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidationResult
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValid
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Valid
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IEventValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs

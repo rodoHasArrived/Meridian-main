@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBApiVersionMismatchException
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServerVersion
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientVersion
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs

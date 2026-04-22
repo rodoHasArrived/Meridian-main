@@ -5,12 +5,14 @@ items:
   id: ProviderHealthResponse
   parent: Meridian.Contracts.Api
   children:
-  - Meridian.Contracts.Api.ProviderHealthResponse.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},Meridian.Contracts.Api.HealthIssueResponse[])
+  - Meridian.Contracts.Api.ProviderHealthResponse.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,Meridian.Contracts.Api.ProviderScoreReasonResponse[],Meridian.Contracts.Api.HealthIssueResponse[])
   - Meridian.Contracts.Api.ProviderHealthResponse.ConsecutiveFailures
   - Meridian.Contracts.Api.ProviderHealthResponse.ConsecutiveSuccesses
+  - Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore
   - Meridian.Contracts.Api.ProviderHealthResponse.LastIssueTime
   - Meridian.Contracts.Api.ProviderHealthResponse.LastSuccessTime
   - Meridian.Contracts.Api.ProviderHealthResponse.ProviderId
+  - Meridian.Contracts.Api.ProviderHealthResponse.Reasons
   - Meridian.Contracts.Api.ProviderHealthResponse.RecentIssues
   langs:
   - csharp
@@ -22,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderHealthResponse
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -47,21 +49,21 @@ items:
   - System.Object.MemberwiseClone
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Api.ProviderHealthResponse.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},Meridian.Contracts.Api.HealthIssueResponse[])
-  commentId: M:Meridian.Contracts.Api.ProviderHealthResponse.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},Meridian.Contracts.Api.HealthIssueResponse[])
-  id: '#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},Meridian.Contracts.Api.HealthIssueResponse[])'
+- uid: Meridian.Contracts.Api.ProviderHealthResponse.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,Meridian.Contracts.Api.ProviderScoreReasonResponse[],Meridian.Contracts.Api.HealthIssueResponse[])
+  commentId: M:Meridian.Contracts.Api.ProviderHealthResponse.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,Meridian.Contracts.Api.ProviderScoreReasonResponse[],Meridian.Contracts.Api.HealthIssueResponse[])
+  id: '#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,Meridian.Contracts.Api.ProviderScoreReasonResponse[],Meridian.Contracts.Api.HealthIssueResponse[])'
   parent: Meridian.Contracts.Api.ProviderHealthResponse
   langs:
   - csharp
   - vb
-  name: ProviderHealthResponse(string, int, int, DateTimeOffset?, DateTimeOffset?, HealthIssueResponse[])
-  nameWithType: ProviderHealthResponse.ProviderHealthResponse(string, int, int, DateTimeOffset?, DateTimeOffset?, HealthIssueResponse[])
-  fullName: Meridian.Contracts.Api.ProviderHealthResponse.ProviderHealthResponse(string, int, int, System.DateTimeOffset?, System.DateTimeOffset?, Meridian.Contracts.Api.HealthIssueResponse[])
+  name: ProviderHealthResponse(string, int, int, DateTimeOffset?, DateTimeOffset?, double, ProviderScoreReasonResponse[], HealthIssueResponse[])
+  nameWithType: ProviderHealthResponse.ProviderHealthResponse(string, int, int, DateTimeOffset?, DateTimeOffset?, double, ProviderScoreReasonResponse[], HealthIssueResponse[])
+  fullName: Meridian.Contracts.Api.ProviderHealthResponse.ProviderHealthResponse(string, int, int, System.DateTimeOffset?, System.DateTimeOffset?, double, Meridian.Contracts.Api.ProviderScoreReasonResponse[], Meridian.Contracts.Api.HealthIssueResponse[])
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -72,7 +74,7 @@ items:
   summary: Response containing provider health information.
   example: []
   syntax:
-    content: public ProviderHealthResponse(string ProviderId, int ConsecutiveFailures, int ConsecutiveSuccesses, DateTimeOffset? LastIssueTime, DateTimeOffset? LastSuccessTime, HealthIssueResponse[] RecentIssues)
+    content: public ProviderHealthResponse(string ProviderId, int ConsecutiveFailures, int ConsecutiveSuccesses, DateTimeOffset? LastIssueTime, DateTimeOffset? LastSuccessTime, double DegradationScore, ProviderScoreReasonResponse[] Reasons, HealthIssueResponse[] RecentIssues)
     parameters:
     - id: ProviderId
       type: System.String
@@ -84,13 +86,17 @@ items:
       type: System.Nullable{System.DateTimeOffset}
     - id: LastSuccessTime
       type: System.Nullable{System.DateTimeOffset}
+    - id: DegradationScore
+      type: System.Double
+    - id: Reasons
+      type: Meridian.Contracts.Api.ProviderScoreReasonResponse[]
     - id: RecentIssues
       type: Meridian.Contracts.Api.HealthIssueResponse[]
-    content.vb: Public Sub New(ProviderId As String, ConsecutiveFailures As Integer, ConsecutiveSuccesses As Integer, LastIssueTime As DateTimeOffset?, LastSuccessTime As DateTimeOffset?, RecentIssues As HealthIssueResponse())
+    content.vb: Public Sub New(ProviderId As String, ConsecutiveFailures As Integer, ConsecutiveSuccesses As Integer, LastIssueTime As DateTimeOffset?, LastSuccessTime As DateTimeOffset?, DegradationScore As Double, Reasons As ProviderScoreReasonResponse(), RecentIssues As HealthIssueResponse())
   overload: Meridian.Contracts.Api.ProviderHealthResponse.#ctor*
-  nameWithType.vb: ProviderHealthResponse.New(String, Integer, Integer, DateTimeOffset?, DateTimeOffset?, HealthIssueResponse())
-  fullName.vb: Meridian.Contracts.Api.ProviderHealthResponse.New(String, Integer, Integer, System.DateTimeOffset?, System.DateTimeOffset?, Meridian.Contracts.Api.HealthIssueResponse())
-  name.vb: New(String, Integer, Integer, DateTimeOffset?, DateTimeOffset?, HealthIssueResponse())
+  nameWithType.vb: ProviderHealthResponse.New(String, Integer, Integer, DateTimeOffset?, DateTimeOffset?, Double, ProviderScoreReasonResponse(), HealthIssueResponse())
+  fullName.vb: Meridian.Contracts.Api.ProviderHealthResponse.New(String, Integer, Integer, System.DateTimeOffset?, System.DateTimeOffset?, Double, Meridian.Contracts.Api.ProviderScoreReasonResponse(), Meridian.Contracts.Api.HealthIssueResponse())
+  name.vb: New(String, Integer, Integer, DateTimeOffset?, DateTimeOffset?, Double, ProviderScoreReasonResponse(), HealthIssueResponse())
 - uid: Meridian.Contracts.Api.ProviderHealthResponse.ProviderId
   commentId: P:Meridian.Contracts.Api.ProviderHealthResponse.ProviderId
   id: ProviderId
@@ -105,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -134,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveFailures
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -163,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveSuccesses
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -192,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastIssueTime
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -221,7 +227,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastSuccessTime
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
@@ -236,6 +242,64 @@ items:
       type: System.Nullable{System.DateTimeOffset}
     content.vb: Public Property LastSuccessTime As DateTimeOffset?
   overload: Meridian.Contracts.Api.ProviderHealthResponse.LastSuccessTime*
+- uid: Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore
+  commentId: P:Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore
+  id: DegradationScore
+  parent: Meridian.Contracts.Api.ProviderHealthResponse
+  langs:
+  - csharp
+  - vb
+  name: DegradationScore
+  nameWithType: ProviderHealthResponse.DegradationScore
+  fullName: Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DegradationScore
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double DegradationScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DegradationScore As Double
+  overload: Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore*
+- uid: Meridian.Contracts.Api.ProviderHealthResponse.Reasons
+  commentId: P:Meridian.Contracts.Api.ProviderHealthResponse.Reasons
+  id: Reasons
+  parent: Meridian.Contracts.Api.ProviderHealthResponse
+  langs:
+  - csharp
+  - vb
+  name: Reasons
+  nameWithType: ProviderHealthResponse.Reasons
+  fullName: Meridian.Contracts.Api.ProviderHealthResponse.Reasons
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reasons
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public ProviderScoreReasonResponse[] Reasons { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Api.ProviderScoreReasonResponse[]
+    content.vb: Public Property Reasons As ProviderScoreReasonResponse()
+  overload: Meridian.Contracts.Api.ProviderHealthResponse.Reasons*
 - uid: Meridian.Contracts.Api.ProviderHealthResponse.RecentIssues
   commentId: P:Meridian.Contracts.Api.ProviderHealthResponse.RecentIssues
   id: RecentIssues
@@ -250,11 +314,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecentIssues
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 150
+    startLine: 152
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -596,7 +660,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Api.ProviderHealthResponse.#ctor*
   commentId: Overload:Meridian.Contracts.Api.ProviderHealthResponse.#ctor
-  href: Meridian.Contracts.Api.ProviderHealthResponse.html#Meridian_Contracts_Api_ProviderHealthResponse__ctor_System_String_System_Int32_System_Int32_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__Meridian_Contracts_Api_HealthIssueResponse___
+  href: Meridian.Contracts.Api.ProviderHealthResponse.html#Meridian_Contracts_Api_ProviderHealthResponse__ctor_System_String_System_Int32_System_Int32_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Double_Meridian_Contracts_Api_ProviderScoreReasonResponse___Meridian_Contracts_Api_HealthIssueResponse___
   name: ProviderHealthResponse
   nameWithType: ProviderHealthResponse.ProviderHealthResponse
   fullName: Meridian.Contracts.Api.ProviderHealthResponse.ProviderHealthResponse
@@ -645,6 +709,38 @@ references:
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
   - name: '?'
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Contracts.Api.ProviderScoreReasonResponse[]
+  isExternal: true
+  href: Meridian.Contracts.Api.ProviderScoreReasonResponse.html
+  name: ProviderScoreReasonResponse[]
+  nameWithType: ProviderScoreReasonResponse[]
+  fullName: Meridian.Contracts.Api.ProviderScoreReasonResponse[]
+  nameWithType.vb: ProviderScoreReasonResponse()
+  fullName.vb: Meridian.Contracts.Api.ProviderScoreReasonResponse()
+  name.vb: ProviderScoreReasonResponse()
+  spec.csharp:
+  - uid: Meridian.Contracts.Api.ProviderScoreReasonResponse
+    name: ProviderScoreReasonResponse
+    href: Meridian.Contracts.Api.ProviderScoreReasonResponse.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Api.ProviderScoreReasonResponse
+    name: ProviderScoreReasonResponse
+    href: Meridian.Contracts.Api.ProviderScoreReasonResponse.html
+  - name: (
+  - name: )
 - uid: Meridian.Contracts.Api.HealthIssueResponse[]
   isExternal: true
   href: Meridian.Contracts.Api.HealthIssueResponse.html
@@ -724,6 +820,18 @@ references:
   name: LastSuccessTime
   nameWithType: ProviderHealthResponse.LastSuccessTime
   fullName: Meridian.Contracts.Api.ProviderHealthResponse.LastSuccessTime
+- uid: Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore*
+  commentId: Overload:Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore
+  href: Meridian.Contracts.Api.ProviderHealthResponse.html#Meridian_Contracts_Api_ProviderHealthResponse_DegradationScore
+  name: DegradationScore
+  nameWithType: ProviderHealthResponse.DegradationScore
+  fullName: Meridian.Contracts.Api.ProviderHealthResponse.DegradationScore
+- uid: Meridian.Contracts.Api.ProviderHealthResponse.Reasons*
+  commentId: Overload:Meridian.Contracts.Api.ProviderHealthResponse.Reasons
+  href: Meridian.Contracts.Api.ProviderHealthResponse.html#Meridian_Contracts_Api_ProviderHealthResponse_Reasons
+  name: Reasons
+  nameWithType: ProviderHealthResponse.Reasons
+  fullName: Meridian.Contracts.Api.ProviderHealthResponse.Reasons
 - uid: Meridian.Contracts.Api.ProviderHealthResponse.RecentIssues*
   commentId: Overload:Meridian.Contracts.Api.ProviderHealthResponse.RecentIssues
   href: Meridian.Contracts.Api.ProviderHealthResponse.html#Meridian_Contracts_Api_ProviderHealthResponse_RecentIssues

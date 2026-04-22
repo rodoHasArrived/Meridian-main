@@ -33,7 +33,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceSchedule
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceType
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronExpression
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CronDescription
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TargetPath
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxDurationMinutes
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunAt
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextRunAt
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastRunStatus
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuccessCount
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -502,7 +502,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailureCount
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -531,7 +531,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -560,7 +560,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedAt
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs

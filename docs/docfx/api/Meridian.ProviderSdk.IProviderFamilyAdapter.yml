@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IProviderFamilyAdapter
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderFamilyId
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CapabilityDescriptors
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsCapability
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeConnectionAsync
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestConnectionAsync
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveCapabilityAsync
     path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs

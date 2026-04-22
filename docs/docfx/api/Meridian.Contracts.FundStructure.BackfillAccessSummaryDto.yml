@@ -1,0 +1,926 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  id: BackfillAccessSummaryDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.DateTimeOffset},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String)
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount
+  - Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount
+  langs:
+  - csharp
+  - vb
+  name: BackfillAccessSummaryDto
+  nameWithType: BackfillAccessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillAccessSummaryDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record BackfillAccessSummaryDto : IEquatable<BackfillAccessSummaryDto>'
+    content.vb: Public NotInheritable Class BackfillAccessSummaryDto Implements IEquatable(Of BackfillAccessSummaryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.BackfillAccessSummaryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.DateTimeOffset},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.DateTimeOffset},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String)
+  id: '#ctor(System.Boolean,System.Boolean,System.Int32,System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Nullable{System.DateTimeOffset},System.Nullable{System.Boolean},System.Int32,System.Int32,System.String)'
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: BackfillAccessSummaryDto(bool, bool, int, string?, DateOnly?, DateOnly?, DateTimeOffset?, bool?, int, int, string)
+  nameWithType: BackfillAccessSummaryDto.BackfillAccessSummaryDto(bool, bool, int, string?, DateOnly?, DateOnly?, DateTimeOffset?, bool?, int, int, string)
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.BackfillAccessSummaryDto(bool, bool, int, string?, System.DateOnly?, System.DateOnly?, System.DateTimeOffset?, bool?, int, int, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public BackfillAccessSummaryDto(bool IsAvailable, bool IsActive, int ProviderCount, string? LastProvider, DateOnly? LastFrom, DateOnly? LastTo, DateTimeOffset? LastCompletedUtc, bool? LastRunSucceeded, int SymbolCheckpointCount, int SymbolBarCountCount, string AvailabilityDescription)
+    parameters:
+    - id: IsAvailable
+      type: System.Boolean
+    - id: IsActive
+      type: System.Boolean
+    - id: ProviderCount
+      type: System.Int32
+    - id: LastProvider
+      type: System.String
+    - id: LastFrom
+      type: System.Nullable{System.DateOnly}
+    - id: LastTo
+      type: System.Nullable{System.DateOnly}
+    - id: LastCompletedUtc
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastRunSucceeded
+      type: System.Nullable{System.Boolean}
+    - id: SymbolCheckpointCount
+      type: System.Int32
+    - id: SymbolBarCountCount
+      type: System.Int32
+    - id: AvailabilityDescription
+      type: System.String
+    content.vb: Public Sub New(IsAvailable As Boolean, IsActive As Boolean, ProviderCount As Integer, LastProvider As String, LastFrom As DateOnly?, LastTo As DateOnly?, LastCompletedUtc As DateTimeOffset?, LastRunSucceeded As Boolean?, SymbolCheckpointCount As Integer, SymbolBarCountCount As Integer, AvailabilityDescription As String)
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.#ctor*
+  nameWithType.vb: BackfillAccessSummaryDto.New(Boolean, Boolean, Integer, String, DateOnly?, DateOnly?, DateTimeOffset?, Boolean?, Integer, Integer, String)
+  fullName.vb: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.New(Boolean, Boolean, Integer, String, System.DateOnly?, System.DateOnly?, System.DateTimeOffset?, Boolean?, Integer, Integer, String)
+  name.vb: New(Boolean, Boolean, Integer, String, DateOnly?, DateOnly?, DateTimeOffset?, Boolean?, Integer, Integer, String)
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable
+  id: IsAvailable
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: IsAvailable
+  nameWithType: BackfillAccessSummaryDto.IsAvailable
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailable
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public bool IsAvailable { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsAvailable As Boolean
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive
+  id: IsActive
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: IsActive
+  nameWithType: BackfillAccessSummaryDto.IsActive
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsActive
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public bool IsActive { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsActive As Boolean
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount
+  id: ProviderCount
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: ProviderCount
+  nameWithType: BackfillAccessSummaryDto.ProviderCount
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public int ProviderCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ProviderCount As Integer
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider
+  id: LastProvider
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: LastProvider
+  nameWithType: BackfillAccessSummaryDto.LastProvider
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastProvider
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? LastProvider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastProvider As String
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom
+  id: LastFrom
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: LastFrom
+  nameWithType: BackfillAccessSummaryDto.LastFrom
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateOnly? LastFrom { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastFrom As DateOnly?
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo
+  id: LastTo
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: LastTo
+  nameWithType: BackfillAccessSummaryDto.LastTo
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastTo
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateOnly? LastTo { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property LastTo As DateOnly?
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc
+  id: LastCompletedUtc
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: LastCompletedUtc
+  nameWithType: BackfillAccessSummaryDto.LastCompletedUtc
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastCompletedUtc
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset? LastCompletedUtc { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastCompletedUtc As DateTimeOffset?
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded
+  id: LastRunSucceeded
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: LastRunSucceeded
+  nameWithType: BackfillAccessSummaryDto.LastRunSucceeded
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastRunSucceeded
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public bool? LastRunSucceeded { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property LastRunSucceeded As Boolean?
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount
+  id: SymbolCheckpointCount
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: SymbolCheckpointCount
+  nameWithType: BackfillAccessSummaryDto.SymbolCheckpointCount
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCheckpointCount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public int SymbolCheckpointCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolCheckpointCount As Integer
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount
+  id: SymbolBarCountCount
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: SymbolBarCountCount
+  nameWithType: BackfillAccessSummaryDto.SymbolBarCountCount
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBarCountCount
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public int SymbolBarCountCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolBarCountCount As Integer
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount*
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription
+  commentId: P:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription
+  id: AvailabilityDescription
+  parent: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: AvailabilityDescription
+  nameWithType: BackfillAccessSummaryDto.AvailabilityDescription
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailabilityDescription
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string AvailabilityDescription { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AvailabilityDescription As String
+  overload: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.BackfillAccessSummaryDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.BackfillAccessSummaryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackfillAccessSummaryDto>
+  nameWithType: IEquatable<BackfillAccessSummaryDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.BackfillAccessSummaryDto>
+  nameWithType.vb: IEquatable(Of BackfillAccessSummaryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.BackfillAccessSummaryDto)
+  name.vb: IEquatable(Of BackfillAccessSummaryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+    name: BackfillAccessSummaryDto
+    href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto
+    name: BackfillAccessSummaryDto
+    href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.#ctor
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto__ctor_System_Boolean_System_Boolean_System_Int32_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Nullable_System_DateTimeOffset__System_Nullable_System_Boolean__System_Int32_System_Int32_System_String_
+  name: BackfillAccessSummaryDto
+  nameWithType: BackfillAccessSummaryDto.BackfillAccessSummaryDto
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.BackfillAccessSummaryDto
+  nameWithType.vb: BackfillAccessSummaryDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_IsAvailable
+  name: IsAvailable
+  nameWithType: BackfillAccessSummaryDto.IsAvailable
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsAvailable
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_IsActive
+  name: IsActive
+  nameWithType: BackfillAccessSummaryDto.IsActive
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.IsActive
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_ProviderCount
+  name: ProviderCount
+  nameWithType: BackfillAccessSummaryDto.ProviderCount
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.ProviderCount
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_LastProvider
+  name: LastProvider
+  nameWithType: BackfillAccessSummaryDto.LastProvider
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastProvider
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_LastFrom
+  name: LastFrom
+  nameWithType: BackfillAccessSummaryDto.LastFrom
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastFrom
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_LastTo
+  name: LastTo
+  nameWithType: BackfillAccessSummaryDto.LastTo
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastTo
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_LastCompletedUtc
+  name: LastCompletedUtc
+  nameWithType: BackfillAccessSummaryDto.LastCompletedUtc
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastCompletedUtc
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_LastRunSucceeded
+  name: LastRunSucceeded
+  nameWithType: BackfillAccessSummaryDto.LastRunSucceeded
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.LastRunSucceeded
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_SymbolCheckpointCount
+  name: SymbolCheckpointCount
+  nameWithType: BackfillAccessSummaryDto.SymbolCheckpointCount
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolCheckpointCount
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_SymbolBarCountCount
+  name: SymbolBarCountCount
+  nameWithType: BackfillAccessSummaryDto.SymbolBarCountCount
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.SymbolBarCountCount
+- uid: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription*
+  commentId: Overload:Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription
+  href: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.html#Meridian_Contracts_FundStructure_BackfillAccessSummaryDto_AvailabilityDescription
+  name: AvailabilityDescription
+  nameWithType: BackfillAccessSummaryDto.AvailabilityDescription
+  fullName: Meridian.Contracts.FundStructure.BackfillAccessSummaryDto.AvailabilityDescription

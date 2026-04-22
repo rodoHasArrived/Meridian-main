@@ -7,6 +7,7 @@ items:
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
   langs:
   - csharp
@@ -36,6 +37,12 @@ references:
   name: RobinhoodMarketDataClient
   nameWithType: RobinhoodMarketDataClient
   fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider.html
+  name: RobinhoodOptionsChainProvider
+  nameWithType: RobinhoodOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
 - uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
   commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
   href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider.html

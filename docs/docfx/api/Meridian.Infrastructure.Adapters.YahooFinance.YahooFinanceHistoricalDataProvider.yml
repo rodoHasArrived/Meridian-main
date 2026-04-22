@@ -10,6 +10,7 @@ items:
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.Description
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.DisplayName
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.HttpClientName
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
@@ -19,6 +20,7 @@ items:
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.Priority
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.RateLimitDelay
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities
   langs:
   - csharp
   - vb
@@ -29,26 +31,17 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: YahooFinanceHistoricalDataProvider
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 20
+    startLine: 16
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
-  summary: >-
-    Historical data provider using Yahoo Finance (free, unofficial API).
-
-    Provides daily OHLCV with adjusted close prices.
-
-    Coverage: 50,000+ global equities, ETFs, indices, crypto.
-
-    Extends BaseHistoricalDataProvider for common functionality.
-  example: []
   syntax:
     content: >-
-      [DataSource("yahoo", "Yahoo Finance (free)", DataSourceType.Historical, DataSourceCategory.Free, Priority = 22, Description = "Free daily OHLCV via Yahoo Finance unofficial API")]
+      [DataSource("yahoo", "Yahoo Finance (free)", DataSourceType.Historical, DataSourceCategory.Free, Priority = 22, Description = "Free daily and intraday OHLCV via Yahoo Finance unofficial API")]
 
       [ImplementsAdr("ADR-001", "Yahoo Finance historical data provider implementation")]
 
@@ -56,9 +49,9 @@ items:
 
       [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 
-      public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvider, IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable
+      public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvider, IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable, IHistoricalAggregateBarProvider
     content.vb: >-
-      <DataSource("yahoo", "Yahoo Finance (free)", DataSourceType.Historical, DataSourceCategory.Free, Priority:=22, Description:="Free daily OHLCV via Yahoo Finance unofficial API")>
+      <DataSource("yahoo", "Yahoo Finance (free)", DataSourceType.Historical, DataSourceCategory.Free, Priority:=22, Description:="Free daily and intraday OHLCV via Yahoo Finance unofficial API")>
 
       <ImplementsAdr("ADR-001", "Yahoo Finance historical data provider implementation")>
 
@@ -66,7 +59,7 @@ items:
 
       <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
 
-      Public NotInheritable Class YahooFinanceHistoricalDataProvider Inherits BaseHistoricalDataProvider Implements IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable
+      Public NotInheritable Class YahooFinanceHistoricalDataProvider Inherits BaseHistoricalDataProvider Implements IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable, IHistoricalAggregateBarProvider
   inheritance:
   - System.Object
   - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
@@ -75,6 +68,7 @@ items:
   - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
   - Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
   - System.IDisposable
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
   inheritedMembers:
   - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
   - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
@@ -111,7 +105,7 @@ items:
       value: 22
     - name: Description
       type: System.String
-      value: Free daily OHLCV via Yahoo Finance unofficial API
+      value: Free daily and intraday OHLCV via Yahoo Finance unofficial API
   - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
     ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
     arguments:
@@ -147,11 +141,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 29
+    startLine: 35
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -179,11 +173,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 30
+    startLine: 36
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -211,11 +205,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 31
+    startLine: 37
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -243,11 +237,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 32
+    startLine: 38
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -275,11 +269,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 35
+    startLine: 39
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -310,11 +304,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 36
+    startLine: 40
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -345,11 +339,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 37
+    startLine: 41
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -380,11 +374,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 38
+    startLine: 42
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -415,15 +409,26 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 43
+    startLine: 44
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
-  summary: Yahoo Finance supports adjusted bars with corporate actions for global markets.
+  summary: >-
+    Consolidated capability flags for this provider.
+
+    Override in derived classes to specify supported features.
+  remarks: >-
+    Use static factory methods for common patterns:
+
+    - <xref href="Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.None" data-throw-if-not-resolved="false"></xref> (default)
+
+    - <xref href="Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.BarsOnly" data-throw-if-not-resolved="false"></xref>
+
+    - <xref href="Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.FullFeatured" data-throw-if-not-resolved="false"></xref>
   example: []
   syntax:
     content: public override HistoricalDataCapabilities Capabilities { get; }
@@ -433,6 +438,39 @@ items:
     content.vb: Public Overrides ReadOnly Property Capabilities As HistoricalDataCapabilities
   overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
   overload: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.Capabilities*
+- uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities
+  commentId: P:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities
+  id: SupportedGranularities
+  parent: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedGranularities
+  nameWithType: YahooFinanceHistoricalDataProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedGranularities
+    path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.YahooFinance
+  summary: Granularities the provider can serve for aggregate-bar backfill.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataGranularity> SupportedGranularities { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+    content.vb: Public ReadOnly Property SupportedGranularities As IReadOnlyList(Of DataGranularity)
+  overload: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
 - uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.#ctor(System.Net.Http.HttpClient,Serilog.ILogger)
   commentId: M:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.#ctor(System.Net.Http.HttpClient,Serilog.ILogger)
   id: '#ctor(System.Net.Http.HttpClient,Serilog.ILogger)'
@@ -447,11 +485,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 46
+    startLine: 53
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -481,7 +519,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
@@ -490,9 +528,9 @@ items:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
   summary: >-
-    Yahoo Finance uses standard tickers for US stocks.
+    Normalize a symbol using the standard approach.
 
-    International symbols append exchange suffix (e.g., .L for London, .T for Tokyo)
+    Override in derived class for provider-specific normalization.
   example: []
   syntax:
     content: protected override string NormalizeSymbol(string symbol)
@@ -521,11 +559,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 65
+    startLine: 62
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -558,11 +596,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 79
+    startLine: 75
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -604,11 +642,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
-    startLine: 89
+    startLine: 85
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.YahooFinance
@@ -636,6 +674,52 @@ items:
   nameWithType.vb: YahooFinanceHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
   fullName.vb: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
   name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAggregateBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.YahooFinance
+  summary: Fetch aggregate bars for the requested symbol and granularity.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+    content.vb: Public Function GetAggregateBarsAsync(symbol As String, granularity As DataGranularity, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AggregateBar))
+  overload: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  nameWithType.vb: YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
 references:
 - uid: Meridian.Infrastructure.Adapters.YahooFinance
   commentId: N:Meridian.Infrastructure.Adapters.YahooFinance
@@ -722,6 +806,13 @@ references:
   name: IDisposable
   nameWithType: IDisposable
   fullName: System.IDisposable
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html
+  name: IHistoricalAggregateBarProvider
+  nameWithType: IHistoricalAggregateBarProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
 - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
   commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
   parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
@@ -1197,6 +1288,23 @@ references:
   name: RateLimitWindow
   nameWithType: YahooFinanceHistoricalDataProvider.RateLimitWindow
   fullName: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.None
+  commentId: P:Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.None
+  name: None
+  nameWithType: HistoricalDataCapabilities.None
+  fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.None
+- uid: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.BarsOnly
+  commentId: P:Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.BarsOnly
+  href: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.html#Meridian_Infrastructure_Adapters_Core_HistoricalDataCapabilities_BarsOnly
+  name: BarsOnly
+  nameWithType: HistoricalDataCapabilities.BarsOnly
+  fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.BarsOnly
+- uid: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.FullFeatured
+  commentId: P:Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.FullFeatured
+  href: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.html#Meridian_Infrastructure_Adapters_Core_HistoricalDataCapabilities_FullFeatured
+  name: FullFeatured
+  nameWithType: HistoricalDataCapabilities.FullFeatured
+  fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.FullFeatured
 - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
   commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
   parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
@@ -1217,6 +1325,117 @@ references:
   name: HistoricalDataCapabilities
   nameWithType: HistoricalDataCapabilities
   fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+- uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities
+  href: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_YahooFinance_YahooFinanceHistoricalDataProvider_SupportedGranularities
+  name: SupportedGranularities
+  nameWithType: YahooFinanceHistoricalDataProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.SupportedGranularities
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+  parent: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_SupportedGranularities
+  name: SupportedGranularities
+  nameWithType: IHistoricalAggregateBarProvider.SupportedGranularities
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.SupportedGranularities
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.DataGranularity}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataGranularity>
+  nameWithType: IReadOnlyList<DataGranularity>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.DataGranularity>
+  nameWithType.vb: IReadOnlyList(Of DataGranularity)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  name.vb: IReadOnlyList(Of DataGranularity)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
 - uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.#ctor*
   commentId: Overload:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.#ctor
   href: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_YahooFinance_YahooFinanceHistoricalDataProvider__ctor_System_Net_Http_HttpClient_Serilog_ILogger_
@@ -1780,5 +1999,144 @@ references:
   - name: " "
   - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
     name: AdjustedHistoricalBar
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync
+  href: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_YahooFinance_YahooFinanceHistoricalDataProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAggregateBarsAsync
+  nameWithType: YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.GetAggregateBarsAsync
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: IHistoricalAggregateBarProvider.GetAggregateBarsAsync(string, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: IHistoricalAggregateBarProvider.GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAggregateBarsAsync(String, DataGranularity, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAggregateBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.GetAggregateBarsAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAggregateBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html#Meridian_Infrastructure_Adapters_Core_IHistoricalAggregateBarProvider_GetAggregateBarsAsync_System_String_Meridian_Infrastructure_Adapters_Core_DataGranularity_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    name: DataGranularity
+    href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Domain.Models.AggregateBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AggregateBar>>
+  nameWithType: Task<IReadOnlyList<AggregateBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Domain.Models.AggregateBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AggregateBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Domain.Models.AggregateBar))
+  name.vb: Task(Of IReadOnlyList(Of AggregateBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Domain.Models.AggregateBar
+    name: AggregateBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Models.AggregateBar
+    name: AggregateBar
   - name: )
   - name: )

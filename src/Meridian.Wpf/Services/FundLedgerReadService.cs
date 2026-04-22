@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
@@ -22,21 +23,21 @@ public sealed class FundLedgerReadService
     public async Task<FundLedgerSummary?> GetAsync(FundLedgerQuery query, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(query);
-        await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
-
-        var profile = _fundContextService.Profiles.FirstOrDefault(item =>
-            string.Equals(item.FundProfileId, query.FundProfileId, StringComparison.OrdinalIgnoreCase));
-        if (profile is null)
+        var context = await BuildContextAsync(query.FundProfileId, ct).ConfigureAwait(false);
+        if (context is null)
         {
             return null;
         }
 
         var fundLedgerBook = new FundLedgerBook(profile.FundProfileId);
         var runs = await _runWorkspaceService.GetRecordedRunEntriesAsync(ct).ConfigureAwait(false);
+        var selectedLedgerIds = NormalizeSelectedLedgerIds(query.SelectedLedgerIds);
+        var constrainToSelectedLedgers = selectedLedgerIds.Count > 0;
 
         foreach (var run in runs.Where(run =>
                      string.Equals(run.FundProfileId, profile.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
-                     run.Metrics?.Ledger is not null))
+                     run.Metrics?.Ledger is not null &&
+                     (!constrainToSelectedLedgers || selectedLedgerIds.Contains(run.RunId))))
         {
             foreach (var journalEntry in run.Metrics!.Ledger!.Journal)
             {
@@ -47,47 +48,142 @@ public sealed class FundLedgerReadService
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var journal = BuildJournal(fundLedgerBook, query, asOf);
         var trialBalance = BuildTrialBalance(fundLedgerBook, query, asOf);
+        var consolidatedTrialBalance = BuildTrialBalance(fundLedgerBook, FundLedgerScope.Consolidated, null, asOf);
+        var consolidatedJournal = BuildJournal(fundLedgerBook, FundLedgerScope.Consolidated, null, asOf);
+        var consolidatedTotals = BuildTotals(consolidatedTrialBalance, consolidatedJournal);
+        var ledgerSlices = BuildLedgerSlices(fundLedgerBook, profile, asOf, consolidatedTotals, consolidatedTrialBalance, consolidatedJournal);
 
         var entityCount = Math.Max(profile.EntityIds?.Count ?? 0, fundLedgerBook.EntitySnapshotsAsOf(asOf).Count);
         var sleeveCount = Math.Max(profile.SleeveIds?.Count ?? 0, fundLedgerBook.SleeveSnapshotsAsOf(asOf).Count);
         var vehicleCount = Math.Max(profile.VehicleIds?.Count ?? 0, fundLedgerBook.VehicleSnapshotsAsOf(asOf).Count);
 
         var balances = trialBalance.ToArray();
+        var selectedTotals = BuildTotals(balances, journal);
         return new FundLedgerSummary(
             FundProfileId: profile.FundProfileId,
             FundDisplayName: profile.DisplayName,
             ScopeKind: query.ScopeKind,
             ScopeId: query.ScopeId,
             AsOf: asOf,
-            JournalEntryCount: journal.Count,
-            LedgerEntryCount: balances.Sum(line => line.EntryCount),
-            AssetBalance: SumBalance(balances, LedgerAccountType.Asset),
-            LiabilityBalance: SumBalance(balances, LedgerAccountType.Liability),
-            EquityBalance: SumBalance(balances, LedgerAccountType.Equity),
-            RevenueBalance: SumBalance(balances, LedgerAccountType.Revenue),
-            ExpenseBalance: SumBalance(balances, LedgerAccountType.Expense),
+            JournalEntryCount: selectedTotals.JournalEntryCount,
+            LedgerEntryCount: selectedTotals.LedgerEntryCount,
+            AssetBalance: selectedTotals.AssetBalance,
+            LiabilityBalance: selectedTotals.LiabilityBalance,
+            EquityBalance: selectedTotals.EquityBalance,
+            RevenueBalance: selectedTotals.RevenueBalance,
+            ExpenseBalance: selectedTotals.ExpenseBalance,
             TrialBalance: balances,
             Journal: journal,
             EntityCount: entityCount,
             SleeveCount: sleeveCount,
-            VehicleCount: vehicleCount);
+            VehicleCount: vehicleCount,
+            ConsolidatedTotals: consolidatedTotals,
+            LedgerSlices: ledgerSlices);
+    }
+
+    public async Task<FundLedgerReconciliationSnapshot?> GetReconciliationSnapshotAsync(
+        FundLedgerQuery query,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        var context = await BuildContextAsync(query.FundProfileId, ct).ConfigureAwait(false);
+        if (context is null)
+        {
+            return null;
+        }
+
+        var (_, fundLedgerBook) = context.Value;
+        var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
+        return ProjectReconciliationSnapshot(fundLedgerBook.ReconciliationSnapshot(asOf));
+    }
+
+    public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        return new FundLedgerReconciliationSnapshot(
+            FundProfileId: snapshot.FundId,
+            AsOf: snapshot.AsOf,
+            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Entities: snapshot.Entities.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Sleeves: snapshot.Sleeves.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase),
+            Vehicles: snapshot.Vehicles.ToDictionary(
+                static pair => pair.Key,
+                static pair => ProjectDimensionSnapshot(pair.Value),
+                StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+        new(
+            Timestamp: snapshot.Timestamp,
+            JournalEntryCount: snapshot.JournalEntryCount,
+            LedgerEntryCount: snapshot.LedgerEntryCount,
+            Balances: snapshot.Balances
+                .OrderBy(static pair => pair.Key.AccountType)
+                .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                    AccountName: pair.Key.Name,
+                    AccountType: pair.Key.AccountType.ToString(),
+                    Symbol: pair.Key.Symbol,
+                    FinancialAccountId: pair.Key.FinancialAccountId,
+                    Balance: pair.Value))
+                .ToArray());
+
+    private async Task<(FundProfileDetail Profile, FundLedgerBook Book)?> BuildContextAsync(
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+        var profile = _fundContextService.Profiles.FirstOrDefault(item =>
+            string.Equals(item.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase));
+        if (profile is null)
+        {
+            return null;
+        }
+
+        var book = new FundLedgerBook(profile.FundProfileId);
+        var runs = await _runWorkspaceService.GetRecordedRunEntriesAsync(ct).ConfigureAwait(false);
+        foreach (var run in runs.Where(run =>
+                     string.Equals(run.FundProfileId, profile.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                     run.Metrics?.Ledger is not null))
+        {
+            foreach (var journalEntry in run.Metrics!.Ledger!.Journal)
+            {
+                book.FundLedger.Post(journalEntry);
+            }
+        }
+
+        return (profile, book);
     }
 
     private static IReadOnlyList<FundTrialBalanceLine> BuildTrialBalance(
         FundLedgerBook book,
         FundLedgerQuery query,
         DateTimeOffset asOf)
+        => BuildTrialBalance(book, query.ScopeKind, query.ScopeId, asOf);
+
+    private static IReadOnlyList<FundTrialBalanceLine> BuildTrialBalance(
+        FundLedgerBook book,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        DateTimeOffset asOf)
     {
-        IReadOnlyDictionary<LedgerAccount, decimal> balances = query.ScopeKind switch
+        IReadOnlyDictionary<LedgerAccount, decimal> balances = scopeKind switch
         {
             FundLedgerScope.Consolidated => book.ConsolidatedSnapshotAsOf(asOf).Balances,
-            FundLedgerScope.Entity => book.EntityLedger(query.ScopeId ?? string.Empty).SnapshotAsOf(asOf).Balances,
-            FundLedgerScope.Sleeve => book.SleeveLedger(query.ScopeId ?? string.Empty).SnapshotAsOf(asOf).Balances,
-            FundLedgerScope.Vehicle => book.VehicleLedger(query.ScopeId ?? string.Empty).SnapshotAsOf(asOf).Balances,
+            FundLedgerScope.Entity => book.EntityLedger(scopeId ?? string.Empty).SnapshotAsOf(asOf).Balances,
+            FundLedgerScope.Sleeve => book.SleeveLedger(scopeId ?? string.Empty).SnapshotAsOf(asOf).Balances,
+            FundLedgerScope.Vehicle => book.VehicleLedger(scopeId ?? string.Empty).SnapshotAsOf(asOf).Balances,
             _ => book.ConsolidatedSnapshotAsOf(asOf).Balances
         };
 
-        var entryCounts = BuildEntryCounts(book, query, asOf);
+        var entryCounts = BuildEntryCounts(book, scopeKind, scopeId, asOf);
 
         return balances
             .OrderBy(pair => pair.Key.AccountType)
@@ -106,13 +202,20 @@ public sealed class FundLedgerReadService
         FundLedgerBook book,
         FundLedgerQuery query,
         DateTimeOffset asOf)
+        => BuildJournal(book, query.ScopeKind, query.ScopeId, asOf);
+
+    private static IReadOnlyList<FundJournalLine> BuildJournal(
+        FundLedgerBook book,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        DateTimeOffset asOf)
     {
-        IEnumerable<JournalEntry> source = query.ScopeKind switch
+        IEnumerable<JournalEntry> source = scopeKind switch
         {
             FundLedgerScope.Consolidated => book.ConsolidatedJournalEntries(),
-            FundLedgerScope.Entity => book.EntityLedger(query.ScopeId ?? string.Empty).GetJournalEntries(),
-            FundLedgerScope.Sleeve => book.SleeveLedger(query.ScopeId ?? string.Empty).GetJournalEntries(),
-            FundLedgerScope.Vehicle => book.VehicleLedger(query.ScopeId ?? string.Empty).GetJournalEntries(),
+            FundLedgerScope.Entity => book.EntityLedger(scopeId ?? string.Empty).GetJournalEntries(),
+            FundLedgerScope.Sleeve => book.SleeveLedger(scopeId ?? string.Empty).GetJournalEntries(),
+            FundLedgerScope.Vehicle => book.VehicleLedger(scopeId ?? string.Empty).GetJournalEntries(),
             _ => book.ConsolidatedJournalEntries()
         };
 
@@ -141,17 +244,98 @@ public sealed class FundLedgerReadService
             .Where(line => string.Equals(line.AccountType, accountType.ToString(), StringComparison.Ordinal))
             .Sum(line => line.Balance);
 
+    private static FundLedgerTotalsDto BuildTotals(
+        IReadOnlyList<FundTrialBalanceLine> trialBalance,
+        IReadOnlyList<FundJournalLine> journal)
+        => new(
+            JournalEntryCount: journal.Count,
+            LedgerEntryCount: trialBalance.Sum(line => line.EntryCount),
+            AssetBalance: SumBalance(trialBalance, LedgerAccountType.Asset),
+            LiabilityBalance: SumBalance(trialBalance, LedgerAccountType.Liability),
+            EquityBalance: SumBalance(trialBalance, LedgerAccountType.Equity),
+            RevenueBalance: SumBalance(trialBalance, LedgerAccountType.Revenue),
+            ExpenseBalance: SumBalance(trialBalance, LedgerAccountType.Expense));
+
+    private static IReadOnlyList<FundLedgerSliceDto> BuildLedgerSlices(
+        FundLedgerBook book,
+        FundProfileDetail profile,
+        DateTimeOffset asOf,
+        FundLedgerTotalsDto consolidatedTotals,
+        IReadOnlyList<FundTrialBalanceLine> consolidatedTrialBalance,
+        IReadOnlyList<FundJournalLine> consolidatedJournal)
+    {
+        var slices = new List<FundLedgerSliceDto>
+        {
+            new(
+                SliceKey: "consolidated",
+                ScopeKind: FundLedgerScope.Consolidated,
+                ScopeId: null,
+                DisplayName: "Consolidated Fund View",
+                Totals: consolidatedTotals,
+                TrialBalance: consolidatedTrialBalance,
+                Journal: consolidatedJournal,
+                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["group"] = FundLedgerScope.Consolidated.ToString()
+                })
+        };
+
+        slices.AddRange(BuildScopedSlices(book, asOf, FundLedgerScope.Entity, profile.EntityIds, "Entity"));
+        slices.AddRange(BuildScopedSlices(book, asOf, FundLedgerScope.Sleeve, profile.SleeveIds, "Sleeve"));
+        slices.AddRange(BuildScopedSlices(book, asOf, FundLedgerScope.Vehicle, profile.VehicleIds, "Vehicle"));
+        return slices;
+    }
+
+    private static IEnumerable<FundLedgerSliceDto> BuildScopedSlices(
+        FundLedgerBook book,
+        DateTimeOffset asOf,
+        FundLedgerScope scopeKind,
+        IReadOnlyList<string>? scopeIds,
+        string scopeLabel)
+    {
+        foreach (var scopeId in scopeIds ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(scopeId))
+            {
+                continue;
+            }
+
+            var trialBalance = BuildTrialBalance(book, scopeKind, scopeId, asOf);
+            var journal = BuildJournal(book, scopeKind, scopeId, asOf);
+            yield return new FundLedgerSliceDto(
+                SliceKey: $"{scopeKind}:{scopeId}",
+                ScopeKind: scopeKind,
+                ScopeId: scopeId,
+                DisplayName: $"{scopeLabel} {scopeId}",
+                Totals: BuildTotals(trialBalance, journal),
+                TrialBalance: trialBalance,
+                Journal: journal,
+                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["group"] = scopeKind.ToString(),
+                    ["scopeLabel"] = scopeLabel
+                });
+        }
+    }
+
     private static Dictionary<LedgerAccount, int> BuildEntryCounts(
         FundLedgerBook book,
         FundLedgerQuery query,
         DateTimeOffset asOf)
+        => BuildEntryCounts(book, query.ScopeKind, query.ScopeId, asOf);
+
+    private static Dictionary<LedgerAccount, int> BuildEntryCounts(
+        FundLedgerBook book,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        DateTimeOffset asOf)
     {
-        IEnumerable<JournalEntry> source = query.ScopeKind switch
+        IEnumerable<JournalEntry> source = scopeKind switch
         {
             FundLedgerScope.Consolidated => book.ConsolidatedJournalEntries(),
-            FundLedgerScope.Entity => book.EntityLedger(query.ScopeId ?? string.Empty).GetJournalEntries(),
-            FundLedgerScope.Sleeve => book.SleeveLedger(query.ScopeId ?? string.Empty).GetJournalEntries(),
-            FundLedgerScope.Vehicle => book.VehicleLedger(query.ScopeId ?? string.Empty).GetJournalEntries(),
+            FundLedgerScope.Entity => book.EntityLedger(scopeId ?? string.Empty).GetJournalEntries(),
+            FundLedgerScope.Sleeve => book.SleeveLedger(scopeId ?? string.Empty).GetJournalEntries(),
+            FundLedgerScope.Vehicle => book.VehicleLedger(scopeId ?? string.Empty).GetJournalEntries(),
             _ => book.ConsolidatedJournalEntries()
         };
 
@@ -161,4 +345,11 @@ public sealed class FundLedgerReadService
             .GroupBy(line => line.Account)
             .ToDictionary(group => group.Key, group => group.Count());
     }
+
+    private static HashSet<string> NormalizeSelectedLedgerIds(IReadOnlyList<string>? selectedLedgerIds) =>
+        selectedLedgerIds?
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Select(static id => id.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+        ?? [];
 }

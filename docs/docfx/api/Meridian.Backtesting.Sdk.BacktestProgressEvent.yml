@@ -5,9 +5,10 @@ items:
   id: BacktestProgressEvent
   parent: Meridian.Backtesting.Sdk
   children:
-  - Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String)
+  - Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String,System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics})
   - Meridian.Backtesting.Sdk.BacktestProgressEvent.CurrentDate
   - Meridian.Backtesting.Sdk.BacktestProgressEvent.EventsProcessed
+  - Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics
   - Meridian.Backtesting.Sdk.BacktestProgressEvent.Message
   - Meridian.Backtesting.Sdk.BacktestProgressEvent.PortfolioValue
   - Meridian.Backtesting.Sdk.BacktestProgressEvent.ProgressFraction
@@ -21,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BacktestProgressEvent
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -45,21 +46,21 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String)
-  commentId: M:Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String)
-  id: '#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String)'
+- uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String,System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics})
+  commentId: M:Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String,System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics})
+  id: '#ctor(System.Double,System.DateOnly,System.Decimal,System.Int64,System.String,System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics})'
   parent: Meridian.Backtesting.Sdk.BacktestProgressEvent
   langs:
   - csharp
   - vb
-  name: BacktestProgressEvent(double, DateOnly, decimal, long, string?)
-  nameWithType: BacktestProgressEvent.BacktestProgressEvent(double, DateOnly, decimal, long, string?)
-  fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent.BacktestProgressEvent(double, System.DateOnly, decimal, long, string?)
+  name: BacktestProgressEvent(double, DateOnly, decimal, long, string?, IntermediateMetrics?)
+  nameWithType: BacktestProgressEvent.BacktestProgressEvent(double, DateOnly, decimal, long, string?, IntermediateMetrics?)
+  fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent.BacktestProgressEvent(double, System.DateOnly, decimal, long, string?, Meridian.Backtesting.Sdk.IntermediateMetrics?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -70,7 +71,7 @@ items:
   summary: Progress notification emitted by <code>BacktestEngine</code> during replay.
   example: []
   syntax:
-    content: public BacktestProgressEvent(double ProgressFraction, DateOnly CurrentDate, decimal PortfolioValue, long EventsProcessed, string? Message = null)
+    content: public BacktestProgressEvent(double ProgressFraction, DateOnly CurrentDate, decimal PortfolioValue, long EventsProcessed, string? Message = null, IntermediateMetrics? LiveMetrics = null)
     parameters:
     - id: ProgressFraction
       type: System.Double
@@ -82,11 +83,13 @@ items:
       type: System.Int64
     - id: Message
       type: System.String
-    content.vb: Public Sub New(ProgressFraction As Double, CurrentDate As DateOnly, PortfolioValue As Decimal, EventsProcessed As Long, Message As String = Nothing)
+    - id: LiveMetrics
+      type: System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+    content.vb: Public Sub New(ProgressFraction As Double, CurrentDate As DateOnly, PortfolioValue As Decimal, EventsProcessed As Long, Message As String = Nothing, LiveMetrics As IntermediateMetrics? = Nothing)
   overload: Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor*
-  nameWithType.vb: BacktestProgressEvent.New(Double, DateOnly, Decimal, Long, String)
-  fullName.vb: Meridian.Backtesting.Sdk.BacktestProgressEvent.New(Double, System.DateOnly, Decimal, Long, String)
-  name.vb: New(Double, DateOnly, Decimal, Long, String)
+  nameWithType.vb: BacktestProgressEvent.New(Double, DateOnly, Decimal, Long, String, IntermediateMetrics?)
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestProgressEvent.New(Double, System.DateOnly, Decimal, Long, String, Meridian.Backtesting.Sdk.IntermediateMetrics?)
+  name.vb: New(Double, DateOnly, Decimal, Long, String, IntermediateMetrics?)
 - uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.ProgressFraction
   commentId: P:Meridian.Backtesting.Sdk.BacktestProgressEvent.ProgressFraction
   id: ProgressFraction
@@ -101,7 +104,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressFraction
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -130,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentDate
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -159,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -188,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventsProcessed
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -217,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
@@ -232,6 +235,35 @@ items:
       type: System.String
     content.vb: Public Property Message As String
   overload: Meridian.Backtesting.Sdk.BacktestProgressEvent.Message*
+- uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics
+  commentId: P:Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics
+  id: LiveMetrics
+  parent: Meridian.Backtesting.Sdk.BacktestProgressEvent
+  langs:
+  - csharp
+  - vb
+  name: LiveMetrics
+  nameWithType: BacktestProgressEvent.LiveMetrics
+  fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiveMetrics
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestProgressEvent.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IntermediateMetrics? LiveMetrics { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+    content.vb: Public Property LiveMetrics As IntermediateMetrics?
+  overload: Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics*
 references:
 - uid: Meridian.Backtesting.Sdk
   commentId: N:Meridian.Backtesting.Sdk
@@ -539,7 +571,7 @@ references:
   - name: )
 - uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor*
   commentId: Overload:Meridian.Backtesting.Sdk.BacktestProgressEvent.#ctor
-  href: Meridian.Backtesting.Sdk.BacktestProgressEvent.html#Meridian_Backtesting_Sdk_BacktestProgressEvent__ctor_System_Double_System_DateOnly_System_Decimal_System_Int64_System_String_
+  href: Meridian.Backtesting.Sdk.BacktestProgressEvent.html#Meridian_Backtesting_Sdk_BacktestProgressEvent__ctor_System_Double_System_DateOnly_System_Decimal_System_Int64_System_String_System_Nullable_Meridian_Backtesting_Sdk_IntermediateMetrics__
   name: BacktestProgressEvent
   nameWithType: BacktestProgressEvent.BacktestProgressEvent
   fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent.BacktestProgressEvent
@@ -598,6 +630,52 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
+- uid: System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+  commentId: T:System.Nullable{Meridian.Backtesting.Sdk.IntermediateMetrics}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Backtesting.Sdk.IntermediateMetrics.html
+  name: IntermediateMetrics?
+  nameWithType: IntermediateMetrics?
+  fullName: Meridian.Backtesting.Sdk.IntermediateMetrics?
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+    name: IntermediateMetrics
+    href: Meridian.Backtesting.Sdk.IntermediateMetrics.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IntermediateMetrics
+    name: IntermediateMetrics
+    href: Meridian.Backtesting.Sdk.IntermediateMetrics.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
 - uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.ProgressFraction*
   commentId: Overload:Meridian.Backtesting.Sdk.BacktestProgressEvent.ProgressFraction
   href: Meridian.Backtesting.Sdk.BacktestProgressEvent.html#Meridian_Backtesting_Sdk_BacktestProgressEvent_ProgressFraction
@@ -628,3 +706,9 @@ references:
   name: Message
   nameWithType: BacktestProgressEvent.Message
   fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent.Message
+- uid: Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics
+  href: Meridian.Backtesting.Sdk.BacktestProgressEvent.html#Meridian_Backtesting_Sdk_BacktestProgressEvent_LiveMetrics
+  name: LiveMetrics
+  nameWithType: BacktestProgressEvent.LiveMetrics
+  fullName: Meridian.Backtesting.Sdk.BacktestProgressEvent.LiveMetrics

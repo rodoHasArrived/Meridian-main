@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ScheduleManagerService
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillSchedulesAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateBackfillScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBackfillScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteBackfillScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetBackfillScheduleEnabledAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfillScheduleNowAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillExecutionHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -401,7 +401,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillTemplatesAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -434,7 +434,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaintenanceSchedulesAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -467,7 +467,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateMaintenanceScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -502,7 +502,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMaintenanceScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -542,7 +542,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteMaintenanceScheduleAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -580,7 +580,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetMaintenanceScheduleEnabledAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -620,7 +620,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunMaintenanceScheduleNowAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -658,7 +658,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMaintenanceExecutionHistoryAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -698,7 +698,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateCronExpressionAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
@@ -736,7 +736,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ScheduleManagerService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetNextRunTimesAsync
     path: ../../src/Meridian.Ui.Services/Services/ScheduleManagerService.cs

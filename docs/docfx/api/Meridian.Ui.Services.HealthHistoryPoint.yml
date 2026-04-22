@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HealthHistoryPoint
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OverallScore
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyMs
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletenessPercent
     path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs

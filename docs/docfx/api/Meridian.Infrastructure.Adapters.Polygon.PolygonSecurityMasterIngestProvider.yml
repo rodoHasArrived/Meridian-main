@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonSecurityMasterIngestProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FetchAllAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs

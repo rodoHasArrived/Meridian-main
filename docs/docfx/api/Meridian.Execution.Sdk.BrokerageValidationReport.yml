@@ -1,0 +1,739 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationReport
+  id: BrokerageValidationReport
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.BrokerageValidationReport.#ctor(Meridian.Execution.Sdk.BrokerageValidationState,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Execution.Sdk.BrokerageValidationReport.Findings
+  - Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName
+  - Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId
+  - Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap
+  - Meridian.Execution.Sdk.BrokerageValidationReport.State
+  - Meridian.Execution.Sdk.BrokerageValidationReport.Summary
+  langs:
+  - csharp
+  - vb
+  name: BrokerageValidationReport
+  nameWithType: BrokerageValidationReport
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerageValidationReport
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: 'public sealed record BrokerageValidationReport : IEquatable<BrokerageValidationReport>'
+    content.vb: Public NotInheritable Class BrokerageValidationReport Implements IEquatable(Of BrokerageValidationReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.BrokerageValidationReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.#ctor(Meridian.Execution.Sdk.BrokerageValidationState,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Execution.Sdk.BrokerageValidationReport.#ctor(Meridian.Execution.Sdk.BrokerageValidationState,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(Meridian.Execution.Sdk.BrokerageValidationState,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: BrokerageValidationReport(BrokerageValidationState, string, string, string, IReadOnlyList<string>)
+  nameWithType: BrokerageValidationReport.BrokerageValidationReport(BrokerageValidationState, string, string, string, IReadOnlyList<string>)
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.BrokerageValidationReport(Meridian.Execution.Sdk.BrokerageValidationState, string, string, string, System.Collections.Generic.IReadOnlyList<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public BrokerageValidationReport(BrokerageValidationState State, string GatewayId, string GatewayDisplayName, string Summary, IReadOnlyList<string> Findings)
+    parameters:
+    - id: State
+      type: Meridian.Execution.Sdk.BrokerageValidationState
+    - id: GatewayId
+      type: System.String
+    - id: GatewayDisplayName
+      type: System.String
+    - id: Summary
+      type: System.String
+    - id: Findings
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(State As BrokerageValidationState, GatewayId As String, GatewayDisplayName As String, Summary As String, Findings As IReadOnlyList(Of String))
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.#ctor*
+  nameWithType.vb: BrokerageValidationReport.New(BrokerageValidationState, String, String, String, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Execution.Sdk.BrokerageValidationReport.New(Meridian.Execution.Sdk.BrokerageValidationState, String, String, String, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(BrokerageValidationState, String, String, String, IReadOnlyList(Of String))
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.State
+  commentId: P:Meridian.Execution.Sdk.BrokerageValidationReport.State
+  id: State
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: BrokerageValidationReport.State
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public BrokerageValidationState State { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.BrokerageValidationState
+    content.vb: Public Property State As BrokerageValidationState
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.State*
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId
+  commentId: P:Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId
+  id: GatewayId
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: GatewayId
+  nameWithType: BrokerageValidationReport.GatewayId
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GatewayId
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public string GatewayId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property GatewayId As String
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId*
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName
+  commentId: P:Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName
+  id: GatewayDisplayName
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: GatewayDisplayName
+  nameWithType: BrokerageValidationReport.GatewayDisplayName
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GatewayDisplayName
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public string GatewayDisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property GatewayDisplayName As String
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName*
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.Summary
+  commentId: P:Meridian.Execution.Sdk.BrokerageValidationReport.Summary
+  id: Summary
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: BrokerageValidationReport.Summary
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public string Summary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.Summary*
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.Findings
+  commentId: P:Meridian.Execution.Sdk.BrokerageValidationReport.Findings
+  id: Findings
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: Findings
+  nameWithType: BrokerageValidationReport.Findings
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.Findings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Findings
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public IReadOnlyList<string> Findings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Findings As IReadOnlyList(Of String)
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.Findings*
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap
+  commentId: P:Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap
+  id: HasBlockingGap
+  parent: Meridian.Execution.Sdk.BrokerageValidationReport
+  langs:
+  - csharp
+  - vb
+  name: HasBlockingGap
+  nameWithType: BrokerageValidationReport.HasBlockingGap
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasBlockingGap
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public bool HasBlockingGap { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasBlockingGap As Boolean
+  overload: Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.BrokerageValidationReport}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.BrokerageValidationReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BrokerageValidationReport>
+  nameWithType: IEquatable<BrokerageValidationReport>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.BrokerageValidationReport>
+  nameWithType.vb: IEquatable(Of BrokerageValidationReport)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.BrokerageValidationReport)
+  name.vb: IEquatable(Of BrokerageValidationReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokerageValidationReport
+    name: BrokerageValidationReport
+    href: Meridian.Execution.Sdk.BrokerageValidationReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokerageValidationReport
+    name: BrokerageValidationReport
+    href: Meridian.Execution.Sdk.BrokerageValidationReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.#ctor*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.#ctor
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport__ctor_Meridian_Execution_Sdk_BrokerageValidationState_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyList_System_String__
+  name: BrokerageValidationReport
+  nameWithType: BrokerageValidationReport.BrokerageValidationReport
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.BrokerageValidationReport
+  nameWithType.vb: BrokerageValidationReport.New
+  fullName.vb: Meridian.Execution.Sdk.BrokerageValidationReport.New
+  name.vb: New
+- uid: Meridian.Execution.Sdk.BrokerageValidationState
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationState
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerageValidationState.html
+  name: BrokerageValidationState
+  nameWithType: BrokerageValidationState
+  fullName: Meridian.Execution.Sdk.BrokerageValidationState
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.State*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.State
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport_State
+  name: State
+  nameWithType: BrokerageValidationReport.State
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.State
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport_GatewayId
+  name: GatewayId
+  nameWithType: BrokerageValidationReport.GatewayId
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayId
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport_GatewayDisplayName
+  name: GatewayDisplayName
+  nameWithType: BrokerageValidationReport.GatewayDisplayName
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.GatewayDisplayName
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.Summary*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.Summary
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport_Summary
+  name: Summary
+  nameWithType: BrokerageValidationReport.Summary
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.Summary
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.Findings*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.Findings
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport_Findings
+  name: Findings
+  nameWithType: BrokerageValidationReport.Findings
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.Findings
+- uid: Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap
+  href: Meridian.Execution.Sdk.BrokerageValidationReport.html#Meridian_Execution_Sdk_BrokerageValidationReport_HasBlockingGap
+  name: HasBlockingGap
+  nameWithType: BrokerageValidationReport.HasBlockingGap
+  fullName: Meridian.Execution.Sdk.BrokerageValidationReport.HasBlockingGap
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

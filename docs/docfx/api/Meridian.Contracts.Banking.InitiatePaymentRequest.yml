@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitiatePaymentRequest
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Amount
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveDate
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExternalRef
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Banking/BankingModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Notes
     path: ../../src/Meridian.Contracts/Banking/BankingModels.cs

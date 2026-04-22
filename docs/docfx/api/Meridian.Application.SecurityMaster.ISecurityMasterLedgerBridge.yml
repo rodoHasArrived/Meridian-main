@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterLedgerBridge
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
@@ -50,7 +50,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostCorporateActionsAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs

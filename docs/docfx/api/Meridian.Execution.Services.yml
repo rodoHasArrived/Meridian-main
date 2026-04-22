@@ -25,6 +25,7 @@ items:
   - Meridian.Execution.Services.PaperSessionDetailDto
   - Meridian.Execution.Services.PaperSessionOptions
   - Meridian.Execution.Services.PaperSessionPersistenceService
+  - Meridian.Execution.Services.PaperSessionReplayVerificationDto
   - Meridian.Execution.Services.PaperSessionSummaryDto
   - Meridian.Execution.Services.PaperTradingPortfolio
   - Meridian.Execution.Services.PersistedJournalEntryDto
@@ -212,6 +213,12 @@ references:
   name: ExecutionPortfolioSnapshotDto
   nameWithType: ExecutionPortfolioSnapshotDto
   fullName: Meridian.Execution.Services.ExecutionPortfolioSnapshotDto
+- uid: Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  commentId: T:Meridian.Execution.Services.PaperSessionReplayVerificationDto
+  href: Meridian.Execution.Services.PaperSessionReplayVerificationDto.html
+  name: PaperSessionReplayVerificationDto
+  nameWithType: PaperSessionReplayVerificationDto
+  fullName: Meridian.Execution.Services.PaperSessionReplayVerificationDto
 - uid: Meridian.Execution.Services.PaperTradingPortfolio
   commentId: T:Meridian.Execution.Services.PaperTradingPortfolio
   parent: Meridian.Execution.Services

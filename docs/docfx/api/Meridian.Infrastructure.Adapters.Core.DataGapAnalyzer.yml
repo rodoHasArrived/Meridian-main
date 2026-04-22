@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataGapAnalyzer
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AnalyzeSymbolGapsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolInventoryAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RefreshInventoryCacheAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearCache
     path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapAnalyzer.cs

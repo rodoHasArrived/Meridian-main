@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundLedgerScope
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -46,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Consolidated
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Entity
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sleeve
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Vehicle
     path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs

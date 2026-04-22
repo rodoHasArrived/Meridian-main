@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRangeInfo
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: End
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Manifest/DataManifest.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradingDays
     path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs

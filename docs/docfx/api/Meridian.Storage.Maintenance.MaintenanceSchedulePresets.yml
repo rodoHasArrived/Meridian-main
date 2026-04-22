@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaintenanceSchedulePresets
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyHealthCheck
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WeeklyFullMaintenance
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -129,7 +129,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyTierMigration
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -165,7 +165,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MonthlyCompression
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DailyRetentionEnforcement
     path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs

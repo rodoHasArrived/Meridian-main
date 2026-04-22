@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDataQuery
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -269,7 +269,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Limit
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -335,7 +335,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithSymbol
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithTimeRange
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -403,7 +403,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithEventType
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -436,7 +436,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithSource
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
@@ -472,7 +472,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Store/MarketDataQuery.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithLimit
     path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs

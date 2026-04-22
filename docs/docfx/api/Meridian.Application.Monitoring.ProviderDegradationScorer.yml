@@ -6,6 +6,7 @@ items:
   parent: Meridian.Application.Monitoring
   children:
   - Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Monitoring.ProviderLatencyService,Meridian.Application.Monitoring.ProviderDegradationConfig)
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
   - Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
   - Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores
   - Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth
@@ -25,11 +26,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDegradationScorer
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 11
+    startLine: 12
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -68,11 +69,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnProviderDegraded
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 26
+    startLine: 29
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -97,11 +98,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnProviderRecovered
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 31
+    startLine: 34
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -126,11 +127,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 33
+    startLine: 36
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -162,11 +163,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordError
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 56
+    startLine: 59
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -198,11 +199,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSuccess
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 68
+    startLine: 71
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -232,11 +233,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 81
+    startLine: 84
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -271,11 +272,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllScores
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 93
+    startLine: 96
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -301,11 +302,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersByHealth
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 115
+    startLine: 118
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -331,11 +332,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDegraded
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 126
+    startLine: 129
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -353,6 +354,44 @@ items:
   nameWithType.vb: ProviderDegradationScorer.IsDegraded(String)
   fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded(String)
   name.vb: IsDegraded(String)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  id: ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: ComputeDelta(in ProviderDegradationScore, in ProviderDegradationScore)
+  nameWithType: ProviderDegradationScorer.ComputeDelta(in ProviderDegradationScore, in ProviderDegradationScore)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(in Meridian.Application.Monitoring.ProviderDegradationScore, in Meridian.Application.Monitoring.ProviderDegradationScore)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComputeDelta
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Computes score and reason-code deltas between two score snapshots.
+  example: []
+  syntax:
+    content: public static ProviderDegradationScoreDelta ComputeDelta(in ProviderDegradationScore previous, in ProviderDegradationScore current)
+    parameters:
+    - id: previous
+      type: Meridian.Application.Monitoring.ProviderDegradationScore
+    - id: current
+      type: Meridian.Application.Monitoring.ProviderDegradationScore
+    return:
+      type: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+    content.vb: Public Shared Function ComputeDelta(previous As ProviderDegradationScore, current As ProviderDegradationScore) As ProviderDegradationScoreDelta
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta*
+  nameWithType.vb: ProviderDegradationScorer.ComputeDelta(ProviderDegradationScore, ProviderDegradationScore)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore, Meridian.Application.Monitoring.ProviderDegradationScore)
+  name.vb: ComputeDelta(ProviderDegradationScore, ProviderDegradationScore)
 - uid: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
   commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
   id: Dispose
@@ -367,11 +406,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 282
+    startLine: 415
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -957,6 +996,19 @@ references:
   nameWithType.vb: Boolean
   fullName.vb: Boolean
   name.vb: Boolean
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_ComputeDelta_Meridian_Application_Monitoring_ProviderDegradationScore__Meridian_Application_Monitoring_ProviderDegradationScore__
+  name: ComputeDelta
+  nameWithType: ProviderDegradationScorer.ComputeDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html
+  name: ProviderDegradationScoreDelta
+  nameWithType: ProviderDegradationScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
 - uid: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose*
   commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
   href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_Dispose

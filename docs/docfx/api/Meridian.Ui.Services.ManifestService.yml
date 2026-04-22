@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestService
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 14
+    startLine: 15
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -62,11 +62,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 20
+    startLine: 21
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -91,11 +91,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateManifestForSessionAsync
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 31
+    startLine: 32
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -126,11 +126,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateManifestForDateRangeAsync
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 105
+    startLine: 103
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -168,11 +168,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadManifestAsync
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 182
+    startLine: 177
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -206,11 +206,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyManifestAsync
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 203
+    startLine: 198
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -246,11 +246,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllManifestsAsync
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 276
+    startLine: 271
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -279,11 +279,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestGenerated
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 510
+    startLine: 505
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -306,11 +306,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ManifestService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManifestVerified
     path: ../../src/Meridian.Ui.Services/Services/ManifestService.cs
-    startLine: 511
+    startLine: 506
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

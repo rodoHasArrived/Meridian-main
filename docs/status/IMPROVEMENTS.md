@@ -1,11 +1,28 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-20
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
 
-Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use the canonical roadmap and normalized TODO for current Wave 1-6 sequencing.
+Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use [`PROGRAM_STATE.md`](PROGRAM_STATE.md) as the canonical source for wave status labels and target dates.
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 
@@ -58,6 +75,7 @@ Legacy `ROADMAP:` labels below retain their original milestone wording for trace
 - **Completion ratio:** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
 - **Core improvement themes A-G are closed** for the current platform baseline.
 - **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
+- **Kernel migration parity program initiated:** blueprint and status tracking are now defined for fixture-driven C# ↔ F# boundary parity (`score`/`severity`/`reason`) with expected-divergence controls and CI gating for kernel-related PRs. Track rollout in [`docs/plans/kernel-parity-migration-blueprint.md`](../plans/kernel-parity-migration-blueprint.md) and live coverage in [`KERNEL_PARITY_STATUS.md`](KERNEL_PARITY_STATUS.md).
 - **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the shell-first workstation baseline is now validated in code through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, DI fixes, and registered-page sweep coverage.
 - **Recommended focus:** keep the closed Wave 1 trust gate synchronized around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; harden the existing paper-trading cockpit (Wave 2); deepen workflow-native inspectors and page-body harmonization on top of the delivered shell host; and continue governance/fund-operations productization on top of the delivered Security Master baseline (K2).
 
@@ -1393,6 +1411,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - duplicate title chrome on many legacy deep pages now compacts away automatically when those pages are hosted inside `WorkspaceDeepPageHostPage`
 - action-heavy legacy headers on `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter` now compact correctly inside the shared host while keeping their page-specific command and trust bands
 - `PositionBlotter`, `SecurityMaster`, and `ServiceManager` now expose richer page-body workbenches and workflow-native inspector rails instead of only inheriting the shared host chrome
+- the Trading shell now keeps portfolio drill-ins inside the cockpit by routing operators to the active run portfolio when a run is selected and to the account portfolio when no active run is bound, reinforcing Wave 3 shared-model continuity without bouncing back to `Research`
 - the mixed `MainPageUiWorkflowTests` bundle is stable again through isolated workspace persistence in the automation facade and shell-contract assertions that avoid unrelated singleton drift
 - `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` now run under `NavigationServiceSerialCollection`, keeping the mixed shell bundle deterministic while still validating full registered-page reachability
 - remaining K1 work is now concentrated in untouched high-traffic page-body harmonization and broader workstation refinements on pages such as `OrderBook`, `DataQuality`, and `LiveDataViewer`, rather than shell-foundation plumbing or the three newly harmonized workbenches
@@ -1443,6 +1462,8 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 **Remaining follow-on work:**
 - deepen governance and fund-operations workflows built on top of the delivered baseline through K2 and Wave 4 work
 - reuse Security Master metadata in account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows instead of creating a parallel governance seam
+- enforce PR/review validation that governance DTOs/services introducing instrument metadata carry Security Master identity/provenance fields, with no governance-local instrument definitions except adapter-only mapped intermediates
+- reviewer search guidance: scan governance DTO/service changes for instrument-term fields (`Symbol`, `Cusip`, `Isin`, `Coupon`, `Maturity`, `Issuer`, `Venue`, `AssetClass`) lacking Security Master references
 
 **ROADMAP:** Phase 12A baseline delivered; follow-ons continue in Phase 12 / Wave 4
 

@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionOperatorControlService
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshot
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetCircuitBreakerAsync
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetDefaultPositionLimitAsync
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetSymbolPositionLimitAsync
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateManualOverrideAsync
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearManualOverrideAsync
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateOrder
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -376,7 +376,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EvaluateLivePromotion
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs

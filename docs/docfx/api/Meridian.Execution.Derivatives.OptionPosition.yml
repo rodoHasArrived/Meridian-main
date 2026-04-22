@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionPosition
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Contracts
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AverageCostBasis
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarkPrice
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealizedPnl
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealizedPnl
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Kind
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Details
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -388,7 +388,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Greeks
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -419,7 +419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsInTheMoney
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -455,7 +455,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithMark
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WithAdditionalRealizedPnl
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -529,7 +529,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IntrinsicValue
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs
@@ -565,7 +565,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Derivatives/OptionPosition.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeValue
     path: ../../src/Meridian.Execution/Derivatives/OptionPosition.cs

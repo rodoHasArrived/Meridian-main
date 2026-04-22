@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderType
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Streaming
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearch
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs

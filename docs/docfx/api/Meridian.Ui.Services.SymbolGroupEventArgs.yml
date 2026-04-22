@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolGroupEventArgs
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SymbolGroupService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Group
     path: ../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs

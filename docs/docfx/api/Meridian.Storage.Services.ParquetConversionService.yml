@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/ParquetConversionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParquetConversionService
     path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/ParquetConversionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/ParquetConversionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConvertCompletedDaysAsync
     path: ../../src/Meridian.Storage/Services/ParquetConversionService.cs

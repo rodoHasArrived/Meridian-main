@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillHostAdapter
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 254
+    startLine: 169
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureServices
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 258
+    startLine: 173
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition
@@ -94,11 +94,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/HostAdapters.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigureApplication
     path: ../../src/Meridian.Application/Composition/HostAdapters.cs
-    startLine: 264
+    startLine: 179
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TaxLotSelectors
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fifo
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Lifo
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Hifo
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpecificId
     path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs

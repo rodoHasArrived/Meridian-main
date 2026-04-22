@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSamplingService
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressChanged
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSampleAsync
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSamplingStrategiesAsync
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSamplingPresetsAsync
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -222,7 +222,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimateSampleSizeAsync
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -257,7 +257,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSavedSamplesAsync
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSampleAsync
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOptions
     path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs

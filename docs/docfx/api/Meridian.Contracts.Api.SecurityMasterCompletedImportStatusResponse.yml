@@ -1,0 +1,793 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  commentId: T:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  id: SecurityMasterCompletedImportStatusResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  - Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterCompletedImportStatusResponse
+  nameWithType: SecurityMasterCompletedImportStatusResponse
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterCompletedImportStatusResponse
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Summary of the last completed Security Master ingest.
+  example: []
+  syntax:
+    content: public sealed class SecurityMasterCompletedImportStatusResponse
+    content.vb: Public NotInheritable Class SecurityMasterCompletedImportStatusResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension
+  id: FileExtension
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: FileExtension
+  nameWithType: SecurityMasterCompletedImportStatusResponse.FileExtension
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileExtension
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("fileExtension")]
+
+      public string FileExtension { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("fileExtension")>
+
+      Public Property FileExtension As String
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileExtension
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total
+  id: Total
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: Total
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Total
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Total
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("total")]
+
+      public int Total { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("total")>
+
+      Public Property Total As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: total
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed
+  id: Processed
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: Processed
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Processed
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Processed
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("processed")]
+
+      public int Processed { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("processed")>
+
+      Public Property Processed As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: processed
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported
+  id: Imported
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: Imported
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Imported
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Imported
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("imported")]
+
+      public int Imported { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("imported")>
+
+      Public Property Imported As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: imported
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped
+  id: Skipped
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: Skipped
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Skipped
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skipped
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("skipped")]
+
+      public int Skipped { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("skipped")>
+
+      Public Property Skipped As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: skipped
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed
+  id: Failed
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Failed
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("failed")]
+
+      public int Failed { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("failed")>
+
+      Public Property Failed As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: failed
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  id: ConflictsDetected
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: ConflictsDetected
+  nameWithType: SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConflictsDetected
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("conflictsDetected")]
+
+      public int ConflictsDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("conflictsDetected")>
+
+      Public Property ConflictsDetected As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: conflictsDetected
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount
+  id: ErrorCount
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorCount
+  nameWithType: SecurityMasterCompletedImportStatusResponse.ErrorCount
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCount
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("errorCount")]
+
+      public int ErrorCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("errorCount")>
+
+      Public Property ErrorCount As Integer
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorCount
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  id: StartedAtUtc
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: StartedAtUtc
+  nameWithType: SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAtUtc
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("startedAtUtc")]
+
+      public DateTimeOffset StartedAtUtc { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: >-
+      <JsonPropertyName("startedAtUtc")>
+
+      Public Property StartedAtUtc As DateTimeOffset
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: startedAtUtc
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  commentId: P:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  id: CompletedAtUtc
+  parent: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse
+  langs:
+  - csharp
+  - vb
+  name: CompletedAtUtc
+  nameWithType: SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAtUtc
+    path: ../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("completedAtUtc")]
+
+      public DateTimeOffset CompletedAtUtc { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: >-
+      <JsonPropertyName("completedAtUtc")>
+
+      Public Property CompletedAtUtc As DateTimeOffset
+  overload: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: completedAtUtc
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_FileExtension
+  name: FileExtension
+  nameWithType: SecurityMasterCompletedImportStatusResponse.FileExtension
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.FileExtension
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_Total
+  name: Total
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Total
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Total
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_Processed
+  name: Processed
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Processed
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Processed
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_Imported
+  name: Imported
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Imported
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Imported
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_Skipped
+  name: Skipped
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Skipped
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Skipped
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_Failed
+  name: Failed
+  nameWithType: SecurityMasterCompletedImportStatusResponse.Failed
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.Failed
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_ConflictsDetected
+  name: ConflictsDetected
+  nameWithType: SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ConflictsDetected
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_ErrorCount
+  name: ErrorCount
+  nameWithType: SecurityMasterCompletedImportStatusResponse.ErrorCount
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.ErrorCount
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_StartedAtUtc
+  name: StartedAtUtc
+  nameWithType: SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.StartedAtUtc
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc*
+  commentId: Overload:Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  href: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.html#Meridian_Contracts_Api_SecurityMasterCompletedImportStatusResponse_CompletedAtUtc
+  name: CompletedAtUtc
+  nameWithType: SecurityMasterCompletedImportStatusResponse.CompletedAtUtc
+  fullName: Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse.CompletedAtUtc

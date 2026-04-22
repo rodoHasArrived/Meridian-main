@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookDeliveryResult
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookName
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WebhookType
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StatusCode
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
@@ -247,7 +247,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DailySummaryWebhook.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SentAt
     path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs

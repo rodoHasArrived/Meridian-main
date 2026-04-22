@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QualityAnomalyAcknowledgementResponse
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Acknowledged
     path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs

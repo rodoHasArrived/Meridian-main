@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FreshnessStates
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 330
+    startLine: 336
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -56,11 +56,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fresh
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 333
+    startLine: 339
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -85,11 +85,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warning
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 336
+    startLine: 342
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -114,11 +114,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stale
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 339
+    startLine: 345
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -143,11 +143,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/StatusModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NoData
     path: ../../src/Meridian.Contracts/Api/StatusModels.cs
-    startLine: 342
+    startLine: 348
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

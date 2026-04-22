@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageSinkRegistry
     path: ../../src/Meridian.Storage/StorageSinkRegistry.cs
@@ -69,7 +69,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sinks
     path: ../../src/Meridian.Storage/StorageSinkRegistry.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiscoverFromAssemblies
     path: ../../src/Meridian.Storage/StorageSinkRegistry.cs
@@ -148,7 +148,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterServices
     path: ../../src/Meridian.Storage/StorageSinkRegistry.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/StorageSinkRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryGetSink
     path: ../../src/Meridian.Storage/StorageSinkRegistry.cs

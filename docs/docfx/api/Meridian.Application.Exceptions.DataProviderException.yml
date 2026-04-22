@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/DataProviderException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataProviderException
     path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
@@ -74,7 +74,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/DataProviderException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/DataProviderException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
@@ -132,7 +132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/DataProviderException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/DataProviderException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs
@@ -200,7 +200,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/DataProviderException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/DataProviderException.cs

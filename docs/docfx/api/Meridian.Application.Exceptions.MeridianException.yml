@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/MeridianException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianException
     path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/MeridianException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/MeridianException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/MeridianException.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/MeridianException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/MeridianException.cs

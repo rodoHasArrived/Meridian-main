@@ -1,0 +1,652 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService
+  commentId: T:Meridian.Application.ProviderRouting.KernelObservabilityService
+  id: KernelObservabilityService
+  parent: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.KernelObservabilityService.#ctor(Microsoft.Extensions.Hosting.IHostEnvironment)
+  - Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution(Meridian.ProviderSdk.ProviderRouteContext)
+  - Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot
+  - Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult(Meridian.ProviderSdk.ProviderRouteContext,Meridian.ProviderSdk.ProviderRouteResult,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot},Meridian.Application.ProviderRouting.KernelExecutionScope@)
+  langs:
+  - csharp
+  - vb
+  name: KernelObservabilityService
+  nameWithType: KernelObservabilityService
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KernelObservabilityService
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  summary: Captures kernel quality/trustworthiness telemetry for provider-routing evaluations.
+  example: []
+  syntax:
+    content: public sealed class KernelObservabilityService
+    content.vb: Public NotInheritable Class KernelObservabilityService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.#ctor(Microsoft.Extensions.Hosting.IHostEnvironment)
+  commentId: M:Meridian.Application.ProviderRouting.KernelObservabilityService.#ctor(Microsoft.Extensions.Hosting.IHostEnvironment)
+  id: '#ctor(Microsoft.Extensions.Hosting.IHostEnvironment)'
+  parent: Meridian.Application.ProviderRouting.KernelObservabilityService
+  langs:
+  - csharp
+  - vb
+  name: KernelObservabilityService(IHostEnvironment?)
+  nameWithType: KernelObservabilityService.KernelObservabilityService(IHostEnvironment?)
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.KernelObservabilityService(Microsoft.Extensions.Hosting.IHostEnvironment?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelObservabilityService(IHostEnvironment? environment = null)
+    parameters:
+    - id: environment
+      type: Microsoft.Extensions.Hosting.IHostEnvironment
+    content.vb: Public Sub New(environment As IHostEnvironment = Nothing)
+  overload: Meridian.Application.ProviderRouting.KernelObservabilityService.#ctor*
+  nameWithType.vb: KernelObservabilityService.New(IHostEnvironment)
+  fullName.vb: Meridian.Application.ProviderRouting.KernelObservabilityService.New(Microsoft.Extensions.Hosting.IHostEnvironment)
+  name.vb: New(IHostEnvironment)
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution(Meridian.ProviderSdk.ProviderRouteContext)
+  commentId: M:Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution(Meridian.ProviderSdk.ProviderRouteContext)
+  id: BeginExecution(Meridian.ProviderSdk.ProviderRouteContext)
+  parent: Meridian.Application.ProviderRouting.KernelObservabilityService
+  langs:
+  - csharp
+  - vb
+  name: BeginExecution(ProviderRouteContext)
+  nameWithType: KernelObservabilityService.BeginExecution(ProviderRouteContext)
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution(Meridian.ProviderSdk.ProviderRouteContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BeginExecution
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelExecutionScope BeginExecution(ProviderRouteContext context)
+    parameters:
+    - id: context
+      type: Meridian.ProviderSdk.ProviderRouteContext
+    return:
+      type: Meridian.Application.ProviderRouting.KernelExecutionScope
+    content.vb: Public Function BeginExecution(context As ProviderRouteContext) As KernelExecutionScope
+  overload: Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution*
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult(Meridian.ProviderSdk.ProviderRouteContext,Meridian.ProviderSdk.ProviderRouteResult,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot},Meridian.Application.ProviderRouting.KernelExecutionScope@)
+  commentId: M:Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult(Meridian.ProviderSdk.ProviderRouteContext,Meridian.ProviderSdk.ProviderRouteResult,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot},Meridian.Application.ProviderRouting.KernelExecutionScope@)
+  id: RecordResult(Meridian.ProviderSdk.ProviderRouteContext,Meridian.ProviderSdk.ProviderRouteResult,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot},Meridian.Application.ProviderRouting.KernelExecutionScope@)
+  parent: Meridian.Application.ProviderRouting.KernelObservabilityService
+  langs:
+  - csharp
+  - vb
+  name: RecordResult(ProviderRouteContext, ProviderRouteResult, IReadOnlyDictionary<string, ProviderConnectionHealthSnapshot>, in KernelExecutionScope)
+  nameWithType: KernelObservabilityService.RecordResult(ProviderRouteContext, ProviderRouteResult, IReadOnlyDictionary<string, ProviderConnectionHealthSnapshot>, in KernelExecutionScope)
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult(Meridian.ProviderSdk.ProviderRouteContext, Meridian.ProviderSdk.ProviderRouteResult, System.Collections.Generic.IReadOnlyDictionary<string, Meridian.ProviderSdk.ProviderConnectionHealthSnapshot>, in Meridian.Application.ProviderRouting.KernelExecutionScope)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordResult
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public void RecordResult(ProviderRouteContext context, ProviderRouteResult result, IReadOnlyDictionary<string, ProviderConnectionHealthSnapshot> healthByConnection, in KernelExecutionScope scope)
+    parameters:
+    - id: context
+      type: Meridian.ProviderSdk.ProviderRouteContext
+    - id: result
+      type: Meridian.ProviderSdk.ProviderRouteResult
+    - id: healthByConnection
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot}
+    - id: scope
+      type: Meridian.Application.ProviderRouting.KernelExecutionScope
+    content.vb: Public Sub RecordResult(context As ProviderRouteContext, result As ProviderRouteResult, healthByConnection As IReadOnlyDictionary(Of String, ProviderConnectionHealthSnapshot), scope As KernelExecutionScope)
+  overload: Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult*
+  nameWithType.vb: KernelObservabilityService.RecordResult(ProviderRouteContext, ProviderRouteResult, IReadOnlyDictionary(Of String, ProviderConnectionHealthSnapshot), KernelExecutionScope)
+  fullName.vb: Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult(Meridian.ProviderSdk.ProviderRouteContext, Meridian.ProviderSdk.ProviderRouteResult, System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.ProviderSdk.ProviderConnectionHealthSnapshot), Meridian.Application.ProviderRouting.KernelExecutionScope)
+  name.vb: RecordResult(ProviderRouteContext, ProviderRouteResult, IReadOnlyDictionary(Of String, ProviderConnectionHealthSnapshot), KernelExecutionScope)
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot
+  commentId: M:Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.ProviderRouting.KernelObservabilityService
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: KernelObservabilityService.GetSnapshot()
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelObservabilitySnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+    content.vb: Public Function GetSnapshot() As KernelObservabilitySnapshot
+  overload: Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot*
+references:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.#ctor*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelObservabilityService.#ctor
+  href: Meridian.Application.ProviderRouting.KernelObservabilityService.html#Meridian_Application_ProviderRouting_KernelObservabilityService__ctor_Microsoft_Extensions_Hosting_IHostEnvironment_
+  name: KernelObservabilityService
+  nameWithType: KernelObservabilityService.KernelObservabilityService
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.KernelObservabilityService
+  nameWithType.vb: KernelObservabilityService.New
+  fullName.vb: Meridian.Application.ProviderRouting.KernelObservabilityService.New
+  name.vb: New
+- uid: Microsoft.Extensions.Hosting.IHostEnvironment
+  commentId: T:Microsoft.Extensions.Hosting.IHostEnvironment
+  parent: Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting.ihostenvironment
+  name: IHostEnvironment
+  nameWithType: IHostEnvironment
+  fullName: Microsoft.Extensions.Hosting.IHostEnvironment
+- uid: Microsoft.Extensions.Hosting
+  commentId: N:Microsoft.Extensions.Hosting
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Hosting
+  nameWithType: Microsoft.Extensions.Hosting
+  fullName: Microsoft.Extensions.Hosting
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Hosting
+    name: Hosting
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Hosting
+    name: Hosting
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.hosting
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution
+  href: Meridian.Application.ProviderRouting.KernelObservabilityService.html#Meridian_Application_ProviderRouting_KernelObservabilityService_BeginExecution_Meridian_ProviderSdk_ProviderRouteContext_
+  name: BeginExecution
+  nameWithType: KernelObservabilityService.BeginExecution
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.BeginExecution
+- uid: Meridian.ProviderSdk.ProviderRouteContext
+  commentId: T:Meridian.ProviderSdk.ProviderRouteContext
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderRouteContext.html
+  name: ProviderRouteContext
+  nameWithType: ProviderRouteContext
+  fullName: Meridian.ProviderSdk.ProviderRouteContext
+- uid: Meridian.Application.ProviderRouting.KernelExecutionScope
+  commentId: T:Meridian.Application.ProviderRouting.KernelExecutionScope
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelExecutionScope.html
+  name: KernelExecutionScope
+  nameWithType: KernelExecutionScope
+  fullName: Meridian.Application.ProviderRouting.KernelExecutionScope
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult
+  href: Meridian.Application.ProviderRouting.KernelObservabilityService.html#Meridian_Application_ProviderRouting_KernelObservabilityService_RecordResult_Meridian_ProviderSdk_ProviderRouteContext_Meridian_ProviderSdk_ProviderRouteResult_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_ProviderSdk_ProviderConnectionHealthSnapshot__Meridian_Application_ProviderRouting_KernelExecutionScope__
+  name: RecordResult
+  nameWithType: KernelObservabilityService.RecordResult
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.RecordResult
+- uid: Meridian.ProviderSdk.ProviderRouteResult
+  commentId: T:Meridian.ProviderSdk.ProviderRouteResult
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderRouteResult.html
+  name: ProviderRouteResult
+  nameWithType: ProviderRouteResult
+  fullName: Meridian.ProviderSdk.ProviderRouteResult
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.ProviderSdk.ProviderConnectionHealthSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, ProviderConnectionHealthSnapshot>
+  nameWithType: IReadOnlyDictionary<string, ProviderConnectionHealthSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.ProviderSdk.ProviderConnectionHealthSnapshot>
+  nameWithType.vb: IReadOnlyDictionary(Of String, ProviderConnectionHealthSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.ProviderSdk.ProviderConnectionHealthSnapshot)
+  name.vb: IReadOnlyDictionary(Of String, ProviderConnectionHealthSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderConnectionHealthSnapshot
+    name: ProviderConnectionHealthSnapshot
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderConnectionHealthSnapshot
+    name: ProviderConnectionHealthSnapshot
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot
+  href: Meridian.Application.ProviderRouting.KernelObservabilityService.html#Meridian_Application_ProviderRouting_KernelObservabilityService_GetSnapshot
+  name: GetSnapshot
+  nameWithType: KernelObservabilityService.GetSnapshot
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService.GetSnapshot
+- uid: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+  commentId: T:Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot.html
+  name: KernelObservabilitySnapshot
+  nameWithType: KernelObservabilitySnapshot
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderRequest
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Side
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Type
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LimitPrice
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StopPrice
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TimeInForce
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClientOrderId
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Execution.Sdk/Models.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/Models.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Execution.Sdk/Models.cs

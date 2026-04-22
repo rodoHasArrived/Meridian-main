@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UiApiClient
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBaseUrl
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -209,7 +209,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -240,7 +240,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthDetailedAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProvidersAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillStatusAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -333,7 +333,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunBackfillAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -366,7 +366,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillHealthAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -397,7 +397,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveSymbolAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -433,7 +433,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunGapFillAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -466,7 +466,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillPresetsAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -497,7 +497,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillExecutionsAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -533,7 +533,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillStatisticsAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -569,7 +569,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderStatusAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -605,7 +605,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderByIdAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -643,7 +643,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderRateLimitsAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -679,7 +679,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCapabilitiesAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -715,7 +715,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsExpirationsAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -751,7 +751,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsStrikesAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -789,7 +789,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsChainAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -829,7 +829,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsQuotesByUnderlyingAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -865,7 +865,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsSummaryAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -896,7 +896,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOptionsTrackedUnderlyingsAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
@@ -927,11 +927,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RefreshOptionsChainAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
-    startLine: 145
+    startLine: 149
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -960,11 +960,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
-    startLine: 152
+    startLine: 156
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -998,11 +998,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWithResponseAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
-    startLine: 165
+    startLine: 169
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -1036,11 +1036,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
-    startLine: 187
+    startLine: 191
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -1076,11 +1076,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiApiClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostWithResponseAsync
     path: ../../src/Meridian.Contracts/Api/UiApiClient.cs
-    startLine: 204
+    startLine: 208
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

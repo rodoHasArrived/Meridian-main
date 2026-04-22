@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotResponse
     path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Snapshot
     path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs

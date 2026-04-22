@@ -19,6 +19,8 @@ items:
   - Meridian.Storage.Services.IMetadataTagService.SearchByQualityScore(System.Double,System.Double)
   - Meridian.Storage.Services.IMetadataTagService.SearchByTag(System.String,System.String)
   - Meridian.Storage.Services.IMetadataTagService.SetInsight(System.String,System.String,Meridian.Storage.Services.DataInsight)
+  - Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync(System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate},System.Threading.CancellationToken)
   - Meridian.Storage.Services.IMetadataTagService.SetQualityScore(System.String,System.Double,System.String)
   - Meridian.Storage.Services.IMetadataTagService.SetTag(System.String,System.String,System.String)
   - Meridian.Storage.Services.IMetadataTagService.SetTags(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
@@ -32,11 +34,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IMetadataTagService
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 275
+    startLine: 389
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -61,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTag
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 277
+    startLine: 391
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -97,11 +99,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetTags
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 278
+    startLine: 392
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -131,11 +133,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetTag
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 279
+    startLine: 393
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -167,11 +169,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllTags
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 280
+    startLine: 394
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -201,11 +203,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveTag
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 281
+    startLine: 395
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -237,11 +239,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordLineage
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 282
+    startLine: 396
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -271,11 +273,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLineage
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 283
+    startLine: 397
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -305,11 +307,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetInsight
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 284
+    startLine: 398
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -341,11 +343,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetInsight
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 285
+    startLine: 399
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -377,11 +379,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllInsights
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 286
+    startLine: 400
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -411,11 +413,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetQualityScore
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 287
+    startLine: 401
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -447,11 +449,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetQualityScore
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 288
+    startLine: 402
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -481,11 +483,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchByTag
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 289
+    startLine: 403
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -517,11 +519,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchByQualityScore
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 290
+    startLine: 404
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -553,11 +555,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetFullMetadata
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 291
+    startLine: 405
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -587,11 +589,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveMetadata
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 292
+    startLine: 406
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -605,6 +607,84 @@ items:
   nameWithType.vb: IMetadataTagService.RemoveMetadata(String)
   fullName.vb: Meridian.Storage.Services.IMetadataTagService.RemoveMetadata(String)
   name.vb: RemoveMetadata(String)
+- uid: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.Threading.CancellationToken)
+  id: SetQualityAssessmentAsync(System.String,System.Double,Meridian.Storage.Services.DataInsight,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMetadataTagService
+  langs:
+  - csharp
+  - vb
+  name: SetQualityAssessmentAsync(string, double, DataInsight, string?, CancellationToken)
+  nameWithType: IMetadataTagService.SetQualityAssessmentAsync(string, double, DataInsight, string?, CancellationToken)
+  fullName: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync(string, double, Meridian.Storage.Services.DataInsight, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetQualityAssessmentAsync
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: score
+      type: System.Double
+    - id: insight
+      type: Meridian.Storage.Services.DataInsight
+    - id: scoredBy
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SetQualityAssessmentAsync(filePath As String, score As Double, insight As DataInsight, scoredBy As String = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync*
+  nameWithType.vb: IMetadataTagService.SetQualityAssessmentAsync(String, Double, DataInsight, String, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync(String, Double, Meridian.Storage.Services.DataInsight, String, System.Threading.CancellationToken)
+  name.vb: SetQualityAssessmentAsync(String, Double, DataInsight, String, CancellationToken)
+- uid: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync(System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync(System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate},System.Threading.CancellationToken)
+  id: SetQualityAssessmentsAsync(System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate},System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IMetadataTagService
+  langs:
+  - csharp
+  - vb
+  name: SetQualityAssessmentsAsync(IReadOnlyCollection<QualityAssessmentMetadataUpdate>, CancellationToken)
+  nameWithType: IMetadataTagService.SetQualityAssessmentsAsync(IReadOnlyCollection<QualityAssessmentMetadataUpdate>, CancellationToken)
+  fullName: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync(System.Collections.Generic.IReadOnlyCollection<Meridian.Storage.Services.QualityAssessmentMetadataUpdate>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetQualityAssessmentsAsync
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 408
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task SetQualityAssessmentsAsync(IReadOnlyCollection<QualityAssessmentMetadataUpdate> assessments, CancellationToken ct = default)
+    parameters:
+    - id: assessments
+      type: System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SetQualityAssessmentsAsync(assessments As IReadOnlyCollection(Of QualityAssessmentMetadataUpdate), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync*
+  nameWithType.vb: IMetadataTagService.SetQualityAssessmentsAsync(IReadOnlyCollection(Of QualityAssessmentMetadataUpdate), CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync(System.Collections.Generic.IReadOnlyCollection(Of Meridian.Storage.Services.QualityAssessmentMetadataUpdate), System.Threading.CancellationToken)
+  name.vb: SetQualityAssessmentsAsync(IReadOnlyCollection(Of QualityAssessmentMetadataUpdate), CancellationToken)
 - uid: Meridian.Storage.Services.IMetadataTagService.SaveAsync(System.Threading.CancellationToken)
   commentId: M:Meridian.Storage.Services.IMetadataTagService.SaveAsync(System.Threading.CancellationToken)
   id: SaveAsync(System.Threading.CancellationToken)
@@ -619,11 +699,11 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/MetadataTagService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
     path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
-    startLine: 293
+    startLine: 409
   assemblies:
   - Meridian.Storage
   namespace: Meridian.Storage.Services
@@ -1134,12 +1214,12 @@ references:
   name: RemoveMetadata
   nameWithType: IMetadataTagService.RemoveMetadata
   fullName: Meridian.Storage.Services.IMetadataTagService.RemoveMetadata
-- uid: Meridian.Storage.Services.IMetadataTagService.SaveAsync*
-  commentId: Overload:Meridian.Storage.Services.IMetadataTagService.SaveAsync
-  href: Meridian.Storage.Services.IMetadataTagService.html#Meridian_Storage_Services_IMetadataTagService_SaveAsync_System_Threading_CancellationToken_
-  name: SaveAsync
-  nameWithType: IMetadataTagService.SaveAsync
-  fullName: Meridian.Storage.Services.IMetadataTagService.SaveAsync
+- uid: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync*
+  commentId: Overload:Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync
+  href: Meridian.Storage.Services.IMetadataTagService.html#Meridian_Storage_Services_IMetadataTagService_SetQualityAssessmentAsync_System_String_System_Double_Meridian_Storage_Services_DataInsight_System_String_System_Threading_CancellationToken_
+  name: SetQualityAssessmentAsync
+  nameWithType: IMetadataTagService.SetQualityAssessmentAsync
+  fullName: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentAsync
 - uid: System.Threading.CancellationToken
   commentId: T:System.Threading.CancellationToken
   parent: System.Threading
@@ -1220,3 +1300,76 @@ references:
     name: Tasks
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync*
+  commentId: Overload:Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync
+  href: Meridian.Storage.Services.IMetadataTagService.html#Meridian_Storage_Services_IMetadataTagService_SetQualityAssessmentsAsync_System_Collections_Generic_IReadOnlyCollection_Meridian_Storage_Services_QualityAssessmentMetadataUpdate__System_Threading_CancellationToken_
+  name: SetQualityAssessmentsAsync
+  nameWithType: IMetadataTagService.SetQualityAssessmentsAsync
+  fullName: Meridian.Storage.Services.IMetadataTagService.SetQualityAssessmentsAsync
+- uid: System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{Meridian.Storage.Services.QualityAssessmentMetadataUpdate}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<QualityAssessmentMetadataUpdate>
+  nameWithType: IReadOnlyCollection<QualityAssessmentMetadataUpdate>
+  fullName: System.Collections.Generic.IReadOnlyCollection<Meridian.Storage.Services.QualityAssessmentMetadataUpdate>
+  nameWithType.vb: IReadOnlyCollection(Of QualityAssessmentMetadataUpdate)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of Meridian.Storage.Services.QualityAssessmentMetadataUpdate)
+  name.vb: IReadOnlyCollection(Of QualityAssessmentMetadataUpdate)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+    name: QualityAssessmentMetadataUpdate
+    href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QualityAssessmentMetadataUpdate
+    name: QualityAssessmentMetadataUpdate
+    href: Meridian.Storage.Services.QualityAssessmentMetadataUpdate.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.IMetadataTagService.SaveAsync*
+  commentId: Overload:Meridian.Storage.Services.IMetadataTagService.SaveAsync
+  href: Meridian.Storage.Services.IMetadataTagService.html#Meridian_Storage_Services_IMetadataTagService_SaveAsync_System_Threading_CancellationToken_
+  name: SaveAsync
+  nameWithType: IMetadataTagService.SaveAsync
+  fullName: Meridian.Storage.Services.IMetadataTagService.SaveAsync

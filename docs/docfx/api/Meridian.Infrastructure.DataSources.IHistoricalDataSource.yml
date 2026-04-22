@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IHistoricalDataSource
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedBarIntervals
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -226,7 +226,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIntradayBarsAsync
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -338,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDividendsAsync
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
@@ -380,7 +380,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSplitsAsync
     path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs

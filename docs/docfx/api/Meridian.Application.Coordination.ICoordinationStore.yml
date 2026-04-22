@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICoordinationStore
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireLeaseAsync
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewLeaseAsync
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseLeaseAsync
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetLeaseAsync
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -205,7 +205,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllLeasesAsync
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -236,7 +236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCorruptedLeaseFilesAsync
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs
@@ -267,7 +267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ICoordinationStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RootPath
     path: ../../src/Meridian.Application/Coordination/ICoordinationStore.cs

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionManualOverrideKinds
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BypassOrderControls
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowLivePromotion
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForceBlockOrders
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSupported
     path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs

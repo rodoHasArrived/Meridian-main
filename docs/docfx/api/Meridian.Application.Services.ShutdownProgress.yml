@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShutdownProgress
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Phase
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentStep
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSteps
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentComplete
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs

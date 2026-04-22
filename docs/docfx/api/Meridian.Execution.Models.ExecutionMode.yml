@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionMode
     path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Paper
     path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Simulation
     path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/ExecutionMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Live
     path: ../../src/Meridian.Execution/Models/ExecutionMode.cs
