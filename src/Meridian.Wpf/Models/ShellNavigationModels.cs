@@ -100,24 +100,34 @@ internal static class ShellNavigationMetaFormatter
 {
     public static string FormatMetaLine(string workspaceTitle, string sectionLabel, string visibilityLabel)
     {
+        var normalizedSection = NormalizeToken(sectionLabel);
+        var normalizedWorkspace = NormalizeToken(workspaceTitle);
         var normalizedVisibility = NormalizeToken(visibilityLabel);
-        var parts = new List<string>(3)
-        {
-            NormalizeToken(sectionLabel),
-            NormalizeToken(workspaceTitle)
-        };
 
-        if (!string.IsNullOrWhiteSpace(normalizedVisibility) &&
-            !Contains(parts, normalizedVisibility))
+        var result = string.Empty;
+
+        AppendToken(ref result, normalizedSection);
+        AppendToken(ref result, normalizedWorkspace);
+
+        if (!string.IsNullOrEmpty(normalizedVisibility) &&
+            !string.Equals(normalizedVisibility, normalizedSection, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(normalizedVisibility, normalizedWorkspace, StringComparison.OrdinalIgnoreCase))
         {
-            parts.Add(normalizedVisibility);
+            AppendToken(ref result, normalizedVisibility);
         }
 
-        return string.Join(" · ", parts.Where(static part => !string.IsNullOrWhiteSpace(part)));
+        return result;
     }
 
     private static string NormalizeToken(string value) => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
 
-    private static bool Contains(IEnumerable<string> values, string candidate)
-        => values.Any(value => string.Equals(value, candidate, StringComparison.OrdinalIgnoreCase));
+    private static void AppendToken(ref string result, string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return;
+        }
+
+        result = string.IsNullOrEmpty(result) ? token : result + " · " + token;
+    }
 }
