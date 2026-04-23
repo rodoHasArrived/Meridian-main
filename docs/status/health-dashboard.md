@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-23T04:13:45.698878+00:00
+> Last updated: 2026-04-23T04:18:52.025679+00:00
 
 ## Overall Health Score
 
 ```
-  [###########################---] 89/100
+  [##########################----] 88/100
   Rating: Good
 ```
 
@@ -15,13 +15,13 @@
 | Metric | Value |
 |--------|-------|
 | Total documentation files | 410 |
-| Total lines | 140,838 |
-| Average file size (lines) | 343.5 |
-| Orphaned files | 130 |
+| Total lines | 140,435 |
+| Average file size (lines) | 342.5 |
+| Orphaned files | 132 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 184 |
-| **Health score** | **89/100** |
+| TODO/FIXME markers | 183 |
+| **Health score** | **88/100** |
 
 ### Score Breakdown
 
@@ -59,7 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
 - `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
 - `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
-- ... and 110 more
+- ... and 112 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-23 | 89 | 410 | 130 | 0 |
+| 2026-04-23 | 88 | 410 | 132 | 0 |
 
 ---
 
