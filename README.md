@@ -913,6 +913,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CLAUDE.fsharp.md
 │   │   │   ├── CLAUDE.providers.md
 │   │   │   ├── CLAUDE.repo-updater.md
+│   │   │   ├── CLAUDE.roadmap-learning-log.md
 │   │   │   ├── CLAUDE.storage.md
 │   │   │   ├── CLAUDE.structure.md
 │   │   │   └── CLAUDE.testing.md
@@ -7696,6 +7697,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
@@ -7730,6 +7732,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-607 directories, 6983 files
+607 directories, 6985 files
 ```
 <!-- readme-tree end -->
