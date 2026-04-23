@@ -52,3 +52,10 @@ From §"Open Questions" of the sprint blueprint:
 - The Wave 2 seam inventory is essentially complete; the sprint is now in its "prove it" phase, not its "build it" phase.
 - The highest-value small fix surfaced by this learning pass is the missing `IPromotionRecordStore` registration in `UiServer.cs`. That would unblock the promotion-traceability gate at runtime without any contract changes.
 - Next learning session should pick up Wave 3 (Shared Platform Interop, In Progress, target 2026-06-26) using [`docs/plans/brokerage-portfolio-sync-blueprint.md`](../../plans/brokerage-portfolio-sync-blueprint.md) as the primary reference, and verify how far the shared run/portfolio/ledger DTOs in `src/Meridian.Contracts/Workstation/` have been wired into WPF consumers.
+
+### Follow-up: implementations landed on this branch
+
+The two gaps observed above were addressed in the same branch:
+
+1. **`IPromotionRecordStore` DI registration:** added in `src/Meridian/UiServer.cs` (lines around 110-115). `JsonlPromotionRecordStore` is now bound as a singleton with its history file under `{contentRootPath}/data/promotions/promotion-history.jsonl`, mirroring the pattern used by `JsonlFilePaperSessionStore`. Promotion approval and rejection now persist across host restarts.
+2. **Desktop status bar reliability:** `StatusBarViewModel` previously had three observable defects — throughput formatting overflowed past 1M ev/s, the dropped-events badge never appeared, and the "Degraded" status check compared two zero defaults. The view model now derives backend status from the real `DropRate` signal, surfaces a per-tick delta of dropped events through the existing badge, and formats throughput across K/M tiers. The XAML adds a backend-status text and tooltip describing the live snapshot. Pure helpers are covered by `StatusBarViewModelTests`.
