@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-22 23:13:30 UTC. Do not edit manually.
+> Auto-generated on 2026-04-23 04:13:37 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -705,6 +705,7 @@ Meridian-main
 │   │   │   ├── CLAUDE.fsharp.md
 │   │   │   ├── CLAUDE.providers.md
 │   │   │   ├── CLAUDE.repo-updater.md
+│   │   │   ├── CLAUDE.roadmap-learning-log.md
 │   │   │   ├── CLAUDE.storage.md
 │   │   │   ├── CLAUDE.structure.md
 │   │   │   └── CLAUDE.testing.md
@@ -7487,6 +7488,7 @@ Meridian-main
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
