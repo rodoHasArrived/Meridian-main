@@ -144,16 +144,40 @@ Use these documents together when planning or implementing new work:
 │   └── link-repair-report.md
 ├── .claude
 │   ├── agents
+│   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
 │   │   ├── meridian-docs.md
 │   │   ├── meridian-navigation.md
+│   │   ├── meridian-repo-navigation.md
+│   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
 │       ├── _shared
 │       │   └── project-context.md
+│       ├── meridian-archive-organizer
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── evals
+│       │   │   └── evals.json
+│       │   ├── fixtures
+│       │   │   └── superseded-adr
+│       │   │       └── docs
+│       │   │           ├── adr
+│       │   │           │   ├── ADR-015-platform-restructuring.md
+│       │   │           │   └── README.md
+│       │   │           └── generated
+│       │   │               └── repository-structure.md
+│       │   ├── references
+│       │   │   ├── archive-placement-guide.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── run_evals.py
+│       │       ├── score_eval.py
+│       │       └── trace_archive_candidates.py
 │       ├── meridian-blueprint
 │       │   ├── CHANGELOG.md
 │       │   ├── SKILL.md
@@ -201,6 +225,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── provider-patterns.md
+│       ├── meridian-repo-navigation
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
+│       ├── meridian-roadmap-strategist
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   └── references
+│       │       └── roadmap-source-map.md
 │       ├── meridian-simulated-user-panel
 │       │   ├── SKILL.md
 │       │   ├── agents
@@ -7732,6 +7766,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-607 directories, 6985 files
+622 directories, 7004 files
 ```
 <!-- readme-tree end -->
