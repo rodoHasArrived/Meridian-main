@@ -5464,6 +5464,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BacktestEngine.cs
 │   │   │   ├── ContingentOrderManager.cs
 │   │   │   ├── MultiSymbolMergeEnumerator.cs
+│   │   │   ├── StageTimer.cs
 │   │   │   └── UniverseDiscovery.cs
 │   │   ├── FillModels
 │   │   │   ├── BarMidpointFillModel.cs
@@ -5491,6 +5492,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── BacktestProgressEvent.cs
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
+│   │   ├── BacktestStage.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
@@ -7158,6 +7160,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
+│   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
@@ -7806,6 +7809,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-625 directories, 7041 files
+625 directories, 7044 files
 ```
 <!-- readme-tree end -->
