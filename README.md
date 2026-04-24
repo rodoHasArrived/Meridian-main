@@ -4827,6 +4827,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
@@ -7766,6 +7767,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-622 directories, 7004 files
+622 directories, 7005 files
 ```
 <!-- readme-tree end -->
