@@ -5,8 +5,8 @@ using Interop = Meridian.FSharp.Interop;
 namespace Meridian.Strategies.Promotions;
 
 /// <summary>
-/// Evaluates whether a strategy is eligible to be promoted from backtest → paper,
-/// or paper → live, based on configurable performance thresholds.
+/// Evaluates whether a strategy is eligible to be promoted from backtest -> paper,
+/// or paper -> live, based on configurable performance thresholds.
 /// </summary>
 public sealed class BacktestToLivePromoter
 {
@@ -70,10 +70,10 @@ public sealed class BacktestToLivePromoter
             QualifyingTotalReturn: result.Metrics.TotalReturn,
             Decision: decision,
             PromotedAt: DateTimeOffset.UtcNow,
-            AuditReference: auditReference,
-            ApprovedBy: approvedBy,
             ApprovalReason: approvalReason,
             ReviewNotes: reviewNotes,
+            AuditReference: auditReference,
+            ApprovedBy: approvedBy,
             ManualOverrideId: manualOverrideId);
     }
 }
@@ -117,8 +117,8 @@ public sealed record StrategyPromotionRecord(
     decimal QualifyingTotalReturn,
     string Decision,
     DateTimeOffset PromotedAt,
-    string? AuditReference = null,
-    string? ApprovedBy = null,
     string? ApprovalReason = null,
     string? ReviewNotes = null,
+    string? AuditReference = null,
+    string? ApprovedBy = null,
     string? ManualOverrideId = null);

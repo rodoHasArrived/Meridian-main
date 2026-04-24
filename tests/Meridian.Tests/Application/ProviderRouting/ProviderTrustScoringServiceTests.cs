@@ -43,13 +43,14 @@ public sealed class ProviderTrustScoringServiceTests : IDisposable
 
         snapshots.Should().ContainSingle();
         var snapshot = snapshots[0];
-        snapshot.Decision.Should().NotBeNull();
-        snapshot.Decision.Trace.SchemaVersion.Should().Be(ProviderTrustScoringService.DecisionSchemaVersion);
-        snapshot.Decision.Trace.KernelVersion.Should().Be(ProviderTrustScoringService.KernelVersion);
-        snapshot.Decision.Reasons.Should().Contain(r => r.RuleId == "provider-trust.connection-enabled");
-        snapshot.Decision.Reasons.Should().Contain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY");
-        snapshot.Decision.Reasons.Should().AllSatisfy(r => r.EvidenceRefs.Should().NotBeNullOrEmpty());
-        snapshot.Decision.Reasons.Select(r => r.HumanExplanation).Should().BeEquivalentTo(snapshot.Signals);
+        var decision = snapshot.Decision;
+        decision.Should().NotBeNull();
+        decision!.Trace.SchemaVersion.Should().Be(ProviderTrustScoringService.DecisionSchemaVersion);
+        decision.Trace.KernelVersion.Should().Be(ProviderTrustScoringService.KernelVersion);
+        decision.Reasons.Should().Contain(r => r.RuleId == "provider-trust.connection-enabled");
+        decision.Reasons.Should().Contain(r => r.ReasonCode == "HEALTH_NOT_HEALTHY");
+        decision.Reasons.Should().OnlyContain(r => r.EvidenceRefs != null && r.EvidenceRefs.Count > 0);
+        decision.Reasons.Select(r => r.HumanExplanation).Should().BeEquivalentTo(snapshot.Signals);
     }
 
     [Fact]
@@ -85,8 +86,10 @@ public sealed class ProviderTrustScoringServiceTests : IDisposable
         var snapshots = await service.GetTrustSnapshotsAsync();
 
         snapshots.Should().ContainSingle();
-        snapshots[0].Decision.Reasons.Should().BeEmpty();
-        snapshots[0].Decision.Score.Should().Be(100);
+        var decision = snapshots[0].Decision;
+        decision.Should().NotBeNull();
+        decision!.Reasons.Should().BeEmpty();
+        decision.Score.Should().Be(100);
     }
 
     private async Task SaveConfigAsync(AppConfig config)

@@ -56,10 +56,6 @@ export interface PromotionEvaluationResult {
   reason: string;
   found: boolean;
   ready: boolean;
-  requiresHumanApproval: boolean;
-  requiresManualOverride: boolean;
-  requiredManualOverrideKind: string | null;
-  blockingReasons: string[] | null;
 }
 
 export interface PromotionDecisionResult {
@@ -67,8 +63,6 @@ export interface PromotionDecisionResult {
   promotionId: string | null;
   newRunId: string | null;
   reason: string;
-  auditReference: string | null;
-  approvedBy: string | null;
 }
 
 export interface PromotionRecord {
@@ -77,18 +71,15 @@ export interface PromotionRecord {
   strategyName: string;
   sourceRunType: string;
   targetRunType: string;
-  sourceRunId: string;
-  targetRunId: string | null;
+  runId?: string;
+  approvedBy?: string | null;
+  approvalReason?: string | null;
+  reviewNotes?: string | null;
+  manualOverrideId?: string | null;
   qualifyingSharpe: number;
   qualifyingMaxDrawdownPercent: number;
   qualifyingTotalReturn: number;
-  decision: string;
   promotedAt: string;
-  auditReference: string | null;
-  approvedBy: string | null;
-  approvalReason: string | null;
-  reviewNotes: string | null;
-  manualOverrideId: string | null;
 }
 
 // --- Execution / paper session types ---
@@ -150,12 +141,12 @@ export interface PaperSessionReplayVerification {
   mismatchReasons: string[];
   currentPortfolio: ExecutionPortfolioSnapshot | null;
   replayPortfolio: ExecutionPortfolioSnapshot;
+  verifiedAt: string;
   comparedFillCount: number;
   comparedOrderCount: number;
   comparedLedgerEntryCount: number;
   lastPersistedFillAt: string | null;
   lastPersistedOrderUpdateAt: string | null;
-  verifiedAt: string;
   verificationAuditId: string | null;
 }
 
@@ -173,47 +164,6 @@ export interface ExecutionAuditEntry {
   correlationId: string | null;
   message: string | null;
   metadata: Record<string, string> | null;
-}
-
-export interface ReplayFileRecord {
-  path: string;
-  name: string;
-  symbol: string | null;
-  eventType: string | null;
-  sizeBytes: number;
-  isCompressed: boolean;
-  lastModified: string;
-}
-
-export interface ReplayStatus {
-  sessionId: string;
-  filePath: string;
-  status: string;
-  speedMultiplier: number;
-  eventsProcessed: number;
-  totalEvents: number;
-  progressPercent: number;
-  startedAt: string;
-}
-
-export interface OrderSubmitRequest {
-  symbol: string;
-  side: "Buy" | "Sell";
-  type: "Market" | "Limit" | "Stop";
-  quantity: number;
-  limitPrice?: number | null;
-  timeInForce?: "Day" | "Gtc" | "Ioc" | "Fok";
-  strategyId?: string | null;
-  runId?: string | null;
-  sessionId?: string | null;
-  manualOverrideId?: string | null;
-  metadata?: Record<string, string> | null;
-}
-
-export interface OrderResult {
-  success: boolean;
-  orderId: string | null;
-  reason: string | null;
 }
 
 export interface ExecutionCircuitBreakerState {
@@ -243,27 +193,49 @@ export interface ExecutionControlSnapshot {
   asOf: string;
 }
 
-export interface PromotionApprovalRequest {
-  runId: string;
-  reviewNotes?: string | null;
-  approvedBy?: string | null;
-  approvalReason?: string | null;
-  manualOverrideId?: string | null;
-}
-
-export interface CreateManualOverrideRequest {
+export interface CreateExecutionManualOverrideRequest {
   kind: string;
   reason: string;
+  createdBy?: string | null;
   symbol?: string | null;
   strategyId?: string | null;
   runId?: string | null;
   expiresAt?: string | null;
-  correlationId?: string | null;
 }
 
-export interface ClearManualOverrideRequest {
-  reason?: string | null;
-  correlationId?: string | null;
+export interface ReplayFileRecord {
+  path: string;
+  name: string;
+  symbol: string | null;
+  eventType: string | null;
+  sizeBytes: number;
+  isCompressed: boolean;
+  lastModified: string;
+}
+
+export interface ReplayStatus {
+  sessionId: string;
+  filePath: string;
+  status: string;
+  speedMultiplier: number;
+  eventsProcessed: number;
+  totalEvents: number;
+  progressPercent: number;
+  startedAt: string;
+}
+
+export interface OrderSubmitRequest {
+  symbol: string;
+  side: "Buy" | "Sell";
+  type: "Market" | "Limit" | "Stop";
+  quantity: number;
+  limitPrice?: number | null;
+}
+
+export interface OrderResult {
+  success: boolean;
+  orderId: string | null;
+  reason: string | null;
 }
 
 export interface ResearchWorkspaceResponse {

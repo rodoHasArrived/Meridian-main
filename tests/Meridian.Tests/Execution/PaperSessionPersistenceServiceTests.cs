@@ -581,8 +581,10 @@ public sealed class PaperSessionReplayTests : IDisposable
     private JsonlFilePaperSessionStore BuildStore() =>
         new(_tempDir, NullLogger<JsonlFilePaperSessionStore>.Instance);
 
-    private static PaperSessionPersistenceService Build(IPaperSessionStore? store = null) =>
-        new(NullLogger<PaperSessionPersistenceService>.Instance, store);
+    private static PaperSessionPersistenceService Build(
+        IPaperSessionStore? store = null,
+        ExecutionAuditTrailService? auditTrail = null) =>
+        new(NullLogger<PaperSessionPersistenceService>.Instance, store, auditTrail);
 
     private static ExecutionReport BuyFill(string symbol, decimal qty, decimal price) => new()
     {
@@ -719,7 +721,10 @@ public sealed class PaperSessionReplayTests : IDisposable
     public async Task VerifyReplayAsync_WithStore_ReturnsConsistentVerification()
     {
         var store = BuildStore();
-        var service = Build(store);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(_tempDir, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+        var service = Build(store, auditTrail);
         var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-F", "Replay Verify", 100_000m, ["AAPL"]));
 
         await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 12m, 150m));
@@ -730,6 +735,7 @@ public sealed class PaperSessionReplayTests : IDisposable
             Side = OrderSide.Buy,
             Type = OrderType.Market,
             Quantity = 12m,
+            FilledQuantity = 12m,
             Status = OrderStatus.Filled,
             CreatedAt = DateTimeOffset.UtcNow,
             LastUpdatedAt = DateTimeOffset.UtcNow
@@ -750,7 +756,12 @@ public sealed class PaperSessionReplayTests : IDisposable
         verification.ComparedLedgerEntryCount.Should().BeGreaterThanOrEqualTo(0);
         verification.LastPersistedFillAt.Should().NotBeNull();
         verification.LastPersistedOrderUpdateAt.Should().NotBeNull();
-        verification.VerificationAuditId.Should().BeNull();
+        verification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
+
+        var auditEntries = await auditTrail.GetAllAsync();
+        auditEntries.Should().Contain(entry =>
+            entry.AuditId == verification.VerificationAuditId &&
+            entry.Action == "VerifyReplay");
     }
 
     [Fact]

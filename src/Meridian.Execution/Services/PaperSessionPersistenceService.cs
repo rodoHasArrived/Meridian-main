@@ -23,15 +23,18 @@ public sealed class PaperSessionPersistenceService
 {
     private readonly ConcurrentDictionary<string, PaperSession> _sessions = new(StringComparer.Ordinal);
     private readonly IPaperSessionStore? _store;
+    private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<PaperSessionPersistenceService> _logger;
     private int _initialised; // 0 = not yet, 1 = done
 
     public PaperSessionPersistenceService(
         ILogger<PaperSessionPersistenceService> logger,
-        IPaperSessionStore? store = null)
+        IPaperSessionStore? store = null,
+        ExecutionAuditTrailService? auditTrail = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _store = store;
+        _auditTrail = auditTrail;
     }
 
     // ------------------------------------------------------------------
@@ -333,36 +336,47 @@ public sealed class PaperSessionPersistenceService
             return null;
         }
 
-        var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
-        var comparedFillCount = 0;
-        var comparedOrderCount = detail.OrderHistory?.Count ?? 0;
-        var comparedLedgerEntryCount = 0;
-        DateTimeOffset? lastPersistedFillAt = null;
-        DateTimeOffset? lastPersistedOrderUpdateAt = null;
+        var persistedFills = _store is null
+            ? []
+            : await _store.LoadFillsAsync(sessionId, ct).ConfigureAwait(false);
+        var persistedOrders = _store is null
+            ? []
+            : await _store.LoadOrderHistoryAsync(sessionId, ct).ConfigureAwait(false);
+        var persistedLedgerEntries = _store is null
+            ? []
+            : await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
 
+        var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
+        var comparedFillCount = persistedFills.Count;
+        var comparedOrderCount = _store is null
+            ? detail.OrderHistory?.Count ?? 0
+            : persistedOrders.Count;
+        var comparedLedgerEntryCount = _store is null
+            ? 0
+            : persistedLedgerEntries.Count;
+        var lastPersistedFillAt = persistedFills.Count > 0
+            ? persistedFills.Max(fill => fill.Timestamp)
+            : (DateTimeOffset?)null;
+        var lastPersistedOrderUpdateAt = persistedOrders.Count > 0
+            ? persistedOrders
+                .Where(order => order.LastUpdatedAt.HasValue)
+                .Select(order => order.LastUpdatedAt!.Value)
+                .DefaultIfEmpty(persistedOrders.Max(order => order.CreatedAt))
+                .Max()
+            : (DateTimeOffset?)null;
         if (_store is not null)
         {
-            var fillsTask = _store.LoadFillsAsync(sessionId, ct);
-            var ordersTask = _store.LoadOrderHistoryAsync(sessionId, ct);
-            var ledgerTask = _store.LoadLedgerJournalAsync(sessionId, ct);
-            await Task.WhenAll(fillsTask, ordersTask, ledgerTask).ConfigureAwait(false);
-
-            var persistedFills = await fillsTask.ConfigureAwait(false);
-            var persistedOrders = await ordersTask.ConfigureAwait(false);
-            var persistedLedger = await ledgerTask.ConfigureAwait(false);
-
-            comparedFillCount = persistedFills.Count;
-            comparedOrderCount = persistedOrders.Count;
-            comparedLedgerEntryCount = persistedLedger.Count;
-            lastPersistedFillAt = persistedFills.Count == 0
-                ? null
-                : persistedFills.Max(static fill => fill.Timestamp);
-            lastPersistedOrderUpdateAt = persistedOrders.Count == 0
-                ? null
-                : persistedOrders.Max(static order => order.LastUpdatedAt ?? order.CreatedAt);
-
             CompareOrderHistory(detail.OrderHistory, persistedOrders, mismatchReasons);
         }
+
+        var verificationAudit = await RecordVerificationAuditAsync(
+            detail,
+            mismatchReasons,
+            comparedFillCount,
+            comparedOrderCount,
+            comparedLedgerEntryCount,
+            replayPortfolio,
+            ct).ConfigureAwait(false);
 
         return new PaperSessionReplayVerificationDto(
             Summary: detail.Summary,
@@ -372,13 +386,49 @@ public sealed class PaperSessionPersistenceService
             MismatchReasons: mismatchReasons,
             CurrentPortfolio: detail.Portfolio,
             ReplayPortfolio: replayPortfolio,
+            VerifiedAt: DateTimeOffset.UtcNow,
             ComparedFillCount: comparedFillCount,
             ComparedOrderCount: comparedOrderCount,
             ComparedLedgerEntryCount: comparedLedgerEntryCount,
             LastPersistedFillAt: lastPersistedFillAt,
             LastPersistedOrderUpdateAt: lastPersistedOrderUpdateAt,
-            VerifiedAt: DateTimeOffset.UtcNow,
-            VerificationAuditId: null);
+            VerificationAuditId: verificationAudit?.AuditId);
+    }
+
+    private async Task<ExecutionAuditEntry?> RecordVerificationAuditAsync(
+        PaperSessionDetailDto detail,
+        IReadOnlyList<string> mismatchReasons,
+        int comparedFillCount,
+        int comparedOrderCount,
+        int comparedLedgerEntryCount,
+        ExecutionPortfolioSnapshotDto replayPortfolio,
+        CancellationToken ct)
+    {
+        if (_auditTrail is null)
+        {
+            return null;
+        }
+
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["sessionId"] = detail.Summary.SessionId,
+            ["strategyId"] = detail.Summary.StrategyId,
+            ["replaySource"] = _store is null ? "InMemoryFallback" : "DurableFillLog",
+            ["comparedFillCount"] = comparedFillCount.ToString(),
+            ["comparedOrderCount"] = comparedOrderCount.ToString(),
+            ["comparedLedgerEntryCount"] = comparedLedgerEntryCount.ToString(),
+            ["mismatchCount"] = mismatchReasons.Count.ToString()
+        };
+
+        return await _auditTrail.RecordAsync(
+            category: "PaperSession",
+            action: "VerifyReplay",
+            outcome: mismatchReasons.Count == 0 ? "Completed" : "AttentionRequired",
+            actor: "PaperSessionPersistenceService",
+            correlationId: detail.Summary.SessionId,
+            message: $"Replay verification completed for {detail.Summary.SessionId} (cash {replayPortfolio.Cash}).",
+            metadata: metadata,
+            ct: ct).ConfigureAwait(false);
     }
 
     // ------------------------------------------------------------------
@@ -686,10 +736,10 @@ public sealed record PaperSessionReplayVerificationDto(
     IReadOnlyList<string> MismatchReasons,
     ExecutionPortfolioSnapshotDto? CurrentPortfolio,
     ExecutionPortfolioSnapshotDto ReplayPortfolio,
+    DateTimeOffset VerifiedAt,
     int ComparedFillCount,
     int ComparedOrderCount,
     int ComparedLedgerEntryCount,
     DateTimeOffset? LastPersistedFillAt,
     DateTimeOffset? LastPersistedOrderUpdateAt,
-    DateTimeOffset VerifiedAt,
     string? VerificationAuditId);

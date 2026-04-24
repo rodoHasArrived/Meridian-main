@@ -21,7 +21,6 @@ public sealed class LedgerGroupIdTests
         Assert.True(created);
         Assert.Equal(LedgerGroupId.Unassigned, groupId);
     }
-
     [Theory]
     [InlineData("")]
     [InlineData("   ")]

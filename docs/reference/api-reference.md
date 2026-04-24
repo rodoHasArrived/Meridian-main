@@ -14,13 +14,13 @@ API pages are generated from XML documentation comments in the .NET projects and
 ### Build API docs
 
 ```bash
-docfx docfx.json
+docfx docs/docfx/docfx.json
 ```
 
 ### Serve locally for preview
 
 ```bash
-docfx docfx.json --serve
+docfx docs/docfx/docfx.json --serve
 ```
 
 ## API map
@@ -110,7 +110,6 @@ The application exposes a REST API when running with `--mode desktop`. All `/api
 ### Authentication
 
 Set the `MDC_API_KEY` environment variable to enable authentication. Pass the key via:
-
 - `X-Api-Key` header (recommended)
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
@@ -195,14 +194,12 @@ curl -X POST http://localhost:8080/api/backfill/run \
 For `scopeKind=LedgerGroup`, `ledgerGroupId` now uses the shared `LedgerGroupId` normalization contract:
 
 - leading/trailing whitespace is trimmed before lookup
-- the reserved `unassigned` ID is canonicalized to `unassigned`
 - blank values are rejected with HTTP `400`
 - only letters, digits, `-`, `_`, `.`, and `:` are valid characters
 - invalid values are rejected with HTTP `400`
 
 Grouping in application services uses the same normalization path so endpoint filtering and
-accounting-view ledger grouping resolve IDs consistently, and ledger-group assignments created
-through fund-structure workflows are normalized before storage.
+accounting-view ledger grouping resolve IDs consistently.
 
 **Check data quality for a symbol:**
 
@@ -223,7 +220,7 @@ All endpoints return errors in a consistent format:
 ```
 
 | HTTP Status | Meaning |
-| ------------- | --------- |
+|-------------|---------|
 | `400` | Bad request — invalid parameters or payload |
 | `401` | Unauthorized — missing or invalid API key |
 | `404` | Not found — symbol or resource does not exist |
@@ -233,7 +230,7 @@ All endpoints return errors in a consistent format:
 ### Endpoint Groups
 
 | Tag | Count | Description |
-| ----- | ------- | ------------- |
+|-----|-------|-------------|
 | Configuration | 14 | Config CRUD, data source management, derivatives |
 | Backfill | 5 | Historical data backfill execution, preview, progress |
 | Backfill Checkpoints | 3 | Job checkpoint retrieval and resume |
@@ -243,7 +240,7 @@ All endpoints return errors in a consistent format:
 | Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
 | Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
-| Execution | 23 | Execution blotter, keyed position actions, session continuity, orders, health, audit, and operator controls |
+| Execution | 21 | Execution blotter, keyed position actions, session continuity, orders, health, audit, controls |
 | Failover | 7 | Failover rules, health, force failover |
 | Interactive Brokers | 3 | IB-specific status, error codes, API limits |
 | Symbol Mapping | 5 | Cross-provider symbol mappings, CSV import |
@@ -257,7 +254,7 @@ All endpoints return errors in a consistent format:
 ### Symbols (`/api/symbols/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/symbols` | All configured symbols |
 | GET | `/api/symbols/monitored` | Symbols with monitoring config |
 | GET | `/api/symbols/archived` | Symbols with stored data |
@@ -277,7 +274,7 @@ All endpoints return errors in a consistent format:
 ### Storage (`/api/storage/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/storage/profiles` | Available storage profile presets |
 | GET | `/api/storage/stats` | Overall storage statistics |
 | GET | `/api/storage/breakdown` | Breakdown by symbol/type |
@@ -301,7 +298,7 @@ All endpoints return errors in a consistent format:
 ### Storage Quality (`/api/storage/quality/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/storage/quality/summary` | Overall quality summary |
 | GET | `/api/storage/quality/scores` | Quality scores for all files |
 | GET | `/api/storage/quality/symbol/{symbol}` | Quality for a specific symbol |
@@ -315,7 +312,7 @@ All endpoints return errors in a consistent format:
 ### Configuration (`/api/config/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/config` | Full configuration |
 | POST | `/api/config/datasource` | Update active data source |
 | POST | `/api/config/alpaca` | Update Alpaca configuration |
@@ -334,7 +331,7 @@ All endpoints return errors in a consistent format:
 ### Backfill (`/api/backfill/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/backfill/providers` | List available providers |
 | GET | `/api/backfill/status` | Last backfill status |
 | POST | `/api/backfill/run` | Execute backfill |
@@ -346,7 +343,7 @@ All endpoints return errors in a consistent format:
 Checkpoint endpoints expose the persisted job state that enables backfill operations to be paused and resumed after a restart or failure.
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/backfill/checkpoints` | List all available checkpoints |
 | GET | `/api/backfill/checkpoints/resumable` | List checkpoints for jobs that can be resumed |
 | GET | `/api/backfill/checkpoints/{jobId}` | Checkpoint details for a specific job |
@@ -356,7 +353,7 @@ Checkpoint endpoints expose the persisted job state that enables backfill operat
 ### Providers (`/api/providers/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/providers/status` | All provider status |
 | GET | `/api/providers/metrics` | Provider metrics |
 | GET | `/api/providers/metrics/{providerId}` | Single provider metrics |
@@ -371,7 +368,7 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 ### Options (`/api/options/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/options/expirations/{underlyingSymbol}` | Available expirations for an underlying |
 | GET | `/api/options/strikes/{underlyingSymbol}/{expiration}` | Available strikes for a specific expiration |
 | GET | `/api/options/chains/{underlyingSymbol}` | Cached or fetched option chain snapshots |
@@ -390,7 +387,7 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 ### Execution (`/api/execution/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/execution/account` | Account-level execution snapshot |
 | GET | `/api/execution/positions` | Legacy paper-trading positions list |
 | GET | `/api/execution/positions/blotter` | Broker-aware blotter snapshot used by desktop position views |
@@ -407,8 +404,6 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/execution/audit` | Operator audit trail |
 | GET | `/api/execution/controls` | Execution operator controls snapshot |
 | POST | `/api/execution/controls/circuit-breaker` | Open or close the execution circuit breaker |
-| POST | `/api/execution/controls/manual-overrides` | Create a durable execution manual override |
-| POST | `/api/execution/controls/manual-overrides/{overrideId}/clear` | Clear an existing execution manual override |
 | GET | `/api/execution/sessions` | Paper-session summaries for the trading cockpit |
 | GET | `/api/execution/sessions/{sessionId}` | Paper-session detail including tracked symbols, portfolio, and order history |
 | POST | `/api/execution/sessions/create` | Create a paper session and persist the requested symbol universe |
@@ -417,14 +412,12 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 
 `/api/execution/positions/blotter` is the preferred position endpoint for desktop execution surfaces because it returns broker-backed/live state, a source label, a status message, and keyed position metadata needed for broker option actions.
 
-Execution write actions use `X-Meridian-Actor` for the operator identity. Circuit-breaker and manual-override mutations accept a `correlationId` request field, and cockpit order submits carry `actor`, `correlationId`, `sessionId`, and optional `runId` inside order metadata.
-
-`/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, returns evidence counts and last-persisted timestamps, and records the verification step in the execution audit trail with a `verificationAuditId`.
+`/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, and records the verification step in the execution audit trail.
 
 ### Failover (`/api/failover/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/failover/config` | Failover configuration |
 | POST | `/api/failover/config` | Update failover settings |
 | GET | `/api/failover/rules` | All failover rules |
@@ -436,7 +429,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Interactive Brokers (`/api/providers/ib/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/providers/ib/status` | IB connection status and capabilities |
 | GET | `/api/providers/ib/error-codes` | IB error code reference |
 | GET | `/api/providers/ib/limits` | IB API limits |
@@ -444,7 +437,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Symbol Mapping (`/api/symbols/mappings/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/symbols/mappings` | All symbol mappings |
 | POST | `/api/symbols/mappings` | Create or update mapping |
 | GET | `/api/symbols/mappings/{symbol}` | Single symbol mapping |
@@ -454,7 +447,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Live Data (`/api/data/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/data/trades/{symbol}` | Recent trades for symbol |
 | GET | `/api/data/quotes/{symbol}` | Latest quote for symbol |
 | GET | `/api/data/orderbook/{symbol}` | Order book snapshot |
@@ -465,7 +458,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Historical Data (`/api/historical/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/historical` | Query stored historical bars for a symbol |
 | GET | `/api/historical/symbols` | List symbols that have stored historical data |
 | GET | `/api/historical/{symbol}/daterange` | Date range of available data for a symbol |
@@ -473,7 +466,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Ingestion Jobs (`/api/ingestion/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/ingestion/jobs` | List all ingestion jobs |
 | POST | `/api/ingestion/jobs` | Create a new ingestion job (Draft state) |
 | GET | `/api/ingestion/jobs/{jobId}` | Get a specific ingestion job |
@@ -485,7 +478,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Packaging (`/api/packaging/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | POST | `/api/packaging/create` | Create a portable data package |
 | POST | `/api/packaging/import` | Import a package into storage |
 | POST | `/api/packaging/validate` | Validate a package's integrity |
@@ -497,7 +490,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Maintenance (`/api/maintenance/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/maintenance/schedules` | List all maintenance schedules |
 | POST | `/api/maintenance/schedules` | Create a maintenance schedule |
 | GET | `/api/maintenance/schedules/{scheduleId}` | Get a specific schedule |
@@ -524,7 +517,7 @@ Execution write actions use `X-Meridian-Actor` for the operator identity. Circui
 ### Quality Drops (`/api/quality/drops/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/quality/drops` | Dropped event statistics |
 | GET | `/api/quality/drops/{symbol}` | Drops for specific symbol |
 
@@ -534,7 +527,7 @@ These endpoints expose the company-umbrella environment designer workflow used b
 governance admin surface.
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/environment-designer/drafts` | List environment drafts ordered by last update. |
 | GET | `/api/environment-designer/drafts/{draftId}` | Load a single environment draft. |
 | POST | `/api/environment-designer/drafts` | Create a new environment draft. |
@@ -553,7 +546,7 @@ governance admin surface.
 ### Health (`/healthz`, `/api/*`)
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/healthz` | Kubernetes health probe |
 | GET | `/readyz` | Kubernetes readiness probe |
 | GET | `/livez` | Kubernetes liveness probe |
@@ -583,7 +576,7 @@ When adding or changing public APIs:
 ---
 
 **Version:** 1.6.2
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-07
 **Audience:** Contributors maintaining the HTTP API surface and AI assistants working on endpoint documentation.
 
 
@@ -592,24 +585,10 @@ When adding or changing public APIs:
 The coverage audit also tracks workstation shell routes and compatibility aliases.
 
 | Method | Route | Description |
-| -------- | ------- | ------------- |
+|--------|-------|-------------|
 | GET | `/api/config/data-sources` | Backward-compatible alias for data source listing (`/api/config/datasources`). |
 | POST | `/api/config/data-sources` | Backward-compatible alias for create/update of data sources. |
 | GET | `/session` | Legacy/session route marker reported by coverage scanner; workstation session data is served at `/api/workstation/session`. |
 | GET | `/research` | Legacy/research route marker reported by coverage scanner; research payload is served at `/api/workstation/research`. |
 | GET | `/workstation` | Workstation shell entry point that serves the React index page. |
 | GET | `/workstation/{*path}` | SPA fallback route for workstation client-side navigation. |
-
-### Workstation Workflow Summary
-
-The workstation shell now exposes one shared workflow-summary projection for role-first shell guidance.
-
-| Method | Route | Description |
-| -------- | ------- | ------------- |
-| GET | `/api/workstation/workflow-summary` | Returns an `OperatorWorkflowHomeSummary` with one `WorkspaceWorkflowSummary` per top-level workspace, including status, primary blocker, next action, target page tag, and evidence badges. |
-
-Notes:
-
-- This endpoint is intended for shell-level orchestration, not page-specific workflow duplication.
-- The WPF shell and shared tests use the same ordering rules so `Research`, `Trading`, `Data Operations`, and `Governance` stay aligned on the same next-action guidance.
-- Trading and Governance callers can pass the current operating context and fund selection so the summary can switch cleanly between `choose context`, active handoff, and governance-review states.

@@ -4,18 +4,15 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
-<<<<<<< ours
-=======
 using NSubstitute;
->>>>>>> theirs
 using Xunit;
+using SecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Application.Services;
 
 public sealed class ReportGenerationServiceTests
 {
     [Fact]
-<<<<<<< ours
     public async Task GenerateAsync_WithEconomicDefinition_MapsGovernanceFieldsAndResolvedQuality()
     {
         var securityId = Guid.NewGuid();
@@ -202,7 +199,7 @@ public sealed class ReportGenerationServiceTests
 
     private static JsonElement EmptyJsonElement() => JsonDocument.Parse("{}").RootElement.Clone();
 
-    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    private sealed class StubSecurityMasterQueryService : SecurityMasterQueryService
     {
         private readonly IReadOnlyDictionary<string, SecurityDetailDto> _detailsBySymbol;
         private readonly IReadOnlyDictionary<Guid, SecurityEconomicDefinitionRecord> _economicsBySecurityId;
@@ -242,10 +239,10 @@ public sealed class ReportGenerationServiceTests
         public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
-=======
+    [Fact]
     public async Task GenerateAsync_WithMissingSecurityMetadata_UsesDeterministicUnclassifiedFallback()
     {
-        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        var securityMaster = Substitute.For<SecurityMasterQueryService>();
         securityMaster
             .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "UNKN", null, Arg.Any<CancellationToken>())
             .Returns(new SecurityDetailDto(
@@ -285,7 +282,7 @@ public sealed class ReportGenerationServiceTests
     [Fact]
     public async Task GenerateAsync_PreservesIdentifierMappedRows_AndNullHandlingAcrossMultipleSymbols()
     {
-        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        var securityMaster = Substitute.For<SecurityMasterQueryService>();
         securityMaster
             .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "AAPL", null, Arg.Any<CancellationToken>())
             .Returns(BuildDetail("Equity", "Apple Inc.", "USD"));
@@ -314,7 +311,7 @@ public sealed class ReportGenerationServiceTests
             row.Symbol == "CUSIP_037833100" &&
             row.AssetClass == "Equity" &&
             row.DisplayName == "Apple Legacy Line" &&
-            row.Currency is null);
+            row.Currency == null);
     }
 
     private static FundLedgerBook BuildFundLedger(string fundId, params (string Symbol, decimal Balance)[] rows)
@@ -346,5 +343,4 @@ public sealed class ReportGenerationServiceTests
             Version: 1,
             EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-5),
             EffectiveTo: null);
->>>>>>> theirs
 }

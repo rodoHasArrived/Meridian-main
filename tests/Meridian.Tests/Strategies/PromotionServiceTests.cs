@@ -96,7 +96,7 @@ public sealed class PromotionServiceTests
     [Fact]
     public async Task ApproveAsync_WhenRunExists_CreatesNewRunAndRecordsHistory()
     {
-        var service = BuildService(out var store);
+        var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
@@ -165,7 +165,7 @@ public sealed class PromotionServiceTests
     [Fact]
     public async Task GetPromotionHistory_AfterApproval_ContainsRecord()
     {
-        var service = BuildService(out var store);
+        var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
@@ -219,15 +219,21 @@ public sealed class PromotionServiceTests
 
     // ---- Helpers ----
 
-    private static PromotionService BuildService(out StrategyRunStore store, IPromotionRecordStore? promotionRecordStore = null)
+    private static PromotionService BuildService(out StrategyRunStore store, string? rootPath = null)
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
-        return new PromotionService(
-            store,
-            promoter,
-            NullLogger<PromotionService>.Instance,
-            promotionRecordStore: promotionRecordStore);
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(rootPath ?? Path.GetTempPath(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        return new PromotionService(store, promoter, promotionStore, NullLogger<PromotionService>.Instance);
+    }
+
+    private static PromotionService BuildService(out StrategyRunStore store, IPromotionRecordStore promotionRecordStore)
+    {
+        store = new StrategyRunStore();
+        var promoter = new BacktestToLivePromoter();
+        return new PromotionService(store, promoter, promotionRecordStore, NullLogger<PromotionService>.Instance);
     }
 
     private static string CreateTempRoot()

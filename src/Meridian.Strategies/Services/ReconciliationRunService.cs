@@ -247,8 +247,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     }
 
     /// <summary>
-    /// Builds a symbol-keyed Security Master classification map from security references that
-    /// were already resolved by <see cref="PortfolioReadService"/> and <see cref="LedgerReadService"/>.
+    /// Builds a symbol-keyed authoritative Security Master map from security references that were
+    /// already resolved by <see cref="PortfolioReadService"/> and <see cref="LedgerReadService"/>.
     /// Only symbols with a non-null <c>Security</c> property are included.
     /// </summary>
     private static IReadOnlyDictionary<string, SecurityClassificationSummaryDto> BuildSecurityClassifications(

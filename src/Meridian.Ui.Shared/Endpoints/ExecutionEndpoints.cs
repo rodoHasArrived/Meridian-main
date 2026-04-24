@@ -291,7 +291,7 @@ public static class ExecutionEndpoints
         .Produces<ExecutionControlSnapshot>(200)
         .Produces(503);
 
-        group.MapPost("/controls/manual-overrides", async (CreateManualOverrideCommandRequest request, HttpContext context) =>
+        group.MapPost("/controls/manual-overrides", async (CreateExecutionManualOverrideRequest request, HttpContext context) =>
         {
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
@@ -324,7 +324,7 @@ public static class ExecutionEndpoints
         .Produces(400)
         .Produces(503);
 
-        group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearManualOverrideCommandRequest request, HttpContext context) =>
+        group.MapPost("/controls/manual-overrides/{overrideId}/clear", async (string overrideId, ClearExecutionManualOverrideRequest request, HttpContext context) =>
         {
             var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
             if (controls is null)
@@ -1115,7 +1115,22 @@ public sealed record UpdateExecutionCircuitBreakerRequest(
     string? Reason = null,
     string? CorrelationId = null);
 
-/// <summary>Request to create a new manual override.</summary>
+/// <summary>Request to create an execution manual override.</summary>
+public sealed record CreateExecutionManualOverrideRequest(
+    string Kind,
+    string Reason,
+    string? Symbol = null,
+    string? StrategyId = null,
+    string? RunId = null,
+    DateTimeOffset? ExpiresAt = null,
+    string? CorrelationId = null);
+
+/// <summary>Request to clear an existing execution manual override.</summary>
+public sealed record ClearExecutionManualOverrideRequest(
+    string? Reason = null,
+    string? CorrelationId = null);
+
+/// <summary>Legacy request alias preserved for older callers.</summary>
 public sealed record CreateManualOverrideCommandRequest(
     string Kind,
     string Reason,
@@ -1125,7 +1140,7 @@ public sealed record CreateManualOverrideCommandRequest(
     DateTimeOffset? ExpiresAt = null,
     string? CorrelationId = null);
 
-/// <summary>Request to clear an existing manual override.</summary>
+/// <summary>Legacy request alias preserved for older callers.</summary>
 public sealed record ClearManualOverrideCommandRequest(
     string? Reason = null,
     string? CorrelationId = null);

@@ -20,7 +20,7 @@ public static class LedgerGroupingRules
         IReadOnlyList<FundStructureAssignmentDto> assignments) =>
         assignments
             .Where(assignment => IsLedgerGroupAssignmentType(assignment.AssignmentType))
-            .GroupBy(static x => x.NodeId)
+            .GroupBy(static assignment => assignment.NodeId)
             .ToDictionary(
                 static group => group.Key,
                 static group => group.Select(static assignment => LedgerGroupId.Create(assignment.AssignmentReference)).First());
@@ -32,58 +32,47 @@ public static class LedgerGroupingRules
         ArgumentNullException.ThrowIfNull(account);
         ArgumentNullException.ThrowIfNull(ledgerAssignments);
 
-        foreach (var candidateNodeId in GetAssignmentCandidateNodeIds(account))
+        if (ledgerAssignments.TryGetValue(account.AccountId, out var assignedLedger))
         {
-            if (ledgerAssignments.TryGetValue(candidateNodeId, out var assignedLedger))
-            {
-                return assignedLedger;
-            }
+            return assignedLedger;
         }
 
-        if (TryParse(account.LedgerReference) is { } fromAccount)
+        if (TryParseGuid(account.PortfolioId, out var portfolioId)
+            && ledgerAssignments.TryGetValue(portfolioId, out assignedLedger))
+        {
+            return assignedLedger;
+        }
+
+        if (account.SleeveId is Guid sleeveId
+            && ledgerAssignments.TryGetValue(sleeveId, out assignedLedger))
+        {
+            return assignedLedger;
+        }
+
+        if (account.VehicleId is Guid vehicleId
+            && ledgerAssignments.TryGetValue(vehicleId, out assignedLedger))
+        {
+            return assignedLedger;
+        }
+
+        if (account.FundId is Guid fundId
+            && ledgerAssignments.TryGetValue(fundId, out assignedLedger))
+        {
+            return assignedLedger;
+        }
+
+        if (account.EntityId is Guid entityId
+            && ledgerAssignments.TryGetValue(entityId, out assignedLedger))
+        {
+            return assignedLedger;
+        }
+
+        if (LedgerGroupId.TryCreate(account.LedgerReference, out var fromAccount))
         {
             return fromAccount;
         }
 
         return LedgerGroupId.Unassigned;
-    }
-
-    private static LedgerGroupId? TryParse(string? value) =>
-        LedgerGroupId.TryCreate(value, out var parsed) ? parsed : null;
-
-    private static IEnumerable<Guid> GetAssignmentCandidateNodeIds(AccountSummaryDto account)
-    {
-        var seen = new HashSet<Guid>();
-
-        if (seen.Add(account.AccountId))
-        {
-            yield return account.AccountId;
-        }
-
-        if (TryParseGuid(account.PortfolioId, out var portfolioId) && seen.Add(portfolioId))
-        {
-            yield return portfolioId;
-        }
-
-        if (account.SleeveId is Guid sleeveId && seen.Add(sleeveId))
-        {
-            yield return sleeveId;
-        }
-
-        if (account.VehicleId is Guid vehicleId && seen.Add(vehicleId))
-        {
-            yield return vehicleId;
-        }
-
-        if (account.FundId is Guid fundId && seen.Add(fundId))
-        {
-            yield return fundId;
-        }
-
-        if (account.EntityId is Guid entityId && seen.Add(entityId))
-        {
-            yield return entityId;
-        }
     }
 
     private static bool TryParseGuid(string? value, out Guid guid) =>

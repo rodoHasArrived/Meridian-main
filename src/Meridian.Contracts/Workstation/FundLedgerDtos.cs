@@ -1,0 +1,98 @@
+namespace Meridian.Contracts.Workstation;
+
+/// <summary>
+/// Fund-level ledger drill-in scope.
+/// </summary>
+public enum FundLedgerScope : byte
+{
+    Consolidated,
+    Entity,
+    Sleeve,
+    Vehicle
+}
+
+/// <summary>
+/// Query for governance-first fund ledger views.
+/// </summary>
+public sealed record FundLedgerQuery(
+    string FundProfileId,
+    DateTimeOffset? AsOf = null,
+    FundLedgerScope ScopeKind = FundLedgerScope.Consolidated,
+    string? ScopeId = null);
+
+/// <summary>
+/// Trial-balance row for a fund ledger view.
+/// </summary>
+public sealed record FundTrialBalanceLine(
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal Balance,
+    int EntryCount,
+    WorkstationSecurityReference? Security = null);
+
+/// <summary>
+/// Journal row for a fund ledger view.
+/// </summary>
+public sealed record FundJournalLine(
+    Guid JournalEntryId,
+    DateTimeOffset Timestamp,
+    string Description,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    int LineCount,
+    IReadOnlyList<string>? FinancialAccountIds = null);
+
+/// <summary>
+/// Governance-facing fund ledger summary.
+/// </summary>
+public sealed record FundLedgerSummary(
+    string FundProfileId,
+    string FundDisplayName,
+    FundLedgerScope ScopeKind,
+    string? ScopeId,
+    DateTimeOffset AsOf,
+    int JournalEntryCount,
+    int LedgerEntryCount,
+    decimal AssetBalance,
+    decimal LiabilityBalance,
+    decimal EquityBalance,
+    decimal RevenueBalance,
+    decimal ExpenseBalance,
+    IReadOnlyList<FundTrialBalanceLine> TrialBalance,
+    IReadOnlyList<FundJournalLine> Journal,
+    int EntityCount,
+    int SleeveCount,
+    int VehicleCount);
+
+/// <summary>
+/// Balance row captured in a reconciliation snapshot.
+/// </summary>
+public sealed record FundLedgerSnapshotBalanceLine(
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal Balance,
+    WorkstationSecurityReference? Security = null);
+
+/// <summary>
+/// Point-in-time ledger snapshot used by reconciliation views.
+/// </summary>
+public sealed record FundLedgerDimensionSnapshot(
+    DateTimeOffset Timestamp,
+    int JournalEntryCount,
+    int LedgerEntryCount,
+    IReadOnlyList<FundLedgerSnapshotBalanceLine> Balances);
+
+/// <summary>
+/// Reconciliation snapshot of one fund ledger book, including consolidated totals and per-dimension breakdowns.
+/// </summary>
+public sealed record FundLedgerReconciliationSnapshot(
+    string FundProfileId,
+    DateTimeOffset AsOf,
+    FundLedgerDimensionSnapshot Consolidated,
+    IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Entities,
+    IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Sleeves,
+    IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Vehicles);

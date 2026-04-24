@@ -619,6 +619,18 @@ This ensures `ContractFactory` resolves to the correct IB contract.
 
 ---
 
+## Troubleshooting
+
+For recurring production issues, use this quick triage path before escalating:
+
+1. Confirm startup health and configuration integrity in the [Startup](#startup) and [Preflight Checklist (built-in)](#preflight-checklist-built-in) sections.
+2. Validate provider-specific credentials and endpoint settings in [Data Provider Configuration](#data-provider-configuration).
+3. Check storage location, retention, and replay prerequisites in [Storage management](#storage-management) and [Data Replay](#data-replay).
+4. For IB-specific incidents, verify socket/Client Portal split and contract setup in [Preferred Stock Configuration (IB-specific)](#preferred-stock-configuration-ib-specific) and the provider setup guides.
+5. If the issue persists, capture logs + command output and attach them to the incident ticket with the exact timestamp and affected symbols.
+
+---
+
 **Version:** 1.6.1
-**Last Updated:** 2026-01-30
+**Last Updated:** 2026-04-21
 **See Also:** [Configuration](../HELP.md#configuration) | [Troubleshooting](../HELP.md#troubleshooting) | [Architecture](../architecture/overview.md) | [Lean Integration](../integrations/lean-integration.md)

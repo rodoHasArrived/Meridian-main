@@ -377,6 +377,16 @@ public static class PrometheusMetrics
         "Total kernel executions by domain",
         new CounterConfiguration { LabelNames = new[] { "domain" } });
 
+    private static readonly Gauge KernelThroughputPerMinute = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_throughput_per_minute",
+        "Observed kernel throughput per minute by domain",
+        new GaugeConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Gauge KernelLatencyPercentileMs = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_latency_percentile_milliseconds",
+        "Kernel latency percentile in milliseconds by domain and percentile",
+        new GaugeConfiguration { LabelNames = new[] { "domain", "percentile" } });
+
     private static readonly Counter KernelDeterminismChecksTotal = Prometheus.Metrics.CreateCounter(
         "mdc_kernel_determinism_checks_total",
         "Total kernel determinism checks by domain and outcome",
@@ -391,16 +401,6 @@ public static class PrometheusMetrics
         "mdc_kernel_drift_score",
         "Distribution-shift drift score by domain and metric",
         new GaugeConfiguration { LabelNames = new[] { "domain", "metric" } });
-
-    private static readonly Gauge KernelThroughputPerMinute = Prometheus.Metrics.CreateGauge(
-        "mdc_kernel_throughput_per_minute",
-        "Rolling one-minute kernel throughput by domain",
-        new GaugeConfiguration { LabelNames = new[] { "domain" } });
-
-    private static readonly Gauge KernelLatencyPercentileMs = Prometheus.Metrics.CreateGauge(
-        "mdc_kernel_latency_percentile_milliseconds",
-        "Calculated kernel latency percentile in milliseconds by domain and percentile",
-        new GaugeConfiguration { LabelNames = new[] { "domain", "percentile" } });
 
     private static readonly Gauge KernelCriticalSeverityRate = Prometheus.Metrics.CreateGauge(
         "mdc_kernel_critical_severity_rate",
@@ -533,6 +533,25 @@ public static class PrometheusMetrics
     }
 
     /// <summary>
+    /// Sets kernel throughput per minute for a domain.
+    /// </summary>
+    public static void SetKernelThroughputPerMinute(string domain, double throughputPerMinute)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelThroughputPerMinute.WithLabels(safeDomain).Set(Math.Max(0, throughputPerMinute));
+    }
+
+    /// <summary>
+    /// Sets kernel latency percentile in milliseconds for a domain.
+    /// </summary>
+    public static void SetKernelLatencyPercentile(string domain, string percentile, double latencyMilliseconds)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        var safePercentile = string.IsNullOrWhiteSpace(percentile) ? "unknown" : percentile.Trim().ToLowerInvariant();
+        KernelLatencyPercentileMs.WithLabels(safeDomain, safePercentile).Set(Math.Max(0, latencyMilliseconds));
+    }
+
+    /// <summary>
     /// Records one determinism check outcome for a kernel domain.
     /// </summary>
     public static void RecordKernelDeterminismCheck(string domain, bool isMatch)
@@ -558,25 +577,6 @@ public static class PrometheusMetrics
         var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
         var safeMetric = string.IsNullOrWhiteSpace(metric) ? "unknown" : metric.Trim().ToLowerInvariant();
         KernelDriftScore.WithLabels(safeDomain, safeMetric).Set(Math.Max(0, driftScore));
-    }
-
-    /// <summary>
-    /// Sets rolling one-minute kernel throughput for a domain.
-    /// </summary>
-    public static void SetKernelThroughputPerMinute(string domain, double throughputPerMinute)
-    {
-        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
-        KernelThroughputPerMinute.WithLabels(safeDomain).Set(Math.Max(0, throughputPerMinute));
-    }
-
-    /// <summary>
-    /// Sets a calculated latency percentile for a kernel domain.
-    /// </summary>
-    public static void SetKernelLatencyPercentile(string domain, string percentile, double latencyMilliseconds)
-    {
-        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
-        var safePercentile = string.IsNullOrWhiteSpace(percentile) ? "unknown" : percentile.Trim().ToLowerInvariant();
-        KernelLatencyPercentileMs.WithLabels(safeDomain, safePercentile).Set(Math.Max(0, latencyMilliseconds));
     }
 
     /// <summary>

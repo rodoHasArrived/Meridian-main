@@ -2,13 +2,10 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
-  ClearManualOverrideRequest,
-  CreateManualOverrideRequest,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
-  ExecutionAuditEntry,
   ExecutionControlSnapshot,
-  ExecutionManualOverride,
+  ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
   LedgerSummary,
   LedgerTrialBalanceLine,
@@ -17,7 +14,6 @@ import type {
   PaperSessionSummary,
   PaperSessionDetail,
   PaperSessionReplayVerification,
-  PromotionApprovalRequest,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -38,7 +34,9 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
-  TradingWorkspaceResponse
+  TradingWorkspaceResponse,
+  CreateExecutionManualOverrideRequest,
+  ExecutionManualOverride
 } from "@/types";
 
 async function getJson<T>(path: string): Promise<T> {
@@ -55,44 +53,13 @@ async function getJson<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-function createCorrelationId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `corr-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function buildWriteHeaders(actor?: string): HeadersInit {
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-    "Content-Type": "application/json"
-  };
-
-  if (actor && actor.trim().length > 0) {
-    headers["X-Meridian-Actor"] = actor.trim();
-  }
-
-  return headers;
-}
-
-function describeErrorBody(text: string): string {
-  if (!text) {
-    return "";
-  }
-
-  try {
-    const parsed = JSON.parse(text) as { error?: string; message?: string };
-    return parsed.error ?? parsed.message ?? text;
-  } catch {
-    return text;
-  }
-}
-
-async function postJson<T>(path: string, body?: unknown, actor?: string): Promise<T> {
+async function postJson<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(path, {
     method: "POST",
-    headers: buildWriteHeaders(actor),
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
     body: body !== undefined ? JSON.stringify(body) : undefined
   });
 
@@ -100,8 +67,7 @@ async function postJson<T>(path: string, body?: unknown, actor?: string): Promis
     let errorDetail = "";
     try {
       const errBody = await response.text();
-      const detail = describeErrorBody(errBody);
-      errorDetail = detail ? ` — ${detail}` : "";
+      errorDetail = errBody ? ` — ${errBody}` : "";
     } catch {
       // ignore parse failures
     }
@@ -139,23 +105,20 @@ export function evaluatePromotion(runId: string) {
   return getJson<PromotionEvaluationResult>(`/api/promotion/evaluate/${encodeURIComponent(runId)}`);
 }
 
-export function approvePromotion(request: PromotionApprovalRequest, actor?: string) {
-  return postJson<PromotionDecisionResult>("/api/promotion/approve", request, actor);
+export interface ApprovePromotionRequest {
+  runId: string;
+  approvedBy: string;
+  approvalReason: string;
+  reviewNotes?: string;
+  manualOverrideId?: string;
 }
 
-export function rejectPromotion(
-  runId: string,
-  reason: string,
-  reviewNotes?: string | null,
-  rejectedBy?: string | null,
-  manualOverrideId?: string | null,
-  actor?: string
-) {
-  return postJson<PromotionDecisionResult>(
-    "/api/promotion/reject",
-    { runId, reason, reviewNotes, rejectedBy, manualOverrideId },
-    actor
-  );
+export function approvePromotion(request: ApprovePromotionRequest) {
+  return postJson<PromotionDecisionResult>("/api/promotion/approve", request);
+}
+
+export function rejectPromotion(runId: string, reason: string) {
+  return postJson<PromotionDecisionResult>("/api/promotion/reject", { runId, reason });
 }
 
 export function getPromotionHistory() {
@@ -164,81 +127,20 @@ export function getPromotionHistory() {
 
 // --- Order management ---
 
-export function submitOrder(request: OrderSubmitRequest, actor?: string) {
-  const correlationId = request.metadata?.correlationId ?? createCorrelationId();
-  const metadata: Record<string, string> = {
-    ...(request.metadata ?? {}),
-    correlationId
-  };
-
-  if (actor && actor.trim().length > 0) {
-    metadata.actor = actor.trim();
-  }
-
-  if (request.runId) {
-    metadata.runId = request.runId;
-  }
-
-  if (request.sessionId) {
-    metadata.sessionId = request.sessionId;
-  }
-
-  if (request.manualOverrideId) {
-    metadata.manualOverrideId = request.manualOverrideId;
-  }
-
-  return postJson<OrderResult>(
-    "/api/execution/orders/submit",
-    {
-      symbol: request.symbol,
-      side: request.side,
-      type: request.type,
-      quantity: request.quantity,
-      limitPrice: request.limitPrice ?? null,
-      timeInForce: request.timeInForce ?? "Day",
-      strategyId: request.strategyId ?? null,
-      metadata
-    },
-    actor
-  );
+export function submitOrder(request: OrderSubmitRequest) {
+  return postJson<OrderResult>("/api/execution/orders/submit", request);
 }
 
-export function cancelOrder(orderId: string, actor?: string) {
-  return postJson<TradingActionResult>(`/api/execution/orders/${encodeURIComponent(orderId)}/cancel`, undefined, actor);
+export function cancelOrder(orderId: string) {
+  return postJson<TradingActionResult>(`/api/execution/orders/${encodeURIComponent(orderId)}/cancel`);
 }
 
-export function cancelAllOrders(actor?: string) {
-  return postJson<TradingActionResult>("/api/execution/orders/cancel-all", undefined, actor);
+export function cancelAllOrders() {
+  return postJson<TradingActionResult>("/api/execution/orders/cancel-all");
 }
 
-export function closePosition(symbol: string, actor?: string) {
-  return postJson<TradingActionResult>(`/api/execution/positions/${encodeURIComponent(symbol)}/close`, undefined, actor);
-}
-
-export function getExecutionControls() {
-  return getJson<ExecutionControlSnapshot>("/api/execution/controls");
-}
-
-export function createManualOverride(request: CreateManualOverrideRequest, actor?: string) {
-  return postJson<ExecutionManualOverride>(
-    "/api/execution/controls/manual-overrides",
-    {
-      ...request,
-      correlationId: request.correlationId ?? createCorrelationId()
-    },
-    actor
-  );
-}
-
-export function clearManualOverride(overrideId: string, request?: ClearManualOverrideRequest, actor?: string) {
-  return postJson<TradingActionResult>(
-    `/api/execution/controls/manual-overrides/${encodeURIComponent(overrideId)}/clear`,
-    {
-      reason: request?.reason ?? null,
-      correlationId: request?.correlationId ?? createCorrelationId()
-    },
-    actor
-  );
+export function closePosition(symbol: string) {
+  return postJson<TradingActionResult>(`/api/execution/positions/${encodeURIComponent(symbol)}/close`);
 }
 
 // --- Paper session management ---
@@ -247,23 +149,16 @@ export function getExecutionSessions() {
   return getJson<PaperSessionSummary[]>("/api/execution/sessions");
 }
 
-export function createPaperSession(
-  strategyId: string,
-  strategyName: string | null,
-  initialCash: number,
-  symbols?: string[],
-  actor?: string
-) {
+export function createPaperSession(strategyId: string, strategyName: string | null, initialCash: number) {
   return postJson<PaperSessionSummary>("/api/execution/sessions/create", {
     strategyId,
     strategyName,
-    initialCash,
-    symbols
-  }, actor);
+    initialCash
+  });
 }
 
-export function closePaperSession(sessionId: string, actor?: string) {
-  return postJson<TradingActionResult>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`, undefined, actor);
+export function closePaperSession(sessionId: string) {
+  return postJson<TradingActionResult>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
 }
 
 export function getPaperSessionDetail(sessionId: string) {
@@ -278,21 +173,29 @@ export function getExecutionAudit(take = 20) {
   return getJson<ExecutionAuditEntry[]>(`/api/execution/audit?take=${encodeURIComponent(String(take))}`);
 }
 
+export function getExecutionControls() {
+  return getJson<ExecutionControlSnapshot>("/api/execution/controls");
+}
+
+export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
+  return postJson<ExecutionManualOverride>("/api/execution/controls/manual-override", request);
+}
+
+export function clearExecutionManualOverride(overrideId: string) {
+  return postJson<ExecutionControlSnapshot>(`/api/execution/controls/manual-override/${encodeURIComponent(overrideId)}/clear`);
+}
+
 // --- Strategy lifecycle ---
 
-export function pauseStrategy(strategyId: string, actor?: string) {
+export function pauseStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
-    `/api/strategies/${encodeURIComponent(strategyId)}/pause`,
-    undefined,
-    actor
+    `/api/strategies/${encodeURIComponent(strategyId)}/pause`
   );
 }
 
-export function stopStrategy(strategyId: string, actor?: string) {
+export function stopStrategy(strategyId: string) {
   return postJson<{ strategyId: string; action: string; success: boolean; reason: string | null }>(
-    `/api/strategies/${encodeURIComponent(strategyId)}/stop`,
-    undefined,
-    actor
+    `/api/strategies/${encodeURIComponent(strategyId)}/stop`
   );
 }
 

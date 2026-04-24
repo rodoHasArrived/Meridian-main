@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.FSharp.Ledger;
 
 namespace Meridian.Strategies.Services;
 
@@ -146,6 +147,11 @@ public sealed class ReconciliationProjectionService
         ReconciliationLedgerInput? ledger)
     {
         ArgumentNullException.ThrowIfNull(internalCashMovements);
+
+        if (internalCashMovements.Count == 0)
+        {
+            return Array.Empty<PortfolioLedgerCheckDto>();
+        }
 
         var activeCashMovements = internalCashMovements.Where(static t => !t.IsVoided).ToArray();
         var hasCashData = activeCashMovements.Length > 0;

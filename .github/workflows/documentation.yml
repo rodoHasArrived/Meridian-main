@@ -485,7 +485,31 @@ jobs:
           ADR_COUNT=$(find docs -path "*/adr/*.md" -o -path "*/decisions/*.md" 2>/dev/null | wc -l)
           echo "Found $ADR_COUNT ADR files" >> $GITHUB_STEP_SUMMARY
 
-      - name: Run documentation rules engine
+      - name: Run documentation rules engine (modified markdown files)
+        if: steps.changed_markdown.outputs.any_changed == 'true' && github.event_name != 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          if [ -f "build/scripts/docs/rules-engine.py" ] && [ -f "build/rules/doc-rules.yaml" ]; then
+            mapfile -t changed_files << 'EOF'
+            ${{ steps.changed_markdown.outputs.all_changed_files }}
+            EOF
+            : > /tmp/changed-markdown-files.txt
+            for file in "${changed_files[@]}"; do
+              [[ -n "$file" ]] && printf '%s\n' "$file" >> /tmp/changed-markdown-files.txt
+            done
+            python3 build/scripts/docs/rules-engine.py \
+              --rules build/rules/doc-rules.yaml \
+              --paths-file /tmp/changed-markdown-files.txt \
+              --output docs/status/rules-report.md \
+              --summary 2>&1 | tee /tmp/docs-rules-report.txt
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/docs-rules-report.txt >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Rules engine not configured, skipping." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Run documentation rules engine (full scan on manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
         continue-on-error: true
         run: |
           set -euo pipefail
@@ -493,7 +517,9 @@ jobs:
             python3 build/scripts/docs/rules-engine.py \
               --rules build/rules/doc-rules.yaml \
               --output docs/status/rules-report.md \
-              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+              --summary 2>&1 | tee /tmp/docs-rules-report.txt || true
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/docs-rules-report.txt >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Rules engine not configured, skipping." >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -535,7 +561,7 @@ jobs:
 
       - name: Upload docs validation reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-validation-reports
           path: .artifacts/
@@ -850,7 +876,7 @@ jobs:
 
       - name: Upload generated documentation snapshot
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-generated-snapshot
           path: |
@@ -883,7 +909,7 @@ jobs:
           steps.changes.outputs.has_changes == 'true' &&
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.dry_run == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs-automation-diff
           path: docs-automation.patch
@@ -1244,7 +1270,7 @@ jobs:
           fi
 
       - name: Upload scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: todo-scan-results
           path: |
@@ -1660,7 +1686,7 @@ jobs:
 
       - name: Configure GitHub Pages
         id: configure-pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
         continue-on-error: true
 
       - name: Upload Pages artifact
@@ -1764,7 +1790,7 @@ jobs:
           fi
 
       - name: Upload sync report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ai-docs-sync-report
           path: docs/generated/ai-docs-sync-report.md

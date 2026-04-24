@@ -36,6 +36,13 @@ public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    public JsonlPromotionRecordStore(
+        string baseDirectory,
+        ILogger<JsonlPromotionRecordStore> logger)
+        : this(new PromotionRecordStoreOptions(baseDirectory), logger)
+    {
+    }
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default)
     {

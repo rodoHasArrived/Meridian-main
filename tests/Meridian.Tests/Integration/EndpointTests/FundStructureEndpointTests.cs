@@ -93,6 +93,23 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task GetWorkspaceView_WithSelectedLedgerIds_ConstrainsWorkspaceProjection()
+    {
+        var seed = await SeedFundWorkspaceAsync(["run-selected-001", "run-selected-002", "run-selected-003"]);
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&selectedLedgerIds=run-selected-001&selectedLedgerIds=run-selected-003");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundOperationsWorkspaceDto>();
+
+        payload.Should().NotBeNull();
+        payload!.RecordedRunCount.Should().Be(2);
+        payload.RelatedRunIds.Should().BeEquivalentTo(["run-selected-001", "run-selected-003"]);
+        payload.Ledger.JournalEntryCount.Should().Be(4);
+    }
+
+    [Fact]
     public async Task PreviewReportPack_WithSeededFundProfile_ReturnsPreview()
     {
         var seed = await SeedFundWorkspaceAsync();
@@ -142,12 +159,12 @@ public sealed class FundStructureEndpointTests
         var payload = await response.Content.ReadFromJsonAsync<GovernanceCashFlowViewDto>();
 
         payload.Should().NotBeNull();
-        payload!.Scope.LedgerGroupId.Should().HaveValue();
+        payload!.Scope.LedgerGroupId.Should().NotBeNull();
         payload.Scope.LedgerGroupId.GetValueOrDefault().Should().Be(LedgerGroupId.Unassigned);
         payload.Scope.DisplayName.Should().Be(LedgerGroupId.UnassignedValue);
     }
 
-    private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync()
+    private async Task<SeededFundWorkspace> SeedFundWorkspaceAsync(IReadOnlyList<string>? runIds = null)
     {
         var fundProfileId = $"fund-endpoint-{Guid.NewGuid():N}";
         var displayName = $"Endpoint Fund {Guid.NewGuid():N}"[..22];
@@ -213,12 +230,15 @@ public sealed class FundStructureEndpointTests
             ],
             LoadedBy: "endpoint-test"));
 
-        await repository.RecordRunAsync(BuildRun(
-            runId: $"run-endpoint-{Guid.NewGuid():N}",
-            strategyId: $"carry-{Guid.NewGuid():N}"[..12],
-            strategyName: "Carry Strategy",
-            fundProfileId: fundProfileId,
-            fundDisplayName: displayName));
+        foreach (var runId in runIds ?? [$"run-endpoint-{Guid.NewGuid():N}"])
+        {
+            await repository.RecordRunAsync(BuildRun(
+                runId: runId,
+                strategyId: $"carry-{Guid.NewGuid():N}"[..12],
+                strategyName: "Carry Strategy",
+                fundProfileId: fundProfileId,
+                fundDisplayName: displayName));
+        }
 
         return new SeededFundWorkspace(fundProfileId, displayName, bankAccount.AccountId);
     }

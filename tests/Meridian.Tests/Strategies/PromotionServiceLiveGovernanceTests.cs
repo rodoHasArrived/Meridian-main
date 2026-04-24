@@ -332,14 +332,17 @@ public sealed class PromotionServiceLiveGovernanceTests
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
+        var promotionStore = promotionRecordStore ?? new JsonlPromotionRecordStore(
+            Path.Combine(CreateTempRoot(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
         return new PromotionService(
             store,
             promoter,
+            promotionStore,
             NullLogger<PromotionService>.Instance,
             controls,
             auditTrail,
-            brokerageConfiguration,
-            promotionRecordStore);
+            brokerageConfiguration);
     }
 
     public static IEnumerable<object[]> LivePolicyScenarios()

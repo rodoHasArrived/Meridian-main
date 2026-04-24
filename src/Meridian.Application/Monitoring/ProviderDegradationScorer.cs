@@ -148,13 +148,19 @@ public sealed class ProviderDegradationScorer : IDisposable
             if (!conn.IsConnected)
             {
                 connectionScore = 1.0;
+                var connectionContribution = connectionScore * _config.ConnectionWeight;
                 decisionReasons.Add(new DecisionReason(
                     RuleId: "provider-degradation.connection-connectivity",
-                    Weight: _config.ConnectionWeight,
+                    Weight: connectionContribution,
                     ReasonCode: "CONNECTION_DISCONNECTED",
                     HumanExplanation: "Provider connection is disconnected.",
                     Severity: DecisionSeverity.Critical,
-                    EvidenceRefs: [$"provider:{providerName}"]));
+                    EvidenceRefs:
+                    [
+                        $"provider:{providerName}",
+                        $"component-score:{connectionScore:F4}",
+                        $"coefficient:{_config.ConnectionWeight:F4}"
+                    ]));
             }
             else
             {
@@ -162,13 +168,19 @@ public sealed class ProviderDegradationScorer : IDisposable
                 connectionScore = Math.Min(1.0, conn.MissedHeartbeats / (double)_config.MaxMissedHeartbeatsForFullDegradation);
                 if (connectionScore > 0)
                 {
+                    var connectionContribution = connectionScore * _config.ConnectionWeight;
                     decisionReasons.Add(new DecisionReason(
                         RuleId: "provider-degradation.connection-heartbeats",
-                        Weight: _config.ConnectionWeight,
+                        Weight: connectionContribution,
                         ReasonCode: "MISSED_HEARTBEATS",
                         HumanExplanation: $"Provider missed {conn.MissedHeartbeats} heartbeat(s).",
                         Severity: DecisionSeverity.Warning,
-                        EvidenceRefs: [$"provider:{providerName}"]));
+                        EvidenceRefs:
+                        [
+                            $"provider:{providerName}",
+                            $"component-score:{connectionScore:F4}",
+                            $"coefficient:{_config.ConnectionWeight:F4}"
+                        ]));
                 }
             }
         }
@@ -182,13 +194,19 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 latencyScore = Math.Min(1.0,
                     (p95 - _config.LatencyThresholdMs) / (_config.LatencyMaxMs - _config.LatencyThresholdMs));
+                var latencyContribution = latencyScore * _config.LatencyWeight;
                 decisionReasons.Add(new DecisionReason(
                     RuleId: "provider-degradation.latency-p95",
-                    Weight: _config.LatencyWeight,
+                    Weight: latencyContribution,
                     ReasonCode: "LATENCY_P95_HIGH",
                     HumanExplanation: $"P95 latency {p95:F1}ms exceeded threshold {_config.LatencyThresholdMs:F1}ms.",
                     Severity: DecisionSeverity.Warning,
-                    EvidenceRefs: [$"p95-latency-ms:{p95:F1}"]));
+                    EvidenceRefs:
+                    [
+                        $"p95-latency-ms:{p95:F1}",
+                        $"component-score:{latencyScore:F4}",
+                        $"coefficient:{_config.LatencyWeight:F4}"
+                    ]));
             }
         }
 
@@ -202,13 +220,19 @@ public sealed class ProviderDegradationScorer : IDisposable
             {
                 errorScore = Math.Min(1.0,
                     (errorRate - _config.ErrorRateThreshold) / (1.0 - _config.ErrorRateThreshold));
+                var errorContribution = errorScore * _config.ErrorRateWeight;
                 decisionReasons.Add(new DecisionReason(
                     RuleId: "provider-degradation.error-rate",
-                    Weight: _config.ErrorRateWeight,
+                    Weight: errorContribution,
                     ReasonCode: "ERROR_RATE_HIGH",
                     HumanExplanation: $"Error rate {errorRate:P1} exceeded threshold {_config.ErrorRateThreshold:P1}.",
                     Severity: DecisionSeverity.Error,
-                    EvidenceRefs: [$"error-rate:{errorRate:F4}"]));
+                    EvidenceRefs:
+                    [
+                        $"error-rate:{errorRate:F4}",
+                        $"component-score:{errorScore:F4}",
+                        $"coefficient:{_config.ErrorRateWeight:F4}"
+                    ]));
             }
         }
 
@@ -223,13 +247,19 @@ public sealed class ProviderDegradationScorer : IDisposable
                 reconnectScore = Math.Min(1.0, reconnectsPerHour / _config.MaxReconnectsPerHour);
                 if (reconnectScore > 0)
                 {
+                    var reconnectContribution = reconnectScore * _config.ReconnectWeight;
                     decisionReasons.Add(new DecisionReason(
                         RuleId: "provider-degradation.reconnect-frequency",
-                        Weight: _config.ReconnectWeight,
+                        Weight: reconnectContribution,
                         ReasonCode: "RECONNECT_RATE_HIGH",
                         HumanExplanation: $"Reconnect frequency {reconnectsPerHour:F2}/hr indicates unstable connectivity.",
                         Severity: DecisionSeverity.Warning,
-                        EvidenceRefs: [$"reconnects-per-hour:{reconnectsPerHour:F2}"]));
+                        EvidenceRefs:
+                        [
+                            $"reconnects-per-hour:{reconnectsPerHour:F2}",
+                            $"component-score:{reconnectScore:F4}",
+                            $"coefficient:{_config.ReconnectWeight:F4}"
+                        ]));
                 }
             }
         }

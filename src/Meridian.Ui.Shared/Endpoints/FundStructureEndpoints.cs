@@ -377,7 +377,8 @@ public static class FundStructureEndpoints
                 AsOf: ParseDateTimeOffset(q["asOf"]),
                 Currency: q["currency"].FirstOrDefault(),
                 ScopeKind: ParseFundLedgerScope(q["scopeKind"]) ?? FundLedgerScope.Consolidated,
-                ScopeId: q["scopeId"].FirstOrDefault());
+                ScopeId: q["scopeId"].FirstOrDefault(),
+                SelectedLedgerIds: ParseSelectedLedgerIds(q["selectedLedgerIds"], q["selectedLedgerId"]));
 
             var result = await service.GetWorkspaceAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -456,6 +457,18 @@ public static class FundStructureEndpoints
         }
 
         return parsed;
+    }
+
+    private static IReadOnlyList<string>? ParseSelectedLedgerIds(params StringValues[] valueSets)
+    {
+        var parsed = valueSets
+            .SelectMany(static values => values)
+            .SelectMany(static value => value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return parsed.Length == 0 ? null : parsed;
     }
 
     private static AssignFundStructureNodeRequest NormalizeLedgerGroupAssignmentRequest(

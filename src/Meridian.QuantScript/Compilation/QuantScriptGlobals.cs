@@ -18,6 +18,10 @@ public sealed record ConsoleOutputEntry(
 /// </summary>
 public sealed class QuantScriptGlobals
 {
+    private const string ContextSymbolKey = "symbol";
+    private const string ContextFromKey = "from";
+    private const string ContextToKey = "to";
+    private const string ContextIntervalKey = "interval";
     private readonly List<ConsoleOutputEntry> _output = [];
     private readonly object _outputLock = new();
     private readonly object _parameterRegistrationLock = new();
@@ -119,6 +123,21 @@ public sealed class QuantScriptGlobals
         return resolved;
     }
 
+    /// <summary>Toolbar-selected symbol (normalized uppercase), if supplied by the host UI.</summary>
+    public string? ContextSymbol => GetStringContextValue(ContextSymbolKey);
+
+    /// <summary>Toolbar-selected start date, if supplied by the host UI.</summary>
+    public DateOnly? ContextFrom => GetDateOnlyContextValue(ContextFromKey);
+
+    /// <summary>Toolbar-selected end date, if supplied by the host UI.</summary>
+    public DateOnly? ContextTo => GetDateOnlyContextValue(ContextToKey);
+
+    /// <summary>Toolbar-selected interval (for example: daily, weekly, monthly), if supplied by the host UI.</summary>
+    public string? ContextInterval => GetStringContextValue(ContextIntervalKey);
+
+    /// <summary>Convenience helper for scripts that want both context dates in one call.</summary>
+    public (DateOnly? From, DateOnly? To) ContextDateRange() => (ContextFrom, ContextTo);
+
     // ── Cancellation ─────────────────────────────────────────────────────────
     public CancellationToken CancellationToken => _cancellationTokenProvider();
 
@@ -207,5 +226,39 @@ public sealed class QuantScriptGlobals
             _ when effectiveType == typeof(string) => "string",
             _ => effectiveType.Name
         };
+    }
+
+    private string? GetStringContextValue(string key)
+    {
+        var raw = GetContextValue(key);
+        return raw switch
+        {
+            null => null,
+            string text when string.IsNullOrWhiteSpace(text) => null,
+            string text => text,
+            _ => raw.ToString()
+        };
+    }
+
+    private DateOnly? GetDateOnlyContextValue(string key)
+    {
+        var raw = GetContextValue(key);
+        return raw switch
+        {
+            null => null,
+            DateOnly dateOnly => dateOnly,
+            DateTime dateTime => DateOnly.FromDateTime(dateTime),
+            DateTimeOffset dateTimeOffset => DateOnly.FromDateTime(dateTimeOffset.Date),
+            string text when DateOnly.TryParse(text, out var parsedDateOnly) => parsedDateOnly,
+            string text when DateTime.TryParse(text, out var parsedDateTime) => DateOnly.FromDateTime(parsedDateTime),
+            _ => null
+        };
+    }
+
+    private object? GetContextValue(string key)
+    {
+        if (_parameters.TryGetValue(key, out var value))
+            return value;
+        return _parameters.TryGetValue($"context.{key}", out value) ? value : null;
     }
 }

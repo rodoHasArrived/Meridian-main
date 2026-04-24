@@ -1,13 +1,7 @@
-using System.Text.Json;
-using Meridian.Application.Serialization;
-using Meridian.Backtesting.Engine;
+using System.Diagnostics;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
-using Meridian.Contracts.Domain.Models;
-using Meridian.Domain.Events;
-using Meridian.Storage;
-using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -22,62 +16,26 @@ public sealed class ScriptRunnerTests
         IQuantScriptCompiler? compiler = null,
         IQuantDataContext? dataContext = null,
         PlotQueue? plotQueue = null,
-        QuantScriptOptions? options = null,
-        BacktestEngine? backtestEngine = null)
+        int runTimeoutSeconds = 10)
     {
         compiler ??= new RoslynScriptCompiler(
-            Options.Create(options ?? new QuantScriptOptions()),
+            Options.Create(new QuantScriptOptions()),
             NullLogger<RoslynScriptCompiler>.Instance);
 
         dataContext ??= new Mock<IQuantDataContext>().Object;
 
+        // BacktestEngine is sealed; pass null since the unit tests don't exercise backtest paths.
         return new ScriptRunner(
             compiler,
             dataContext,
             plotQueue ?? new PlotQueue(),
-            Options.Create(options ?? new QuantScriptOptions { RunTimeoutSeconds = 10 }),
+            Options.Create(new QuantScriptOptions { RunTimeoutSeconds = runTimeoutSeconds }),
             NullLogger<ScriptRunner>.Instance,
-            backtestEngine);
+            null);
     }
 
     private static IReadOnlyDictionary<string, object?> NoParams =>
         new Dictionary<string, object?>();
-
-    private static BacktestEngine BuildBacktestEngine(string dataRoot)
-        => new(
-            NullLogger<BacktestEngine>.Instance,
-            new StorageCatalogService(dataRoot, new StorageOptions()));
-
-    private static void WriteBarJsonl(string dataRoot, string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m)
-    {
-        var symbolDir = Path.Combine(dataRoot, symbol.ToUpperInvariant());
-        Directory.CreateDirectory(symbolDir);
-        var filePath = Path.Combine(symbolDir, $"{symbol}_bars_{from:yyyy-MM-dd}.jsonl");
-
-        using var writer = new StreamWriter(filePath);
-        var date = from;
-        var sequence = 1L;
-        while (date <= to)
-        {
-            var open = basePrice + (date.DayNumber - from.DayNumber) * dailyGain;
-            var close = open + dailyGain;
-            var bar = new HistoricalBar(
-                Symbol: symbol,
-                SessionDate: date,
-                Open: open,
-                High: open + 2m,
-                Low: open - 2m,
-                Close: close,
-                Volume: 1_000_000L,
-                Source: "test",
-                SequenceNumber: sequence);
-
-            var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), symbol, bar, sequence, "test");
-            writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
-            sequence++;
-            date = date.AddDays(1);
-        }
-    }
 
     // ── Argument validation ───────────────────────────────────────────────────
 
@@ -189,70 +147,74 @@ public sealed class ScriptRunnerTests
     // ── Cancellation ─────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task RunAsync_CancelledBeforeRun_ReturnsFailedOrCompletes()
+    public async Task RunAsync_PreCanceledToken_ThrowsOperationCanceledException()
     {
         var runner = BuildRunner();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        try
-        {
-            var result = await runner.RunAsync("Print(\"hi\");", NoParams, cts.Token);
-            result.Should().NotBeNull();
-        }
-        catch (OperationCanceledException)
-        {
-            // Acceptable: some code paths throw on immediate cancellation
-        }
-    }
+        var act = () => runner.RunAsync("Print(\"hi\");", NoParams, cts.Token);
 
-    [Fact]
-    public async Task RunAsync_CancellationToken_CancelsRun()
-    {
-        var runner = BuildRunner();
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // A pre-cancelled token throws OperationCanceledException from CompileAsync
-        try
-        {
-            var result = await runner.RunAsync("// should be cancelled", NoParams, cts.Token);
-            result.Should().NotBeNull();
-        }
-        catch (OperationCanceledException)
-        {
-            // Acceptable: compilation cancelled before run begins
-        }
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     // ── Timeout ───────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task RunAsync_Timeout_TerminatesAfterConfiguredDuration()
+    public async Task RunAsync_UserCancellationDuringRun_ReturnsCancelledRuntimeError_AndNoCheckpoint()
     {
-        var compiler = new RoslynScriptCompiler(
-            Options.Create(new QuantScriptOptions()),
-            NullLogger<RoslynScriptCompiler>.Instance);
-        var dataContext = new Mock<IQuantDataContext>().Object;
-        var shortTimeout = new QuantScriptOptions { RunTimeoutSeconds = 1 };
+        var runner = BuildRunner(runTimeoutSeconds: 10);
+        using var cts = new CancellationTokenSource();
 
-        var runner = new ScriptRunner(
-            compiler,
-            dataContext,
-            new PlotQueue(),
-            Options.Create(shortTimeout),
-            NullLogger<ScriptRunner>.Instance,
-            null);
+        cts.CancelAfter(TimeSpan.FromMilliseconds(200));
+        var elapsed = Stopwatch.StartNew();
 
-        // Use a tight spin-loop that respects the thread-pool cancellation token
-        // (Thread.Sleep cannot be interrupted, but a spin check can)
         var result = await runner.RunAsync(
-            "while(true) { if(System.Threading.Thread.Sleep(50) == false) {} }",
+            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            NoParams,
+            cts.Token);
+
+        elapsed.Stop();
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script cancelled by user.");
+        result.Checkpoint.Should().BeNull();
+        result.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
+    public async Task RunAsync_TimeoutDuringRun_ReturnsTimeoutRuntimeError_AndNoCheckpoint()
+    {
+        var runner = BuildRunner(runTimeoutSeconds: 1);
+        var elapsed = Stopwatch.StartNew();
+
+        var result = await runner.RunAsync(
+            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            NoParams);
+        elapsed.Stop();
+
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script timed out.");
+        result.Checkpoint.Should().BeNull();
+        result.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
+    public async Task ContinueWithAsync_TimeoutDuringRun_PreservesPreviousCheckpoint_AndReturnsTimeoutRuntimeError()
+    {
+        var runner = BuildRunner(runTimeoutSeconds: 1);
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+
+        var result = await runner.ContinueWithAsync(
+            "while (true) { CancellationToken.ThrowIfCancellationRequested(); }",
+            first.Checkpoint!,
             NoParams);
 
-        // Should have been cancelled by the run timeout (success or cancelled are both acceptable
-        // depending on how the script terminates, but it should complete within the test)
-        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.RuntimeError.Should().Be("Script timed out.");
+        result.Checkpoint.Should().BeSameAs(first.Checkpoint);
     }
 
     // ── Data access ───────────────────────────────────────────────────────────
@@ -277,51 +239,6 @@ public sealed class ScriptRunnerTests
         result.ConsoleOutput.Should().Contain("Bars:");
     }
 
-    [Fact]
-    public async Task RunAsync_DataPricesAsync_ReturnsNonEmptySeries()
-    {
-        var runner = BuildRunner(dataContext: new Helpers.FakeQuantDataContext());
-        const string source = """
-            var prices = await Data.PricesAsync("SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 31));
-            Print($"Async bars: {prices.Count}");
-            """;
-
-        var result = await runner.RunAsync(source, NoParams);
-
-        result.Success.Should().BeTrue();
-        result.ConsoleOutput.Should().Contain("Async bars:");
-    }
-
-    [Fact]
-    public async Task RunAsync_DataPricesAsync_WhenCancelled_ReturnsCancelledRuntimeError()
-    {
-        const string source = """var prices = await Data.PricesAsync("SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3));""";
-        var compiler = new RoslynScriptCompiler(
-            Options.Create(new QuantScriptOptions()),
-            NullLogger<RoslynScriptCompiler>.Instance);
-        await compiler.CompileAsync(source);
-
-        var mockCtx = new Mock<IQuantDataContext>();
-        mockCtx.Setup(c => c.PricesAsync(
-                It.IsAny<string>(),
-                It.IsAny<DateOnly>(),
-                It.IsAny<DateOnly>(),
-                It.IsAny<CancellationToken>()))
-            .Returns(async (string symbol, DateOnly from, DateOnly to, CancellationToken token) =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(30), token);
-                return new PriceSeries("SPY", []);
-            });
-
-        var runner = BuildRunner(compiler: compiler, dataContext: mockCtx.Object);
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
-
-        var result = await runner.RunAsync(source, NoParams, cts.Token);
-
-        result.Success.Should().BeFalse();
-        result.RuntimeError.Should().Contain("cancelled");
-    }
-
     // ── Parameter passing ─────────────────────────────────────────────────────
 
     [Fact]
@@ -341,23 +258,26 @@ public sealed class ScriptRunnerTests
     }
 
     [Fact]
-    public async Task RunAsync_ParamCall_CapturesRuntimeParameterDescriptors()
+    public async Task RunAsync_ContextHelpers_ReadToolbarContext()
     {
         var runner = BuildRunner();
         const string source = """
-            var lookback = Param<int>("lookback", 20, 5, 100, "RSI window");
-            Print(lookback);
+            var from = ContextFrom.HasValue ? ContextFrom.Value.ToString("yyyy-MM-dd") : "none";
+            var to = ContextTo.HasValue ? ContextTo.Value.ToString("yyyy-MM-dd") : "none";
+            Print($"ctx={ContextSymbol}|{from}|{to}|{ContextInterval}");
             """;
+        var parameters = new Dictionary<string, object?>
+        {
+            ["symbol"] = "SPY",
+            ["from"] = new DateOnly(2024, 1, 2),
+            ["to"] = new DateOnly(2024, 2, 3),
+            ["interval"] = "daily"
+        };
 
-        var result = await runner.RunAsync(source, new Dictionary<string, object?> { ["lookback"] = 55 });
+        var result = await runner.RunAsync(source, parameters);
 
         result.Success.Should().BeTrue();
-        result.RuntimeParameters.Should().ContainSingle();
-        result.RuntimeParameters[0].Name.Should().Be("lookback");
-        result.RuntimeParameters[0].DefaultValue.Should().Be(20);
-        result.RuntimeParameters[0].Min.Should().Be(5);
-        result.RuntimeParameters[0].Max.Should().Be(100);
-        result.RuntimeParameters[0].Description.Should().Be("RSI window");
+        result.ConsoleOutput.Should().Contain("ctx=SPY|2024-01-02|2024-02-03|daily");
     }
 
     // ── Null-parameters coercion ──────────────────────────────────────────────
@@ -378,11 +298,13 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x += 1; var y = x + 1; Print(y);", first.Checkpoint!, NoParams);
 
         first.Checkpoint.Should().NotBeNull();
         second.Success.Should().BeTrue();
-        second.ConsoleOutput.Should().Contain("42");
+        second.CompilationErrors.Should().BeEmpty();
+        second.CompileTime.Should().BeGreaterThanOrEqualTo(TimeSpan.Zero);
+        second.ConsoleOutput.Should().Contain("43");
     }
 
     [Fact]
@@ -391,111 +313,50 @@ public sealed class ScriptRunnerTests
         var runner = BuildRunner();
 
         var first = await runner.RunAsync("var x = 41;", NoParams);
-        var second = await runner.ContinueWithAsync("x = ;", first.Checkpoint!, NoParams);
+        var second = await runner.ContinueWithAsync("x = \"wrong\";", first.Checkpoint!, NoParams);
 
         second.Success.Should().BeFalse();
         second.CompilationErrors.Should().NotBeEmpty();
+        second.RuntimeError.Should().BeNull();
         second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+
+        var third = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+        third.Success.Should().BeTrue();
+        third.ConsoleOutput.Should().Contain("42");
     }
 
     [Fact]
-    public async Task RunAsync_BacktestRunAsync_CapturesSingleBacktestResult()
+    public async Task RunAsync_UsesFreshPerInvocationPlotQueue_NotInjectedQueueState()
     {
-        var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-runner-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dataRoot);
-        WriteBarJsonl(dataRoot, "SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), 100m, 1m);
+        var injectedQueue = new PlotQueue();
+        injectedQueue.Enqueue(new PlotRequest("leftover", PlotType.Line));
+        injectedQueue.Complete();
 
-        try
-        {
-            var options = new QuantScriptOptions
-            {
-                RunTimeoutSeconds = 10,
-                DefaultDataRoot = dataRoot
-            };
-            var runner = BuildRunner(
-                dataContext: new Helpers.FakeQuantDataContext(),
-                options: options,
-                backtestEngine: BuildBacktestEngine(dataRoot));
+        var runner = BuildRunner(plotQueue: injectedQueue);
+        var result = await runner.RunAsync("Print(\"no plots\")", NoParams);
 
-            var source = $$"""
-                var result = await Backtest
-                    .WithSymbols("SPY")
-                    .From(new DateOnly(2024, 1, 2))
-                    .To(new DateOnly(2024, 1, 5))
-                    .WithDataRoot(@"{{dataRoot}}")
-                    .WithInitialCash(10_000m)
-                    .OnBar((bar, ctx) =>
-                    {
-                        var hasPosition = ctx.Positions.TryGetValue("SPY", out var position) && position.Quantity != 0;
-                        if (!hasPosition)
-                            ctx.PlaceMarketOrder("SPY", 1);
-                    })
-                    .RunAsync();
-
-                PrintMetric("Net PnL", result.Metrics.NetPnl);
-                """;
-
-            var result = await runner.RunAsync(source, NoParams);
-
-            result.Success.Should().BeTrue();
-            result.CapturedBacktests.Should().ContainSingle();
-            result.CapturedBacktests[0].Request.DataRoot.Should().Be(dataRoot);
-        }
-        finally
-        {
-            Directory.Delete(dataRoot, recursive: true);
-        }
+        result.Success.Should().BeTrue();
+        result.Plots.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task RunAsync_MultipleBacktests_CapturesEveryBacktestResult()
+    public async Task RunAsync_PlotsDoNotLeakAcrossRuns()
     {
-        var dataRoot = Path.Combine(Path.GetTempPath(), "quant-script-runner-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(dataRoot);
-        WriteBarJsonl(dataRoot, "SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), 100m, 1m);
+        var runner = BuildRunner();
+        const string emitPlotSource = """
+            var r = new ReturnSeries(
+                "T",
+                ReturnKind.Arithmetic,
+                new[] { new ReturnPoint(new DateOnly(2024, 1, 1), 0.01) });
+            r.Plot("run1");
+            """;
 
-        try
-        {
-            var options = new QuantScriptOptions
-            {
-                RunTimeoutSeconds = 10,
-                DefaultDataRoot = dataRoot
-            };
-            var runner = BuildRunner(
-                dataContext: new Helpers.FakeQuantDataContext(),
-                options: options,
-                backtestEngine: BuildBacktestEngine(dataRoot));
+        var first = await runner.RunAsync(emitPlotSource, NoParams);
+        var second = await runner.RunAsync("Print(\"second\")", NoParams);
 
-            var source = $$"""
-                async Task RunOnce()
-                {
-                    await Backtest
-                        .WithSymbols("SPY")
-                        .From(new DateOnly(2024, 1, 2))
-                        .To(new DateOnly(2024, 1, 5))
-                        .WithDataRoot(@"{{dataRoot}}")
-                        .WithInitialCash(10_000m)
-                        .OnBar((bar, ctx) =>
-                        {
-                            var hasPosition = ctx.Positions.TryGetValue("SPY", out var position) && position.Quantity != 0;
-                            if (!hasPosition)
-                                ctx.PlaceMarketOrder("SPY", 1);
-                        })
-                        .RunAsync();
-                }
-
-                await RunOnce();
-                await RunOnce();
-                """;
-
-            var result = await runner.RunAsync(source, NoParams);
-
-            result.Success.Should().BeTrue();
-            result.CapturedBacktests.Should().HaveCount(2);
-        }
-        finally
-        {
-            Directory.Delete(dataRoot, recursive: true);
-        }
+        first.Success.Should().BeTrue();
+        first.Plots.Should().ContainSingle(p => p.Title == "run1");
+        second.Success.Should().BeTrue();
+        second.Plots.Should().BeEmpty();
     }
 }

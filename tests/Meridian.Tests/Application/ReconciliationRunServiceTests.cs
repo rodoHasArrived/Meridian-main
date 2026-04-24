@@ -29,7 +29,7 @@ public sealed class ReconciliationRunServiceTests
     {
         var store = new StrategyRunStore();
         var service = CreateService(store, out var repository);
-        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-1"));
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-1", ledgerAsOfOffsetMinutes: 10));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-1"));
 
@@ -75,7 +75,7 @@ public sealed class ReconciliationRunServiceTests
     }
 
     [Fact]
-    public async Task RunAsync_WithSecurityLookup_ShouldPopulateSecurityClassifications()
+    public async Task RunAsync_WithSecurityLookup_ShouldPopulateAuthoritativeSecurityReferences()
     {
         // Arrange — register both AAPL and TSLA so the lookup returns full data for both
         var store = new StrategyRunStore();
@@ -110,7 +110,7 @@ public sealed class ReconciliationRunServiceTests
         // Assert
         detail.Should().NotBeNull();
         detail!.SecurityClassifications.Should().NotBeNull(
-            "a Security Master lookup was wired, so classifications must be populated");
+            "a Security Master lookup was wired, so authoritative security references must be populated");
 
         detail.SecurityClassifications!.Should().ContainKey("AAPL");
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
@@ -213,6 +213,30 @@ public sealed class ReconciliationRunServiceTests
         detail.Breaks.Should().Contain(b => b.CheckId == "net-equity"
             && b.Category == ReconciliationBreakCategory.TimingMismatch
             && b.Reason.Contains("drift beyond tolerance", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task RunAsync_WithNearTimingDrift_ShouldPreservePartialMatchStatusAndUnresolvedCounts()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun(
+            "run-partial-status",
+            portfolioAsOfOffsetMinutes: 5760));
+
+        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+
+        var detail = await service.RunAsync(new ReconciliationRunRequest(
+            "run-partial-status",
+            AmountTolerance: 0.01m,
+            MaxAsOfDriftMinutes: 4320));
+
+        detail.Should().NotBeNull();
+        detail!.Breaks.Should().Contain(b => b.CheckId == "cash-balance"
+            && b.Category == ReconciliationBreakCategory.PartialMatch
+            && b.Status == ReconciliationBreakStatus.PartialMatch
+            && b.Severity == ReconciliationBreakSeverity.Low);
+        detail.Summary.OpenBreakCount.Should().Be(detail.Breaks.Count,
+            "partial matches are unresolved governance items and must remain visible in open-break counts");
     }
 
     [Fact]

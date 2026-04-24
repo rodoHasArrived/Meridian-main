@@ -1,7 +1,7 @@
 using Meridian.QuantScript.Documents;
-using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
+using System.Globalization;
 
 namespace Meridian.Wpf.Models;
 
@@ -123,7 +123,7 @@ public enum ConsoleEntryKind
 // ── Metrics tab ───────────────────────────────────────────────────────────────
 
 /// <summary>A single metric key/value pair shown in the Metrics tab.</summary>
-public sealed record MetricEntry(string Label, string Value, string? Category = null, string? Source = null);
+public sealed record MetricEntry(string Label, string Value, string? Category = null);
 
 // ── Trades tab ────────────────────────────────────────────────────────────────
 
@@ -172,70 +172,22 @@ public sealed class ChartLegendEntry
 /// </summary>
 public sealed class ParameterViewModel : BindableBase
 {
-    private readonly string _name;
-    private Type _parameterType;
-    private string _label;
-    private string? _description;
-    private double _min;
-    private double _max;
     private string _rawValue = string.Empty;
     private bool _isValid = true;
     private string? _validationMessage;
     private object? _parsedValue;
-    private bool _isUserModified;
-    private bool _suppressUserTracking;
 
-    public ParameterViewModel(
-        string name,
-        object? defaultValue,
-        Type? parameterType = null,
-        string? label = null,
-        string? description = null,
-        double min = double.MinValue,
-        double max = double.MaxValue)
+    public ParameterViewModel(string name, object? defaultValue, Type? parameterType = null)
     {
-        _name = string.IsNullOrWhiteSpace(name) ? "param" : name.Trim();
-        _parameterType = parameterType ?? typeof(string);
-        _label = string.IsNullOrWhiteSpace(label) ? _name : label.Trim();
-        _description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
-        _min = min;
-        _max = max;
-        SetValue(defaultValue, markUserModified: false);
+        Name = name;
+        ParameterType = parameterType ?? typeof(string);
+        _parsedValue = defaultValue;
+        _rawValue = FormatValue(defaultValue);
+        Validate();
     }
 
-    public string Name => _name;
-
-    public Type ParameterType
-    {
-        get => _parameterType;
-        private set => SetProperty(ref _parameterType, value);
-    }
-
-    public string Label
-    {
-        get => _label;
-        private set => SetProperty(ref _label, value);
-    }
-
-    public string? Description
-    {
-        get => _description;
-        private set => SetProperty(ref _description, value);
-    }
-
-    public bool HasDescription => !string.IsNullOrWhiteSpace(Description);
-
-    public double Min
-    {
-        get => _min;
-        private set => SetProperty(ref _min, value);
-    }
-
-    public double Max
-    {
-        get => _max;
-        private set => SetProperty(ref _max, value);
-    }
+    public string Name { get; }
+    public Type ParameterType { get; }
 
     public string RawValue
     {
@@ -243,107 +195,255 @@ public sealed class ParameterViewModel : BindableBase
         set
         {
             if (SetProperty(ref _rawValue, value))
-            {
-                if (!_suppressUserTracking)
-                    IsUserModified = true;
                 Validate();
-                RaisePropertyChanged(nameof(BooleanValue));
-            }
         }
     }
 
-    public bool BooleanValue
+    public bool BoolValue
     {
-        get => ParsedValue as bool? ?? bool.TryParse(RawValue, out var parsed) && parsed;
-        set => SetValue(value, markUserModified: true);
+        get => ParsedValue is bool value && value;
+        set
+        {
+            if (!IsBoolean)
+                return;
+            SetTypedValue(value);
+        }
     }
+
+    public decimal? NumericValue
+    {
+        get
+        {
+            if (!IsNumeric || ParsedValue is null)
+                return null;
+            return Convert.ToDecimal(ParsedValue, CultureInfo.InvariantCulture);
+        }
+        set
+        {
+            if (!IsNumeric)
+                return;
+            if (value is null)
+            {
+                RawValue = string.Empty;
+                return;
+            }
+
+            SetTypedValue(ConvertNumericFromDecimal(value.Value));
+        }
+    }
+
+    public string StringValue
+    {
+        get => RawValue;
+        set => RawValue = value ?? string.Empty;
+    }
+
+    public bool IsBoolean => GetUnderlyingType(ParameterType) == typeof(bool);
+    public bool IsNumeric => IsNumericType(GetUnderlyingType(ParameterType));
 
     public bool IsValid { get => _isValid; private set => SetProperty(ref _isValid, value); }
     public string? ValidationMessage { get => _validationMessage; private set => SetProperty(ref _validationMessage, value); }
     public object? ParsedValue { get => _parsedValue; private set => SetProperty(ref _parsedValue, value); }
-    public bool IsUserModified { get => _isUserModified; private set => SetProperty(ref _isUserModified, value); }
-
-    public void ApplyDescriptor(ParameterDescriptor descriptor, Type? parameterType = null, bool preserveUserValue = true)
-    {
-        ArgumentNullException.ThrowIfNull(descriptor);
-
-        var shouldPreserveValue = preserveUserValue && IsUserModified;
-        var preservedValue = shouldPreserveValue ? ParsedValue : null;
-        var preservedRawValue = shouldPreserveValue ? RawValue : null;
-
-        ParameterType = parameterType ?? typeof(string);
-        Label = string.IsNullOrWhiteSpace(descriptor.Label) ? descriptor.Name : descriptor.Label.Trim();
-        Description = string.IsNullOrWhiteSpace(descriptor.Description) ? null : descriptor.Description.Trim();
-        Min = descriptor.Min;
-        Max = descriptor.Max;
-
-        if (shouldPreserveValue && preservedValue is not null)
-        {
-            SetValue(preservedValue, markUserModified: true);
-            return;
-        }
-
-        if (shouldPreserveValue && preservedRawValue is not null)
-        {
-            SetRawValue(preservedRawValue, markUserModified: true);
-            return;
-        }
-
-        SetValue(descriptor.DefaultValue, markUserModified: false);
-    }
 
     private void Validate()
     {
-        try
+        if (TryParseRawValue(_rawValue, out var parsed, out var validationMessage))
         {
-            if (ParameterType == typeof(string))
-            {
-                ParsedValue = _rawValue;
-            }
-            else if (string.IsNullOrWhiteSpace(_rawValue))
-            {
-                ParsedValue = null;
-            }
-            else
-            {
-                ParsedValue = Convert.ChangeType(_rawValue, ParameterType);
-            }
-
+            ParsedValue = parsed;
             IsValid = true;
             ValidationMessage = null;
+            RaiseTypedPropertyChanged();
+            return;
+        }
+
+        IsValid = false;
+        ValidationMessage = validationMessage;
+        ParsedValue = null;
+        RaiseTypedPropertyChanged();
+    }
+
+    private void SetTypedValue(object? value)
+    {
+        var formatted = FormatValue(value);
+        if (string.Equals(_rawValue, formatted, StringComparison.Ordinal))
+        {
+            Validate();
+            return;
+        }
+
+        RawValue = formatted;
+    }
+
+    private bool TryParseRawValue(string rawValue, out object? parsedValue, out string? errorMessage)
+    {
+        var targetType = GetUnderlyingType(ParameterType);
+        var normalized = rawValue?.Trim() ?? string.Empty;
+
+        if (targetType == typeof(string))
+        {
+            parsedValue = rawValue ?? string.Empty;
+            errorMessage = null;
+            return true;
+        }
+
+        if (targetType != typeof(bool) && string.IsNullOrWhiteSpace(normalized))
+        {
+            parsedValue = null;
+            errorMessage = $"Invalid {targetType.Name} value";
+            return false;
+        }
+
+        if (targetType == typeof(bool))
+        {
+            if (TryParseBoolean(normalized, out var boolValue))
+            {
+                parsedValue = boolValue;
+                errorMessage = null;
+                return true;
+            }
+
+            parsedValue = null;
+            errorMessage = "Expected true or false";
+            return false;
+        }
+
+        if (targetType.IsEnum)
+        {
+            if (Enum.TryParse(targetType, normalized, true, out var enumValue))
+            {
+                parsedValue = enumValue;
+                errorMessage = null;
+                return true;
+            }
+
+            parsedValue = null;
+            errorMessage = $"Invalid {targetType.Name} value";
+            return false;
+        }
+
+        if (TryParseNumeric(targetType, normalized, out parsedValue))
+        {
+            errorMessage = null;
+            return true;
+        }
+
+        try
+        {
+            parsedValue = Convert.ChangeType(rawValue, targetType, CultureInfo.InvariantCulture);
+            errorMessage = null;
+            return true;
         }
         catch
         {
-            IsValid = false;
-            ValidationMessage = $"Invalid {ParameterType.Name} value";
-            ParsedValue = null;
+            parsedValue = null;
+            errorMessage = $"Invalid {targetType.Name} value";
+            return false;
         }
     }
 
-    private void SetValue(object? value, bool markUserModified)
+    private static bool TryParseBoolean(string rawValue, out bool value)
     {
-        var text = value switch
+        if (bool.TryParse(rawValue, out value))
+            return true;
+
+        return rawValue.ToLowerInvariant() switch
         {
-            bool booleanValue => booleanValue ? bool.TrueString : bool.FalseString,
-            null => string.Empty,
+            "1" or "yes" or "y" or "on" => (value = true) == true,
+            "0" or "no" or "n" or "off" => (value = false) == false,
+            _ => false
+        };
+    }
+
+    private static bool TryParseNumeric(Type type, string rawValue, out object? value)
+    {
+        var styles = NumberStyles.Number;
+        var culture = CultureInfo.InvariantCulture;
+        if (type == typeof(int))
+        {
+            var parsed = int.TryParse(rawValue, styles, culture, out var intValue);
+            value = intValue;
+            return parsed;
+        }
+        if (type == typeof(long))
+        {
+            var parsed = long.TryParse(rawValue, styles, culture, out var longValue);
+            value = longValue;
+            return parsed;
+        }
+        if (type == typeof(float))
+        {
+            var parsed = float.TryParse(rawValue, styles, culture, out var floatValue);
+            value = floatValue;
+            return parsed;
+        }
+        if (type == typeof(double))
+        {
+            var parsed = double.TryParse(rawValue, styles, culture, out var doubleValue);
+            value = doubleValue;
+            return parsed;
+        }
+        if (type == typeof(decimal))
+        {
+            var parsed = decimal.TryParse(rawValue, styles, culture, out var decimalValue);
+            value = decimalValue;
+            return parsed;
+        }
+        if (type == typeof(short))
+        {
+            var parsed = short.TryParse(rawValue, styles, culture, out var shortValue);
+            value = shortValue;
+            return parsed;
+        }
+        if (type == typeof(byte))
+        {
+            var parsed = byte.TryParse(rawValue, styles, culture, out var byteValue);
+            value = byteValue;
+            return parsed;
+        }
+
+        value = null;
+        return false;
+    }
+
+    private object ConvertNumericFromDecimal(decimal value)
+    {
+        var targetType = GetUnderlyingType(ParameterType);
+        return targetType == typeof(int) ? decimal.ToInt32(value)
+            : targetType == typeof(long) ? decimal.ToInt64(value)
+            : targetType == typeof(float) ? (float)value
+            : targetType == typeof(double) ? (double)value
+            : targetType == typeof(decimal) ? value
+            : targetType == typeof(short) ? decimal.ToInt16(value)
+            : targetType == typeof(byte) ? decimal.ToByte(value)
+            : value;
+    }
+
+    private static string FormatValue(object? value)
+    {
+        if (value is null)
+            return string.Empty;
+
+        return value switch
+        {
+            bool boolValue => boolValue ? bool.TrueString : bool.FalseString,
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
             _ => value.ToString() ?? string.Empty
         };
-
-        SetRawValue(text, markUserModified);
     }
 
-    private void SetRawValue(string value, bool markUserModified)
-    {
-        _suppressUserTracking = true;
-        try
-        {
-            RawValue = value;
-        }
-        finally
-        {
-            _suppressUserTracking = false;
-        }
+    private static Type GetUnderlyingType(Type type) => Nullable.GetUnderlyingType(type) ?? type;
+    private static bool IsNumericType(Type type) => type == typeof(int)
+        || type == typeof(long)
+        || type == typeof(float)
+        || type == typeof(double)
+        || type == typeof(decimal)
+        || type == typeof(short)
+        || type == typeof(byte);
 
-        IsUserModified = markUserModified;
+    private void RaiseTypedPropertyChanged()
+    {
+        RaisePropertyChanged(nameof(BoolValue));
+        RaisePropertyChanged(nameof(NumericValue));
+        RaisePropertyChanged(nameof(StringValue));
     }
 }

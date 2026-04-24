@@ -433,6 +433,8 @@ public static class UiApiRoutes
     public const string ExecutionControlsCircuitBreaker = "/api/execution/controls/circuit-breaker";
     public const string ExecutionControlsManualOverrides = "/api/execution/controls/manual-overrides";
     public const string ExecutionControlsManualOverrideClear = "/api/execution/controls/manual-overrides/{overrideId}/clear";
+    public const string ExecutionManualOverrides = ExecutionControlsManualOverrides;
+    public const string ExecutionManualOverrideClear = ExecutionControlsManualOverrideClear;
     public const string ExecutionSessions = "/api/execution/sessions";
     public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";

@@ -110,7 +110,6 @@ public sealed class ExecutionGovernanceEndpointsTests
             JsonOptions());
         controls.Should().NotBeNull();
         controls!.ManualOverrides.Should().BeEmpty();
-
         var auditResponse = await client.GetAsync("/api/execution/audit?take=10");
         auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var auditEntries = JsonSerializer.Deserialize<ExecutionAuditEntry[]>(

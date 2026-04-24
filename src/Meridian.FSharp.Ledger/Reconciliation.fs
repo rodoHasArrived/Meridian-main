@@ -117,16 +117,16 @@ module Reconciliation =
     let private timingDriftMinutes (expectedAsOf: System.DateTimeOffset) (actualAsOf: System.DateTimeOffset) =
         abs ((actualAsOf - expectedAsOf).TotalMinutes)
 
-    let private partialTimingConfidence maxAsOfDriftMinutes driftMinutes =
+    let private partialTimingConfidence maxAsOfDriftMinutes (driftMinutes: float) =
         let safeTolerance = decimal (max 1 maxAsOfDriftMinutes)
         1.0m - (decimal driftMinutes / safeTolerance) * 0.3m
 
     let private partialAmountConfidence amountTolerance variancePct =
         1.0m - (variancePct / max 0.001m amountTolerance) * 0.3m
 
-    let private classifyTimingSeverity maxAsOfDriftMinutes driftMinutes =
+    let private classifyTimingSeverity maxAsOfDriftMinutes (driftMinutes: float) =
         let safeTolerance = max 1 maxAsOfDriftMinutes
-        let roundedDrift = int (System.Math.Ceiling driftMinutes)
+        let roundedDrift = int (System.Math.Ceiling(driftMinutes))
 
         if roundedDrift >= safeTolerance * 6 then
             BreakSeverity.High
@@ -274,7 +274,7 @@ module Reconciliation =
                     let driftMinutes = timingDriftMinutes check.ExpectedAsOf check.ActualAsOf
                     let amountWithinTolerance = variancePct <= max 0m amountTolerance
                     let timingWithinTolerance = driftMinutes <= float (max 0 maxAsOfDriftMinutes)
-                    let roundedDriftMinutes = int (System.Math.Ceiling driftMinutes)
+                    let roundedDriftMinutes = int (System.Math.Ceiling(driftMinutes))
 
                     match timingWithinTolerance, amountWithinTolerance with
                     | true, true ->
@@ -292,14 +292,14 @@ module Reconciliation =
                             "partial_match", "partial_match", "unknown", sprintf "Amount variance %.2f%%" (float variancePct * 100.0), false, BreakSeverity.asString BreakSeverity.Low
                         else
                             let severity =
-                                ReconciliationClassification.classifyLegacy expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount)).Severity
+                                LedgerBreakClassification.severity expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount))
                                 |> BreakSeverity.asString
                             "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, severity
                     | false, false ->
                         let timingRatio = decimal roundedDriftMinutes / decimal (max 1 maxAsOfDriftMinutes)
                         if variancePct >= timingRatio then
                             let severity =
-                                ReconciliationClassification.classifyLegacy expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount)).Severity
+                                LedgerBreakClassification.severity expectedAmountForSeverity (AmountBreak(check.ExpectedAmount, check.ActualAmount))
                                 |> BreakSeverity.asString
                             "amount_mismatch", "open", "unknown", "Amounts differ beyond the configured tolerance.", false, severity
                         else

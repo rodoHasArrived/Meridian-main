@@ -36,14 +36,14 @@ public sealed class SecurityMasterMappingInteropTests
 
         var record = SecurityMasterMapping.ToRecord(projection);
 
-        record.Common.PrimaryListingMic.IsSome.Should().BeTrue();
-        record.Common.PrimaryListingMic.Value.Should().Be("XNYS");
-        record.Common.CountryOfIncorporation.IsSome.Should().BeTrue();
-        record.Common.CountryOfIncorporation.Value.Should().Be("US");
-        record.Common.SettlementCycleDays.IsSome.Should().BeTrue();
-        record.Common.SettlementCycleDays.Value.Should().Be(2);
-        record.Common.HolidayCalendarId.IsSome.Should().BeTrue();
-        record.Common.HolidayCalendarId.Value.Should().Be("NYSE");
+        record.Common.PrimaryListingMic.Should().NotBeNull();
+        record.Common.PrimaryListingMic!.Value.Should().Be("XNYS");
+        record.Common.CountryOfIncorporation.Should().NotBeNull();
+        record.Common.CountryOfIncorporation!.Value.Should().Be("US");
+        record.Common.SettlementCycleDays.Should().NotBeNull();
+        record.Common.SettlementCycleDays!.Value.Should().Be(2);
+        record.Common.HolidayCalendarId.Should().NotBeNull();
+        record.Common.HolidayCalendarId!.Value.Should().Be("NYSE");
     }
 
     private static SecurityMasterSnapshotWrapper CreateSnapshotWrapper()

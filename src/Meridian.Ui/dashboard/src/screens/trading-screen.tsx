@@ -11,9 +11,9 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, clearManualOverride, closePosition, closePaperSession, createManualOverride, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, getSession, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, ExecutionManualOverride, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, SessionInfo, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -113,13 +113,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
     try {
       let result: TradingActionResult;
       if (action.kind === "cancel-order") {
-        result = await cancelOrder(action.orderId, operatorDisplayName);
+        result = await cancelOrder(action.orderId);
       } else if (action.kind === "cancel-all") {
-        result = await cancelAllOrders(operatorDisplayName);
+        result = await cancelAllOrders();
       } else if (action.kind === "close-position") {
-        result = await closePosition(action.symbol, operatorDisplayName);
+        result = await closePosition(action.symbol);
       } else if (action.kind === "pause-strategy") {
-        const raw = await pauseStrategy(action.strategyId, operatorDisplayName);
+        const raw = await pauseStrategy(action.strategyId);
         result = {
           actionId: `act-${Date.now()}`,
           status: raw.success ? "Completed" : "Rejected",
@@ -127,7 +127,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
           occurredAt: new Date().toISOString()
         };
       } else {
-        const raw = await stopStrategy(action.strategyId, operatorDisplayName);
+        const raw = await stopStrategy(action.strategyId);
         result = {
           actionId: `act-${Date.now()}`,
           status: raw.success ? "Completed" : "Rejected",
@@ -135,8 +135,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
           occurredAt: new Date().toISOString()
         };
       }
+      await refreshExecutionControls();
       setConfirm((prev) => ({ ...prev, busy: false, result }));
-      await refreshExecutionAudit();
     } catch (err) {
       setConfirm((prev) => ({
         ...prev,
@@ -153,9 +153,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [showSessionForm, setShowSessionForm] = useState(false);
   const [newSessionStrategyId, setNewSessionStrategyId] = useState("");
   const [newSessionCash, setNewSessionCash] = useState("100000");
-  const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
-  const [controls, setControls] = useState<ExecutionControlSnapshot | null>(null);
-  const [controlsError, setControlsError] = useState<string | null>(null);
 
   // --- Strategy lifecycle ---
   const [strategyId, setStrategyId] = useState("");
@@ -163,6 +160,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [selectedSessionDetail, setSelectedSessionDetail] = useState<PaperSessionDetail | null>(null);
   const [sessionReplayVerification, setSessionReplayVerification] = useState<PaperSessionReplayVerification | null>(null);
   const [executionAudit, setExecutionAudit] = useState<ExecutionAuditEntry[]>([]);
+  const [executionControls, setExecutionControls] = useState<ExecutionControlSnapshot | null>(null);
 
   const [replayFiles, setReplayFiles] = useState<ReplayFileRecord[]>([]);
   const [selectedReplayFile, setSelectedReplayFile] = useState("");
@@ -172,106 +170,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [seekMs, setSeekMs] = useState("0");
 
   const [promotionRunId, setPromotionRunId] = useState("");
+  const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
+  const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
+  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
+  const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [promotionError, setPromotionError] = useState<string | null>(null);
   const [promotionBusy, setPromotionBusy] = useState(false);
   const [promotionResult, setPromotionResult] = useState<string | null>(null);
-  const [promotionApprovalReason, setPromotionApprovalReason] = useState("Approved from trading workstation promotion gate.");
-  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
-  const [overrideReason, setOverrideReason] = useState("Operator-reviewed override for promotion gate.");
-  const [overrideBusy, setOverrideBusy] = useState(false);
-  const [overrideResult, setOverrideResult] = useState<string | null>(null);
-
-  const operatorDisplayName = sessionInfo?.displayName ?? "Cockpit Operator";
-
-  const activeSessionSummary = useMemo(() => {
-    if (selectedSessionDetail) {
-      return selectedSessionDetail.summary;
-    }
-
-    if (selectedSessionId) {
-      return sessions.find((session) => session.sessionId === selectedSessionId) ?? null;
-    }
-
-    return sessions.find((session) => session.isActive) ?? null;
-  }, [selectedSessionDetail, selectedSessionId, sessions]);
-
-  const latestApprovedPromotion = useMemo(() => {
-    const strategyIdFilter = activeSessionSummary?.strategyId ?? promotionEval?.strategyId ?? null;
-    const eligibleRecords = promotionHistory
-      .filter((record) => record.decision.toLowerCase() === "approved")
-      .filter((record) => !strategyIdFilter || record.strategyId === strategyIdFilter)
-      .sort((left, right) => Date.parse(right.promotedAt) - Date.parse(left.promotedAt));
-
-    return eligibleRecords[0] ?? null;
-  }, [activeSessionSummary, promotionEval, promotionHistory]);
-
-  const selectedPromotionRecord = useMemo(() => {
-    const runId = promotionRunId.trim();
-    if (runId.length > 0) {
-      return promotionHistory.find((record) =>
-        record.sourceRunId === runId ||
-        record.targetRunId === runId) ?? null;
-    }
-
-    return latestApprovedPromotion;
-  }, [latestApprovedPromotion, promotionHistory, promotionRunId]);
-
-  const matchingManualOverride = useMemo(() => {
-    if (!controls || !promotionEval?.requiredManualOverrideKind) {
-      return null;
-    }
-
-    const requiredKind = promotionEval.requiredManualOverrideKind.toLowerCase();
-    const runId = promotionRunId.trim();
-    const strategyIdFilter = promotionEval.strategyId ?? null;
-
-    return controls.manualOverrides.find((overrideEntry) =>
-      overrideEntry.kind.toLowerCase() === requiredKind &&
-      (!runId || !overrideEntry.runId || overrideEntry.runId === runId) &&
-      (!strategyIdFilter || !overrideEntry.strategyId || overrideEntry.strategyId === strategyIdFilter)) ?? null;
-  }, [controls, promotionEval, promotionRunId]);
-
-  const readinessCards = useMemo(() => {
-    const replayMatchesActiveSession =
-      sessionReplayVerification &&
-      activeSessionSummary &&
-      sessionReplayVerification.summary.sessionId === activeSessionSummary.sessionId;
-    const controlReady = controls ? !controls.circuitBreaker.isOpen : false;
-    const promotionTraceReady = selectedPromotionRecord ? !!selectedPromotionRecord.auditReference : false;
-
-    return [
-      {
-        label: "Session Active",
-        ready: !!activeSessionSummary?.isActive,
-        detail: activeSessionSummary
-          ? `${activeSessionSummary.sessionId} · ${getSessionStatus(activeSessionSummary)}`
-          : "No paper session selected"
-      },
-      {
-        label: "Replay Verified",
-        ready: !!(replayMatchesActiveSession && sessionReplayVerification.isConsistent),
-        detail: replayMatchesActiveSession
-          ? `${sessionReplayVerification.isConsistent ? "Matched" : "Mismatch"} · ${sessionReplayVerification.comparedFillCount} fills`
-          : "Replay evidence not loaded"
-      },
-      {
-        label: "Control State",
-        ready: controlReady,
-        detail: controls
-          ? `${controls.circuitBreaker.isOpen ? "Circuit breaker open" : "Circuit breaker closed"} · ${controls.manualOverrides.length} overrides`
-          : controlsError ?? "Execution controls unavailable"
-      },
-      {
-        label: "Promotion Trace",
-        ready: promotionTraceReady,
-        detail: selectedPromotionRecord
-          ? `${selectedPromotionRecord.decision} · ${selectedPromotionRecord.auditReference ?? "audit pending"}`
-          : "No durable promotion record selected"
-      }
-    ];
-  }, [activeSessionSummary, controls, controlsError, selectedPromotionRecord, sessionReplayVerification]);
 
   async function refreshExecutionAudit() {
     try {
@@ -282,44 +189,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
     }
   }
 
-  async function refreshPromotionHistory() {
-    try {
-      const history = await getPromotionHistory();
-      setPromotionHistory(history);
-    } catch {
-      setPromotionHistory([]);
-    }
-  }
-
-  async function refreshControls() {
+  async function refreshExecutionControls() {
     try {
       const snapshot = await getExecutionControls();
-      setControls(snapshot);
-      setControlsError(null);
-    } catch (err) {
-      setControls(null);
-      setControlsError(err instanceof Error ? err.message : "Execution controls unavailable.");
+      setExecutionControls(snapshot);
+    } catch {
+      setExecutionControls(null);
     }
-  }
-
-  async function refreshPromotionEvaluation(runId = promotionRunId.trim()) {
-    if (!runId) {
-      setPromotionEval(null);
-      return;
-    }
-
-    const evaluation = await evaluatePromotion(runId);
-    setPromotionEval(evaluation);
   }
 
   useEffect(() => {
-    void getSession()
-      .then(setSessionInfo)
-      .catch(() => { /* session identity unavailable */ });
-    void getExecutionSessions()
+    getExecutionSessions()
       .then(setSessions)
       .catch(() => { /* sessions unavailable — silently skip */ });
-    void getReplayFiles()
+    getReplayFiles()
       .then((result) => {
         setReplayFiles(result.files);
         if (result.files.length > 0) {
@@ -327,30 +210,23 @@ export function TradingScreen({ data }: TradingScreenProps) {
         }
       })
       .catch(() => { /* replay unavailable */ });
-    void refreshPromotionHistory();
-    void refreshControls();
+    getPromotionHistory()
+      .then(setPromotionHistory)
+      .catch(() => { /* history unavailable */ });
     void refreshExecutionAudit();
+    void refreshExecutionControls();
   }, []);
 
   async function handleSubmitOrder(e: React.FormEvent) {
     e.preventDefault();
     setOrderState({ phase: "submitting", orderId: null, error: null });
     try {
-      const result = await submitOrder(
-        {
-          ...orderForm,
-          strategyId: activeSessionSummary?.strategyId ?? null,
-          runId: latestApprovedPromotion?.targetRunId ?? latestApprovedPromotion?.sourceRunId ?? null,
-          sessionId: activeSessionSummary?.sessionId ?? null,
-          manualOverrideId: matchingManualOverride?.overrideId ?? null
-        },
-        operatorDisplayName
-      );
+      const result = await submitOrder(orderForm);
       if (result.success) {
         setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
         setShowOrderForm(false);
         setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
-        await refreshExecutionAudit();
+        await refreshExecutionControls();
       } else {
         setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
       }
@@ -370,12 +246,11 @@ export function TradingScreen({ data }: TradingScreenProps) {
     try {
       const sid = newSessionStrategyId.trim() || `strat-${Date.now()}`;
       const cash = parseFloat(newSessionCash) || 100_000;
-      const summary = await createPaperSession(sid, null, cash, undefined, operatorDisplayName);
+      const summary = await createPaperSession(sid, null, cash);
       setSessions((prev) => [summary, ...prev]);
       setShowSessionForm(false);
       setNewSessionStrategyId("");
       setNewSessionCash("100000");
-      await refreshExecutionAudit();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to create session.");
     } finally {
@@ -386,7 +261,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   async function handleCloseSession(sessionId: string) {
     setSessionError(null);
     try {
-      const result = await closePaperSession(sessionId, operatorDisplayName);
+      const result = await closePaperSession(sessionId);
       setSessions((prev) => prev.map((session) => (
         session.sessionId === sessionId
           ? { ...session, closedAt: result.occurredAt, isActive: false }
@@ -407,6 +282,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         };
       });
       await refreshExecutionAudit();
+      await refreshExecutionControls();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
     }
@@ -435,6 +311,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSelectedSessionDetail(detail);
       setSessionReplayVerification(verification);
       await refreshExecutionAudit();
+      await refreshExecutionControls();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
@@ -477,10 +354,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
     setPromotionBusy(true);
     setPromotionError(null);
     setPromotionResult(null);
-    setOverrideResult(null);
     try {
-      await refreshPromotionEvaluation();
-      await refreshControls();
+      const evaluation = await evaluatePromotion(promotionRunId.trim());
+      setPromotionEval(evaluation);
     } catch (err) {
       setPromotionError(err instanceof Error ? err.message : "Evaluation failed.");
     } finally {
@@ -489,80 +365,27 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   async function handlePromoteToPaper() {
-    if (!promotionEval?.isEligible || !promotionRunId.trim()) return;
+    if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
+      setPromotionError("Approver and approval reason are required.");
+      return;
+    }
     setPromotionBusy(true);
     setPromotionError(null);
     try {
-      const result = await approvePromotion(
-        {
-          runId: promotionRunId.trim(),
-          reviewNotes: promotionReviewNotes.trim() || null,
-          approvedBy: operatorDisplayName,
-          approvalReason: promotionApprovalReason.trim() || null,
-          manualOverrideId: matchingManualOverride?.overrideId ?? null
-        },
-        operatorDisplayName
-      );
-      setPromotionResult(
-        result.success
-          ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit ${result.auditReference}` : ""}`
-          : result.reason
-      );
-      await refreshPromotionHistory();
-      await refreshControls();
-      await refreshPromotionEvaluation();
+      const result = await approvePromotion({
+        runId: promotionRunId.trim(),
+        approvedBy: promotionApprovedBy.trim(),
+        approvalReason: promotionApprovalReason.trim(),
+        reviewNotes: promotionReviewNotes.trim() || undefined,
+        manualOverrideId: promotionManualOverrideId.trim() || undefined
+      });
+      setPromotionResult(result.success ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}` : result.reason);
+      const history = await getPromotionHistory();
+      setPromotionHistory(history);
     } catch (err) {
       setPromotionError(err instanceof Error ? err.message : "Promotion approval failed.");
     } finally {
       setPromotionBusy(false);
-    }
-  }
-
-  async function handleCreateManualOverride() {
-    if (!promotionEval?.requiredManualOverrideKind || !promotionRunId.trim()) return;
-
-    setOverrideBusy(true);
-    setPromotionError(null);
-    setOverrideResult(null);
-    try {
-      const created = await createManualOverride(
-        {
-          kind: promotionEval.requiredManualOverrideKind,
-          reason: overrideReason.trim() || "Operator-reviewed override for promotion gate.",
-          strategyId: promotionEval.strategyId ?? null,
-          runId: promotionRunId.trim()
-        },
-        operatorDisplayName
-      );
-      setOverrideResult(`Manual override created: ${created.overrideId}`);
-      await refreshControls();
-      await refreshPromotionEvaluation();
-      await refreshExecutionAudit();
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Failed to create manual override.");
-    } finally {
-      setOverrideBusy(false);
-    }
-  }
-
-  async function handleClearManualOverride(overrideEntry: ExecutionManualOverride) {
-    setOverrideBusy(true);
-    setPromotionError(null);
-    setOverrideResult(null);
-    try {
-      const result = await clearManualOverride(
-        overrideEntry.overrideId,
-        { reason: `Cleared by ${operatorDisplayName}` },
-        operatorDisplayName
-      );
-      setOverrideResult(result.message);
-      await refreshControls();
-      await refreshPromotionEvaluation();
-      await refreshExecutionAudit();
-    } catch (err) {
-      setPromotionError(err instanceof Error ? err.message : "Failed to clear manual override.");
-    } finally {
-      setOverrideBusy(false);
     }
   }
 
@@ -629,20 +452,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <ContextRow label="Working orders" value={String(data.openOrders.length)} />
             <ContextRow label="Completed fills" value={String(data.fills.length)} />
             <ContextRow label="Risk state" value={data.risk.state} />
-            <ContextRow label="Operator" value={operatorDisplayName} />
           </CardContent>
         </Card>
-      </section>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {readinessCards.map((card) => (
-          <ReadinessBlock
-            key={card.label}
-            label={card.label}
-            ready={card.ready}
-            detail={card.detail}
-          />
-        ))}
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -674,6 +485,40 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <li key={guardrail}>{guardrail}</li>
                 ))}
               </ul>
+            </div>
+            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Execution controls snapshot</p>
+                <span className={cn("text-xs font-semibold uppercase tracking-[0.14em]", executionControls?.circuitBreaker.isOpen ? "text-danger" : "text-success")}>
+                  Breaker {executionControls?.circuitBreaker.isOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+              {executionControls ? (
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <p>
+                    Default limit: <span className="font-mono text-foreground">{executionControls.defaultMaxPositionSize ?? "Not set"}</span>
+                  </p>
+                  <p>
+                    Symbol limits:{" "}
+                    <span className="font-mono text-foreground">
+                      {Object.keys(executionControls.symbolPositionLimits).length === 0
+                        ? "None"
+                        : Object.entries(executionControls.symbolPositionLimits).map(([symbol, limit]) => `${symbol}=${limit}`).join(", ")}
+                    </span>
+                  </p>
+                  <p>
+                    Active overrides:{" "}
+                    <span className="font-mono text-foreground">
+                      {executionControls.manualOverrides.length === 0
+                        ? "None"
+                        : executionControls.manualOverrides.map((entry) => `${entry.kind}${entry.symbol ? ` (${entry.symbol})` : ""}`).join(", ")}
+                    </span>
+                  </p>
+                  <p className="font-mono">As of {executionControls.asOf}</p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Execution controls snapshot unavailable.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -841,10 +686,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     </div>
                   )}
                 </div>
-
-                <p className="text-xs text-muted-foreground">
-                  Actor {operatorDisplayName} · Session {activeSessionSummary?.sessionId ?? "not linked"} · Run {latestApprovedPromotion?.targetRunId ?? latestApprovedPromotion?.sourceRunId ?? "not linked"}
-                </p>
 
                 {orderState.error && (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
@@ -1119,18 +960,14 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     <p className="mt-1 text-xs text-muted-foreground">
                       Source: {sessionReplayVerification.replaySource} · Verified at {sessionReplayVerification.verifiedAt}
                     </p>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                      <SessionInfoRow label="Compared fills" value={String(sessionReplayVerification.comparedFillCount)} />
-                      <SessionInfoRow label="Compared orders" value={String(sessionReplayVerification.comparedOrderCount)} />
-                      <SessionInfoRow label="Compared ledger" value={String(sessionReplayVerification.comparedLedgerEntryCount)} />
+                    <div className="mt-2 grid gap-1 text-xs text-foreground sm:grid-cols-2">
+                      <span>Compared fills: {sessionReplayVerification.comparedFillCount}</span>
+                      <span>Compared orders: {sessionReplayVerification.comparedOrderCount}</span>
+                      <span>Compared ledger entries: {sessionReplayVerification.comparedLedgerEntryCount}</span>
+                      <span>Verification audit: {sessionReplayVerification.verificationAuditId ?? "Unavailable"}</span>
+                      <span>Last persisted fill: {sessionReplayVerification.lastPersistedFillAt ?? "N/A"}</span>
+                      <span>Last persisted order update: {sessionReplayVerification.lastPersistedOrderUpdateAt ?? "N/A"}</span>
                     </div>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      <SessionInfoRow label="Last persisted fill" value={sessionReplayVerification.lastPersistedFillAt} />
-                      <SessionInfoRow label="Last order update" value={sessionReplayVerification.lastPersistedOrderUpdateAt} />
-                    </div>
-                    <p className="mt-2 font-mono text-[11px] text-muted-foreground">
-                      Verification audit: {sessionReplayVerification.verificationAuditId ?? "pending"}
-                    </p>
                     {sessionReplayVerification.mismatchReasons.length > 0 && (
                       <ul className="mt-2 space-y-1 text-xs text-foreground">
                         {sessionReplayVerification.mismatchReasons.slice(0, 3).map((reason) => (
@@ -1160,8 +997,6 @@ export function TradingScreen({ data }: TradingScreenProps) {
                       <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                         {entry.occurredAt}
                         {entry.metadata?.sessionId ? ` · session ${entry.metadata.sessionId}` : ""}
-                        {entry.correlationId ? ` · corr ${entry.correlationId}` : ""}
-                        {entry.runId ? ` · run ${entry.runId}` : ""}
                       </p>
                     </div>
                   ))}
@@ -1258,10 +1093,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Promotion reliability gate</CardTitle>
-            <CardDescription>
-              Uses durable promotion history, operator identity, and manual overrides when policy requires them.
-            </CardDescription>
+            <CardTitle>Backtest → Paper promotion gate</CardTitle>
+            <CardDescription>Requires eligibility check before confirmation and audit refresh.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <input
@@ -1271,129 +1104,59 @@ export function TradingScreen({ data }: TradingScreenProps) {
               onChange={(e) => setPromotionRunId(e.target.value)}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
             />
+            <input
+              aria-label="Approved by"
+              placeholder="operator id"
+              value={promotionApprovedBy}
+              onChange={(e) => setPromotionApprovedBy(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              required
+            />
+            <input
+              aria-label="Approval reason"
+              placeholder="why this promotion is approved"
+              value={promotionApprovalReason}
+              onChange={(e) => setPromotionApprovalReason(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              required
+            />
+            <input
+              aria-label="Review notes"
+              placeholder="optional review notes"
+              value={promotionReviewNotes}
+              onChange={(e) => setPromotionReviewNotes(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <input
+              aria-label="Manual override id"
+              placeholder="optional manual override id"
+              value={promotionManualOverrideId}
+              onChange={(e) => setPromotionManualOverrideId(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+            />
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
-              <Button
-                size="sm"
-                onClick={handlePromoteToPaper}
-                disabled={promotionBusy || !promotionEval?.isEligible || (!!promotionEval?.requiresManualOverride && !matchingManualOverride)}
-              >
-                Confirm promote
-              </Button>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approved by</label>
-                <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2 font-mono text-sm text-foreground">
-                  {operatorDisplayName}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Approval reason</label>
-                <input
-                  aria-label="Approval reason"
-                  value={promotionApprovalReason}
-                  onChange={(e) => setPromotionApprovalReason(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Review notes</label>
-              <textarea
-                aria-label="Review notes"
-                value={promotionReviewNotes}
-                onChange={(e) => setPromotionReviewNotes(e.target.value)}
-                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-              />
+              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
             </div>
             {promotionEval && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
                 <p>Eligible: {promotionEval.isEligible ? "Yes" : "No"}</p>
-                <p>Requires human approval: {promotionEval.requiresHumanApproval ? "Yes" : "No"}</p>
-                <p>Requires manual override: {promotionEval.requiresManualOverride ? "Yes" : "No"}</p>
                 <p>Sharpe: {promotionEval.sharpeRatio} · Max DD: {promotionEval.maxDrawdownPercent}% · Return: {promotionEval.totalReturn}%</p>
                 <p>{promotionEval.reason}</p>
-                {promotionEval.blockingReasons && promotionEval.blockingReasons.length > 0 && (
-                  <div className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-3">
-                    <p className="font-semibold text-foreground">Blocking reasons</p>
-                    <ul className="mt-2 space-y-1">
-                      {promotionEval.blockingReasons.map((reason) => (
-                        <li key={reason}>• {reason}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {promotionEval.requiresManualOverride && (
-                  <div className="mt-3 rounded-lg border border-border/60 bg-secondary/20 p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-foreground">Manual override</p>
-                        <p className="mt-1 text-muted-foreground">
-                          Required kind: {promotionEval.requiredManualOverrideKind ?? "n/a"}
-                        </p>
-                      </div>
-                      {matchingManualOverride && (
-                        <span className="rounded-full bg-success/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-success">
-                          Active
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <input
-                        aria-label="Manual override reason"
-                        value={overrideReason}
-                        onChange={(e) => setOverrideReason(e.target.value)}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        <Button size="sm" variant="outline" onClick={handleCreateManualOverride} disabled={overrideBusy}>
-                          {overrideBusy ? "Applying…" : "Create override"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => matchingManualOverride && handleClearManualOverride(matchingManualOverride)}
-                          disabled={overrideBusy || !matchingManualOverride}
-                        >
-                          Clear override
-                        </Button>
-                      </div>
-                      {matchingManualOverride && (
-                        <p className="font-mono text-[11px] text-muted-foreground">
-                          Active override {matchingManualOverride.overrideId} · {matchingManualOverride.createdBy}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
             {promotionResult && <p className="text-xs text-success">{promotionResult}</p>}
-            {overrideResult && <p className="text-xs text-success">{overrideResult}</p>}
             {promotionError && <p className="text-xs text-destructive">{promotionError}</p>}
             <div className="rounded-lg border border-border/60 p-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Durable promotion trace</p>
-              {selectedPromotionRecord && (
-                <div className="mb-3 rounded-lg border border-border/60 bg-secondary/20 p-3 text-xs">
-                  <p className="font-semibold text-foreground">
-                    {selectedPromotionRecord.sourceRunType} → {selectedPromotionRecord.targetRunType} · {selectedPromotionRecord.decision}
-                  </p>
-                  <p className="mt-1 text-muted-foreground">
-                    Source {selectedPromotionRecord.sourceRunId} · Target {selectedPromotionRecord.targetRunId ?? "pending"}
-                  </p>
-                  <p className="mt-1 text-muted-foreground">
-                    Audit {selectedPromotionRecord.auditReference ?? "pending"} · Approver {selectedPromotionRecord.approvedBy ?? "unassigned"}
-                  </p>
-                  {selectedPromotionRecord.manualOverrideId && (
-                    <p className="mt-1 text-muted-foreground">Override {selectedPromotionRecord.manualOverrideId}</p>
-                  )}
-                </div>
-              )}
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
                 {promotionHistory.slice(0, 4).map((record) => (
                   <li key={record.promotionId} className="font-mono">
-                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType} · {record.decision}
+                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
+                    {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
+                    {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
+                    {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
+                    {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
                   </li>
                 ))}
               </ul>
@@ -1462,33 +1225,6 @@ function SessionMetric({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
-    </div>
-  );
-}
-
-function ReadinessBlock({
-  label,
-  ready,
-  detail
-}: {
-  label: string;
-  ready: boolean;
-  detail: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
-        <span
-          className={cn(
-            "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
-            ready ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-          )}
-        >
-          {ready ? "Ready" : "Blocked"}
-        </span>
-      </div>
-      <p className="mt-3 text-sm text-foreground">{detail}</p>
     </div>
   );
 }

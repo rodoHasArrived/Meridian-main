@@ -4778,7 +4778,8 @@ Meridian-main
 │   │   ├── open-source-references.md
 │   │   ├── README.md
 │   │   ├── reconciliation-break-taxonomy.md
-│   │   └── research-briefing-workflow.md
+│   │   ├── research-briefing-workflow.md
+│   │   └── strategy-promotion-history.md
 │   ├── screenshots
 │   │   ├── desktop
 │   │   │   ├── wpf-backfill.png
@@ -4841,7 +4842,11 @@ Meridian-main
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── CHANGELOG.md
+│   │   ├── contract-compatibility-matrix.md
 │   │   ├── coverage-report.md
+│   │   ├── dk1-baseline-trust-thresholds.md
+│   │   ├── dk1-pilot-parity-runbook.md
+│   │   ├── dk1-trust-rationale-mapping.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
 │   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
@@ -4856,6 +4861,7 @@ Meridian-main
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
+│   │   ├── PROGRAM_STATE.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
@@ -4863,7 +4869,8 @@ Meridian-main
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
-│   │   └── TODO.md
+│   │   ├── TODO.md
+│   │   └── wave4-evidence-template.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
@@ -4942,6 +4949,8 @@ Meridian-main
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
+│   ├── check_contract_compatibility_gate.py
+│   ├── check_program_state_consistency.py
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
@@ -5122,7 +5131,8 @@ Meridian-main
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── IFundStructureService.cs
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
-│   │   │   └── InMemoryFundStructureService.cs
+│   │   │   ├── InMemoryFundStructureService.cs
+│   │   │   └── LedgerGroupingRules.cs
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   ├── ArchiveMaintenanceEndpoints.cs
@@ -5508,7 +5518,8 @@ Meridian-main
 │   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
-│   │   │   └── FundStructureQueries.cs
+│   │   │   ├── FundStructureQueries.cs
+│   │   │   └── LedgerGroupId.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── Pipeline
@@ -6257,8 +6268,10 @@ Meridian-main
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.cs
 │   │   │   ├── IAggregatePortfolioService.cs
 │   │   │   ├── InMemoryReconciliationRunRepository.cs
+│   │   │   ├── IReconciliationBreakQueueRepository.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
@@ -6271,6 +6284,8 @@ Meridian-main
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   └── StrategyRunReadService.cs
 │   │   ├── Storage
+│   │   │   ├── IPromotionRecordStore.cs
+│   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Strategies.csproj
@@ -7112,6 +7127,8 @@ Meridian-main
 │   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
+│   │   │   ├── FundStructure
+│   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -7178,6 +7195,7 @@ Meridian-main
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── OptionsChainServiceTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
 │   │   │   ├── Ui
@@ -7540,6 +7558,7 @@ Meridian-main
 │   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundLedgerReadServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
@@ -7596,6 +7615,7 @@ Meridian-main
 │   │   │   ├── MainPageUiWorkflowTests.cs
 │   │   │   ├── NavigationPageSmokeTests.cs
 │   │   │   ├── PageLifecycleCleanupTests.cs
+│   │   │   ├── PlotRenderBehaviorTests.cs
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── ResearchWorkspaceShellSmokeTests.cs
 │   │   │   ├── ResearchWorkspaceShellWorkflowTests.cs
