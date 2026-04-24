@@ -4808,6 +4808,7 @@ Meridian-main
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
+│   │   ├── governance-report-packs.md
 │   │   ├── open-source-references.md
 │   │   ├── README.md
 │   │   ├── reconciliation-break-taxonomy.md
@@ -6210,7 +6211,8 @@ Meridian-main
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   ├── ExportVerificationReport.cs
-│   │   │   └── PreflightRule.cs
+│   │   │   ├── PreflightRule.cs
+│   │   │   └── XlsxWorkbookWriter.cs
 │   │   ├── FundAccounts
 │   │   │   ├── Migrations
 │   │   │   │   └── 001_fund_accounts.sql
@@ -6542,6 +6544,7 @@ Meridian-main
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
+│   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
