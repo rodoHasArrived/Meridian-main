@@ -13,6 +13,9 @@ public sealed record WorkspaceCopyEntry(string Key, string Text);
 public static class WorkspaceCopyCatalog
 {
     // Copy key convention: workspace.section.intent
+    public const string ResearchShellTitle = Research.ShellTitle;
+    public const string DataOperationsShellTitle = DataOperations.ShellTitle;
+
     public static class Research
     {
         public const string WorkspaceId = "research";

@@ -49,12 +49,13 @@ public static class PlotRenderBehavior
         var plot = wpfPlot.Plot;
         plot.Clear();
 
-        // Apply theme colours
-        var bg = Palette.CardBackground;
-        var dataBg = Palette.SubtleBackground;
+        // Match the Meridian chart previews from the extracted design-system bundle.
+        var bg = Palette.ChartBackground;
+        var dataBg = Palette.ChartDataBackground;
         plot.FigureBackground.Color = ToScottPlot(bg);
         plot.DataBackground.Color = ToScottPlot(dataBg);
-        plot.Axes.Color(ToScottPlot(Palette.MutedText));
+        plot.Axes.Color(ToScottPlot(Palette.ChartAxis));
+        plot.Grid.MajorLineColor = ToScottPlot(Palette.ChartGrid);
 
         var usesDateAxis =
             request.Type is PlotType.Line
@@ -74,7 +75,7 @@ public static class PlotRenderBehavior
             return;
         }
 
-        var seriesColor = ToScottPlot(SeriesPalette[0]);
+        var seriesColor = ResolveSeriesColor(request.Type);
 
         switch (request.Type)
         {
@@ -90,7 +91,7 @@ public static class PlotRenderBehavior
                     var ys = series.Select(p => p.Value).ToArray();
                     var scatter = plot.Add.Scatter(xs, ys);
                     scatter.Color = seriesColor;
-                    scatter.LineWidth = 1.5f;
+                    scatter.LineWidth = 2f;
                     scatter.MarkerSize = request.Type == PlotType.Scatter ? 5 : 0;
                 }
                 break;
@@ -106,6 +107,7 @@ public static class PlotRenderBehavior
                         var scatter = plot.Add.Scatter(xs, ys);
                         scatter.Color = ToScottPlot(SeriesPalette[paletteIndex % SeriesPalette.Length]);
                         scatter.LegendText = label;
+                        scatter.LineWidth = 1.5f;
                         scatter.MarkerSize = 0;
                         paletteIndex++;
                     }
@@ -133,11 +135,12 @@ public static class PlotRenderBehavior
                 {
                     var ohlcs = candlestick
                         .Select(bar => new OHLC(
-                            open: (double)bar.Open,
-                            high: (double)bar.High,
-                            low: (double)bar.Low,
-                            close: (double)bar.Close,
-                            dateTime: bar.Date.ToDateTime(TimeOnly.MinValue)))
+                            (double)bar.Open,
+                            (double)bar.High,
+                            (double)bar.Low,
+                            (double)bar.Close,
+                            bar.Date.ToDateTime(TimeOnly.MinValue),
+                            TimeSpan.FromDays(1)))
                         .ToArray();
 
                     plot.Add.Candlestick(ohlcs);
@@ -153,6 +156,14 @@ public static class PlotRenderBehavior
 
     private static ScottPlot.Color ToScottPlot(ColorPalette.ArgbColor c)
         => new(c.R, c.G, c.B, c.A);
+
+    private static ScottPlot.Color ResolveSeriesColor(PlotType type)
+        => type switch
+        {
+            PlotType.CumulativeReturn => ToScottPlot(Palette.ChartPositive),
+            PlotType.Drawdown => ToScottPlot(Palette.ChartNegative),
+            _ => ToScottPlot(SeriesPalette[0])
+        };
 
     private static bool TryConvertHeatmapMatrix(
         double[][] heatmapData,

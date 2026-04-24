@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
@@ -12,6 +13,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Meridian.Tests.Application.Services;
@@ -317,6 +319,229 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task GenerateReportPackAsync_WithDefaultFormats_WritesManifestProvenanceArtifactsAndChecksums()
+    {
+        var fundProfileId = $"fund-report-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-report-001",
+            strategyId: "report-1",
+            strategyName: "Report Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Governed Report Fund"));
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var repository = CreateReportPackRepository(tempRoot);
+            var service = CreateReportPackService(accountService, strategyRepository, repository);
+
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+                CorrelationId: "corr-report-001"));
+
+            snapshot.FundProfileId.Should().Be(fundProfileId);
+            snapshot.AuditActor.Should().Be("unit-test");
+            snapshot.CorrelationId.Should().Be("corr-report-001");
+            snapshot.Provenance.RelatedRunIds.Should().ContainSingle().Which.Should().Be("run-report-001");
+            snapshot.Provenance.JournalEntryCount.Should().BeGreaterThan(0);
+            snapshot.Provenance.LedgerEntryCount.Should().BeGreaterThan(0);
+            snapshot.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "asset-class-sections" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "asset-class-sections" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "workbook" && artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "provenance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+
+            foreach (var artifact in snapshot.Artifacts)
+            {
+                var path = ResolveArtifactPath(tempRoot, artifact);
+                File.Exists(path).Should().BeTrue(path);
+                var bytes = await File.ReadAllBytesAsync(path);
+                bytes.LongLength.Should().Be(artifact.SizeBytes);
+                Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant().Should().Be(artifact.ChecksumSha256);
+            }
+
+            var manifestPath = Directory.EnumerateFiles(
+                    Path.Combine(tempRoot, "governance-report-packs"),
+                    "manifest.json",
+                    SearchOption.AllDirectories)
+                .Should()
+                .ContainSingle()
+                .Which;
+            File.ReadAllText(manifestPath).Should().Contain(snapshot.ReportId.ToString());
+
+            var trialBalanceCsv = snapshot.Artifacts.Single(artifact =>
+                artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+            var csvLines = await File.ReadAllLinesAsync(ResolveArtifactPath(tempRoot, trialBalanceCsv));
+            csvLines.Should().HaveCountGreaterThan(1);
+            csvLines[0].Should().Be("accountName,accountType,symbol,currency,assetClass,primaryIdentifierKind,primaryIdentifierValue,subType,assetFamily,issuerType,riskCountry,lookupQuality,displayName,netBalance");
+            csvLines.Skip(1).Select(static line => line.Split(',')[0])
+                .Should()
+                .ContainInOrder("Cash", "Securities", "Capital Account");
+
+            var workbook = snapshot.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
+            using var archive = ZipFile.OpenRead(ResolveArtifactPath(tempRoot, workbook));
+            archive.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            archive.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            archive.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task ReportPackHistory_ListsNewestFirstAndRetrievesById()
+    {
+        var fundProfileId = $"fund-history-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-history-001",
+            strategyId: "history-1",
+            strategyName: "History Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "History Fund"));
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(accountService, strategyRepository, CreateReportPackRepository(tempRoot));
+
+            var older = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                AsOf: new DateTimeOffset(2026, 4, 10, 16, 0, 0, TimeSpan.Zero),
+                Formats: [GovernanceReportArtifactFormatDto.Json]));
+            await Task.Delay(10);
+            var newer = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+                Formats: [GovernanceReportArtifactFormatDto.Json]));
+
+            var history = await service.GetReportPackHistoryAsync(fundProfileId, limit: 10);
+
+            history.Should().HaveCount(2);
+            history[0].GeneratedAt.Should().BeOnOrAfter(history[1].GeneratedAt);
+            history.Select(item => item.ReportId).Should().ContainInOrder(newer.ReportId, older.ReportId);
+
+            var detail = await service.GetReportPackAsync(newer.ReportId);
+            detail.Should().NotBeNull();
+            detail!.ReportId.Should().Be(newer.ReportId);
+            detail.Artifacts.Should().NotBeEmpty();
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task GenerateReportPackAsync_WithEmptyFundData_WritesPackageWithWarnings()
+    {
+        var fundProfileId = $"fund-empty-{Guid.NewGuid():N}";
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(
+                new InMemoryFundAccountService(),
+                new StrategyRunStore(),
+                CreateReportPackRepository(tempRoot));
+
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                Formats: [GovernanceReportArtifactFormatDto.Json]));
+
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance");
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "provenance");
+            snapshot.Warnings.Should().Contain(warning => warning.Contains("No recorded fund-scoped runs", StringComparison.Ordinal));
+            snapshot.Warnings.Should().Contain(warning => warning.Contains("no trial-balance rows", StringComparison.Ordinal));
+            snapshot.Provenance.TrialBalanceLineCount.Should().Be(0);
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task GenerateReportPackAsync_WithCancelledToken_ThrowsOperationCanceledException()
+    {
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(
+                new InMemoryFundAccountService(),
+                new StrategyRunStore(),
+                CreateReportPackRepository(tempRoot));
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            var act = () => service.GenerateReportPackAsync(
+                new FundReportPackGenerateRequestDto(
+                    FundProfileId: "fund-cancel",
+                    AuditActor: "unit-test"),
+                cts.Token);
+
+            await act.Should().ThrowAsync<OperationCanceledException>();
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    private static FundOperationsWorkspaceReadService CreateReportPackService(
+        InMemoryFundAccountService accountService,
+        StrategyRunStore strategyRepository,
+        IGovernanceReportPackRepository reportPackRepository)
+    {
+        var securityMaster = new NullSecurityMasterQueryService();
+        return new FundOperationsWorkspaceReadService(
+            accountService,
+            strategyRepository,
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackRepository: reportPackRepository);
+    }
+
+    private static FileGovernanceReportPackRepository CreateReportPackRepository(string tempRoot) =>
+        new(tempRoot, NullLogger<FileGovernanceReportPackRepository>.Instance);
+
+    private static string CreateTempDirectory()
+    {
+        var tempRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-report-pack-tests",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        return tempRoot;
+    }
+
+    private static string ResolveArtifactPath(string tempRoot, FundReportPackArtifactDto artifact) =>
+        Path.Combine(
+            tempRoot,
+            "governance-report-packs",
+            artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+
+    private static void DeleteDirectory(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, recursive: true);
+        }
     }
 
     private static StrategyRunEntry BuildRun(

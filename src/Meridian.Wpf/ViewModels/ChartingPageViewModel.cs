@@ -13,6 +13,7 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Meridian.Ui.Services;
 using SkiaSharp;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -51,21 +52,37 @@ public sealed class ChartingPageViewModel : BindableBase
     private Visibility _loadingVisible = Visibility.Collapsed;
     private Brush _priceChangeBrush = Brushes.White;
 
-    private static readonly SolidColorBrush BullishBrush = new(Color.FromRgb(63, 185, 80));
-    private static readonly SolidColorBrush BearishBrush = new(Color.FromRgb(248, 81, 73));
-    private static readonly SolidColorBrush BullishVolumeBrush = new(Color.FromArgb(128, 63, 185, 80));
-    private static readonly SolidColorBrush BearishVolumeBrush = new(Color.FromArgb(128, 248, 81, 73));
-
-    private static readonly SolidColorBrush PocBrush = new(Color.FromRgb(210, 153, 34));
-    private static readonly SolidColorBrush NormalVolumeBrush = new(Color.FromArgb(128, 88, 166, 255));
+    private static readonly SolidColorBrush BullishBrush = ToBrush(Palette.ChartPositive);
+    private static readonly SolidColorBrush BearishBrush = ToBrush(Palette.ChartNegative);
+    private static readonly SolidColorBrush BullishVolumeBrush = ToBrush(WithAlpha(Palette.ChartPositive, 128));
+    private static readonly SolidColorBrush BearishVolumeBrush = ToBrush(WithAlpha(Palette.ChartNegative, 128));
+    private static readonly SolidColorBrush PocBrush = ToBrush(Palette.ChartTertiary);
+    private static readonly SolidColorBrush NormalVolumeBrush = ToBrush(WithAlpha(Palette.ChartPrimary, 128));
+    private static readonly SolidColorBrush PrimaryIndicatorBrush = ToBrush(Palette.ChartPrimary);
+    private static readonly SolidColorBrush SecondaryIndicatorBrush = ToBrush(Palette.ChartSecondary);
+    private static readonly SolidColorBrush WarningIndicatorBrush = ToBrush(Palette.ChartTertiary);
+    private static readonly SolidColorBrush NeutralIndicatorBrush = ToBrush(Palette.LightText);
 
     // LiveCharts2 SkiaSharp paints — reused across renders to avoid per-frame allocation.
-    private static readonly SolidColorPaint SkBullishFill = new(new SKColor(63, 185, 80));
-    private static readonly SolidColorPaint SkBullishStroke = new(new SKColor(63, 185, 80)) { StrokeThickness = 1 };
-    private static readonly SolidColorPaint SkBearishFill = new(new SKColor(248, 81, 73));
-    private static readonly SolidColorPaint SkBearishStroke = new(new SKColor(248, 81, 73)) { StrokeThickness = 1 };
-    private static readonly SolidColorPaint SkAxisLabelPaint = new(new SKColor(150, 150, 170));
-    private static readonly SolidColorPaint SkSeparatorPaint = new(new SKColor(45, 45, 65));
+    private static readonly SolidColorPaint SkBullishFill = new(ToSkColor(Palette.ChartPositive));
+    private static readonly SolidColorPaint SkBullishStroke = new(ToSkColor(Palette.ChartPositive)) { StrokeThickness = 1 };
+    private static readonly SolidColorPaint SkBearishFill = new(ToSkColor(Palette.ChartNegative));
+    private static readonly SolidColorPaint SkBearishStroke = new(ToSkColor(Palette.ChartNegative)) { StrokeThickness = 1 };
+    private static readonly SolidColorPaint SkAxisLabelPaint = new(ToSkColor(Palette.ChartAxis));
+    private static readonly SolidColorPaint SkSeparatorPaint = new(ToSkColor(Palette.ChartGrid));
+
+    private static Palette.ArgbColor WithAlpha(Palette.ArgbColor color, byte alpha)
+        => color with { A = alpha };
+
+    private static SolidColorBrush ToBrush(Palette.ArgbColor color)
+    {
+        SolidColorBrush brush = new(Color.FromArgb(color.A, color.R, color.G, color.B));
+        brush.Freeze();
+        return brush;
+    }
+
+    private static SKColor ToSkColor(Palette.ArgbColor color)
+        => new(color.R, color.G, color.B, color.A);
 
     public ObservableCollection<object> SymbolItems { get; } = new();
     public ObservableCollection<WpfVolumeBarVm> VolumeItems { get; } = new();
@@ -325,16 +342,16 @@ public sealed class ChartingPageViewModel : BindableBase
         {
             switch (id)
             {
-                case "sma": AddSimple(values, _chartingService.CalculateSma(_chartData, 20), "SMA(20)", Colors.Orange); break;
-                case "ema": AddSimple(values, _chartingService.CalculateEma(_chartData, 20), "EMA(20)", Colors.Cyan); break;
-                case "vwap": AddSimple(values, _chartingService.CalculateVwap(_chartData), "VWAP", Colors.Purple); break;
-                case "atr": AddSimple(values, _chartingService.CalculateAtr(_chartData, 14), "ATR(14)", Colors.Yellow); break;
+                case "sma": AddSimple(values, _chartingService.CalculateSma(_chartData, 20), "SMA(20)", WarningIndicatorBrush); break;
+                case "ema": AddSimple(values, _chartingService.CalculateEma(_chartData, 20), "EMA(20)", PrimaryIndicatorBrush); break;
+                case "vwap": AddSimple(values, _chartingService.CalculateVwap(_chartData), "VWAP", SecondaryIndicatorBrush); break;
+                case "atr": AddSimple(values, _chartingService.CalculateAtr(_chartData, 14), "ATR(14)", WarningIndicatorBrush); break;
                 case "rsi":
                     var rsi = _chartingService.CalculateRsi(_chartData, 14);
                     if (rsi.Values.Count > 0)
                     {
                         var v = rsi.Values.Last().Value;
-                        values.Add(new WpfIndicatorValueVm { Name = "RSI(14)", Value = $"{v:F1}", ValueBrush = new SolidColorBrush(v > 70 ? Colors.Red : v < 30 ? Colors.Green : Colors.White) });
+                        values.Add(new WpfIndicatorValueVm { Name = "RSI(14)", Value = $"{v:F1}", ValueBrush = v > 70 ? BearishBrush : v < 30 ? BullishBrush : NeutralIndicatorBrush });
                     }
                     break;
                 case "macd":
@@ -342,15 +359,15 @@ public sealed class ChartingPageViewModel : BindableBase
                     if (macd.MacdLine.Count > 0)
                     {
                         var mv = macd.MacdLine.Last().Value; var sv = macd.SignalLine.LastOrDefault()?.Value ?? 0;
-                        values.Add(new WpfIndicatorValueVm { Name = "MACD", Value = $"{mv:F3}", ValueBrush = new SolidColorBrush(mv > sv ? Colors.Green : Colors.Red) });
-                        values.Add(new WpfIndicatorValueVm { Name = "Signal", Value = $"{sv:F3}", ValueBrush = new SolidColorBrush(Colors.Orange) });
+                        values.Add(new WpfIndicatorValueVm { Name = "MACD", Value = $"{mv:F3}", ValueBrush = mv > sv ? BullishBrush : BearishBrush });
+                        values.Add(new WpfIndicatorValueVm { Name = "Signal", Value = $"{sv:F3}", ValueBrush = WarningIndicatorBrush });
                     }
                     break;
                 case "bb":
                     var bb = _chartingService.CalculateBollingerBands(_chartData);
                     if (bb.UpperBand.Count > 0)
                     {
-                        var b = new SolidColorBrush(Colors.LightBlue);
+                        var b = SecondaryIndicatorBrush;
                         values.Add(new WpfIndicatorValueVm { Name = "BB Upper", Value = $"{bb.UpperBand.Last().Value:F2}", ValueBrush = b });
                         values.Add(new WpfIndicatorValueVm { Name = "BB Middle", Value = $"{bb.MiddleBand.Last().Value:F2}", ValueBrush = b });
                         values.Add(new WpfIndicatorValueVm { Name = "BB Lower", Value = $"{bb.LowerBand.Last().Value:F2}", ValueBrush = b });
@@ -367,10 +384,10 @@ public sealed class ChartingPageViewModel : BindableBase
             : "";
     }
 
-    private static void AddSimple(List<WpfIndicatorValueVm> list, IndicatorData data, string name, Color color)
+    private static void AddSimple(List<WpfIndicatorValueVm> list, IndicatorData data, string name, Brush brush)
     {
         if (data.Values.Count > 0)
-            list.Add(new WpfIndicatorValueVm { Name = name, Value = $"{data.Values.Last().Value:F2}", ValueBrush = new SolidColorBrush(color) });
+            list.Add(new WpfIndicatorValueVm { Name = name, Value = $"{data.Values.Last().Value:F2}", ValueBrush = brush });
     }
 
     private void UpdateStatistics()

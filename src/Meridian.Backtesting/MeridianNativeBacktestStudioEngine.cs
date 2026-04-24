@@ -99,7 +99,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         ArgumentException.ThrowIfNullOrWhiteSpace(runHandle);
         ct.ThrowIfCancellationRequested();
 
-        var registration = Resolve(runHandle);
+        var registration = ResolveActiveRegistration(runHandle);
         registration.RequestCancellation();
         return Task.CompletedTask;
     }
@@ -163,6 +163,17 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         }
     }
 
+    private NativeRunRegistration ResolveActiveRegistration(string runHandle)
+    {
+        if (_runs.TryGetValue(runHandle, out var registration))
+            return registration;
+
+        if (_terminalRuns.ContainsKey(runHandle))
+            throw new InvalidOperationException($"Native Backtest Studio run '{runHandle}' has already completed.");
+
+        throw new InvalidOperationException($"Native Backtest Studio run '{runHandle}' was not found.");
+    }
+
     private sealed record TerminalRunSnapshot(
         BacktestStudioRunStatus Status,
         DateTimeOffset TerminalAt,
@@ -189,7 +200,9 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
 
         if (resultTask.IsFaulted)
         {
-            var exception = resultTask.Exception?.InnerException ?? resultTask.Exception ?? new InvalidOperationException("Run failed.");
+            Exception exception = resultTask.Exception?.InnerException
+                ?? (Exception?)resultTask.Exception
+                ?? new InvalidOperationException("Run failed.");
             return _ => FailedResult(exception);
         }
 

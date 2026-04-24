@@ -515,6 +515,8 @@ public class ConfigurationServiceTests : IAsyncDisposable
     public void CreateCredentialContext_UsesConfiguredValuesForAnnotatedProvider()
     {
         // Arrange
+        using var keyScope = new EnvironmentVariableScope("ALPACA_KEY_ID", null);
+        using var secretScope = new EnvironmentVariableScope("ALPACA_SECRET_KEY", null);
         var configuredValues = new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["ALPACA_KEY_ID"] = "configured-key",
@@ -548,6 +550,24 @@ public class ConfigurationServiceTests : IAsyncDisposable
 
         // Assert
         await act.Should().NotThrowAsync();
+    }
+
+    private sealed class EnvironmentVariableScope : IDisposable
+    {
+        private readonly string _name;
+        private readonly string? _previousValue;
+
+        public EnvironmentVariableScope(string name, string? value)
+        {
+            _name = name;
+            _previousValue = Environment.GetEnvironmentVariable(name);
+            Environment.SetEnvironmentVariable(name, value);
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable(_name, _previousValue);
+        }
     }
 
     #endregion

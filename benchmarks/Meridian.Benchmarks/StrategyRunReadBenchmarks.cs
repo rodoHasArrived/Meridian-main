@@ -67,7 +67,7 @@ public class StrategyRunReadBenchmarks
             var runId = $"run-{i:D5}";
             var strategyId = $"strategy-{i % 64:D2}";
             var strategyName = $"Strategy {i % 64:D2}";
-            var runType = i % 10 switch
+            var runType = (i % 10) switch
             {
                 <= 5 => RunType.Backtest,
                 <= 7 => RunType.Paper,
@@ -127,8 +127,8 @@ public class StrategyRunReadBenchmarks
         int ordinal)
     {
         var isCompleted = runType == RunType.Backtest || ordinal % 4 == 0;
-        var endedAt = isCompleted ? startedAt.AddMinutes(30 + (ordinal % 180)) : null;
-        var terminalStatus = ordinal % 29 == 0
+        DateTimeOffset? endedAt = isCompleted ? startedAt.AddMinutes(30 + (ordinal % 180)) : null;
+        StrategyRunStatus? terminalStatus = ordinal % 29 == 0
             ? StrategyRunStatus.Failed
             : ordinal % 37 == 0
                 ? StrategyRunStatus.Cancelled

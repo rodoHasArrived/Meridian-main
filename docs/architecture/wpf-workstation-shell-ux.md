@@ -136,6 +136,19 @@ The main shell sidebar now groups each workspace navigation list into:
 
 This reduces flat navigation sprawl and makes keyboard-first scanning more predictable.
 
+## Design System Baseline
+
+The workstation shell treats the shared WPF resource dictionaries as the active design-system contract for operator pages:
+
+- `src/Meridian.Wpf/Styles/ThemeTokens.xaml` owns the shell palette plus dedicated chart tokens for chart cards, plot areas, grid lines, axis labels, borders, crosshairs, equity/positive states, drawdown/negative states, and amber midpoint/warning emphasis.
+- `src/Meridian.Wpf/Styles/ThemeSurfaces.xaml` provides `ChartCardStyle`, `ChartPlotAreaStyle`, `ChartCanvasPlotAreaStyle`, and `ChartLegendStripStyle` so chart-heavy pages do not duplicate panel chrome.
+- `src/Meridian.Wpf/Styles/ThemeTypography.xaml` provides the shared display, body, data, and chart text styles used by chart labels, market-depth rows, and tabular trading values.
+- `src/Meridian.Wpf/Assets/Brand/` and `src/Meridian.Wpf/Assets/Icons/` mirror the extracted Meridian design-system bundle so WPF navigation, brand marks, and page icons stay aligned with the shipped visual asset set.
+
+When adding or changing charts, use the WPF chart tokens rather than raw hex values. ScottPlot and LiveCharts renderers should take colors from `Meridian.Ui.Services.Services.ColorPalette`, while XAML chart chrome should bind to the `Chart*` resource keys in `ThemeTokens.xaml`.
+
+Market-depth and chart semantics should preserve the design-system previews: bid/positive = mint, ask/drawdown = coral, live/crosshair = signal cyan, midpoint/warning = amber. The broader light shell palette remains separate; pages opt into dark chart surfaces only for chart/trading panels.
+
 ## Validation Expectations
 
 Changes to workstation shells should continue to validate:

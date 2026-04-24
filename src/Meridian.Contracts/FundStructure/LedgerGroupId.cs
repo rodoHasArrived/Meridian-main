@@ -1,5 +1,9 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.FundStructure;
 
+[JsonConverter(typeof(LedgerGroupIdJsonConverter))]
 public readonly record struct LedgerGroupId
 {
     public const string UnassignedValue = "unassigned";
@@ -81,4 +85,37 @@ public readonly record struct LedgerGroupId
     }
 
     public override string ToString() => Value;
+}
+
+public sealed class LedgerGroupIdJsonConverter : JsonConverter<LedgerGroupId>
+{
+    public override LedgerGroupId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            return LedgerGroupId.Create(reader.GetString()!);
+        }
+
+        if (reader.TokenType == JsonTokenType.StartObject)
+        {
+            using var document = JsonDocument.ParseValue(ref reader);
+            var root = document.RootElement;
+            if (root.TryGetProperty("value", out var camelValue) && camelValue.ValueKind == JsonValueKind.String)
+            {
+                return LedgerGroupId.Create(camelValue.GetString()!);
+            }
+
+            if (root.TryGetProperty("Value", out var pascalValue) && pascalValue.ValueKind == JsonValueKind.String)
+            {
+                return LedgerGroupId.Create(pascalValue.GetString()!);
+            }
+        }
+
+        throw new JsonException("Ledger group ID must be a string.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, LedgerGroupId value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.Value);
+    }
 }

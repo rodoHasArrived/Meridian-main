@@ -13,6 +13,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -24,12 +25,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private static readonly System.Windows.Media.Color[] LegendPalette =
     [
-        System.Windows.Media.Color.FromRgb(66, 153, 225),
-        System.Windows.Media.Color.FromRgb(159, 122, 234),
-        System.Windows.Media.Color.FromRgb(56, 178, 172),
-        System.Windows.Media.Color.FromRgb(72, 187, 120),
-        System.Windows.Media.Color.FromRgb(245, 101, 101),
+        ToWpfColor(Palette.ChartPrimary),
+        ToWpfColor(Palette.ChartSecondary),
+        ToWpfColor(Palette.ChartTertiary),
+        ToWpfColor(Palette.ChartPositive),
+        ToWpfColor(Palette.ChartNegative),
     ];
+
+    private static System.Windows.Media.Color ToWpfColor(Palette.ArgbColor color)
+        => System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
 
     private readonly IScriptRunner _runner;
     private readonly IQuantScriptCompiler _compiler;

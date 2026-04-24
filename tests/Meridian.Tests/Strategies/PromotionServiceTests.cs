@@ -224,7 +224,7 @@ public sealed class PromotionServiceTests
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
         var promotionStore = new JsonlPromotionRecordStore(
-            Path.Combine(rootPath ?? Path.GetTempPath(), "promotion-history"),
+            Path.Combine(rootPath ?? CreateTempRoot(), "promotion-history"),
             NullLogger<JsonlPromotionRecordStore>.Instance);
         return new PromotionService(store, promoter, promotionStore, NullLogger<PromotionService>.Instance);
     }

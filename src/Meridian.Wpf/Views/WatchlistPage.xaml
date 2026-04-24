@@ -113,7 +113,7 @@
                                 <!-- Header -->
                                 <Border Grid.Row="0" CornerRadius="8,8,0,0" Padding="16,12">
                                     <Border.Background>
-                                        <SolidColorBrush Color="{Binding ColorValue, FallbackValue=#3A3A4E}"/>
+                                        <SolidColorBrush Color="{Binding ColorValue, FallbackValue={StaticResource ChartSurfaceColor}}"/>
                                     </Border.Background>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -123,7 +123,7 @@
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16"
                                                        Foreground="White"/>
-                                            <TextBlock Text="{Binding SymbolCount}" Foreground="#CCFFFFFF" FontSize="12"/>
+                                            <TextBlock Text="{Binding SymbolCount}" Foreground="{StaticResource TopBarTextBrush}" FontSize="12"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                                             <Button Content="&#xE718;" FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -150,7 +150,7 @@
                                             <DataTemplate>
                                                 <Border Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                                                         CornerRadius="4" Padding="8,4" Margin="0,0,6,6">
-                                                    <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12"
+                                                    <TextBlock Text="{Binding}" FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12"
                                                                Foreground="{DynamicResource ConsoleTextBrush}"/>
                                                 </Border>
                                             </DataTemplate>

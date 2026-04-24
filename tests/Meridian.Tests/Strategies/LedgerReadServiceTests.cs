@@ -243,7 +243,7 @@ public sealed class LedgerReadServiceTests
         summary!.TrialBalance
             .Where(static line => line.Symbol == "AAPL")
             .Should()
-            .OnlyContain(line => line.Security is not null && line.Security.SecurityId == securityId);
+            .OnlyContain(line => line.Security != null && line.Security.SecurityId == securityId);
     }
 
     [Fact]
@@ -264,7 +264,7 @@ public sealed class LedgerReadServiceTests
                 It.Is<SecurityReferenceLookupRequest>(request =>
                     request.Symbol == "AAPL"
                     && request.Venue == "ALPACA"
-                    && request.SecurityId is null
+                    && request.SecurityId == null
                     && request.Source == "ledger-trial-balance"),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(resolved);
@@ -276,7 +276,7 @@ public sealed class LedgerReadServiceTests
         summary!.TrialBalance
             .Where(static line => line.Symbol == "AAPL")
             .Should()
-            .OnlyContain(line => line.Security is not null && line.Security.DisplayName.Contains("ALPACA"));
+            .OnlyContain(line => line.Security != null && line.Security.DisplayName.Contains("ALPACA"));
     }
 
     [Fact]

@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -23,6 +24,20 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class OrderBookViewModel : BindableBase, IDisposable
 {
     private static readonly Random _random = new();
+    private static readonly SolidColorBrush BidBrush = ToBrush(Palette.ChartPositive);
+    private static readonly SolidColorBrush AskBrush = ToBrush(Palette.ChartNegative);
+    private static readonly SolidColorBrush ReconnectingBrush = ToBrush(Palette.Warning);
+    private static readonly SolidColorBrush DisconnectedBrush = ToBrush(Palette.Inactive);
+
+    private static Color ToWpfColor(Palette.ArgbColor color)
+        => Color.FromArgb(color.A, color.R, color.G, color.B);
+
+    private static SolidColorBrush ToBrush(Palette.ArgbColor color)
+    {
+        SolidColorBrush brush = new(ToWpfColor(color));
+        brush.Freeze();
+        return brush;
+    }
 
     private readonly HttpClient _httpClient = new();
     private readonly WpfServices.StatusService _statusService;
@@ -54,7 +69,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _connectionStatusText, value);
     }
 
-    private SolidColorBrush _connectionIndicatorFill = new(Color.FromRgb(139, 148, 158));
+    private SolidColorBrush _connectionIndicatorFill = DisconnectedBrush;
     public SolidColorBrush ConnectionIndicatorFill
     {
         get => _connectionIndicatorFill;
@@ -186,12 +201,12 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             _ => "Disconnected"
         };
 
-        ConnectionIndicatorFill = new SolidColorBrush(state switch
+        ConnectionIndicatorFill = state switch
         {
-            ConnectionState.Connected => Color.FromRgb(63, 185, 80),
-            ConnectionState.Reconnecting => Color.FromRgb(255, 193, 7),
-            _ => Color.FromRgb(139, 148, 158)
-        });
+            ConnectionState.Connected => BidBrush,
+            ConnectionState.Reconnecting => ReconnectingBrush,
+            _ => DisconnectedBrush
+        };
     }
 
     private async Task LoadSymbolsAsync(CancellationToken ct = default)
@@ -409,9 +424,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                 Time = DateTime.Now.AddSeconds(-i * _random.Next(1, 5)).ToString("HH:mm:ss"),
                 Price = price.ToString("F2"),
                 Size = FormatSize(_random.Next(10, 1000)),
-                PriceColor = new SolidColorBrush(isBuy
-                    ? Color.FromRgb(63, 185, 80)
-                    : Color.FromRgb(244, 67, 54))
+                PriceColor = isBuy ? BidBrush : AskBrush
             });
         }
 
@@ -518,9 +531,7 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                             Time = timestamp.ToString("HH:mm:ss"),
                             Price = price.ToString("F2"),
                             Size = FormatSize(size),
-                            PriceColor = new SolidColorBrush(isBuy
-                                ? Color.FromRgb(63, 185, 80)
-                                : Color.FromRgb(244, 67, 54))
+                            PriceColor = isBuy ? BidBrush : AskBrush
                         });
                     }
 

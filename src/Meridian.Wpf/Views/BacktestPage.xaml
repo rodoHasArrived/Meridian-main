@@ -486,7 +486,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Equity curve card -->
-                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Padding="16,14">
+                <Border Grid.Row="0" Style="{StaticResource ChartCardStyle}" Padding="16,14">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -501,24 +501,21 @@
 
                         <TextBlock Grid.Row="0" Grid.Column="0"
                                    Text="Equity Curve"
-                                   Style="{StaticResource CardHeaderStyle}"
+                                   Style="{StaticResource ChartHeaderTextStyle}"
                                    Margin="0,0,0,8" />
                         <TextBlock Grid.Row="0" Grid.Column="1"
                                    Text="{Binding StatusText}"
                                    FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Foreground="{StaticResource ChartAxisLabelBrush}"
                                    VerticalAlignment="Center" />
 
                         <Border Grid.Row="1" Grid.ColumnSpan="2"
-                                Background="{StaticResource PremiumPanelBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
+                                Style="{StaticResource ChartCanvasPlotAreaStyle}"
                                 Padding="6">
                             <Canvas x:Name="EquityCanvas" ClipToBounds="True">
                                 <Polyline x:Name="EquityPolyline"
-                                          Stroke="{StaticResource InfoColorBrush}"
-                                          StrokeThickness="1.5"
+                                          Stroke="{StaticResource ChartEquityBrush}"
+                                          StrokeThickness="2"
                                           StrokeLineJoin="Round" />
                             </Canvas>
                         </Border>
@@ -535,7 +532,7 @@
                                 Margin="0,6,0,0"
                                 Padding="8,5"
                                 CornerRadius="5"
-                                Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                Background="{StaticResource ChartPlotAreaBrush}">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -552,22 +549,22 @@
                                     <Ellipse Width="6" Height="6" VerticalAlignment="Center" Margin="0,0,5,0">
                                         <Ellipse.Style>
                                             <Style TargetType="Ellipse">
-                                                <Setter Property="Fill" Value="{StaticResource InfoColorBrush}" />
+                                                <Setter Property="Fill" Value="{StaticResource ChartPrimaryLineBrush}" />
                                             </Style>
                                         </Ellipse.Style>
                                     </Ellipse>
-                                    <TextBlock Text="Sharpe " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding LiveSharpe}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Sharpe " FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveSharpe}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TopBarTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <!-- Drawdown chip -->
                                 <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
-                                    <TextBlock Text="DD " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding LiveDrawdown}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="DD " FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveDrawdown}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TopBarTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <!-- Trades chip -->
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Trades " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding LiveTradeCount}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Trades " FontSize="11" Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveTradeCount}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TopBarTextBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>

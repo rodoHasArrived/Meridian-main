@@ -122,6 +122,15 @@ public static class UiEndpoints
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
         services.TryAddSingleton<NavAttributionService>();
         services.TryAddSingleton<ReportGenerationService>();
+        services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<FileGovernanceReportPackRepository>>();
+            var dataDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "workstation");
+            return new FileGovernanceReportPackRepository(dataDir, logger);
+        });
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
 
         // Reconciliation services — required by /api/workstation/reconciliation/* endpoints.

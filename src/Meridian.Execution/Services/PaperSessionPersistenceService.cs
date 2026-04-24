@@ -296,12 +296,18 @@ public sealed class PaperSessionPersistenceService
         // Load session metadata to get initial cash.
         var allRecords = await _store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
         var meta = allRecords.FirstOrDefault(r => r.SessionId == sessionId);
-        if (meta is null)
-            return null;
+        var initialCash = meta?.InitialCash;
+        if (!initialCash.HasValue)
+        {
+            if (!_sessions.TryGetValue(sessionId, out var activeSession))
+                return null;
+
+            initialCash = activeSession.InitialCash;
+        }
 
         // Replay fills through a fresh portfolio.
         var fills = await _store.LoadFillsAsync(sessionId, ct).ConfigureAwait(false);
-        var portfolio = new PaperTradingPortfolio(meta.InitialCash);
+        var portfolio = new PaperTradingPortfolio(initialCash.Value);
         foreach (var fill in fills)
             portfolio.ApplyFill(fill);
 
@@ -618,7 +624,7 @@ public sealed class PaperSessionPersistenceService
         if (currentCount != persistedOrders.Count)
         {
             mismatchReasons.Add(
-                $"Order history count differs: current={currentCount}, persisted={persistedOrders.Count}.");
+                $"Persisted order history count differs: current={currentCount}, persisted={persistedOrders.Count}.");
         }
 
         if (currentOrders is null || currentOrders.Count == 0 || persistedOrders.Count == 0)

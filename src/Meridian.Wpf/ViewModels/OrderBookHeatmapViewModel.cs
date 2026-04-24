@@ -22,10 +22,10 @@ public sealed class PriceLabelViewModel
 /// </summary>
 /// <remarks>
 /// Color scheme (Bgra32):
-///   Bid side  — green: (255, 0, G=ratio×210, B=ratio×40)
-///   Ask side  — red:   (255, R=ratio×220, 0, B=ratio×40)
-///   Mid price — bright yellow #FFFF00
-///   Background — dark navy #0A0A12
+///   Bid side - mint:  intensity-scaled #26BF86
+///   Ask side - coral: intensity-scaled #DE5878
+///   Mid price - amber #D69E38
+///   Background - chart plot navy #08101A
 /// </remarks>
 public sealed class OrderBookHeatmapViewModel : BindableBase
 {
@@ -46,10 +46,10 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
 
     // ── Packed Bgra32 color constants: (A<<24)|(R<<16)|(G<<8)|B ───────────────
 
-    // #0A0A12  R=10,  G=10,  B=18  → Bgra32 int = 0xFF0A0A12
-    private static readonly int ColorBackground = unchecked((int)0xFF0A0A12);
-    // #FFFF00  R=255, G=255, B=0   → Bgra32 int = 0xFFFFFF00
-    private static readonly int ColorMidLine = unchecked((int)0xFFFFFF00);
+    // #08101A  R=8,   G=16,  B=26  -> Bgra32 int = 0xFF08101A
+    private static readonly int ColorBackground = unchecked((int)0xFF08101A);
+    // #D69E38  R=214, G=158, B=56  -> Bgra32 int = 0xFFD69E38
+    private static readonly int ColorMidLine = unchecked((int)0xFFD69E38);
 
     // ── Public surface ─────────────────────────────────────────────────────────
 
@@ -171,7 +171,7 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
 
             if (y == midRow)
             {
-                // Mid-price divider line — bright yellow
+                // Mid-price divider line - amber
                 pixelColor = mid;
             }
             else if (price < _midPrice)
@@ -201,10 +201,11 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
                     }
                     else
                     {
-                        // Green: R=0, G=ratio×210, B=ratio×40  →  Bgra32: (A<<24)|(R<<16)|(G<<8)|B
-                        int g = (int)(ratio * 210);
-                        int b = (int)(ratio * 40);
-                        pixelColor = unchecked((int)((255u << 24) | (0u << 16) | ((uint)g << 8) | (uint)b));
+                        // Mint bid: #26BF86 scaled by depth ratio.
+                        int r = (int)(ratio * 38);
+                        int g = (int)(ratio * 191);
+                        int b = (int)(ratio * 134);
+                        pixelColor = unchecked((int)((255u << 24) | ((uint)r << 16) | ((uint)g << 8) | (uint)b));
                     }
                 }
             }
@@ -235,10 +236,11 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
                     }
                     else
                     {
-                        // Red: R=ratio×220, G=0, B=ratio×40  →  Bgra32
-                        int r = (int)(ratio * 220);
-                        int b = (int)(ratio * 40);
-                        pixelColor = unchecked((int)((255u << 24) | ((uint)r << 16) | (0u << 8) | (uint)b));
+                        // Coral ask: #DE5878 scaled by depth ratio.
+                        int r = (int)(ratio * 222);
+                        int g = (int)(ratio * 88);
+                        int b = (int)(ratio * 120);
+                        pixelColor = unchecked((int)((255u << 24) | ((uint)r << 16) | ((uint)g << 8) | (uint)b));
                     }
                 }
             }

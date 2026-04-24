@@ -135,6 +135,110 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task GenerateReportPack_WithSeededFundProfile_ReturnsPersistedSnapshot()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var request = new FundReportPackGenerateRequestDto(
+            FundProfileId: seed.FundProfileId,
+            AuditActor: "endpoint-test",
+            AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            Currency: "USD",
+            CorrelationId: "endpoint-correlation");
+
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var payload = await response.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
+
+        payload.Should().NotBeNull();
+        payload!.FundProfileId.Should().Be(seed.FundProfileId);
+        payload.DisplayName.Should().Be(seed.DisplayName);
+        payload.AuditActor.Should().Be("endpoint-test");
+        payload.CorrelationId.Should().Be("endpoint-correlation");
+        payload.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+        payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+        payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "workbook" && artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
+        payload.Artifacts.Should().OnlyContain(artifact =>
+            !string.IsNullOrWhiteSpace(artifact.RelativePath)
+            && artifact.SizeBytes > 0
+            && artifact.ChecksumSha256.Length == 64);
+    }
+
+    [Fact]
+    public async Task GetReportPacks_WithSeededFundProfile_ReturnsHistory()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var generated = await GenerateReportPackAsync(seed);
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/report-packs?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&limit=5");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundReportPackHistoryItemDto[]>();
+
+        payload.Should().NotBeNull();
+        payload!.Should().Contain(item => item.ReportId == generated.ReportId);
+        payload.Single(item => item.ReportId == generated.ReportId).RelativeManifestPath.Should().EndWith("manifest.json");
+    }
+
+    [Fact]
+    public async Task GetReportPack_ReturnsDetailOrNotFound()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+        var generated = await GenerateReportPackAsync(seed);
+
+        var detailResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{generated.ReportId}");
+        detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var detail = await detailResponse.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
+        detail.Should().NotBeNull();
+        detail!.ReportId.Should().Be(generated.ReportId);
+
+        var missingResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{Guid.NewGuid()}");
+        missingResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData("", "endpoint-test")]
+    [InlineData("fund-bad", "")]
+    public async Task GenerateReportPack_WithMissingFundOrActor_ReturnsBadRequest(
+        string fundProfileId,
+        string auditActor)
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: auditActor));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GenerateReportPack_WithEmptyOrUnsupportedFormats_ReturnsBadRequest()
+    {
+        var emptyFormatsResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new FundReportPackGenerateRequestDto(
+                FundProfileId: "fund-bad-formats",
+                AuditActor: "endpoint-test",
+                Formats: []));
+        var unsupportedFormatResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new
+            {
+                fundProfileId = "fund-bad-formats",
+                auditActor = "endpoint-test",
+                formats = new[] { 999 }
+            });
+
+        emptyFormatsResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        unsupportedFormatResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async Task GetCashFlowView_WithBlankLedgerGroupId_ReturnsBadRequest()
     {
         var response = await _client.GetAsync("/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=%20%20%20");
@@ -241,6 +345,21 @@ public sealed class FundStructureEndpointTests
         }
 
         return new SeededFundWorkspace(fundProfileId, displayName, bankAccount.AccountId);
+    }
+
+    private async Task<FundReportPackSnapshotDto> GenerateReportPackAsync(SeededFundWorkspace seed)
+    {
+        var response = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new FundReportPackGenerateRequestDto(
+                FundProfileId: seed.FundProfileId,
+                AuditActor: "endpoint-test",
+                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+                Formats: [GovernanceReportArtifactFormatDto.Json]));
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var payload = await response.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
+        payload.Should().NotBeNull();
+        return payload!;
     }
 
     private static StrategyRunEntry BuildRun(

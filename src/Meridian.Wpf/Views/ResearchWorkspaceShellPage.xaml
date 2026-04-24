@@ -11,7 +11,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.Research.ShellTitle}"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.ResearchShellTitle}"
       AutomationProperties.AutomationId="ResearchWorkspaceShellPage">
 
     <Page.Resources>

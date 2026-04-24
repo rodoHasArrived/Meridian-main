@@ -66,12 +66,12 @@
 
                 <!-- Connection Status -->
                 <Border CornerRadius="999" Padding="8,4" Margin="16,0,0,0"
-                        Background="{StaticResource PremiumPanelBrush}" BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="1">
+                        Background="{StaticResource ChartSurfaceBrush}" BorderBrush="{StaticResource ChartBorderBrush}" BorderThickness="1">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse Width="8" Height="8"
                                  Fill="{Binding ConnectionIndicatorFill}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding ConnectionStatusText}" Margin="8,0,0,0"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -92,7 +92,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Order Book Ladder -->
-            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CardStyle}">
+            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource ChartCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -110,13 +110,13 @@
                             <ColumnDefinition Width="100"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="ASKS" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ErrorColorBrush}"/>
+                                   Foreground="{StaticResource ChartDrawdownBrush}"/>
                         <TextBlock Grid.Column="1" Text="Price" FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" TextAlignment="Right"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" TextAlignment="Right"/>
                         <TextBlock Grid.Column="2" Text="Size" FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" TextAlignment="Right"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" TextAlignment="Right"/>
                         <TextBlock Grid.Column="3" Text="Total" FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" TextAlignment="Right"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" TextAlignment="Right"/>
                     </Grid>
 
                     <!-- Asks List -->
@@ -128,7 +128,7 @@
                                         <Style TargetType="Grid">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                    <Setter Property="Background" Value="#22F44336"/>
+                                                    <Setter Property="Background" Value="{StaticResource ChartDrawdownAlpha20Brush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -141,21 +141,21 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Depth Bar -->
-                                    <Border Grid.Column="0" Background="{StaticResource ErrorColorBrush}"
+                                    <Border Grid.Column="0" Background="{StaticResource ChartDrawdownBrush}"
                                             Opacity="0.15" HorizontalAlignment="Right"
                                             Width="{Binding DepthWidth}" Height="20" CornerRadius="2"/>
 
                                     <TextBlock Grid.Column="1" Text="{Binding Price}"
-                                               Foreground="{StaticResource ErrorColorBrush}"
-                                               FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                               Foreground="{StaticResource ChartDrawdownBrush}"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12" TextAlignment="Right"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="2" Text="{Binding Size}"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                               FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                               Foreground="{StaticResource TopBarTextBrush}"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12" TextAlignment="Right"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="3" Text="{Binding Total}"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                               Foreground="{StaticResource ChartAxisLabelBrush}"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12" TextAlignment="Right"
                                                VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
@@ -163,15 +163,15 @@
                     </ItemsControl>
 
                     <!-- Spread Divider -->
-                    <Border Grid.Row="2" Background="{StaticResource ConsoleBorderBrush}"
+                    <Border Grid.Row="2" Background="{StaticResource ChartBorderBrush}"
                             Height="1" Margin="0,8"/>
                     <Grid Grid.Row="2" Margin="0,8">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Spread: " Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11"/>
+                            <TextBlock Text="Spread: " Foreground="{StaticResource ChartAxisLabelBrush}" FontSize="11"/>
                             <TextBlock Text="{Binding SpreadText}" FontWeight="SemiBold"
-                                       Foreground="{StaticResource InfoColorBrush}" FontSize="11"/>
+                                       Foreground="{StaticResource ChartPrimaryLineBrush}" FontSize="11"/>
                             <TextBlock Text="{Binding SpreadPercentText}" Margin="8,0,0,0"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11"/>
+                                       Foreground="{StaticResource ChartAxisLabelBrush}" FontSize="11"/>
                         </StackPanel>
                     </Grid>
 
@@ -184,13 +184,13 @@
                             <ColumnDefinition Width="100"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="BIDS" FontWeight="SemiBold"
-                                   Foreground="{StaticResource SuccessColorBrush}"/>
+                                   Foreground="{StaticResource ChartEquityBrush}"/>
                         <TextBlock Grid.Column="1" Text="Price" FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" TextAlignment="Right"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" TextAlignment="Right"/>
                         <TextBlock Grid.Column="2" Text="Size" FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" TextAlignment="Right"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" TextAlignment="Right"/>
                         <TextBlock Grid.Column="3" Text="Total" FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" TextAlignment="Right"/>
+                                   Foreground="{StaticResource ChartAxisLabelBrush}" TextAlignment="Right"/>
                     </Grid>
 
                     <!-- Bids List -->
@@ -202,7 +202,7 @@
                                         <Style TargetType="Grid">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                    <Setter Property="Background" Value="#223FBA50"/>
+                                                    <Setter Property="Background" Value="{StaticResource ChartEquityAlpha20Brush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -215,21 +215,21 @@
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Depth Bar -->
-                                    <Border Grid.Column="0" Background="{StaticResource SuccessColorBrush}"
+                                    <Border Grid.Column="0" Background="{StaticResource ChartEquityBrush}"
                                             Opacity="0.15" HorizontalAlignment="Right"
                                             Width="{Binding DepthWidth}" Height="20" CornerRadius="2"/>
 
                                     <TextBlock Grid.Column="1" Text="{Binding Price}"
-                                               Foreground="{StaticResource SuccessColorBrush}"
-                                               FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                               Foreground="{StaticResource ChartEquityBrush}"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12" TextAlignment="Right"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="2" Text="{Binding Size}"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                               FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                               Foreground="{StaticResource TopBarTextBrush}"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12" TextAlignment="Right"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="3" Text="{Binding Total}"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                               Foreground="{StaticResource ChartAxisLabelBrush}"
+                                               FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="12" TextAlignment="Right"
                                                VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
@@ -238,7 +238,7 @@
 
                     <TextBlock Grid.RowSpan="4"
                                Text="No order book data available. Select a symbol and ensure connection is active."
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Foreground="{StaticResource ChartAxisLabelBrush}"
                                HorizontalAlignment="Center" VerticalAlignment="Center"
                                Visibility="{Binding NoDataVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 </Grid>
@@ -247,18 +247,18 @@
             <!-- Right Panel: Stats and Trade Tape -->
             <StackPanel Grid.Row="0" Grid.Column="2">
                 <!-- Market Stats -->
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                <Border Style="{StaticResource ChartCardStyle}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Text="Market Statistics" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+                        <TextBlock Text="Market Statistics" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,16"/>
 
                         <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Best Bid" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Grid.Column="0" Text="Best Bid" Foreground="{StaticResource ChartAxisLabelBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding BestBidText}"
-                                       Foreground="{StaticResource SuccessColorBrush}" FontWeight="SemiBold"/>
+                                       Foreground="{StaticResource ChartEquityBrush}" FontWeight="SemiBold"/>
                         </Grid>
 
                         <Grid Margin="0,0,0,8">
@@ -266,9 +266,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Best Ask" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Grid.Column="0" Text="Best Ask" Foreground="{StaticResource ChartAxisLabelBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding BestAskText}"
-                                       Foreground="{StaticResource ErrorColorBrush}" FontWeight="SemiBold"/>
+                                       Foreground="{StaticResource ChartDrawdownBrush}" FontWeight="SemiBold"/>
                         </Grid>
 
                         <Grid Margin="0,0,0,8">
@@ -276,21 +276,21 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Mid Price" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Grid.Column="0" Text="Mid Price" Foreground="{StaticResource ChartAxisLabelBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding MidPriceText}"
-                                       Foreground="{StaticResource InfoColorBrush}" FontWeight="SemiBold"/>
+                                       Foreground="{StaticResource ChartWarningLineBrush}" FontWeight="SemiBold"/>
                         </Grid>
 
-                        <Border Height="1" Background="{StaticResource ConsoleBorderBrush}" Margin="0,8"/>
+                        <Border Height="1" Background="{StaticResource ChartBorderBrush}" Margin="0,8"/>
 
                         <Grid Margin="0,8,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Bid Volume" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Grid.Column="0" Text="Bid Volume" Foreground="{StaticResource ChartAxisLabelBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding BidVolumeText}"
-                                       Foreground="{StaticResource SuccessColorBrush}" FontWeight="SemiBold"/>
+                                       Foreground="{StaticResource ChartEquityBrush}" FontWeight="SemiBold"/>
                         </Grid>
 
                         <Grid Margin="0,0,0,8">
@@ -298,9 +298,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Ask Volume" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Grid.Column="0" Text="Ask Volume" Foreground="{StaticResource ChartAxisLabelBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding AskVolumeText}"
-                                       Foreground="{StaticResource ErrorColorBrush}" FontWeight="SemiBold"/>
+                                       Foreground="{StaticResource ChartDrawdownBrush}" FontWeight="SemiBold"/>
                         </Grid>
 
                         <Grid>
@@ -308,9 +308,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Imbalance" Foreground="{StaticResource ConsoleTextMutedBrush}"/>
+                            <TextBlock Grid.Column="0" Text="Imbalance" Foreground="{StaticResource ChartAxisLabelBrush}"/>
                             <TextBlock Grid.Column="1" Text="{Binding ImbalanceText}"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold"/>
+                                       Foreground="{StaticResource TopBarTextBrush}" FontWeight="SemiBold"/>
                         </Grid>
 
                         <Grid Margin="0,6,0,0">
@@ -319,15 +319,15 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Cumul. Delta"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Foreground="{StaticResource ChartAxisLabelBrush}"
                                        ToolTip="Net directional pressure from the recent trade tape (buy volume − sell volume)."/>
                             <TextBlock Grid.Column="1" Text="{Binding CumulativeDeltaText}" FontWeight="SemiBold">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource ChartDrawdownBrush}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding CumulativeDeltaPositive}" Value="True">
-                                                <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource ChartEquityBrush}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -337,15 +337,15 @@
 
                         <!-- Imbalance Bar -->
                         <Grid Margin="0,12,0,0" Height="8">
-                            <Border Background="{StaticResource ConsoleBackgroundMediumBrush}" CornerRadius="4"/>
+                            <Border Background="{StaticResource ChartPlotAreaBrush}" CornerRadius="4"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition x:Name="BidBarColumn" Width="*"/>
                                     <ColumnDefinition x:Name="AskBarColumn" Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="{StaticResource SuccessColorBrush}"
+                                <Border Grid.Column="0" Background="{StaticResource ChartEquityBrush}"
                                         CornerRadius="4,0,0,4" HorizontalAlignment="Stretch"/>
-                                <Border Grid.Column="1" Background="{StaticResource ErrorColorBrush}"
+                                <Border Grid.Column="1" Background="{StaticResource ChartDrawdownBrush}"
                                         CornerRadius="0,4,4,0" HorizontalAlignment="Stretch"/>
                             </Grid>
                         </Grid>
@@ -353,9 +353,9 @@
                 </Border>
 
                 <!-- Recent Trades -->
-                <Border Style="{StaticResource CardStyle}">
+                <Border Style="{StaticResource ChartCardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Recent Trades" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+                        <TextBlock Text="Recent Trades" Style="{StaticResource ChartHeaderTextStyle}" Margin="0,0,0,16"/>
 
                         <ItemsControl ItemsSource="{Binding RecentTrades}">
                             <ItemsControl.ItemTemplate>
@@ -368,21 +368,21 @@
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0" Text="{Binding Time}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   FontFamily="Consolas" FontSize="10"/>
+                                                   Foreground="{StaticResource ChartAxisLabelBrush}"
+                                                   FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="10"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Price}"
                                                    Foreground="{Binding PriceColor}"
-                                                   FontFamily="Consolas" FontSize="11" FontWeight="SemiBold"/>
+                                                   FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="11" FontWeight="SemiBold"/>
                                         <TextBlock Grid.Column="2" Text="{Binding Size}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   FontFamily="Consolas" FontSize="10" TextAlignment="Right"/>
+                                                   Foreground="{StaticResource ChartAxisLabelBrush}"
+                                                   FontFamily="{StaticResource MeridianDataFontFamily}" FontSize="10" TextAlignment="Right"/>
                                     </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
                         <TextBlock Text="No recent trades."
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Foreground="{StaticResource ChartAxisLabelBrush}"
                                    Visibility="{Binding NoTradesVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
                     </StackPanel>
                 </Border>
@@ -390,7 +390,7 @@
 
             <!-- Depth Heatmap Panel — spans full width below the ladder and stats -->
             <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
-                    Style="{StaticResource CardStyle}">
+                    Style="{StaticResource ChartCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -401,11 +401,11 @@
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                         <TextBlock Text="DEPTH HEATMAP"
                                    FontSize="11" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Foreground="{StaticResource ChartAxisLabelBrush}"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="bid/ask liquidity density · green = bids · red = asks · yellow = mid"
+                        <TextBlock Text="bid/ask liquidity density · mint = bids · coral = asks · amber = mid"
                                    FontSize="9" Margin="12,0,0,0"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Foreground="{StaticResource ChartAxisLabelBrush}"
                                    VerticalAlignment="Center" Opacity="0.6"/>
                     </StackPanel>
 

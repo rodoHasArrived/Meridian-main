@@ -65,6 +65,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         _maxInMemoryEntries = maxInMemoryEntries;
         Directory.CreateDirectory(ledgerDirectory);
         WarmHashPath();
+        WarmPrefixCache();
 
         // Run eviction every 30 seconds in the background to avoid blocking the hot path.
         _evictionTimer = new Timer(_ => EvictExpiredBackground(), null,
@@ -82,6 +83,26 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         Span<byte> hash = stackalloc byte[32];
         SHA256.TryHashData(payload, hash, out _);
         _ = Convert.ToHexStringLower(hash[..16]);
+        _ = CreateTradeKey(
+            "warm:AAPL:Trade:",
+            new Meridian.Contracts.Domain.Models.Trade(
+                DateTimeOffset.UnixEpoch,
+                "AAPL",
+                1m,
+                1,
+                AggressorSide.Buy,
+                1,
+                "WARM",
+                "XNAS"));
+        _ = CreatePrefix("WARM", "AAPL", MarketEventType.Trade);
+    }
+
+    private void WarmPrefixCache()
+    {
+        lock (_prefixCacheLock)
+        {
+            _prefixCache[(string.Empty, string.Empty, MarketEventType.Trade)] = "::Trade:";
+        }
     }
 
     /// <summary>
@@ -211,7 +232,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         {
             if (!_prefixCache.TryGetValue(cacheKey, out prefix))
             {
-                prefix = $"{cacheKey.Item1}:{cacheKey.Item2}:{cacheKey.Item3}:";
+                prefix = CreatePrefix(cacheKey.Item1, cacheKey.Item2, cacheKey.Item3);
                 _prefixCache[cacheKey] = prefix;
             }
         }
@@ -286,6 +307,53 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var written = WriteQuoteIdentity(quote, buffer);
         SHA256.TryHashData(buffer[..written], destination, out _);
     }
+
+    private static string CreatePrefix(string? source, string? symbol, MarketEventType type)
+    {
+        source ??= string.Empty;
+        symbol ??= string.Empty;
+        var typeName = GetMarketEventTypeName(type);
+        return string.Create(
+            source.Length + symbol.Length + typeName.Length + 3,
+            (Source: source, Symbol: symbol, TypeName: typeName),
+            static (destination, state) =>
+            {
+                var offset = 0;
+                state.Source.AsSpan().CopyTo(destination[offset..]);
+                offset += state.Source.Length;
+                destination[offset++] = ':';
+                state.Symbol.AsSpan().CopyTo(destination[offset..]);
+                offset += state.Symbol.Length;
+                destination[offset++] = ':';
+                state.TypeName.AsSpan().CopyTo(destination[offset..]);
+                offset += state.TypeName.Length;
+                destination[offset] = ':';
+            });
+    }
+
+    private static string GetMarketEventTypeName(MarketEventType type)
+        => type switch
+        {
+            MarketEventType.Trade => "Trade",
+            MarketEventType.BboQuote => "BboQuote",
+            MarketEventType.L2Snapshot => "L2Snapshot",
+            MarketEventType.OrderFlow => "OrderFlow",
+            MarketEventType.Integrity => "Integrity",
+            MarketEventType.Heartbeat => "Heartbeat",
+            MarketEventType.HistoricalBar => "HistoricalBar",
+            MarketEventType.AggregateBar => "AggregateBar",
+            MarketEventType.OptionQuote => "OptionQuote",
+            MarketEventType.OptionTrade => "OptionTrade",
+            MarketEventType.OptionGreeks => "OptionGreeks",
+            MarketEventType.OptionChain => "OptionChain",
+            MarketEventType.OpenInterest => "OpenInterest",
+            MarketEventType.OrderAdd => "OrderAdd",
+            MarketEventType.OrderModify => "OrderModify",
+            MarketEventType.OrderCancel => "OrderCancel",
+            MarketEventType.OrderExecute => "OrderExecute",
+            MarketEventType.OrderReplace => "OrderReplace",
+            _ => type.ToString()
+        };
 
     private static int WriteTradeIdentity(Contracts.Domain.Models.Trade trade, Span<byte> buffer)
     {

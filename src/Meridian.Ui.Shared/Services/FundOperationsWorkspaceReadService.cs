@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Globalization;
+using System.Text.Json;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.Services;
 using Meridian.Contracts.FundStructure;
@@ -18,6 +20,37 @@ namespace Meridian.Ui.Shared.Services;
 /// </summary>
 public sealed class FundOperationsWorkspaceReadService
 {
+    private static readonly JsonSerializerOptions ReportArtifactJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+
+    private static readonly string[] TrialBalanceHeaders =
+    [
+        "accountName",
+        "accountType",
+        "symbol",
+        "currency",
+        "assetClass",
+        "primaryIdentifierKind",
+        "primaryIdentifierValue",
+        "subType",
+        "assetFamily",
+        "issuerType",
+        "riskCountry",
+        "lookupQuality",
+        "displayName",
+        "netBalance"
+    ];
+
+    private static readonly string[] AssetClassHeaders =
+    [
+        "assetClass",
+        "total",
+        "rowCount"
+    ];
+
     private readonly IFundAccountService _fundAccountService;
     private readonly IStrategyRepository _strategyRepository;
     private readonly PortfolioReadService _portfolioReadService;
@@ -25,6 +58,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly IReconciliationRunService? _strategyReconciliationService;
     private readonly NavAttributionService _navAttributionService;
     private readonly ReportGenerationService _reportGenerationService;
+    private readonly IGovernanceReportPackRepository? _reportPackRepository;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -33,7 +67,8 @@ public sealed class FundOperationsWorkspaceReadService
         NavAttributionService navAttributionService,
         ReportGenerationService reportGenerationService,
         ISecurityReferenceLookup? securityReferenceLookup = null,
-        IReconciliationRunService? strategyReconciliationService = null)
+        IReconciliationRunService? strategyReconciliationService = null,
+        IGovernanceReportPackRepository? reportPackRepository = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -42,6 +77,7 @@ public sealed class FundOperationsWorkspaceReadService
         _reportGenerationService = reportGenerationService ?? throw new ArgumentNullException(nameof(reportGenerationService));
         _securityReferenceLookup = securityReferenceLookup;
         _strategyReconciliationService = strategyReconciliationService;
+        _reportPackRepository = reportPackRepository;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -179,6 +215,115 @@ public sealed class FundOperationsWorkspaceReadService
             TrialBalanceLineCount: report.TrialBalance.Count,
             AssetClassSectionCount: report.AssetClassSections.Count,
             AssetClassSections: assetClassSections);
+    }
+
+    public async Task<FundReportPackSnapshotDto> GenerateReportPackAsync(
+        FundReportPackGenerateRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.FundProfileId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.AuditActor);
+        ct.ThrowIfCancellationRequested();
+
+        var repository = _reportPackRepository
+            ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+        var formats = NormalizeReportFormats(request.Formats);
+        var normalizedFundProfileId = request.FundProfileId.Trim();
+        var fundId = TranslateFundProfileId(normalizedFundProfileId);
+        var runs = await LoadRunsAsync(normalizedFundProfileId, ct).ConfigureAwait(false);
+        var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
+        var asOf = request.AsOf ?? DateTimeOffset.UtcNow;
+        var accountProjections = await GetAccountProjectionsAsync(fundId, ct).ConfigureAwait(false);
+        var accountSummaries = accountProjections.Select(static projection => projection.Summary).ToArray();
+        var currency = ResolveCurrency(request.Currency, accountSummaries);
+        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+
+        var reportTask = _reportGenerationService.GenerateAsync(
+            new ReportRequest(normalizedFundProfileId, asOf, ledgerBook, MapReportKind(request.ReportKind)),
+            ct);
+        var ledgerTask = BuildLedgerSummaryAsync(
+            normalizedFundProfileId,
+            displayName,
+            FundLedgerScope.Consolidated,
+            scopeId: null,
+            asOf,
+            ledgerBook,
+            ct);
+        var reconciliationTask = BuildReconciliationSummaryAsync(accountSummaries, runs, ct);
+        var navTask = BuildNavSummaryAsync(normalizedFundProfileId, currency, ledgerBook, asOf, ct);
+
+        await Task.WhenAll(reportTask, ledgerTask, reconciliationTask, navTask).ConfigureAwait(false);
+
+        var report = await reportTask.ConfigureAwait(false);
+        var ledger = await ledgerTask.ConfigureAwait(false);
+        var reconciliation = await reconciliationTask.ConfigureAwait(false);
+        var nav = await navTask.ConfigureAwait(false);
+        var securityResolvedCount = report.TrialBalance.Count(static row =>
+            !string.Equals(row.LookupQuality, "missing", StringComparison.OrdinalIgnoreCase));
+        var securityMissingCount = report.TrialBalance.Count(static row =>
+            !string.IsNullOrWhiteSpace(row.Symbol)
+            && string.Equals(row.LookupQuality, "missing", StringComparison.OrdinalIgnoreCase));
+        var provenance = new FundReportPackProvenanceDto(
+            RelatedRunIds: runs.Select(static run => run.RunId).ToArray(),
+            JournalEntryCount: ledger.JournalEntryCount,
+            LedgerEntryCount: ledger.LedgerEntryCount,
+            TrialBalanceLineCount: report.TrialBalance.Count,
+            ReconciliationRunCount: reconciliation.RunCount,
+            OpenReconciliationBreakCount: reconciliation.OpenBreakCount,
+            SecurityResolvedCount: securityResolvedCount,
+            SecurityMissingCount: securityMissingCount,
+            SourceSnapshotHash: ComputeSourceSnapshotHash(
+                normalizedFundProfileId,
+                asOf,
+                report,
+                ledger,
+                reconciliation,
+                nav,
+                runs));
+        var snapshot = new FundReportPackSnapshotDto(
+            ReportId: report.ReportId,
+            FundProfileId: normalizedFundProfileId,
+            DisplayName: displayName,
+            ReportKind: request.ReportKind,
+            Currency: currency,
+            AsOf: asOf,
+            GeneratedAt: report.GeneratedAt,
+            TotalNetAssets: report.TotalNetAssets,
+            AuditActor: request.AuditActor.Trim(),
+            CorrelationId: string.IsNullOrWhiteSpace(request.CorrelationId)
+                ? Guid.NewGuid().ToString("N")
+                : request.CorrelationId.Trim(),
+            DecisionRationale: string.IsNullOrWhiteSpace(request.DecisionRationale)
+                ? null
+                : request.DecisionRationale.Trim(),
+            Provenance: provenance,
+            Artifacts: [],
+            Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount));
+
+        return await repository
+            .SaveAsync(snapshot, BuildReportPackArtifacts(report, formats, ct), ct)
+            .ConfigureAwait(false);
+    }
+
+    public Task<IReadOnlyList<FundReportPackHistoryItemDto>> GetReportPackHistoryAsync(
+        string fundProfileId,
+        int limit = 20,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fundProfileId);
+        var repository = _reportPackRepository
+            ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+        return repository.GetHistoryAsync(fundProfileId.Trim(), limit, ct);
+    }
+
+    public Task<FundReportPackSnapshotDto?> GetReportPackAsync(
+        Guid reportId,
+        CancellationToken ct = default)
+    {
+        var repository = _reportPackRepository
+            ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+        return repository.GetAsync(reportId, ct);
     }
 
     private async Task<IReadOnlyList<StrategyRunEntry>> LoadRunsAsync(
@@ -694,6 +839,256 @@ public sealed class FundOperationsWorkspaceReadService
             .SelectMany(static entry => entry.Lines)
             .GroupBy(static line => line.Account)
             .ToDictionary(static group => group.Key, static group => group.Count());
+    }
+
+    private static IReadOnlyList<GovernanceReportArtifactFormatDto> NormalizeReportFormats(
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? requestedFormats)
+    {
+        if (requestedFormats is null)
+        {
+            return
+            [
+                GovernanceReportArtifactFormatDto.Json,
+                GovernanceReportArtifactFormatDto.Csv,
+                GovernanceReportArtifactFormatDto.Xlsx
+            ];
+        }
+
+        if (requestedFormats.Count == 0)
+        {
+            throw new ArgumentException("At least one report-pack artifact format is required.", nameof(requestedFormats));
+        }
+
+        var formats = new List<GovernanceReportArtifactFormatDto>(requestedFormats.Count);
+        foreach (var format in requestedFormats)
+        {
+            if (!Enum.IsDefined(format))
+            {
+                throw new ArgumentException($"Unsupported report-pack artifact format '{format}'.", nameof(requestedFormats));
+            }
+
+            if (!formats.Contains(format))
+            {
+                formats.Add(format);
+            }
+        }
+
+        return formats;
+    }
+
+    private static IReadOnlyList<GovernanceReportPackArtifactContent> BuildReportPackArtifacts(
+        ReportPack report,
+        IReadOnlyList<GovernanceReportArtifactFormatDto> formats,
+        CancellationToken ct)
+    {
+        var artifacts = new List<GovernanceReportPackArtifactContent>();
+        if (formats.Contains(GovernanceReportArtifactFormatDto.Json))
+        {
+            ct.ThrowIfCancellationRequested();
+            artifacts.Add(new GovernanceReportPackArtifactContent("trial-balance", GovernanceReportArtifactFormatDto.Json, "trial-balance.json", SerializeJsonArtifact(OrderTrialBalanceRows(report.TrialBalance))));
+            artifacts.Add(new GovernanceReportPackArtifactContent("asset-class-sections", GovernanceReportArtifactFormatDto.Json, "asset-class-sections.json", SerializeJsonArtifact(OrderAssetClassSections(report.AssetClassSections))));
+        }
+
+        if (formats.Contains(GovernanceReportArtifactFormatDto.Csv))
+        {
+            ct.ThrowIfCancellationRequested();
+            artifacts.Add(new GovernanceReportPackArtifactContent("trial-balance", GovernanceReportArtifactFormatDto.Csv, "trial-balance.csv", BuildTrialBalanceCsv(report.TrialBalance, ct)));
+            artifacts.Add(new GovernanceReportPackArtifactContent("asset-class-sections", GovernanceReportArtifactFormatDto.Csv, "asset-class-sections.csv", BuildAssetClassSectionsCsv(report.AssetClassSections, ct)));
+        }
+
+        if (formats.Contains(GovernanceReportArtifactFormatDto.Xlsx))
+        {
+            ct.ThrowIfCancellationRequested();
+            artifacts.Add(new GovernanceReportPackArtifactContent("workbook", GovernanceReportArtifactFormatDto.Xlsx, "report-pack.xlsx", XlsxWorkbookWriter.CreateWorkbook(BuildWorkbookSheets(report), ct)));
+        }
+
+        return artifacts.OrderBy(static artifact => artifact.FileName, StringComparer.Ordinal).ToArray();
+    }
+
+    private static byte[] SerializeJsonArtifact<T>(T value) =>
+        JsonSerializer.SerializeToUtf8Bytes(value, ReportArtifactJsonOptions);
+
+    private static IReadOnlyList<XlsxWorksheet> BuildWorkbookSheets(ReportPack report)
+    {
+        var trialBalanceRows = OrderTrialBalanceRows(report.TrialBalance)
+            .Select(static row => (IReadOnlyList<object?>)MapTrialBalanceWorkbookRow(row))
+            .ToArray();
+        var assetClassRows = OrderAssetClassSections(report.AssetClassSections)
+            .Select(static section => (IReadOnlyList<object?>)
+            [
+                section.AssetClass,
+                section.Total,
+                section.Rows.Count
+            ])
+            .ToArray();
+
+        return
+        [
+            new XlsxWorksheet("Trial Balance", TrialBalanceHeaders, trialBalanceRows),
+            new XlsxWorksheet("Asset Classes", AssetClassHeaders, assetClassRows)
+        ];
+    }
+
+    private static IReadOnlyList<EnrichedLedgerRow> OrderTrialBalanceRows(IEnumerable<EnrichedLedgerRow> rows)
+        => rows
+            .OrderBy(static row => row.AccountType, StringComparer.Ordinal)
+            .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
+            .ThenBy(static row => row.Symbol, StringComparer.Ordinal)
+            .ToArray();
+
+    private static IReadOnlyList<AssetClassSection> OrderAssetClassSections(IEnumerable<AssetClassSection> sections)
+        => sections
+            .OrderBy(static section => section.AssetClass, StringComparer.Ordinal)
+            .ToArray();
+
+    private static object?[] MapTrialBalanceWorkbookRow(EnrichedLedgerRow row) =>
+    [
+        row.AccountName,
+        row.AccountType,
+        row.Symbol,
+        row.Currency,
+        row.AssetClass,
+        row.PrimaryIdentifierKind,
+        row.PrimaryIdentifierValue,
+        row.SubType,
+        row.AssetFamily,
+        row.IssuerType,
+        row.RiskCountry,
+        row.LookupQuality,
+        row.DisplayName,
+        row.NetBalance
+    ];
+
+    private static byte[] BuildTrialBalanceCsv(IReadOnlyList<EnrichedLedgerRow> rows, CancellationToken ct)
+    {
+        var builder = new StringBuilder();
+        AppendCsvRow(builder, TrialBalanceHeaders);
+        foreach (var row in OrderTrialBalanceRows(rows))
+        {
+            ct.ThrowIfCancellationRequested();
+            AppendCsvRow(builder, MapTrialBalanceWorkbookRow(row));
+        }
+
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static byte[] BuildAssetClassSectionsCsv(IReadOnlyList<AssetClassSection> sections, CancellationToken ct)
+    {
+        var builder = new StringBuilder();
+        AppendCsvRow(builder, AssetClassHeaders);
+        foreach (var section in OrderAssetClassSections(sections))
+        {
+            ct.ThrowIfCancellationRequested();
+            AppendCsvRow(builder,
+            [
+                section.AssetClass,
+                section.Total,
+                section.Rows.Count
+            ]);
+        }
+
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static void AppendCsvRow(StringBuilder builder, IEnumerable<object?> values)
+    {
+        var first = true;
+        foreach (var value in values)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EscapeCsvValue(value));
+            first = false;
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string EscapeCsvValue(object? value)
+    {
+        var text = value switch
+        {
+            null => string.Empty,
+            IFormattable formattable => formattable.ToString(format: null, CultureInfo.InvariantCulture),
+            _ => value.ToString() ?? string.Empty
+        };
+
+        return text.IndexOfAny(['"', ',', '\r', '\n']) < 0
+            ? text
+            : $"\"{text.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    }
+
+    private static IReadOnlyList<string> BuildReportPackWarnings(
+        ReportPack report,
+        ReconciliationSummary reconciliation,
+        int runCount,
+        int securityMissingCount)
+    {
+        var warnings = new List<string>();
+        if (runCount == 0)
+        {
+            warnings.Add("No recorded fund-scoped runs contributed ledger data for this report pack.");
+        }
+
+        if (report.TrialBalance.Count == 0)
+        {
+            warnings.Add("The generated report pack contains no trial-balance rows.");
+        }
+
+        if (report.AssetClassSections.Count == 0)
+        {
+            warnings.Add("The generated report pack contains no asset-class sections.");
+        }
+
+        if (securityMissingCount > 0)
+        {
+            warnings.Add($"{securityMissingCount} trial-balance row(s) could not be resolved through Security Master.");
+        }
+
+        if (reconciliation.OpenBreakCount > 0)
+        {
+            warnings.Add($"{reconciliation.OpenBreakCount} open reconciliation break(s) were present at generation time.");
+        }
+
+        return warnings;
+    }
+
+    private static string ComputeSourceSnapshotHash(
+        string fundProfileId,
+        DateTimeOffset asOf,
+        ReportPack report,
+        FundLedgerSummary ledger,
+        ReconciliationSummary reconciliation,
+        FundNavAttributionSummaryDto nav,
+        IReadOnlyList<StrategyRunEntry> runs)
+    {
+        var source = new
+        {
+            FundProfileId = fundProfileId,
+            AsOf = asOf,
+            ReportKind = report.ReportKind.ToString(),
+            Runs = runs.OrderBy(static run => run.RunId, StringComparer.Ordinal).Select(static run => new { run.RunId, run.StrategyName, run.FundProfileId, run.StartedAt }).ToArray(),
+            Ledger = new { ledger.JournalEntryCount, ledger.LedgerEntryCount, ledger.AssetBalance, ledger.LiabilityBalance, ledger.EquityBalance, ledger.RevenueBalance, ledger.ExpenseBalance },
+            Reconciliation = new { reconciliation.RunCount, reconciliation.OpenBreakCount, reconciliation.BreakAmountTotal, reconciliation.SecurityCoverageIssueCount },
+            Nav = new
+            {
+                nav.Currency,
+                nav.TotalNav,
+                nav.ComponentCount,
+                nav.EntityCount,
+                nav.SleeveCount,
+                nav.VehicleCount,
+                AssetClassExposure = nav.AssetClassExposure.OrderBy(static exposure => exposure.AssetClass, StringComparer.Ordinal).ToArray()
+            },
+            TrialBalance = OrderTrialBalanceRows(report.TrialBalance),
+            AssetClassSections = OrderAssetClassSections(report.AssetClassSections).Select(static section => new { section.AssetClass, section.Total, RowCount = section.Rows.Count }).ToArray()
+        };
+
+        var json = JsonSerializer.SerializeToUtf8Bytes(source, ReportArtifactJsonOptions);
+        return Convert.ToHexString(SHA256.HashData(json)).ToLowerInvariant();
     }
 
     private static decimal SumBalance(IEnumerable<FundTrialBalanceLine> lines, LedgerAccountType accountType)

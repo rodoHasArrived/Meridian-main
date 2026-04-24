@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using ScottPlot;
 using Meridian.Wpf.ViewModels;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.Views;
 
@@ -14,16 +15,19 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class ScatterAnalysisPage
 {
-    // ── ScottPlot theme colours (reused across renders) ───────────────────────
-    private static readonly ScottPlot.Color BgColour      = new(16,  26,  40,  255);
-    private static readonly ScottPlot.Color DataBgColour  = new(11,  20,  34,  255);
-    private static readonly ScottPlot.Color AxisColour    = new(130, 145, 165, 255);
-    private static readonly ScottPlot.Color GridColour    = new(32,  48,  68,  255);
-    private static readonly ScottPlot.Color HistoryColour = new(76, 141, 255, 180);  // semi-transparent blue
-    private static readonly ScottPlot.Color CurrentColour = new(245,  80,  80, 255); // red-orange highlight
-    private static readonly ScottPlot.Color RegrColour    = new(120, 190, 255, 220); // light blue line
+    // ScottPlot theme colors (reused across renders).
+    private static readonly ScottPlot.Color BgColour = ToScottPlot(Palette.ChartBackground);
+    private static readonly ScottPlot.Color DataBgColour = ToScottPlot(Palette.ChartDataBackground);
+    private static readonly ScottPlot.Color AxisColour = ToScottPlot(Palette.ChartAxis);
+    private static readonly ScottPlot.Color GridColour = ToScottPlot(Palette.ChartGrid);
+    private static readonly ScottPlot.Color HistoryColour = ToScottPlot(Palette.ChartSecondary, 180);
+    private static readonly ScottPlot.Color CurrentColour = ToScottPlot(Palette.ChartNegative);
+    private static readonly ScottPlot.Color RegrColour = ToScottPlot(Palette.ChartPrimary, 220);
 
     private readonly ScatterAnalysisViewModel _vm;
+
+    private static ScottPlot.Color ToScottPlot(Palette.ArgbColor color, byte? alpha = null)
+        => new(color.R, color.G, color.B, alpha ?? color.A);
 
     public ScatterAnalysisPage(ScatterAnalysisViewModel viewModel)
     {

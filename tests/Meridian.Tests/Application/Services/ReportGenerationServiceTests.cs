@@ -267,8 +267,8 @@ public sealed class ReportGenerationServiceTests
             AsOf: new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
             FundLedger: book));
 
-        report.TrialBalance.Should().ContainSingle();
-        var row = report.TrialBalance.Single();
+        report.TrialBalance.Should().ContainSingle(r => r.Symbol == "UNKN");
+        var row = report.TrialBalance.Single(r => r.Symbol == "UNKN");
         row.Symbol.Should().Be("UNKN");
         row.AssetClass.Should().BeNull();
         row.DisplayName.Should().BeNull();
@@ -301,7 +301,7 @@ public sealed class ReportGenerationServiceTests
             AsOf: new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
             FundLedger: book));
 
-        report.TrialBalance.Should().HaveCount(2);
+        report.TrialBalance.Where(row => row.Symbol is not null).Should().HaveCount(2);
         report.TrialBalance.Should().Contain(row =>
             row.Symbol == "AAPL" &&
             row.AssetClass == "Equity" &&

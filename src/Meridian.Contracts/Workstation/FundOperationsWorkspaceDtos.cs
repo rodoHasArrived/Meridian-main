@@ -11,6 +11,14 @@ public enum GovernanceReportKindDto
     ReconciliationPack = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportArtifactFormatDto>))]
+public enum GovernanceReportArtifactFormatDto
+{
+    Json = 0,
+    Csv = 1,
+    Xlsx = 2
+}
+
 /// <summary>
 /// Query for the shared governance and fund-operations workspace projection.
 /// </summary>
@@ -121,3 +129,76 @@ public sealed record FundReportPackPreviewDto(
     int TrialBalanceLineCount,
     int AssetClassSectionCount,
     IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections);
+
+/// <summary>
+/// Request to generate and persist an immutable governance report pack.
+/// </summary>
+public sealed record FundReportPackGenerateRequestDto(
+    string FundProfileId,
+    string AuditActor,
+    GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance,
+    DateTimeOffset? AsOf = null,
+    string? Currency = null,
+    string? CorrelationId = null,
+    string? DecisionRationale = null,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null);
+
+/// <summary>
+/// One persisted report-pack artifact and its integrity metadata.
+/// </summary>
+public sealed record FundReportPackArtifactDto(
+    string ArtifactKind,
+    GovernanceReportArtifactFormatDto Format,
+    string RelativePath,
+    long SizeBytes,
+    string ChecksumSha256);
+
+/// <summary>
+/// Source lineage captured with a generated governance report pack.
+/// </summary>
+public sealed record FundReportPackProvenanceDto(
+    IReadOnlyList<string> RelatedRunIds,
+    int JournalEntryCount,
+    int LedgerEntryCount,
+    int TrialBalanceLineCount,
+    int ReconciliationRunCount,
+    int OpenReconciliationBreakCount,
+    int SecurityResolvedCount,
+    int SecurityMissingCount,
+    string SourceSnapshotHash);
+
+/// <summary>
+/// Immutable manifest for a generated governance report pack.
+/// </summary>
+public sealed record FundReportPackSnapshotDto(
+    Guid ReportId,
+    string FundProfileId,
+    string DisplayName,
+    GovernanceReportKindDto ReportKind,
+    string Currency,
+    DateTimeOffset AsOf,
+    DateTimeOffset GeneratedAt,
+    decimal TotalNetAssets,
+    string AuditActor,
+    string CorrelationId,
+    string? DecisionRationale,
+    FundReportPackProvenanceDto Provenance,
+    IReadOnlyList<FundReportPackArtifactDto> Artifacts,
+    IReadOnlyList<string> Warnings);
+
+/// <summary>
+/// Lightweight row used when listing generated governance report packs.
+/// </summary>
+public sealed record FundReportPackHistoryItemDto(
+    Guid ReportId,
+    string FundProfileId,
+    string DisplayName,
+    GovernanceReportKindDto ReportKind,
+    string Currency,
+    DateTimeOffset AsOf,
+    DateTimeOffset GeneratedAt,
+    decimal TotalNetAssets,
+    string AuditActor,
+    int ArtifactCount,
+    int WarningCount,
+    string RelativeManifestPath);

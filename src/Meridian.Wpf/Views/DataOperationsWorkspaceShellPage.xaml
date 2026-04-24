@@ -12,7 +12,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.DataOperations.ShellTitle}"
+      AutomationProperties.Name="{x:Static copy:WorkspaceCopyCatalog.DataOperationsShellTitle}"
       AutomationProperties.AutomationId="DataOperationsWorkspaceShellPage">
 
     <Page.Resources>

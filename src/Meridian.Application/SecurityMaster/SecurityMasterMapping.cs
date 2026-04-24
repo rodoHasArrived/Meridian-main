@@ -462,7 +462,9 @@ internal static class SecurityMasterMapping
             : null;
 
     private static int? GetOptionalInt(JsonElement json, string propertyName)
-        => json.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var intValue)
+        => json.TryGetProperty(propertyName, out var value) &&
+           value.ValueKind == JsonValueKind.Number &&
+           value.TryGetInt32(out var intValue)
             ? intValue
             : null;
 

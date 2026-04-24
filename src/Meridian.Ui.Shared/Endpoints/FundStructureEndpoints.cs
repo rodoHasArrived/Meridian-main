@@ -409,6 +409,87 @@ public static class FundStructureEndpoints
         .WithName("PreviewFundReportPack")
         .Produces<FundReportPackPreviewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/report-packs", async (JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            FundReportPackGenerateRequestDto? request;
+            try
+            {
+                request = JsonSerializer.Deserialize<FundReportPackGenerateRequestDto>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem(
+                    $"Report-pack request is invalid JSON. {ex.Message}",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (!TryValidateReportPackGenerateRequest(request, out var validationError))
+            {
+                return Results.Problem(validationError, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var result = await service.GenerateReportPackAsync(request!, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("GenerateFundReportPack")
+        .Produces<FundReportPackSnapshotDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/report-packs", async (HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var q = context.Request.Query;
+            var fundProfileId = q["fundProfileId"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                return Results.Problem(
+                    "fundProfileId is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var limit = ParseInt(q["limit"], 20);
+            var result = await service
+                .GetReportPackHistoryAsync(fundProfileId, limit, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundReportPackHistory")
+        .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var result = await service.GetReportPackAsync(reportId, context.RequestAborted).ConfigureAwait(false);
+            return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundReportPack")
+        .Produces<FundReportPackSnapshotDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
     }
 
     private static IFundStructureService? ResolveService(HttpContext context) =>
@@ -469,6 +550,45 @@ public static class FundStructureEndpoints
             .ToArray();
 
         return parsed.Length == 0 ? null : parsed;
+    }
+
+    private static bool TryValidateReportPackGenerateRequest(
+        FundReportPackGenerateRequestDto? request,
+        out string error)
+    {
+        if (request is null)
+        {
+            error = "A request body is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.FundProfileId))
+        {
+            error = "fundProfileId is required.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.AuditActor))
+        {
+            error = "auditActor is required.";
+            return false;
+        }
+
+        if (request.Formats is { Count: 0 })
+        {
+            error = "At least one report-pack artifact format is required.";
+            return false;
+        }
+
+        if (request.Formats is not null
+            && request.Formats.Any(static format => !Enum.IsDefined(format)))
+        {
+            error = "One or more report-pack artifact formats are unsupported.";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
     }
 
     private static AssignFundStructureNodeRequest NormalizeLedgerGroupAssignmentRequest(

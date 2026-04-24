@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Meridian.Backtesting.Sdk;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
 using Microsoft.CodeAnalysis;
@@ -61,6 +62,7 @@ public sealed class ScriptRunner : IScriptRunner
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         parameters ??= new Dictionary<string, object?>();
+        ct.ThrowIfCancellationRequested();
 
         var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
@@ -68,7 +70,16 @@ public sealed class ScriptRunner : IScriptRunner
 
         if (checkpoint is null)
         {
-            var compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+            ScriptCompilationResult compilationResult;
+            try
+            {
+                compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return CreateCancelledResult(wallClock, checkpoint);
+            }
+
             compileTime = compilationResult.CompilationTime;
 
             if (!compilationResult.Success)
@@ -84,6 +95,8 @@ public sealed class ScriptRunner : IScriptRunner
                     Metrics: Array.Empty<KeyValuePair<string, string>>(),
                     Plots: Array.Empty<PlotRequest>(),
                     TradesSummary: Array.Empty<string>(),
+                    CapturedBacktests: Array.Empty<BacktestResult>(),
+                    RuntimeParameters: Array.Empty<ParameterDescriptor>(),
                     Checkpoint: checkpoint);
             }
         }
@@ -180,7 +193,7 @@ public sealed class ScriptRunner : IScriptRunner
                 runPlotQueue.Complete();
                 ScriptContext.PlotQueue = null;
             }
-        }, ct).ConfigureAwait(false);
+        }, CancellationToken.None).ConfigureAwait(false);
 
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
@@ -200,6 +213,8 @@ public sealed class ScriptRunner : IScriptRunner
             Metrics: globals.DrainMetrics(),
             Plots: plots,
             TradesSummary: Array.Empty<string>(),
+            CapturedBacktests: globals.Backtest.DrainCapturedResults(),
+            RuntimeParameters: globals.SnapshotRuntimeParameters(),
             Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
     }
 
@@ -211,5 +226,26 @@ public sealed class ScriptRunner : IScriptRunner
             diagnostic.GetMessage(),
             lineSpan.StartLinePosition.Line + 1,
             lineSpan.StartLinePosition.Character + 1);
+    }
+
+    private static ScriptRunResult CreateCancelledResult(
+        Stopwatch wallClock,
+        ScriptExecutionCheckpoint? checkpoint)
+    {
+        wallClock.Stop();
+        return new ScriptRunResult(
+            Success: false,
+            Elapsed: wallClock.Elapsed,
+            CompileTime: TimeSpan.Zero,
+            PeakMemoryBytes: 0,
+            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            RuntimeError: "Script cancelled by user.",
+            ConsoleOutput: string.Empty,
+            Metrics: Array.Empty<KeyValuePair<string, string>>(),
+            Plots: Array.Empty<PlotRequest>(),
+            TradesSummary: Array.Empty<string>(),
+            CapturedBacktests: Array.Empty<BacktestResult>(),
+            RuntimeParameters: Array.Empty<ParameterDescriptor>(),
+            Checkpoint: checkpoint);
     }
 }

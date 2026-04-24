@@ -43,16 +43,16 @@ The current repository now includes the first organization-rooted governance str
   - Security Master-driven instrument rule projections for structure-assigned instruments, including coupon/dividend/maturity events sourced from economic definitions and corporate actions without querying position holdings
   - realized-vs-projected variance summaries and per-account contribution breakdowns
   - a shared `/api/fund-structure/cash-flow-view` query path that reuses the F# cash ladder kernel without relying on position holdings
-- A shared governance fund-operations projection now exists for `fundProfileId` scopes through `FundOperationsWorkspaceReadService` plus `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview`, combining:
+- A shared governance fund-operations projection now exists for `fundProfileId` scopes through `FundOperationsWorkspaceReadService` plus `/api/fund-structure/workspace-view`, `/api/fund-structure/report-pack-preview`, and persisted `/api/fund-structure/report-packs` artifact routes, combining:
   - account summaries and bank snapshots sourced from fund-account state
   - cash/financing posture derived from linked runs and balance snapshots
   - fund-ledger journal/trial-balance summaries
   - optional `selectedLedgerIds` query semantics so empty selections keep the full fund view, populated selections build consolidated-over-selection or scoped drill-ins over that subset, and unknown IDs safely return empty ledger projections
   - reconciliation posture across account and run-scoped seams
-  - NAV attribution and report/export profile preview metadata
+  - NAV attribution, report/export profile preview metadata, and local-first governed report-pack artifacts
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
 
-This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, and a fund-scoped workspace/report-preview API baseline are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, full report packs, and publication/readiness controls still remain future implementation waves.
+This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, and the first governed report-pack artifact generation path are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, broader board/investor/compliance templates, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
@@ -506,14 +506,15 @@ Current delivered slice: fund-level shared workspace and report-preview API proj
 
 ### Phase F4.5: Report Generation Tools
 
-Current delivered slice: report-pack preview contracts and a shared preview endpoint now exist, but governed artifact packaging/export flows remain incomplete.
+Current delivered slice: report-pack preview contracts, a shared preview endpoint, and the first local-first governed artifact generation path now exist. The delivered artifact slice persists manifest/provenance JSON, trial-balance and asset-class JSON/CSV sections, checksum metadata, history/detail queries, and an XLSX workbook when requested under the workstation data area.
 
-- [ ] Define `ReportPackRequest`, `ReportPackDto`, and report section models.
+- [x] Define governed report-pack request, snapshot, artifact, provenance, history, and format DTOs.
 - [ ] Add governance export profiles for board, investor, compliance, and operations packs.
-- [ ] Implement report section assembly using shared read models.
-- [ ] Add XLSX-first reporting support with audit metadata and source references.
-- [ ] Add packaging of reconciliation, cash-flow, trial-balance, and portfolio outputs into one governed artifact set.
-- [ ] Add tests for section assembly, export validation, and artifact completeness.
+- [x] Implement first report section assembly using shared ledger, NAV, reconciliation, Security Master, and report-generation flows.
+- [x] Add XLSX workbook artifact support with audit metadata and source references.
+- [x] Add packaging of trial-balance, asset-class, manifest, and provenance outputs into one governed artifact set.
+- [x] Add tests for section assembly, endpoint validation, history/detail retrieval, and artifact completeness.
+- [ ] Expand governed artifact packaging to cash-flow, reconciliation-detail, portfolio, board, investor, and compliance sections.
 
 ### Phase F5: Compliance and Policy Overlay
 
