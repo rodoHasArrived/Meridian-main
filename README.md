@@ -4904,6 +4904,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
+│   │   ├── governance-report-packs.md
 │   │   ├── open-source-references.md
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
@@ -6304,7 +6305,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   ├── ExportVerificationReport.cs
-│   │   │   └── PreflightRule.cs
+│   │   │   ├── PreflightRule.cs
+│   │   │   └── XlsxWorkbookWriter.cs
 │   │   ├── FundAccounts
 │   │   │   ├── IFundAccountStore.cs
 │   │   │   └── Migrations
@@ -6647,6 +6649,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
+│   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
@@ -7809,6 +7812,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-625 directories, 7044 files
+625 directories, 7047 files
 ```
 <!-- readme-tree end -->
