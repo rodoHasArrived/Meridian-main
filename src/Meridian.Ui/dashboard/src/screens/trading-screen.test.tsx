@@ -105,6 +105,7 @@ vi.mock("@/lib/api", async () => {
     setReplaySpeed: vi.fn().mockResolvedValue({}),
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
     approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved" }),
+    rejectPromotion: vi.fn().mockResolvedValue({ success: true, promotionId: null, newRunId: null, reason: "Run breached risk gate." }),
     getPromotionHistory: vi.fn().mockResolvedValue([{
       promotionId: "promo-1",
       strategyId: "strat-1",
@@ -204,6 +205,18 @@ describe("TradingScreen", () => {
     await user.type(screen.getByLabelText("Run id"), "run-bad");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText("eval failed");
+  });
+
+  it("supports rejecting a promotion with a required rationale", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    await user.type(screen.getByLabelText("Run id"), "run-1");
+    await user.type(screen.getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
+    await user.click(screen.getByRole("button", { name: /reject promotion/i }));
+
+    await screen.findByText(/Promotion rejected: Run breached risk gate\./i);
+    expect(api.rejectPromotion).toHaveBeenCalledWith("run-1", "Risk review failed on drawdown stability.");
   });
 
   it("supports replay start and restore session for reconnect/resume workflows", async () => {

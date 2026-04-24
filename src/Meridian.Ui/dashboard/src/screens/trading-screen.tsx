@@ -11,7 +11,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, rejectPromotion, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
@@ -172,6 +172,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [promotionRunId, setPromotionRunId] = useState("");
   const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
   const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
+  const [promotionRejectionReason, setPromotionRejectionReason] = useState("");
   const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
   const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
@@ -384,6 +385,27 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setPromotionHistory(history);
     } catch (err) {
       setPromotionError(err instanceof Error ? err.message : "Promotion approval failed.");
+    } finally {
+      setPromotionBusy(false);
+    }
+  }
+
+  async function handleRejectPromotion() {
+    if (!promotionRunId.trim() || !promotionRejectionReason.trim()) {
+      setPromotionError("Run id and rejection reason are required.");
+      return;
+    }
+
+    setPromotionBusy(true);
+    setPromotionError(null);
+    setPromotionResult(null);
+    try {
+      const result = await rejectPromotion(promotionRunId.trim(), promotionRejectionReason.trim());
+      setPromotionResult(result.success ? `Promotion rejected: ${result.reason}` : result.reason);
+      const history = await getPromotionHistory();
+      setPromotionHistory(history);
+    } catch (err) {
+      setPromotionError(err instanceof Error ? err.message : "Promotion rejection failed.");
     } finally {
       setPromotionBusy(false);
     }
@@ -1121,6 +1143,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
               required
             />
             <input
+              aria-label="Rejection reason"
+              placeholder="why this promotion is rejected"
+              value={promotionRejectionReason}
+              onChange={(e) => setPromotionRejectionReason(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <input
               aria-label="Review notes"
               placeholder="optional review notes"
               value={promotionReviewNotes}
@@ -1137,6 +1166,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
               <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
+              <Button size="sm" variant="destructive" onClick={handleRejectPromotion} disabled={promotionBusy || !promotionRunId.trim() || !promotionRejectionReason.trim()}>Reject promotion</Button>
             </div>
             {promotionEval && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
