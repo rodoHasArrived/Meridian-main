@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-24 03:01:56 UTC. Do not edit manually.
+> Auto-generated on 2026-04-24 03:13:08 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4620,6 +4620,7 @@ Meridian-main
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
