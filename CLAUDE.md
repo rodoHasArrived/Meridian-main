@@ -566,7 +566,10 @@ Meridian-main
 │       │   ├── 2026-04-16
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-17
+│       │   ├── 2026-04-17
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-20
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -651,6 +654,7 @@ Meridian-main
 │   │   ├── NewlineScanBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
+│   │   ├── StrategyRunReadBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
 │   ├── BOTTLENECK_REPORT.md
 │   └── run-bottleneck-benchmarks.sh
@@ -3746,6 +3750,7 @@ Meridian-main
 │   │   │   ├── Meridian.Storage.TieringOptions.yml
 │   │   │   ├── Meridian.Storage.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.ILiveStrategy.yml
+│   │   │   ├── Meridian.Strategies.Interfaces.IPromotionRecordStore.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.IStrategyLifecycle.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.IStrategyRepository.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.yml
@@ -3755,6 +3760,7 @@ Meridian-main
 │   │   │   ├── Meridian.Strategies.Models.yml
 │   │   │   ├── Meridian.Strategies.Promotions.BacktestToLivePromoter.yml
 │   │   │   ├── Meridian.Strategies.Promotions.PromotionCriteria.yml
+│   │   │   ├── Meridian.Strategies.Promotions.PromotionDecisionKinds.yml
 │   │   │   ├── Meridian.Strategies.Promotions.StrategyPromotionRecord.yml
 │   │   │   ├── Meridian.Strategies.Promotions.yml
 │   │   │   ├── Meridian.Strategies.Services.AggregatedPosition.yml
@@ -3781,6 +3787,8 @@ Meridian-main
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunContinuityService.yml
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunReadService.yml
 │   │   │   ├── Meridian.Strategies.Services.yml
+│   │   │   ├── Meridian.Strategies.Storage.JsonlPromotionRecordStore.yml
+│   │   │   ├── Meridian.Strategies.Storage.PromotionRecordStoreOptions.yml
 │   │   │   ├── Meridian.Strategies.Storage.StrategyRunStore.yml
 │   │   │   ├── Meridian.Strategies.Storage.yml
 │   │   │   ├── Meridian.Tools.DataValidator.GapInfo.yml
@@ -4550,6 +4558,7 @@ Meridian-main
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ConfigEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CppTraderEndpoints.yml
+│   │   │   ├── Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CredentialEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CronEndpoints.yml
@@ -4628,7 +4637,6 @@ Meridian-main
 │   │   │   ├── Meridian.yml
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
-│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   ├── README.md
 │   │   └── temp-metadata-only.json
@@ -4704,6 +4712,7 @@ Meridian-main
 │   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
+│   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
@@ -5210,6 +5219,7 @@ Meridian-main
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
+│   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
@@ -5543,8 +5553,10 @@ Meridian-main
 │   │   │   ├── FundOperationsWorkspaceDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── ResearchBriefingDtos.cs
+│   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
-│   │   │   └── StrategyRunReadModels.cs
+│   │   │   ├── StrategyRunReadModels.cs
+│   │   │   └── WorkflowSummaryDtos.cs
 │   │   └── Meridian.Contracts.csproj
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -6245,16 +6257,19 @@ Meridian-main
 │   ├── Meridian.Strategies
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
+│   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── IStrategyLifecycle.cs
 │   │   │   └── IStrategyRepository.cs
 │   │   ├── Models
 │   │   │   ├── RunType.cs
 │   │   │   ├── StrategyRunEntry.cs
+│   │   │   ├── StrategyRunRepositoryQuery.cs
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
 │   │   ├── Serialization
-│   │   │   └── FSharpInteropJsonContext.cs
+│   │   │   ├── FSharpInteropJsonContext.cs
+│   │   │   └── PromotionRecordJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
@@ -6270,12 +6285,12 @@ Meridian-main
 │   │   │   ├── PromotionService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
+│   │   │   ├── ReconciliationSourceAdapters.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.cs
 │   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   ├── Storage
-│   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
@@ -6369,6 +6384,7 @@ Meridian-main
 │   │   │   ├── DataQualityServiceBase.cs
 │   │   │   ├── DataSamplingService.cs
 │   │   │   ├── DesktopJsonOptions.cs
+│   │   │   ├── DesktopShellPreferences.cs
 │   │   │   ├── DiagnosticsService.cs
 │   │   │   ├── ErrorHandlingService.cs
 │   │   │   ├── ErrorMessages.cs
@@ -6487,7 +6503,9 @@ Meridian-main
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
-│   │   │   └── SecurityMasterSecurityReferenceLookup.cs
+│   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── DtoExtensions.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── HtmlTemplateGenerator.cs
@@ -6596,6 +6614,7 @@ Meridian-main
 │       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
+│       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.cs
@@ -6656,7 +6675,10 @@ Meridian-main
 │       │   ├── NotificationService.cs
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
+│       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── QuantScriptStorageJsonContext.cs
+│       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
@@ -6683,6 +6705,7 @@ Meridian-main
 │       │   ├── WorkstationOperatingContextService.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
 │       │   ├── WorkstationResearchBriefingService.cs
+│       │   ├── WorkstationSecurityMasterApiClient.cs
 │       │   └── WpfShellServiceCollectionExtensions.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
@@ -6693,6 +6716,12 @@ Meridian-main
 │       │   ├── ThemeSurfaces.xaml
 │       │   ├── ThemeTokens.xaml
 │       │   └── ThemeTypography.xaml
+│       ├── Templates
+│       │   └── QuantScript
+│       │       ├── catalog.json
+│       │       ├── hello-spy.csx
+│       │       ├── indicator-sma.csx
+│       │       └── single-symbol-backtest.csx
 │       ├── ViewModels
 │       │   ├── AccountPortfolioViewModel.cs
 │       │   ├── ActivityLogViewModel.cs
@@ -6753,6 +6782,7 @@ Meridian-main
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
+│       │   ├── SecurityConflictLaneModels.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -7019,6 +7049,7 @@ Meridian-main
 │   │   ├── LedgerKernelTests.fs
 │   │   ├── Meridian.FSharp.Tests.fsproj
 │   │   ├── PipelineTests.fs
+│   │   ├── PromotionPolicyTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── TradingTransitionTests.fs
 │   │   └── ValidationTests.fs
@@ -7123,7 +7154,8 @@ Meridian-main
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── FundStructure
-│   │   │   │   └── LedgerGroupIdTests.cs
+│   │   │   │   ├── LedgerGroupIdTests.cs
+│   │   │   │   └── LedgerGroupingRulesTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -7167,10 +7199,12 @@ Meridian-main
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
+│   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── SecurityMaster
-│   │   │   │   └── SecurityMasterImportServiceTests.cs
+│   │   │   │   ├── SecurityMasterImportServiceTests.cs
+│   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── AnomalyDetectorTests.cs
@@ -7198,6 +7232,7 @@ Meridian-main
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── DirectLendingServiceTests.cs
+│   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   └── ReconciliationRunServiceTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
@@ -7444,7 +7479,8 @@ Meridian-main
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
-│   │   │   └── StrategyRunReadServiceTests.cs
+│   │   │   ├── StrategyRunReadServiceTests.cs
+│   │   │   └── StrategyRunStoreTests.cs
 │   │   ├── SymbolSearch
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
@@ -7564,6 +7600,8 @@ Meridian-main
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OfflineTrackingPersistenceServiceTests.cs
 │   │   │   ├── PendingOperationsQueueServiceTests.cs
+│   │   │   ├── QuantScriptExecutionHistoryServiceTests.cs
+│   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── ResearchBriefingWorkspaceServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
@@ -7606,6 +7644,7 @@ Meridian-main
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── DataOperationsWorkspaceShellSmokeTests.cs
 │   │   │   ├── DataQualityPageSmokeTests.cs
+│   │   │   ├── DesktopWorkflowScriptTests.cs
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs
 │   │   │   ├── GovernanceWorkspaceShellSmokeTests.cs
