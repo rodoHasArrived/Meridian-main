@@ -123,7 +123,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         }
         catch (OperationCanceledException ex)
         {
-            registration.Cancel(ex.CancellationToken.CanBeCanceled ? ex.CancellationToken : ct);
+            registration.Cancel(ex.CancellationToken.CanBeCanceled ? ex.CancellationToken : runToken);
             FinalizeTerminalRun(registration);
         }
         catch (Exception ex)
