@@ -37,10 +37,12 @@ public sealed class BacktestEngine(
         ArgumentNullException.ThrowIfNull(strategy);
 
         var sw = Stopwatch.StartNew();
+        var stageTimer = new StageTimer(BacktestStage.ValidatingRequest);
         logger.LogInformation("Backtesting '{Strategy}' from {From} to {To} in {DataRoot}",
             strategy.Name, request.From, request.To, request.DataRoot);
 
         // 1. Discover universe
+        stageTimer.Transition(BacktestStage.ValidatingCoverage);
         var universe = await UniverseDiscovery.DiscoverAsync(
             catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct)
             .ConfigureAwait(false);
@@ -48,6 +50,8 @@ public sealed class BacktestEngine(
         if (universe.Count == 0 && request.AssetEvents is not { Count: > 0 })
         {
             logger.LogWarning("No symbols found in data root '{DataRoot}' for the requested date range", request.DataRoot);
+            stageTimer.Transition(BacktestStage.Completed);
+            stageTimer.Stop();
             return CreateEmptyResult(request, universe, sw.Elapsed);
         }
 
@@ -86,9 +90,11 @@ public sealed class BacktestEngine(
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
         // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
+        stageTimer.Transition(BacktestStage.LoadingData);
         var streams = await BuildSymbolStreamsAsync(universe, request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
+        stageTimer.Transition(BacktestStage.Replaying);
         var currentDay = request.From;
         long eventsProcessed = 0;
         var totalDays = (request.To.ToDateTime(TimeOnly.MinValue) - request.From.ToDateTime(TimeOnly.MinValue)).Days + 1;
@@ -103,7 +109,7 @@ public sealed class BacktestEngine(
             // Day boundary — close out the previous day and apply any gap-day asset events.
             if (evtDate > currentDay)
             {
-                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, ct);
+                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, stageTimer, ct);
                 currentDay = evtDate;
             }
 
@@ -134,11 +140,24 @@ public sealed class BacktestEngine(
         }
 
         strategy.OnFinished(ctx);
-        progress?.Report(new BacktestProgressEvent(1.0, request.To, portfolio.ComputeCurrentEquity(), eventsProcessed, "Complete"));
 
         // 6. Compute metrics
+        stageTimer.Transition(BacktestStage.ComputingMetrics);
         var metrics = BacktestMetricsEngine.Compute(allSnapshots, allCashFlows, allFills, request);
         sw.Stop();
+
+        stageTimer.Transition(BacktestStage.Completed);
+        stageTimer.Stop();
+        progress?.Report(new BacktestProgressEvent(
+            ProgressFraction: 1.0,
+            CurrentDate: request.To,
+            PortfolioValue: portfolio.ComputeCurrentEquity(),
+            EventsProcessed: eventsProcessed,
+            Message: "Complete",
+            LiveMetrics: null,
+            Stage: stageTimer.CurrentStage,
+            StageElapsed: stageTimer.StageElapsed,
+            TotalElapsed: stageTimer.TotalElapsed));
 
         if (double.IsNaN(metrics.Xirr))
             logger.LogWarning("XIRR bisection did not converge for this backtest run; Xirr will be reported as NaN. Check cash-flow patterns for non-standard sign changes.");
@@ -303,6 +322,7 @@ public sealed class BacktestEngine(
         int totalDays,
         long eventsProcessed,
         RollingMetricsState rollingState,
+        StageTimer stageTimer,
         CancellationToken ct)
     {
         ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
@@ -326,11 +346,15 @@ public sealed class BacktestEngine(
                 liveMetrics = rollingState.Snapshot();
 
             progress?.Report(new BacktestProgressEvent(
-                (double)daysElapsed / totalDays,
-                date,
-                equity,
-                eventsProcessed,
-                LiveMetrics: liveMetrics));
+                ProgressFraction: (double)daysElapsed / totalDays,
+                CurrentDate: date,
+                PortfolioValue: equity,
+                EventsProcessed: eventsProcessed,
+                Message: null,
+                LiveMetrics: liveMetrics,
+                Stage: stageTimer.CurrentStage,
+                StageElapsed: stageTimer.StageElapsed,
+                TotalElapsed: stageTimer.TotalElapsed));
         }
     }
 

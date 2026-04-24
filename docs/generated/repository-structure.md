@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-24 05:18:51 UTC. Do not edit manually.
+> Auto-generated on 2026-04-24 21:03:15 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5256,6 +5256,7 @@ Meridian-main
 │   │   │   ├── BacktestEngine.cs
 │   │   │   ├── ContingentOrderManager.cs
 │   │   │   ├── MultiSymbolMergeEnumerator.cs
+│   │   │   ├── StageTimer.cs
 │   │   │   └── UniverseDiscovery.cs
 │   │   ├── FillModels
 │   │   │   ├── BarMidpointFillModel.cs
@@ -5306,6 +5307,7 @@ Meridian-main
 │   │   ├── BacktestProgressEvent.cs
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
+│   │   ├── BacktestStage.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
@@ -6952,6 +6954,7 @@ Meridian-main
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
+│   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
