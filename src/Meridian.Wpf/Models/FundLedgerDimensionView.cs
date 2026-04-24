@@ -9,10 +9,11 @@ public sealed record FundLedgerDimensionView(
     string CoverageText,
     string StatusText,
     int ExpectedScopeCount,
+    int MaterializedScopeCount,
     int LinkedAccountCount,
     int TrialBalanceLineCount,
     int JournalEntryCount,
+    FundLedgerTotalsDto Totals,
     bool IsConsolidated,
     bool HasScopedLedgerData,
-    IReadOnlySet<string> FinancialAccountIds,
     IReadOnlyList<FundLedgerSliceDto> LedgerSlices);

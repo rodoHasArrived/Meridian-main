@@ -43,6 +43,16 @@
                 <Setter Property="Padding" Value="16,14" />
                 <Setter Property="Margin" Value="0,0,0,16" />
             </DataTrigger>
+            <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                               Value="True" />
+                    <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsCompactDensity)}"
+                               Value="True" />
+                </MultiDataTrigger.Conditions>
+                <Setter Property="Padding" Value="12,10" />
+                <Setter Property="Margin" Value="0,0,0,12" />
+            </MultiDataTrigger>
         </Style.Triggers>
     </Style>
 
@@ -67,6 +77,10 @@
     <Style x:Key="EmbeddedShellHeaderIdentityStackPanelStyle" TargetType="StackPanel">
         <Style.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsCompactDensity)}"
                          Value="True">
                 <Setter Property="Visibility" Value="Collapsed" />
             </DataTrigger>

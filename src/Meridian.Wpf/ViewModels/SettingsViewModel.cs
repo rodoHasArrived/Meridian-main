@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -42,11 +43,12 @@ public sealed class SettingsViewModel : BindableBase
     private SolidColorBrush _connectionTestBrush = new(Color.FromRgb(139, 148, 158));
     private Visibility _noCredentialsVisibility = Visibility.Collapsed;
     private Visibility _credentialListVisibility = Visibility.Visible;
+    private bool _loadingDesktopPreferences;
 
     // ── Appearance / notification / performance settings (bindable defaults) ──
     private int _themeIndex;
     private int _accentColorIndex;
-    private bool _isCompactMode;
+    private ShellDensityMode _selectedShellDensityMode = ShellDensityMode.Standard;
     private bool _isNotificationsEnabled = true;
     private string _maxConcurrentDownloads = "4";
     private string _writeBufferSize = "64";
@@ -67,6 +69,11 @@ public sealed class SettingsViewModel : BindableBase
 
         StoredCredentials = new ObservableCollection<CredentialDisplayInfo>();
         RecentActivity = new ObservableCollection<SettingsActivityItem>();
+        ShellDensityModes =
+        [
+            ShellDensityMode.Standard,
+            ShellDensityMode.Compact
+        ];
 
         // Navigation commands
         AddProviderCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("AddProviderWizard"));
@@ -101,6 +108,7 @@ public sealed class SettingsViewModel : BindableBase
 
     public ObservableCollection<CredentialDisplayInfo> StoredCredentials { get; }
     public ObservableCollection<SettingsActivityItem> RecentActivity { get; }
+    public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
 
     // ── Bindable Properties ───────────────────────────────────────────────────
 
@@ -210,11 +218,30 @@ public sealed class SettingsViewModel : BindableBase
         set => SetProperty(ref _accentColorIndex, value);
     }
 
-    public bool IsCompactMode
+    public ShellDensityMode SelectedShellDensityMode
     {
-        get => _isCompactMode;
-        set => SetProperty(ref _isCompactMode, value);
+        get => _selectedShellDensityMode;
+        set
+        {
+            if (!SetProperty(ref _selectedShellDensityMode, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(ShellDensityDescriptionText));
+
+            if (_loadingDesktopPreferences)
+            {
+                return;
+            }
+
+            _settingsConfigService.SetShellDensityMode(value);
+        }
     }
+
+    public string ShellDensityDescriptionText => SelectedShellDensityMode == ShellDensityMode.Compact
+        ? "Compact trims duplicate chrome and above-fold padding in shared workstation shells."
+        : "Standard keeps the full shell summary and spacing for review-heavy sessions.";
 
     /// <summary>
     /// Whether Windows notifications are enabled.
@@ -295,6 +322,7 @@ public sealed class SettingsViewModel : BindableBase
 
     public void Initialize()
     {
+        LoadDesktopPreferences();
         ConfigPath = _configService.ConfigPath;
         RefreshStoredCredentials();
         RefreshCredentialVault();
@@ -302,6 +330,19 @@ public sealed class SettingsViewModel : BindableBase
         RefreshProfiles();
         LoadRecentActivity();
         UpdateSystemStatus();
+    }
+
+    private void LoadDesktopPreferences()
+    {
+        _loadingDesktopPreferences = true;
+        try
+        {
+            SelectedShellDensityMode = _settingsConfigService.GetShellDensityMode();
+        }
+        finally
+        {
+            _loadingDesktopPreferences = false;
+        }
     }
 
     // ── Credential Vault ──────────────────────────────────────────────────────
@@ -503,7 +544,7 @@ public sealed class SettingsViewModel : BindableBase
         {
             ThemeIndex             = 0;
             AccentColorIndex       = 0;
-            IsCompactMode          = false;
+            SelectedShellDensityMode = ShellDensityMode.Standard;
             IsNotificationsEnabled = true;
             MaxConcurrentDownloads = "4";
             WriteBufferSize        = "64";

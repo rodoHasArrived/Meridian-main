@@ -100,6 +100,50 @@ function Find-MeridianWindow {
     return $null
 }
 
+function Activate-MeridianWindow {
+    try {
+        $wshShell = Get-Variable -Scope Script -Name WshShell -ValueOnly -ErrorAction SilentlyContinue
+        if (-not $wshShell) {
+            $script:WshShell = New-Object -ComObject WScript.Shell
+            $wshShell = $script:WshShell
+        }
+
+        [void]$wshShell.AppActivate('Meridian')
+        Start-Sleep -Milliseconds 400
+        return $true
+    }
+    catch {
+        Write-Warn "Failed to activate Meridian window: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Wait-ForElement {
+    param(
+        [Parameter(Mandatory = $true)]
+        [scriptblock]$Finder,
+
+        [int]$Attempts = 20,
+        [int]$DelayMilliseconds = 300
+    )
+
+    for ($i = 0; $i -lt $Attempts; $i++) {
+        try {
+            $element = & $Finder
+            if ($element) {
+                return $element
+            }
+        }
+        catch {
+            # Ignore transient UI Automation failures while the tree is updating.
+        }
+
+        Start-Sleep -Milliseconds $DelayMilliseconds
+    }
+
+    return $null
+}
+
 function Wait-MeridianWindow {
     param(
         [int]$TimeoutSec,
@@ -120,6 +164,71 @@ function Wait-MeridianWindow {
     }
 
     throw "Meridian window did not appear within $TimeoutSec seconds."
+}
+
+function Get-ShellAutomationState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window
+    )
+
+    $shellAutomationCond = New-Object System.Windows.Automation.PropertyCondition(
+        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+        'ShellAutomationState'
+    )
+    $pageTitleCond = New-Object System.Windows.Automation.PropertyCondition(
+        [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+        'PageTitleText'
+    )
+
+    $shellAutomation = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $shellAutomationCond)
+    $pageTitle = $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $pageTitleCond)
+
+    return [pscustomobject]@{
+        Ready = ($null -ne $shellAutomation) -or ($null -ne $pageTitle)
+        PageTag = if ($shellAutomation) { $shellAutomation.Current.Name } else { $null }
+        PageTitle = if ($pageTitle) { $pageTitle.Current.Name } else { $null }
+    }
+}
+
+function Wait-ForShellPage {
+    param(
+        [System.Diagnostics.Process]$Process,
+        [string]$ExpectedPageTag,
+        [int]$TimeoutSec = 12
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    $lastState = $null
+
+    while ((Get-Date) -lt $deadline) {
+        if ($null -ne $Process -and $Process.HasExited) {
+            throw "Meridian desktop exited before shell readiness could be confirmed (exit code $($Process.ExitCode))."
+        }
+
+        Activate-MeridianWindow | Out-Null
+        $window = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
+        $lastState = Get-ShellAutomationState -Window $window
+
+        if ($lastState.Ready -and (
+                [string]::IsNullOrWhiteSpace($ExpectedPageTag) -or
+                [string]::Equals($lastState.PageTag, $ExpectedPageTag, [System.StringComparison]::Ordinal))) {
+            return [pscustomobject]@{
+                Window = $window
+                State = $lastState
+            }
+        }
+
+        Start-Sleep -Milliseconds 350
+    }
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedPageTag)) {
+        throw "Shell readiness markers were not confirmed before capture."
+    }
+
+    $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
+    $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
+    throw "Requested page '$ExpectedPageTag' was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
 }
 
 function Save-WindowCapture {
@@ -389,15 +498,21 @@ try {
             }
 
             $window = Wait-MeridianWindow -TimeoutSec 10 -Process $ownedProcess
+            Activate-MeridianWindow | Out-Null
 
             if (-not [string]::IsNullOrWhiteSpace($keys)) {
                 Send-WindowKeys -Window $window -Keys $keys
             }
 
             Start-Sleep -Milliseconds $stepWaitMs
-            $window = Wait-MeridianWindow -TimeoutSec 10 -Process $ownedProcess
+            $pageReadiness = Wait-ForShellPage -Process $ownedProcess -ExpectedPageTag $pageTag -TimeoutSec ([Math]::Max(8, [int][Math]::Ceiling(($stepWaitMs / 1000.0) + 4)))
+            $window = $pageReadiness.Window
+            $stepResult.observedPageTag = $pageReadiness.State.PageTag
+            $stepResult.observedPageTitle = $pageReadiness.State.PageTitle
 
             if ($shouldCapture -and $null -ne $capturePath) {
+                Activate-MeridianWindow | Out-Null
+                $window = Wait-MeridianWindow -TimeoutSec 10 -Process $ownedProcess
                 $savedPath = Save-WindowCapture -Window $window -Path $capturePath
                 $stepResult.capturePath = $savedPath
                 Write-Ok "Saved $savedPath"

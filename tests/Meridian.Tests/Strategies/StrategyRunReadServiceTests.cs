@@ -736,6 +736,51 @@ public sealed class StrategyRunReadServiceTests
     }
 
     [Fact]
+    public async Task GetRunsAsync_WithHistoryQuery_OrdersByLastUpdatedAndAppliesLimit()
+    {
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "completed-older",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 8, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            Engine: "MeridianNative"));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "completed-newer",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Backtest,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero),
+            EndedAt: new DateTimeOffset(2026, 3, 21, 12, 0, 0, TimeSpan.Zero),
+            Metrics: null,
+            Engine: "MeridianNative"));
+        await store.RecordRunAsync(new StrategyRunEntry(
+            RunId: "running-latest",
+            StrategyId: "strategy-1",
+            StrategyName: "Strategy 1",
+            RunType: RunType.Paper,
+            StartedAt: new DateTimeOffset(2026, 3, 21, 13, 0, 0, TimeSpan.Zero),
+            EndedAt: null,
+            Metrics: null,
+            Engine: "BrokerPaper"));
+
+        var service = new StrategyRunReadService(
+            store,
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        var runs = await service.GetRunsAsync(new StrategyRunHistoryQuery(
+            Modes: [StrategyRunMode.Backtest, StrategyRunMode.Paper],
+            StrategyId: "strategy-1",
+            Limit: 2));
+
+        runs.Select(static run => run.RunId).Should().Equal("running-latest", "completed-newer");
+    }
+
+    [Fact]
     public async Task GetRunComparisonDtosAsync_ReturnsDtoWithFullMetricsAndEquityCurve()
     {
         var store = new StrategyRunStore();

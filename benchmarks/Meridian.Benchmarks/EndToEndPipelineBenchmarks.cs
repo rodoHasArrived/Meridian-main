@@ -246,13 +246,15 @@ public class EndToEndPipelineBenchmarks
 }
 
 /// <summary>
-/// Benchmarks for deduplication key generation — the SHA256 hashing overhead
-/// that the PersistentDedupLedger performs on every cache-miss event.
+/// Historical simulation of the pre-indexed deduplication key hot path.
+/// This benchmark no longer represents the live <see cref="Meridian.Application.Pipeline.PersistentDedupLedger"/>
+/// implementation. Use <see cref="DeduplicationKeyBenchmarks"/> for the current production path.
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [RankColumn]
-public class DedupKeyBenchmarks
+[BenchmarkCategory("Historical")]
+public class HistoricalDedupKeySimulationBenchmarks
 {
     private MarketEvent _tradeEvent = null!;
     private MarketEvent _quoteEvent = null!;
@@ -324,8 +326,8 @@ public class DedupKeyBenchmarks
     }
 
     /// <summary>
-    /// Simulates the dedup key computation from PersistentDedupLedger.
-    /// Format: {Source}:{Symbol}:{Type}:{SHA256(identity fields)}
+    /// Simulates the legacy dedup key computation path that previously lived in
+    /// <c>PersistentDedupLedger</c>. Kept only as a historical allocation baseline.
     /// </summary>
     private static string ComputeDedupKey(MarketEvent evt)
     {

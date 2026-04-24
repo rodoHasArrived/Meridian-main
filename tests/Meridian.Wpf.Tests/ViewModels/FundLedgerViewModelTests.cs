@@ -128,7 +128,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountService,
                     workspaceService,
                     fakeApiClient);
-                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
                 var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
                     fundAccountService,
                     store,
@@ -296,7 +296,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountService,
                     workspaceService,
                     fakeApiClient);
-                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
                 var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
                     fundAccountService,
                     store,
@@ -413,8 +413,8 @@ public sealed class FundLedgerViewModelTests
                 var portfolioReadService = new PortfolioReadService();
                 var runReadService = new StrategyRunReadService(store, portfolioReadService, new LedgerReadService());
                 var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
-                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
                 var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(
@@ -455,9 +455,14 @@ public sealed class FundLedgerViewModelTests
                     viewModel.ReportPackStatusText.Contains("preview is ready", StringComparison.OrdinalIgnoreCase));
 
                 viewModel.SelectedTabIndex.Should().Be((int)FundOperationsTab.ReportPack);
+                viewModel.HasRouteBanner.Should().BeTrue();
+                viewModel.RouteBannerTitleText.Should().Contain("Report Pack");
+                viewModel.CurrentWorkbenchTitleText.Should().Contain("Report Pack");
                 viewModel.ReportPackTrialBalanceLinesText.Should().NotBe("0");
                 viewModel.ReportPackGeneratedAtText.Should().NotBe("-");
                 viewModel.ReportPackAssetSections.Should().NotBeEmpty();
+                viewModel.ReportPackOwnershipText.Should().Contain("sign-off", StringComparison.OrdinalIgnoreCase);
+                viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
             }
             finally
             {
@@ -536,8 +541,8 @@ public sealed class FundLedgerViewModelTests
                 var ledgerReadService = new LedgerReadService();
                 var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
                 var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
-                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
                 var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
                 var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
                 var reconciliationRepository = new InMemoryReconciliationRunRepository();
                 var strategyReconciliationService = new ReconciliationRunService(

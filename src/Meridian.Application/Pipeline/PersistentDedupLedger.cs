@@ -164,13 +164,14 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
         // Not a duplicate — record it
         _cache[key] = nowTicks;
+        var ledgerLine = CreateLedgerLine(key, nowTicks);
 
         // Persist to disk (fire-and-forget the write, but serialize access)
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
-            await _writer!.WriteLineAsync($"{{\"k\":\"{EscapeJson(key)}\",\"t\":{nowTicks}}}".AsMemory(), ct).ConfigureAwait(false);
+            await _writer!.WriteLineAsync(ledgerLine.AsMemory(), ct).ConfigureAwait(false);
         }
         finally
         {
@@ -219,9 +220,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
         return evt.Payload switch
         {
-            Contracts.Domain.Models.Trade trade => resolvedPrefix + HashTradeIdentity(trade),
+            Contracts.Domain.Models.Trade trade => CreateTradeKey(resolvedPrefix, trade),
 
-            Contracts.Domain.Models.BboQuotePayload quote => resolvedPrefix + HashQuoteIdentity(quote),
+            Contracts.Domain.Models.BboQuotePayload quote => CreateQuoteKey(resolvedPrefix, quote),
 
             Contracts.Domain.Models.LOBSnapshot snap =>
                 // L2: use sequence + timestamp
@@ -245,14 +246,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         return key;
     }
 
-    /// <summary>
-    /// Computes a 16-byte (128-bit) hex-encoded SHA-256 hash of a trade identity.
-    /// </summary>
-    private static string HashTradeIdentity(Contracts.Domain.Models.Trade trade)
+    private static string CreateTradeKey(string prefix, Contracts.Domain.Models.Trade trade)
     {
         Span<byte> hashBuf = stackalloc byte[32];
         HashTradeIdentityCore(trade, hashBuf);
-        return Convert.ToHexStringLower(hashBuf[..16]);
+        return CreateHashedKey(prefix, hashBuf[..16]);
     }
 
     private static void HashTradeIdentityCore(Contracts.Domain.Models.Trade trade, Span<byte> destination)
@@ -274,14 +272,11 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Computes a 16-byte (128-bit) hex-encoded SHA-256 hash of a quote identity.
-    /// </summary>
-    private static string HashQuoteIdentity(Contracts.Domain.Models.BboQuotePayload quote)
+    private static string CreateQuoteKey(string prefix, Contracts.Domain.Models.BboQuotePayload quote)
     {
         Span<byte> hashBuf = stackalloc byte[32];
         HashQuoteIdentityCore(quote, hashBuf);
-        return Convert.ToHexStringLower(hashBuf[..16]);
+        return CreateHashedKey(prefix, hashBuf[..16]);
     }
 
     private static void HashQuoteIdentityCore(Contracts.Domain.Models.BboQuotePayload quote, Span<byte> destination)
@@ -362,6 +357,47 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         return s.Replace("\\", "\\\\").Replace("\"", "\\\"");
     }
 
+    private static string CreateLedgerLine(string key, long ticks)
+    {
+        var escapedKey = EscapeJson(key);
+        return $"{{\"k\":\"{escapedKey}\",\"t\":{ticks}}}";
+    }
+
+    private static string CreateHashedKey(string prefix, ReadOnlySpan<byte> truncatedHash)
+    {
+        return string.Create(
+            prefix.Length + 32,
+            new HashedKeyState(prefix, truncatedHash),
+            static (destination, state) =>
+            {
+                state.Prefix.AsSpan().CopyTo(destination);
+                var hashDestination = destination[state.Prefix.Length..];
+                WriteHexByte(hashDestination, 0, state.B0);
+                WriteHexByte(hashDestination, 2, state.B1);
+                WriteHexByte(hashDestination, 4, state.B2);
+                WriteHexByte(hashDestination, 6, state.B3);
+                WriteHexByte(hashDestination, 8, state.B4);
+                WriteHexByte(hashDestination, 10, state.B5);
+                WriteHexByte(hashDestination, 12, state.B6);
+                WriteHexByte(hashDestination, 14, state.B7);
+                WriteHexByte(hashDestination, 16, state.B8);
+                WriteHexByte(hashDestination, 18, state.B9);
+                WriteHexByte(hashDestination, 20, state.B10);
+                WriteHexByte(hashDestination, 22, state.B11);
+                WriteHexByte(hashDestination, 24, state.B12);
+                WriteHexByte(hashDestination, 26, state.B13);
+                WriteHexByte(hashDestination, 28, state.B14);
+                WriteHexByte(hashDestination, 30, state.B15);
+            });
+    }
+
+    private static void WriteHexByte(Span<char> destination, int offset, byte value)
+    {
+        const string hexDigits = "0123456789abcdef";
+        destination[offset] = hexDigits[value >> 4];
+        destination[offset + 1] = hexDigits[value & 0x0F];
+    }
+
     // -----------------------------------------------------------------------
     // Internal shims for benchmarks and tests.
     // Tagged [EditorBrowsable(Never)] to suppress IDE completion.
@@ -414,19 +450,49 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     internal string ComputeKeyForBenchmark(MarketEvent evt)
     {
-        Span<byte> hash = stackalloc byte[32];
-        switch (evt.Payload)
-        {
-            case Contracts.Domain.Models.Trade trade:
-                HashTradeIdentityCore(trade, hash);
-                break;
+        return ComputeEventKey(evt);
+    }
 
-            case Contracts.Domain.Models.BboQuotePayload quote:
-                HashQuoteIdentityCore(quote, hash);
-                break;
+    private readonly struct HashedKeyState
+    {
+        public HashedKeyState(string prefix, ReadOnlySpan<byte> truncatedHash)
+        {
+            Prefix = prefix;
+            B0 = truncatedHash[0];
+            B1 = truncatedHash[1];
+            B2 = truncatedHash[2];
+            B3 = truncatedHash[3];
+            B4 = truncatedHash[4];
+            B5 = truncatedHash[5];
+            B6 = truncatedHash[6];
+            B7 = truncatedHash[7];
+            B8 = truncatedHash[8];
+            B9 = truncatedHash[9];
+            B10 = truncatedHash[10];
+            B11 = truncatedHash[11];
+            B12 = truncatedHash[12];
+            B13 = truncatedHash[13];
+            B14 = truncatedHash[14];
+            B15 = truncatedHash[15];
         }
 
-        return string.Empty;
+        public string Prefix { get; }
+        public byte B0 { get; }
+        public byte B1 { get; }
+        public byte B2 { get; }
+        public byte B3 { get; }
+        public byte B4 { get; }
+        public byte B5 { get; }
+        public byte B6 { get; }
+        public byte B7 { get; }
+        public byte B8 { get; }
+        public byte B9 { get; }
+        public byte B10 { get; }
+        public byte B11 { get; }
+        public byte B12 { get; }
+        public byte B13 { get; }
+        public byte B14 { get; }
+        public byte B15 { get; }
     }
 
     private sealed class CachedKeyBox

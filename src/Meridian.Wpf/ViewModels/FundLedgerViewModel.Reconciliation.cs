@@ -200,7 +200,13 @@ public sealed partial class FundLedgerViewModel
     public string ReconciliationLastRefreshText
     {
         get => _reconciliationLastRefreshText;
-        private set => SetProperty(ref _reconciliationLastRefreshText, value);
+        private set
+        {
+            if (SetProperty(ref _reconciliationLastRefreshText, value))
+            {
+                UpdateReconciliationWorkbenchPresentation();
+            }
+        }
     }
 
     public string InReviewBreaksText
@@ -229,6 +235,8 @@ public sealed partial class FundLedgerViewModel
             if (SetProperty(ref _reconciliationOperatorText, value))
             {
                 NotifyReconciliationDerivedStateChanged();
+                UpdateReconciliationWorkbenchPresentation();
+                UpdateReportPackWorkbenchPresentation();
             }
         }
     }

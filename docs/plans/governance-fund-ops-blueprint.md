@@ -47,6 +47,7 @@ The current repository now includes the first organization-rooted governance str
   - account summaries and bank snapshots sourced from fund-account state
   - cash/financing posture derived from linked runs and balance snapshots
   - fund-ledger journal/trial-balance summaries
+  - optional `selectedLedgerIds` query semantics so empty selections keep the full fund view, populated selections build consolidated-over-selection or scoped drill-ins over that subset, and unknown IDs safely return empty ledger projections
   - reconciliation posture across account and run-scoped seams
   - NAV attribution and report/export profile preview metadata
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
@@ -466,12 +467,14 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 ### Phase F2: Multi-Ledger Governance Foundation
 
-- [ ] Define `LedgerGroupId` and ledger grouping rules.
-- [ ] Add consolidated trial-balance query support.
-- [ ] Add multi-ledger selection and per-ledger drill-in DTOs.
+- [x] Define `LedgerGroupId` and ledger grouping rules.
+- [x] Add consolidated trial-balance query support.
+- [x] Add multi-ledger selection and per-ledger drill-in DTOs.
 - [ ] Add reconciliation-friendly snapshot outputs.
-- [ ] Add WPF governance surfaces for trial balance and consolidated ledger views.
+- [x] Add WPF governance surfaces for trial balance and consolidated ledger views.
 - [ ] Add tests for per-ledger, cross-ledger, and consolidated cases.
+
+Current delivered slice: workstation `FundLedgerSummary` now carries both the selected-scope projection and consolidated totals plus per-ledger slices, the WPF read path can constrain consolidation to selected run ledgers while materializing entity/sleeve/vehicle slices from fund-account structure assignments, and the WPF workstation binds ledger drill-in from DTO slices/totals instead of inferring state only from account IDs.
 
 ### Phase F2.5: Reconciliation Engine
 

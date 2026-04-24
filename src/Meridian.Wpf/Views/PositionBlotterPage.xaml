@@ -417,6 +417,30 @@
 
             <StackPanel Grid.Column="2">
                 <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                        AutomationProperties.AutomationId="PositionBlotterActionInspector">
+                    <StackPanel>
+                        <TextBlock Text="Batch Action Readiness" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding SelectionActionStateText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
+
+                        <Button Content="Increase Selected Size"
+                                Command="{Binding UpsizeCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8" />
+                        <Button Content="Flatten Selected Positions"
+                                Command="{Binding TerminateCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                HorizontalAlignment="Stretch" />
+
+                        <TextBlock Text="Provider-aware execution actions stay available only for supported rows, and the grouped workbench keeps your place after review."
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Margin="0,12,0,0"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
                         AutomationProperties.AutomationId="PositionBlotterSelectionInspector">
                     <StackPanel>
                         <TextBlock Text="Selection Posture" Style="{StaticResource CardHeaderStyle}" />
@@ -453,56 +477,35 @@
 
                 <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
                         AutomationProperties.AutomationId="PositionBlotterFilterInspector">
-                    <StackPanel>
-                        <TextBlock Text="Filter &amp; Freshness" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Text="{Binding FilterSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,8" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding SnapshotSourceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
+                    <Expander Header="Filter &amp; Freshness"
+                              IsExpanded="False"
+                              Foreground="{StaticResource ConsoleTextPrimaryBrush}">
+                        <StackPanel Margin="0,12,0,0">
+                            <TextBlock Text="{Binding FilterSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,8" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SnapshotSourceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
 
-                        <UniformGrid Columns="3">
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding MinMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Min mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding MaxMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Max mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding TradeTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="Trade time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
-                        AutomationProperties.AutomationId="PositionBlotterActionInspector">
-                    <StackPanel>
-                        <TextBlock Text="Batch Action Readiness" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Text="{Binding SelectionActionStateText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
-
-                        <Button Content="Increase Selected Size"
-                                Command="{Binding UpsizeCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                HorizontalAlignment="Stretch"
-                                Margin="0,0,0,8" />
-                        <Button Content="Flatten Selected Positions"
-                                Command="{Binding TerminateCommand}"
-                                Style="{StaticResource DangerButtonStyle}"
-                                HorizontalAlignment="Stretch" />
-
-                        <TextBlock Text="Provider-aware execution actions stay available only for supported rows, and the grouped workbench keeps your place after review."
-                                   FontSize="11"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   Margin="0,12,0,0"
-                                   TextWrapping="Wrap" />
-                    </StackPanel>
+                            <UniformGrid Columns="3">
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding MinMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Min mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding MaxMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Max mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding TradeTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                        <TextBlock Text="Trade time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Expander>
                 </Border>
             </StackPanel>
         </Grid>

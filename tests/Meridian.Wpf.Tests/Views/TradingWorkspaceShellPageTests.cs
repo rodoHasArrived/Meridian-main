@@ -81,6 +81,16 @@ public sealed class TradingWorkspaceShellPageTests
         code.Should().Contain("Target page:");
     }
 
+    [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldPlaceDeskActionsAheadOfNarrativeSupportPanels()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+
+        xaml.Should().Contain("Desk Lanes &amp; Supporting Tools");
+        xaml.IndexOf("Active Positions", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Paper Runs", StringComparison.Ordinal));
+        xaml.IndexOf("Workflow Status", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Desk Lanes &amp; Supporting Tools", StringComparison.Ordinal));
+    }
+
     private static string GetRepositoryFilePath(string relativePath)
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);

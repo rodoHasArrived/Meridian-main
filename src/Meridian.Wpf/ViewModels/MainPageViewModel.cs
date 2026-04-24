@@ -25,6 +25,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService? _workspaceShellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly SettingsConfigurationService _settingsConfigurationService;
     private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
     private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _secondaryNavigationItems = [];
@@ -33,6 +34,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
     private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
     private readonly ObservableCollection<WorkspaceWorkflowSummary> _workflowSummaries = [];
+    private readonly ObservableCollection<WorkspaceWorkflowSummary> _secondaryWorkflowSummaries = [];
     private readonly ObservableCollection<BoundedWindowMode> _windowModes =
     [
         BoundedWindowMode.Focused,
@@ -63,6 +65,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private Visibility _activeFundVisibility = Visibility.Collapsed;
     private WorkstationOperatingContext? _selectedOperatingContext;
     private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;
+    private ShellDensityMode _shellDensityMode = ShellDensityMode.Standard;
+    private WorkspaceWorkflowSummary? _primaryWorkflowSummary;
+    private bool _areSecondaryWorkflowSummariesExpanded;
     private WorkspaceShellContext _shellContext = new();
     private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
     private int _shellContextRevision;
@@ -74,7 +79,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null,
         WorkspaceShellContextService? workspaceShellContextService = null,
-        WorkstationWorkflowSummaryService? workflowSummaryService = null)
+        WorkstationWorkflowSummaryService? workflowSummaryService = null,
+        SettingsConfigurationService? settingsConfigurationService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
@@ -82,6 +88,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _operatingContextService = operatingContextService;
         _workspaceShellContextService = workspaceShellContextService;
         _workflowSummaryService = workflowSummaryService;
+        _settingsConfigurationService = settingsConfigurationService ?? SettingsConfigurationService.Instance;
+        _shellDensityMode = _settingsConfigurationService.GetShellDensityMode();
 
         SplitPane = new SplitPaneViewModel();
         CommandPalettePages = new ReadOnlyObservableCollection<ShellCommandPaletteEntry>(_commandPalettePages);
@@ -92,6 +100,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
         OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
         WorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_workflowSummaries);
+        SecondaryWorkflowSummaries = new ReadOnlyObservableCollection<WorkspaceWorkflowSummary>(_secondaryWorkflowSummaries);
         WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
 
         SelectWorkspaceCommand = new RelayCommand<string>(workspace => SelectWorkspace(workspace, navigateToHome: true));
@@ -107,10 +116,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshPageCommand = new RelayCommand(RefreshCurrentPage);
         DismissFixtureModeBannerCommand = new RelayCommand(() => FixtureModeBannerVisibility = Visibility.Collapsed);
         SwitchFundCommand = new RelayCommand(RequestContextSelection);
+        ToggleSecondaryWorkflowSummariesCommand = new RelayCommand(ToggleSecondaryWorkflowSummaries, () => HasSecondaryWorkflowSummaries);
 
         _navigationService.Navigated += OnNavigated;
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
+        _settingsConfigurationService.DesktopShellPreferencesChanged += OnDesktopShellPreferencesChanged;
         if (_operatingContextService is not null)
         {
             _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
@@ -151,6 +162,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> WorkflowSummaries { get; }
 
+    public ReadOnlyObservableCollection<WorkspaceWorkflowSummary> SecondaryWorkflowSummaries { get; }
+
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes { get; }
 
     public IRelayCommand<string> SelectWorkspaceCommand { get; }
@@ -178,6 +191,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public IRelayCommand DismissFixtureModeBannerCommand { get; }
 
     public IRelayCommand SwitchFundCommand { get; }
+
+    public IRelayCommand ToggleSecondaryWorkflowSummariesCommand { get; }
 
     public WorkstationOperatingContext? SelectedOperatingContext
     {
@@ -216,6 +231,26 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public string CurrentModeName => _operatingContextService?.GetCurrentModeDisplayName() ?? "Dock + Float";
 
+    public ShellDensityMode ShellDensityMode
+    {
+        get => _shellDensityMode;
+        private set
+        {
+            if (!SetProperty(ref _shellDensityMode, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(IsCompactShellDensity));
+            RaisePropertyChanged(nameof(ShellDensityLabel));
+            RaisePropertyChanged(nameof(WorkflowSummaryDescriptionText));
+        }
+    }
+
+    public bool IsCompactShellDensity => ShellDensityMode == ShellDensityMode.Compact;
+
+    public string ShellDensityLabel => ShellDensityMode.ToString();
+
     public WorkspaceShellContext ShellContext
     {
         get => _shellContext;
@@ -251,6 +286,56 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public string ActiveNavigationLabel => $"{WorkspaceHeading} Navigation";
 
     public string RecentPagesHintText => $"Recent {WorkspaceHeading.ToLowerInvariant()} workflows.";
+
+    public WorkspaceWorkflowSummary? PrimaryWorkflowSummary
+    {
+        get => _primaryWorkflowSummary;
+        private set
+        {
+            if (!SetProperty(ref _primaryWorkflowSummary, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(HasPrimaryWorkflowSummary));
+            RaisePropertyChanged(nameof(PrimaryWorkflowTargetText));
+        }
+    }
+
+    public bool HasPrimaryWorkflowSummary => PrimaryWorkflowSummary is not null;
+
+    public string PrimaryWorkflowTargetText => PrimaryWorkflowSummary is null
+        ? "Target page: -"
+        : $"Target page: {PrimaryWorkflowSummary.NextAction.TargetPageTag}";
+
+    public bool HasSecondaryWorkflowSummaries => _secondaryWorkflowSummaries.Count > 0;
+
+    public bool AreSecondaryWorkflowSummariesExpanded
+    {
+        get => _areSecondaryWorkflowSummariesExpanded;
+        private set
+        {
+            if (!SetProperty(ref _areSecondaryWorkflowSummariesExpanded, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(SecondaryWorkflowSummariesVisibility));
+            RaisePropertyChanged(nameof(SecondaryWorkflowToggleText));
+        }
+    }
+
+    public Visibility SecondaryWorkflowSummariesVisibility => HasSecondaryWorkflowSummaries && AreSecondaryWorkflowSummariesExpanded
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public string SecondaryWorkflowToggleText => AreSecondaryWorkflowSummariesExpanded
+        ? $"Hide {SecondaryWorkflowSummaries.Count} other workspace action{(SecondaryWorkflowSummaries.Count == 1 ? string.Empty : "s")}"
+        : $"Show {SecondaryWorkflowSummaries.Count} other workspace action{(SecondaryWorkflowSummaries.Count == 1 ? string.Empty : "s")}";
+
+    public string WorkflowSummaryDescriptionText => IsCompactShellDensity
+        ? "Current workspace action first. Other workspace actions stay one click away."
+        : "Current workspace action first, with blockers and target pages kept visible.";
 
     public bool IsResearchWorkspaceActive => string.Equals(_currentWorkspace, "research", StringComparison.OrdinalIgnoreCase);
 
@@ -455,6 +540,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _navigationService.Navigated -= OnNavigated;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
+        _settingsConfigurationService.DesktopShellPreferencesChanged -= OnDesktopShellPreferencesChanged;
         if (_operatingContextService is not null)
         {
             _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
@@ -512,6 +598,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         });
     }
 
+    private void OnDesktopShellPreferencesChanged(object? sender, DesktopShellPreferences preferences)
+    {
+        DispatchToUi(() => ShellDensityMode = preferences.ShellDensityMode);
+    }
+
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
         DispatchToUi(() =>
@@ -564,6 +655,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            UpdateWorkflowPresentation();
             _ = RefreshShellContextAsync();
         }
 
@@ -641,6 +733,16 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         UpdateShellRefreshStamp();
         _navigationService.NavigateTo(CurrentPageTag);
         _ = RefreshShellContextAsync();
+    }
+
+    private void ToggleSecondaryWorkflowSummaries()
+    {
+        if (!HasSecondaryWorkflowSummaries)
+        {
+            return;
+        }
+
+        AreSecondaryWorkflowSummariesExpanded = !AreSecondaryWorkflowSummariesExpanded;
     }
 
     private void ApplyCurrentPage(string pageTag)
@@ -898,6 +1000,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             if (workflowRevision == _workflowSummaryRevision)
             {
                 ReplaceCollection(_workflowSummaries, workflowSummaries);
+                UpdateWorkflowPresentation();
             }
 
             return;
@@ -913,6 +1016,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             if (workflowRevision == _workflowSummaryRevision)
             {
                 ReplaceCollection(_workflowSummaries, workflowSummaries);
+                UpdateWorkflowPresentation();
             }
         });
     }
@@ -994,6 +1098,31 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
                 blocker,
                 [])
         ];
+    }
+
+    private void UpdateWorkflowPresentation()
+    {
+        var primary = _workflowSummaries.FirstOrDefault(summary =>
+            string.Equals(summary.WorkspaceId, CurrentWorkspace, StringComparison.OrdinalIgnoreCase))
+            ?? _workflowSummaries.FirstOrDefault();
+
+        PrimaryWorkflowSummary = primary;
+
+        ReplaceCollection(
+            _secondaryWorkflowSummaries,
+            _workflowSummaries
+                .Where(summary => primary is null || !string.Equals(summary.WorkspaceId, primary.WorkspaceId, StringComparison.OrdinalIgnoreCase))
+                .ToArray());
+
+        if (!HasSecondaryWorkflowSummaries)
+        {
+            AreSecondaryWorkflowSummariesExpanded = false;
+        }
+
+        ToggleSecondaryWorkflowSummariesCommand.NotifyCanExecuteChanged();
+        RaisePropertyChanged(nameof(HasSecondaryWorkflowSummaries));
+        RaisePropertyChanged(nameof(SecondaryWorkflowSummariesVisibility));
+        RaisePropertyChanged(nameof(SecondaryWorkflowToggleText));
     }
 
     private WorkspaceShellContextInput BuildShellContextInput()

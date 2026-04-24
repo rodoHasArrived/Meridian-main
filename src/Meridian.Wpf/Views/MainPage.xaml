@@ -1267,17 +1267,121 @@
                                 Background="{StaticResource ConsoleBackgroundMediumBrush}"
                                 BorderBrush="{StaticResource ConsoleBorderBrush}"
                                 BorderThickness="1"
+                                Visibility="{Binding HasPrimaryWorkflowSummary, Converter={StaticResource BoolToVisibility}}"
                                 AutomationProperties.AutomationId="WorkflowSummaryStrip"
                                 AutomationProperties.Name="Workflow Summary Strip">
                             <StackPanel>
-                                <TextBlock Text="Next Action"
-                                           Style="{StaticResource CardHeaderStyle}" />
-                                <TextBlock Text="One operator step per workspace, with the blocker and page target made explicit."
-                                           Margin="0,6,0,0"
-                                           Style="{StaticResource CardDescriptionStyle}" />
+                                <Grid DataContext="{Binding PrimaryWorkflowSummary}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="340" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding WorkspaceTitle, StringFormat={}{0} Next Action}"
+                                                   Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="{Binding DataContext.WorkflowSummaryDescriptionText, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                   Margin="0,6,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource CardDescriptionStyle}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding DataContext.IsCompactShellDensity, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                     Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <WrapPanel Margin="0,12,0,0">
+                                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,8,8">
+                                                <TextBlock Text="{Binding StatusLabel}"
+                                                           FontSize="10"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                            </Border>
+                                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,8,8">
+                                                <TextBlock FontSize="10"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+                                                    <Run Text="Layout: " />
+                                                    <Run Text="{Binding DataContext.CurrentModeName, RelativeSource={RelativeSource AncestorType=Page}}" />
+                                                </TextBlock>
+                                            </Border>
+                                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,8,8">
+                                                <TextBlock FontSize="10"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+                                                    <Run Text="Density: " />
+                                                    <Run Text="{Binding DataContext.ShellDensityLabel, RelativeSource={RelativeSource AncestorType=Page}}" />
+                                                </TextBlock>
+                                            </Border>
+                                        </WrapPanel>
+
+                                        <Border Margin="0,6,0,0"
+                                                Padding="10,8"
+                                                CornerRadius="10"
+                                                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                                BorderThickness="1">
+                                            <StackPanel>
+                                                <TextBlock Text="Current Blocker"
+                                                           Style="{StaticResource ShellSectionLabelStyle}" />
+                                                <TextBlock Text="{Binding PrimaryBlocker.Label}"
+                                                           Margin="0,6,0,0"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding PrimaryBlocker.Detail}"
+                                                           Margin="0,4,0,0"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1"
+                                                Margin="20,0,0,0"
+                                                VerticalAlignment="Top">
+                                        <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Recommended Step"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <TextBlock Text="{Binding NextAction.Detail}"
+                                                           Margin="0,8,0,0"
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding DataContext.PrimaryWorkflowTargetText, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                           Margin="0,10,0,0"
+                                                           FontSize="10"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                <Button Content="{Binding NextAction.Label}"
+                                                        Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                        CommandParameter="{Binding NextAction.TargetPageTag}"
+                                                        Style="{StaticResource PrimaryButtonStyle}"
+                                                        Margin="0,12,0,0"
+                                                        HorizontalAlignment="Left"
+                                                        AutomationProperties.AutomationId="PrimaryWorkflowActionButton"
+                                                        AutomationProperties.Name="Primary Workflow Action Button" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Button Content="{Binding DataContext.SecondaryWorkflowToggleText, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                Command="{Binding DataContext.ToggleSecondaryWorkflowSummariesCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                Margin="0,12,0,0"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Visibility="{Binding DataContext.HasSecondaryWorkflowSummaries, RelativeSource={RelativeSource AncestorType=Page}, Converter={StaticResource BoolToVisibility}}"
+                                                AutomationProperties.AutomationId="SecondaryWorkflowToggleButton"
+                                                AutomationProperties.Name="Secondary Workflow Toggle Button" />
+                                    </StackPanel>
+                                </Grid>
+
                                 <ItemsControl x:Name="WorkflowSummaryItemsControl"
-                                              ItemsSource="{Binding WorkflowSummaries}"
+                                              ItemsSource="{Binding SecondaryWorkflowSummaries}"
                                               Margin="0,14,0,0"
+                                              Visibility="{Binding SecondaryWorkflowSummariesVisibility}"
                                               ItemTemplate="{StaticResource WorkflowSummaryCardTemplate}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>

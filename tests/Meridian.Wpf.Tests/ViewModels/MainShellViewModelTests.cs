@@ -16,7 +16,8 @@ public sealed class MainShellViewModelTests
 {
     private static MainPageViewModel CreateMainPageViewModel(
         FundContextService? fundContextService = null,
-        WorkstationOperatingContextService? operatingContextService = null)
+        WorkstationOperatingContextService? operatingContextService = null,
+        SettingsConfigurationService? settingsConfigurationService = null)
     {
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
@@ -28,7 +29,12 @@ public sealed class MainShellViewModelTests
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-        return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService, operatingContextService);
+        return new MainPageViewModel(
+            navigationService,
+            fixtureModeDetector,
+            fundContextService,
+            operatingContextService,
+            settingsConfigurationService: settingsConfigurationService);
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
@@ -373,6 +379,76 @@ public sealed class MainShellViewModelTests
             vm.SelectedOperatingContext.Should().NotBeNull();
             operatingContextService.CurrentContext.Should().NotBeNull();
             operatingContextService.CurrentContext!.ContextKey.Should().Be(firstContext.ContextKey);
+        });
+    }
+
+    [Fact]
+    public void ShellDensityPreference_RemainsIndependentFromBoundedWindowMode()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var preferencesPath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-main-shell-tests",
+                $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
+
+            try
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+                var settingsConfigurationService = SettingsConfigurationService.Instance;
+                settingsConfigurationService.SetShellDensityMode(ShellDensityMode.Compact);
+
+                var fundContext = await CreateFundContextAsync();
+                var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
+                await operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review");
+
+                using var vm = CreateMainPageViewModel(fundContext, operatingContextService, settingsConfigurationService);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                vm.IsCompactShellDensity.Should().BeTrue();
+                vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
+                vm.CurrentModeName.Should().Contain("Accounting Review");
+
+                settingsConfigurationService.SetShellDensityMode(ShellDensityMode.Standard);
+                await WaitForConditionAsync(() => vm.ShellDensityMode == ShellDensityMode.Standard);
+
+                vm.IsCompactShellDensity.Should().BeFalse();
+                vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
+            }
+            finally
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+                if (File.Exists(preferencesPath))
+                {
+                    File.Delete(preferencesPath);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void WorkflowSummaryPresentation_PrioritizesCurrentWorkspace()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            await WaitForConditionAsync(() =>
+                vm.PrimaryWorkflowSummary is not null &&
+                vm.SecondaryWorkflowSummaries.Count == 3);
+
+            vm.PrimaryWorkflowSummary.Should().NotBeNull();
+            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("research");
+            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("research");
+
+            vm.SelectWorkspaceCommand.Execute("trading");
+
+            await WaitForConditionAsync(() => vm.PrimaryWorkflowSummary?.WorkspaceId == "trading");
+
+            vm.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("trading");
+            vm.SecondaryWorkflowSummaries.Should().HaveCount(3);
+            vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
+            vm.PrimaryWorkflowTargetText.Should().NotBe("Target page: -");
         });
     }
 

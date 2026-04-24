@@ -110,6 +110,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public ItemsControl WorkflowSummaryItemsControl => GetRequired<ItemsControl>("WorkflowSummaryItemsControl");
 
+    public Button PrimaryWorkflowActionButton => FindByAutomationId<Button>("PrimaryWorkflowActionButton");
+
+    public Button SecondaryWorkflowToggleButton => FindByAutomationId<Button>("SecondaryWorkflowToggleButton");
+
     public void ShowCommandPalette()
     {
         UpdateLayout();
@@ -304,6 +308,9 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
         throw new Xunit.Sdk.XunitException($"Unable to locate {typeof(T).Name} with AutomationId '{automationId}'.");
     }
+
+    public T FindDescendantByAutomationId<T>(string automationId) where T : FrameworkElement
+        => FindByAutomationId<T>(automationId);
 
     private void UpdateLayout()
     {

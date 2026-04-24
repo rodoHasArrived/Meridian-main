@@ -52,6 +52,13 @@ make desktop-screenshots
 
 That keeps navigation aligned with Meridian's own startup and deep-link handling instead of relying on brittle screen coordinates.
 
+Before any screenshot is saved, the runner now:
+
+1. brings Meridian back to the foreground,
+2. re-queries the live shell window,
+3. checks `ShellAutomationState` / `PageTitleText` markers,
+4. fails the step if the requested page was not actually confirmed.
+
 Each run writes:
 
 - `manifest.json` with step timing, capture paths, and step notes

@@ -1,6 +1,6 @@
 # Bottleneck Analysis Report
 
-**Date:** 2026-03-04 | **Updated:** 2026-03-26
+**Date:** 2026-03-04 | **Updated:** 2026-04-22
 **Scope:** Event pipeline hot paths — publish → canonicalize → deduplicate → WAL → storage
 
 ---
@@ -54,13 +54,19 @@ this creates ~150-200K short-lived objects/sec of GC pressure.
 | Fix | Status | Benchmark |
 |-----|--------|-----------|
 | WAL: `IncrementalHash` + `stackalloc` for checksum | ✅ Applied | `WalChecksumBenchmarks` |
+| WAL: move payload serialization outside `_writeLock` | ✅ Applied | targeted WAL append runs |
 | WAL: Cache `File.GetCreationTimeUtc` | ✅ Applied | — |
 | `EventPipeline`: Cache `Enum.ToString()` via `GetEventTypeName` | ✅ Applied (partial — tracing path still uses direct `ToString()`) | — |
 | `EventPipeline`: Sample `Reader.Count` every 64 events | ✅ Applied | — |
 | `CompositeSink`: Replace sequential loop with `Task.WhenAll` | ✅ Applied | `CompositeSinkBenchmarks` |
+| `JsonlStorageSink`: stream UTF-8 JSONL directly without transient per-event strings | ✅ Applied | `BatchSerializationBenchmarks.Sequential_DirectJsonlStream` |
+| `PersistentDedupLedger`: single-allocation hashed key assembly + miss-line formatting outside lock | ✅ Applied | `DeduplicationKeyBenchmarks` |
+| `TradeDataCollector`: collapse duplicate lock path | ✅ Applied | — |
 
-Items marked **✅ Applied** have been addressed in the codebase. The remaining items below
-are still open and represent actionable optimisation opportunities.
+Items marked **✅ Applied** have been addressed in the codebase. Where the detailed sections
+below still describe those paths as open, treat this applied-fixes table as the current status.
+The legacy `DedupKeyBenchmarks` simulation is historical only; use
+`DeduplicationKeyBenchmarks` for the live `PersistentDedupLedger` path.
 
 ---
 

@@ -487,8 +487,10 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         StatusText = RowCount switch
         {
-            0 when _allEntries.Count == 0 => _lastSnapshotStatus,
-            0 => "No positions match the current filters.",
+            0 when _allEntries.Count == 0 => string.Equals(_lastSnapshotStatus, "No positions loaded.", StringComparison.Ordinal)
+                ? "No positions are loaded yet. Start a paper or live run, or import positions to unlock the blotter."
+                : _lastSnapshotStatus,
+            0 => "No positions match the current filters. Clear or relax the filter set to restore the blotter.",
             _ => $"{RowCount} row{(RowCount == 1 ? string.Empty : "s")} across {GroupCount} group{(GroupCount == 1 ? string.Empty : "s")} displayed from {_lastSnapshotSource}."
         };
     }
@@ -545,15 +547,16 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
         SelectionSummaryText = selectedEntries.Count switch
         {
-            0 => "Select positions to inspect exposure, grouped risk, and batch-action readiness.",
+            0 => "Select one or more positions to unlock grouped exposure review and batch actions.",
             1 => $"1 position selected in {selectedGroups} group for trade management review.",
             _ => $"{selectedEntries.Count} positions selected across {selectedGroups} groups."
         };
 
         SelectionActionStateText = selectedEntries.Count switch
         {
-            0 => "Upsize and terminate stay disabled until a supported position is selected.",
-            _ => $"Close available on {closableCount} row{(closableCount == 1 ? string.Empty : "s")} • upsize available on {upsizeableCount} row{(upsizeableCount == 1 ? string.Empty : "s")}."
+            0 => "Increase Selected Size and Flatten Selected Positions unlock only after you choose supported rows.",
+            _ when closableCount == 0 && upsizeableCount == 0 => "The current selection is review-only. Choose supported execution rows to unlock batch actions.",
+            _ => $"Flatten available on {closableCount} row{(closableCount == 1 ? string.Empty : "s")} • increase size available on {upsizeableCount} row{(upsizeableCount == 1 ? string.Empty : "s")}."
         };
 
         var shouldSelectAll = Groups.Count > 0 && Groups.All(group => group.Entries.All(entry => entry.IsSelected));

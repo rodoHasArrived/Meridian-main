@@ -1,6 +1,7 @@
 using Meridian.Contracts.Workstation;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Ui.Services.Services;
@@ -169,12 +170,23 @@ public sealed class MainPageUiWorkflowTests
             var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-workflow-{Guid.NewGuid():N}.json"));
             using var facade = new MainPageUiAutomationFacade(fundContextService);
 
-            await WaitForConditionAsync(() => facade.WorkflowSummaryItemsControl.Items.Count == 4).ConfigureAwait(true);
+            await WaitForConditionAsync(() =>
+                facade.ViewModel.PrimaryWorkflowSummary is not null &&
+                facade.ViewModel.SecondaryWorkflowSummaries.Count == 3).ConfigureAwait(true);
+
+            facade.Click(facade.TradingWorkspaceButton);
+            await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
 
             facade.WorkflowSummaryStrip.Visibility.Should().Be(Visibility.Visible);
             facade.ViewModel.WorkflowSummaries.Should().HaveCount(4);
-            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "trading").NextAction.Label.Should().Be("Choose Context");
-            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "governance").NextAction.Label.Should().Be("Choose Context");
+            facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
+            facade.ViewModel.PrimaryWorkflowSummary!.WorkspaceId.Should().Be("trading");
+            facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(3);
+            facade.ViewModel.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
+            facade.PrimaryWorkflowActionButton.Content.Should().Be("Choose Context");
+
+            facade.Click(facade.SecondaryWorkflowToggleButton);
+            facade.WorkflowSummaryItemsControl.Items.Count.Should().Be(3);
 
             await fundContextService.UpsertProfileAsync(new FundProfileDetail(
                 FundProfileId: "alpha-fund",
@@ -187,10 +199,49 @@ public sealed class MainPageUiWorkflowTests
             await fundContextService.SelectFundProfileAsync("alpha-fund").ConfigureAwait(true);
 
             await WaitForConditionAsync(() =>
-                facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "trading").NextAction.Label != "Choose Context").ConfigureAwait(true);
+                facade.ViewModel.PrimaryWorkflowSummary?.NextAction.Label == "Open Strategy Runs").ConfigureAwait(true);
 
-            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "trading").NextAction.Label.Should().Be("Open Strategy Runs");
-            facade.ViewModel.WorkflowSummaries.Single(summary => summary.WorkspaceId == "governance").NextAction.Label.Should().Be("Open Governance Shell");
+            facade.ViewModel.PrimaryWorkflowSummary!.NextAction.Label.Should().Be("Open Strategy Runs");
+            facade.ViewModel.SecondaryWorkflowSummaries.Single(summary => summary.WorkspaceId == "governance").NextAction.Label.Should().Be("Open Governance Shell");
+        });
+    }
+
+    [Fact]
+    public void MainPage_GovernanceDeepLink_ShouldAnnounceWorkbenchTarget()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-governance-{Guid.NewGuid():N}.json"));
+            await fundContextService.UpsertProfileAsync(new FundProfileDetail(
+                FundProfileId: "alpha-fund",
+                DisplayName: "Alpha Fund",
+                LegalEntityName: "Alpha Fund LP",
+                BaseCurrency: "USD",
+                DefaultWorkspaceId: "governance",
+                DefaultLandingPageTag: "FundLedger",
+                DefaultLedgerScope: FundLedgerScope.Consolidated)).ConfigureAwait(true);
+            await fundContextService.SelectFundProfileAsync("alpha-fund").ConfigureAwait(true);
+
+            using var facade = new MainPageUiAutomationFacade(fundContextService);
+
+            facade.OpenCommandPalettePage("FundReconciliation");
+
+            await WaitForConditionAsync(() => facade.ViewModel.CurrentPageTag == "FundReconciliation").ConfigureAwait(true);
+            await WaitForConditionAsync(() =>
+            {
+                try
+                {
+                    return facade.FindDescendantByAutomationId<TextBlock>("GovernanceRouteBannerTitleText")
+                        .Text.Contains("Reconciliation", StringComparison.Ordinal);
+                }
+                catch
+                {
+                    return false;
+                }
+            }).ConfigureAwait(true);
+
+            facade.FindDescendantByAutomationId<TextBlock>("GovernanceRouteBannerTitleText").Text.Should().Contain("Reconciliation");
+            facade.FindDescendantByAutomationId<TextBlock>("GovernanceWorkbenchTitleText").Text.Should().Contain("Reconciliation");
         });
     }
 

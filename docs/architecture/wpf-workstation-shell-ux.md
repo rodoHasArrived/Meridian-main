@@ -59,12 +59,20 @@ This makes governance, trading, research, and data operations surfaces show the 
 
 The shell now has a second shared seam for operator guidance: `WorkstationWorkflowSummaryService`.
 
-- The main shell header renders a `Next Action` strip with one summary card per top-level workspace.
-- Each card answers the same three questions: the current workspace state, the primary blocker, and the next operator action with an explicit target page tag.
+- The shell now renders one current-workspace-first primary card and keeps the remaining workspace actions behind an explicit expansion affordance.
+- The primary card still answers the same three questions: the current workspace state, the primary blocker, and the next operator action with an explicit target page tag.
 - The WPF shell keeps `ShellNavigationCatalog`, the command palette, and the four-workspace model intact. The summary seam only changes what the shell emphasizes first.
 - `WorkspaceShellContextService` remains responsible for chrome, trust badges, and scope cues. It is not overloaded with cross-workspace workflow rules.
 
 The summary projection is shared with the workstation HTTP surface through `GET /api/workstation/workflow-summary`, so the next-action ordering stays consistent across shells and tests instead of being duplicated in WPF-specific page code.
+
+## Shell Density
+
+Shell density is now an explicit two-state preference persisted through `SettingsConfigurationService`.
+
+- `Standard` keeps descriptive shell copy and secondary guidance visible.
+- `Compact` suppresses duplicate chrome and keeps the current workspace action prominent above the fold.
+- Density is separate from `BoundedWindowMode`; layout restore and pane behavior still belong to `Focused`, `Dock + Float`, and `Workbench Preset`.
 
 ## Shared Chrome Models
 
@@ -90,6 +98,8 @@ Governance is the pilot shell. It uses:
 - a right rail for active governance context, recent governance work, and audit access
 - operating-context-scoped dock restore and bounded window-mode persistence
 - lane summaries for `Accounting`, `Reconciliation`, `Reporting`, and `Audit` that become distinct as soon as a fund-linked context exists
+- a persistent workbench identity card plus route banners for deep links such as `FundTrialBalance`, `FundReconciliation`, and `FundReportPack`
+- explicit ownership, sign-off, and stale-snapshot copy on reconciliation and report-pack tabs so operators can tell whether they are in overview, accounting, reconciliation, or reporting mode without relying on navigation history
 
 ### Research
 
@@ -99,7 +109,7 @@ The research handoff card exposes explicit `Start Backtest`, `Review Run`, and `
 ### Trading
 
 Trading keeps the live-position, blotter, and capital-control surfaces while moving desk actions into the shared command bar, surfacing run or desk posture in the context strip, and exposing accounting and audit drill-ins from the cockpit.
-The cockpit shell now also carries a workflow-status card that replaces generic `Awaiting runs` copy with summary-driven handoff, blocker, and next-action labels. This makes `no context selected`, `candidate awaiting paper review`, `active paper/live cockpit`, and `candidate awaiting governance review` visible without changing the surrounding workspace layout.
+The cockpit shell now also carries a workflow-status card that replaces generic `Awaiting runs` copy with summary-driven handoff, blocker, and next-action labels. Active positions, risk posture, and the primary desk action now sit above KPI tiles and supporting narrative lanes, which keeps `no context selected`, `candidate awaiting paper review`, `active paper/live cockpit`, and `candidate awaiting governance review` visible without forcing operators to scroll past shell summaries.
 
 ### Data Operations
 

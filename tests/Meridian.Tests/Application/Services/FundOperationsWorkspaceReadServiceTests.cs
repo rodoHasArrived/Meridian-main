@@ -209,13 +209,59 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             strategyName: "Carry Strategy 2",
             fundProfileId: fundProfileId,
             fundDisplayName: "Alpha Income Fund"));
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-selection-003",
+            strategyId: "carry-3",
+            strategyName: "Carry Strategy 3",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
 
         var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
             FundProfileId: fundProfileId,
-            SelectedLedgerIds: ["run-selection-001"]));
+            SelectedLedgerIds: ["run-selection-001", "run-selection-003"]));
 
-        workspace.RecordedRunCount.Should().Be(1);
-        workspace.RelatedRunIds.Should().ContainSingle().Which.Should().Be("run-selection-001");
+        workspace.RecordedRunCount.Should().Be(2);
+        workspace.RelatedRunIds.Should().BeEquivalentTo(["run-selection-001", "run-selection-003"]);
+        workspace.Ledger.JournalEntryCount.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithEmptySelectedLedgerIds_MatchesUnfilteredWorkspace()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var repository = new StrategyRunStore();
+        var portfolioReadService = new PortfolioReadService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            repository,
+            portfolioReadService,
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster));
+
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-all-001",
+            strategyId: "carry-1",
+            strategyName: "Carry Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-all-002",
+            strategyId: "carry-2",
+            strategyName: "Carry Strategy 2",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Alpha Income Fund"));
+
+        var fullWorkspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(FundProfileId: fundProfileId));
+        var explicitEmptySelection = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            SelectedLedgerIds: Array.Empty<string>()));
+
+        explicitEmptySelection.RecordedRunCount.Should().Be(fullWorkspace.RecordedRunCount);
+        explicitEmptySelection.RelatedRunIds.Should().BeEquivalentTo(fullWorkspace.RelatedRunIds);
+        explicitEmptySelection.Ledger.JournalEntryCount.Should().Be(fullWorkspace.Ledger.JournalEntryCount);
+        explicitEmptySelection.Ledger.AssetBalance.Should().Be(fullWorkspace.Ledger.AssetBalance);
     }
 
     [Fact]

@@ -169,13 +169,13 @@
           "title": "Research Workspace",
           "pageTag": "ResearchShell",
           "captureName": "03-research-workspace",
-          "notes": "The Research workspace groups backtesting, Quant Script, and strategy review surfaces."
+          "notes": "The Research workspace now keeps the current workspace next action above the fold while secondary workspace actions stay behind expansion."
         },
         {
           "title": "Trading Workspace",
           "pageTag": "TradingShell",
           "captureName": "04-trading-workspace",
-          "notes": "The Trading workspace focuses on blotters, live positions, and trading risk controls."
+          "notes": "The Trading workspace now leads with active positions, workflow blocker/next action, and risk posture before KPI tiles and supporting desk lanes."
         },
         {
           "title": "Data Operations Workspace",
@@ -187,7 +187,7 @@
           "title": "Governance Workspace",
           "pageTag": "GovernanceShell",
           "captureName": "06-governance-workspace",
-          "notes": "The Governance workspace collects ledger, operational controls, and oversight surfaces."
+          "notes": "The Governance workspace now exposes an explicit workbench identity so overview, accounting, reconciliation, and reporting modes stay obvious at a glance."
         },
         {
           "title": "Help",
@@ -283,13 +283,13 @@
           "title": "Trading Workspace",
           "pageTag": "TradingShell",
           "captureName": "05-trading-shell",
-          "notes": "Switch to the Trading workspace to inspect live operations and active risk surfaces."
+          "notes": "Switch to the Trading workspace to capture the action-first cockpit layout, with positions, current blocker, and primary desk action ahead of supporting narrative lanes."
         },
         {
           "title": "Position Blotter",
           "pageTag": "PositionBlotter",
           "captureName": "06-position-blotter",
-          "notes": "Use the Position Blotter to review positions, marks, and exposure."
+          "notes": "Use the Position Blotter to capture the grid-first layout, batch-action readiness, and the simplified single-path blocked state."
         },
         {
           "title": "Run Risk",
@@ -302,7 +302,7 @@
     {
       "name": "manual-governance",
       "title": "Governance Workflow",
-      "description": "Cover the oversight surfaces used for ledger review, fund accounts, notifications, and reference data governance.",
+      "description": "Cover the oversight surfaces used for accounting, reconciliation, reporting, and reference-data governance.",
       "purpose": "manual",
       "includeInManual": true,
       "steps": [
@@ -310,37 +310,37 @@
           "title": "Governance Workspace",
           "pageTag": "GovernanceShell",
           "captureName": "01-governance-shell",
-          "notes": "Start in Governance to orient around the oversight and operational control surfaces."
+          "notes": "Start in Governance to orient around the oversight shell and confirm the shared workbench identity card."
         },
         {
           "title": "Fund Ledger",
           "pageTag": "FundLedger",
           "captureName": "02-fund-ledger",
-          "notes": "Use Fund Ledger to inspect balances, journals, and cash flow views."
+          "notes": "Use Fund Ledger to capture the single governance workbench with explicit mode/workbench identity above the tabs."
         },
         {
-          "title": "Fund Accounts",
-          "pageTag": "FundAccounts",
-          "captureName": "03-fund-accounts",
-          "notes": "Use Fund Accounts to review account-level positions and supporting fund metadata."
+          "title": "Fund Reconciliation",
+          "pageTag": "FundReconciliation",
+          "captureName": "03-fund-reconciliation",
+          "notes": "Use Fund Reconciliation to capture the deep-link route banner plus the prominent ownership and stale-snapshot posture."
+        },
+        {
+          "title": "Fund Report Pack",
+          "pageTag": "FundReportPack",
+          "captureName": "04-fund-report-pack",
+          "notes": "Use Fund Report Pack to capture the reporting-mode route banner, handoff readiness, sign-off owner, and freshness warning."
         },
         {
           "title": "Security Master",
           "pageTag": "SecurityMaster",
-          "captureName": "04-security-master",
+          "captureName": "05-security-master",
           "notes": "Use Security Master to review reference data coverage and investigate security-level issues."
-        },
-        {
-          "title": "Notification Center",
-          "pageTag": "NotificationCenter",
-          "captureName": "05-notification-center",
-          "notes": "Use Notification Center to review surfaced alerts and follow-up work."
         },
         {
           "title": "Settings",
           "pageTag": "Settings",
           "captureName": "06-settings",
-          "notes": "Finish in Settings to review controls that affect the governance and operator experience."
+          "notes": "Finish in Settings to capture the explicit shell-density preference that now controls shell verbosity independently from window mode."
         }
       ]
     }

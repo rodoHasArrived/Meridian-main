@@ -245,4 +245,87 @@ public sealed class SettingsConfigurationServiceTests
         provider.SupportsBrokerage.Should().BeTrue();
         provider.RequiredEnvVars.Should().Contain("ROBINHOOD_ACCESS_TOKEN");
     }
+
+    [Fact]
+    public void GetShellDensityMode_DefaultsToStandardWhenPreferencesFileIsMissing()
+    {
+        var preferencesPath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-settings-tests",
+            $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
+
+        try
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+
+            SettingsConfigurationService.Instance.GetShellDensityMode().Should().Be(ShellDensityMode.Standard);
+        }
+        finally
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+            if (File.Exists(preferencesPath))
+            {
+                File.Delete(preferencesPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void SetShellDensityMode_PersistsAndRoundTripsDesktopPreferences()
+    {
+        var preferencesPath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-settings-tests",
+            $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
+
+        try
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            var service = SettingsConfigurationService.Instance;
+
+            service.SetShellDensityMode(ShellDensityMode.Compact);
+
+            File.Exists(preferencesPath).Should().BeTrue();
+            File.ReadAllText(preferencesPath).Should().Contain("shellDensityMode");
+
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            SettingsConfigurationService.Instance.GetShellDensityMode().Should().Be(ShellDensityMode.Compact);
+        }
+        finally
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+            if (File.Exists(preferencesPath))
+            {
+                File.Delete(preferencesPath);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(true, ShellDensityMode.Compact)]
+    [InlineData(false, ShellDensityMode.Standard)]
+    public void GetShellDensityMode_MigratesLegacyCompactModeFlag(bool legacyValue, ShellDensityMode expectedDensity)
+    {
+        var preferencesPath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-settings-tests",
+            $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(preferencesPath)!);
+            File.WriteAllText(preferencesPath, $$"""{"isCompactMode":{{legacyValue.ToString().ToLowerInvariant()}}}""");
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+
+            SettingsConfigurationService.Instance.GetShellDensityMode().Should().Be(expectedDensity);
+        }
+        finally
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+            if (File.Exists(preferencesPath))
+            {
+                File.Delete(preferencesPath);
+            }
+        }
+    }
 }

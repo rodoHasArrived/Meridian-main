@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.Views;
 
@@ -18,6 +19,7 @@ public partial class WorkspaceDeepPageHostPage : Page
     private readonly Page _hostedPage;
     private readonly object? _navigationParameter;
     private readonly WorkspaceChromePresentationMode _presentationMode;
+    private readonly SettingsConfigurationService _settingsConfigurationService = SettingsConfigurationService.Instance;
 
     public WorkspaceDeepPageHostPage(
         NavigationService navigationService,
@@ -51,9 +53,10 @@ public partial class WorkspaceDeepPageHostPage : Page
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        WorkspaceShellChromeState.SetIsHostedInWorkspaceShell(_hostedPage, true);
+        ApplyHostedChromeState();
         ApplyPresentationMode();
         CommandBar.CommandGroup = BuildCommandGroup();
+        _settingsConfigurationService.DesktopShellPreferencesChanged += OnDesktopShellPreferencesChanged;
 
         if (!ReferenceEquals(HostedFrame.Content, _hostedPage))
         {
@@ -69,7 +72,9 @@ public partial class WorkspaceDeepPageHostPage : Page
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        _settingsConfigurationService.DesktopShellPreferencesChanged -= OnDesktopShellPreferencesChanged;
         WorkspaceShellChromeState.SetIsHostedInWorkspaceShell(_hostedPage, false);
+        WorkspaceShellChromeState.SetShellDensityMode(_hostedPage, ShellDensityMode.Standard);
 
         if (_shellContextService is not null)
         {
@@ -109,6 +114,17 @@ public partial class WorkspaceDeepPageHostPage : Page
         await RefreshContextAsync();
     }
 
+    private void OnDesktopShellPreferencesChanged(object? sender, DesktopShellPreferences preferences)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnDesktopShellPreferencesChanged(sender, preferences));
+            return;
+        }
+
+        WorkspaceShellChromeState.SetShellDensityMode(_hostedPage, preferences.ShellDensityMode);
+    }
+
     private void ApplyPresentationMode()
     {
         var showStandaloneChrome = _presentationMode == WorkspaceChromePresentationMode.Standalone;
@@ -118,6 +134,12 @@ public partial class WorkspaceDeepPageHostPage : Page
         SummaryCard.Margin = showStandaloneChrome
             ? new Thickness(0, 0, 0, 18)
             : new Thickness(0, 0, 0, 12);
+    }
+
+    private void ApplyHostedChromeState()
+    {
+        WorkspaceShellChromeState.SetIsHostedInWorkspaceShell(_hostedPage, true);
+        WorkspaceShellChromeState.SetShellDensityMode(_hostedPage, _settingsConfigurationService.GetShellDensityMode());
     }
 
     private void ApplyShellSummary()

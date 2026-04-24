@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Xunit;
 
@@ -53,7 +54,7 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
         await _secondLedger.InitializeAsync();
 
-        var isDuplicate = await _firstLedger.IsDuplicateAsync(CreateTestEvent("SPY"), CancellationToken.None);
+        var isDuplicate = await _firstLedger.IsDuplicateAsync(CreateTradeEvent("SPY", 1), CancellationToken.None);
 
         isDuplicate.Should().BeFalse();
 
@@ -67,14 +68,53 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         lines.Should().ContainSingle();
     }
 
-    private static MarketEvent CreateTestEvent(string symbol)
+    [Fact]
+    public async Task IsDuplicateAsync_TradeMiss_PersistsLineAndReloadsAsDuplicate()
     {
-        return new MarketEvent(
+        var evt = CreateTradeEvent("AAPL", 1);
+
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _firstLedger.InitializeAsync();
+
+        var firstSeen = await _firstLedger.IsDuplicateAsync(evt, CancellationToken.None);
+        firstSeen.Should().BeFalse();
+
+        await _firstLedger.FlushAsync(CancellationToken.None);
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+
+        var ledgerPath = Path.Combine(_ledgerDirectory, "dedup_ledger.jsonl");
+        File.Exists(ledgerPath).Should().BeTrue();
+
+        var lines = await File.ReadAllLinesAsync(ledgerPath);
+        lines.Should().ContainSingle();
+        lines[0].Should().Contain("\"k\":\"TEST:AAPL:Trade:");
+        lines[0].Should().Contain("\"t\":");
+
+        _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _secondLedger.InitializeAsync();
+
+        var secondSeen = await _secondLedger.IsDuplicateAsync(evt, CancellationToken.None);
+        secondSeen.Should().BeTrue();
+    }
+
+    private static MarketEvent CreateTradeEvent(string symbol, long sequence)
+    {
+        var trade = new Trade(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: symbol,
-            Type: MarketEventType.Trade,
-            Payload: new Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload(),
-            Sequence: 1,
-            Source: "TEST");
+            Price: 100.25m,
+            Size: 100,
+            Aggressor: AggressorSide.Buy,
+            SequenceNumber: sequence,
+            StreamId: "TEST",
+            Venue: "XNAS");
+
+        return MarketEvent.Trade(
+            DateTimeOffset.UtcNow,
+            symbol,
+            trade,
+            sequence,
+            "TEST");
     }
 }
