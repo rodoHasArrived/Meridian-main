@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Archive Organizer"
+  short_description: "Archive stale files and tidy repo layout"
+  default_prompt: "Use $meridian-archive-organizer to classify stale Meridian files with evidence and move them into the right archive bucket."

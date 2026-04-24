@@ -1,0 +1,59 @@
+{
+  "skill_name": "meridian-archive-organizer",
+  "last_updated": "2026-04-09",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Dated backlog doc remains active because status guidance still treats it as source-of-truth",
+      "path": "docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md",
+      "expected_recommendation": "active",
+      "min_strong_refs": 1,
+      "must_exist": true
+    },
+    {
+      "id": 2,
+      "description": "Automation-owned JSON sidecar remains active",
+      "path": "docs/status/docs-automation-summary.json",
+      "expected_recommendation": "active",
+      "min_strong_refs": 1,
+      "must_exist": true
+    },
+    {
+      "id": 3,
+      "description": "Archived roadmap snapshot remains archived",
+      "path": "archive/docs/summaries/ROADMAP_NOW_NEXT_LATER_2026_03_25.md",
+      "expected_recommendation": "already-archived",
+      "must_exist": true
+    },
+    {
+      "id": 4,
+      "description": "Active cleanup roadmap stays active despite archive-related wording",
+      "path": "docs/plans/codebase-audit-cleanup-roadmap.md",
+      "expected_recommendation": "active",
+      "min_strong_refs": 1,
+      "must_exist": true
+    },
+    {
+      "id": 5,
+      "description": "Local Playwright scratch path is treated as delete or ignore material",
+      "path": ".playwright-cli",
+      "expected_recommendation": "delete"
+    },
+    {
+      "id": 6,
+      "description": "Superseded ADR fixture remains an archive-doc candidate once only historical and inventory references remain",
+      "path": "docs/adr/ADR-015-platform-restructuring.md",
+      "repo_root": ".codex/skills/meridian-archive-organizer/fixtures/superseded-adr",
+      "expected_recommendation": "archive-doc",
+      "max_strong_refs": 0,
+      "must_exist": true
+    },
+    {
+      "id": 7,
+      "description": "Archived repo-wide audit snapshot stays classified as already archived after the move",
+      "path": "archive/docs/assessments/CODE_REVIEW_2026-03-16.md",
+      "expected_recommendation": "already-archived",
+      "must_exist": true
+    }
+  ]
+}
