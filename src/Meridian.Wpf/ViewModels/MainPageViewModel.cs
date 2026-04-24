@@ -49,7 +49,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
     private string _currentPageTitle = "Research Workspace";
-    private string _currentPageSubtitle = "Backtest studio shell with active run context, compare lanes, and promotion rails.";
+    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor research outcomes.";
     private bool _tickerStripVisible;
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
@@ -1287,6 +1287,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         yield return descriptor.Subtitle;
         yield return descriptor.SectionLabel;
         yield return workspaceTitle;
+        yield return GetVisibilityLabel(descriptor.VisibilityTier);
 
         foreach (var keyword in descriptor.SearchKeywords)
         {
@@ -1364,9 +1365,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private static string GetVisibilityLabel(ShellNavigationVisibilityTier visibilityTier)
         => visibilityTier switch
         {
-            ShellNavigationVisibilityTier.Primary => "Primary",
-            ShellNavigationVisibilityTier.Secondary => "Secondary",
-            ShellNavigationVisibilityTier.Overflow => "Overflow",
+            ShellNavigationVisibilityTier.Primary => string.Empty,
+            ShellNavigationVisibilityTier.Secondary => "Advanced",
+            ShellNavigationVisibilityTier.Overflow => "Admin",
             _ => string.Empty
         };
 

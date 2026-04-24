@@ -115,6 +115,12 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<StrategyRunContinuityService>();
         builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
+        // Durable promotion-record store is required by PromotionService; without it
+        // /api/promotion/approve and /api/promotion/reject fail DI resolution at runtime.
+        builder.Services.AddSingleton<IPromotionRecordStore>(sp =>
+            new JsonlPromotionRecordStore(
+                Path.Combine(contentRootPath, "data", "promotions"),
+                sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
         builder.Services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterWorkbenchQueryService, Meridian.Application.SecurityMaster.SecurityMasterWorkbenchQueryService>();
         builder.Services.AddSingleton(ExecutionAuditTrailOptions.Default);

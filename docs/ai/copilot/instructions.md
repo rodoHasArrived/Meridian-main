@@ -119,14 +119,38 @@ Meridian-main
 │   └── link-repair-report.md
 ├── .claude
 │   ├── agents
+│   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
 │   │   ├── meridian-docs.md
 │   │   ├── meridian-navigation.md
+│   │   ├── meridian-repo-navigation.md
+│   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
+│   │   ├── meridian-archive-organizer
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   └── evals.json
+│   │   │   ├── fixtures
+│   │   │   │   └── superseded-adr
+│   │   │   │       └── docs
+│   │   │   │           ├── adr
+│   │   │   │           │   ├── ADR-015-platform-restructuring.md
+│   │   │   │           │   └── README.md
+│   │   │   │           └── generated
+│   │   │   │               └── repository-structure.md
+│   │   │   ├── references
+│   │   │   │   ├── archive-placement-guide.md
+│   │   │   │   └── evaluation-harness.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── trace_archive_candidates.py
+│   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
 │   │   │   ├── references
 │   │   │   │   ├── blueprint-patterns.md
@@ -173,6 +197,16 @@ Meridian-main
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   ├── CHANGELOG.md
+│   │   │   └── SKILL.md
+│   │   ├── meridian-repo-navigation
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-roadmap-strategist
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── references
+│   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-simulated-user-panel
 │   │   │   ├── agents
@@ -816,6 +850,7 @@ Meridian-main
 │   │   │   ├── CLAUDE.fsharp.md
 │   │   │   ├── CLAUDE.providers.md
 │   │   │   ├── CLAUDE.repo-updater.md
+│   │   │   ├── CLAUDE.roadmap-learning-log.md
 │   │   │   ├── CLAUDE.storage.md
 │   │   │   ├── CLAUDE.structure.md
 │   │   │   └── CLAUDE.testing.md
@@ -861,7 +896,8 @@ Meridian-main
 │   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── prompt-generation-results.json
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── workspace-visual-audit-checklist-2026-04-22.md
 │   ├── development
 │   │   ├── policies
 │   │   │   ├── desktop-support-policy.md
@@ -4695,12 +4731,14 @@ Meridian-main
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
 │   │   ├── governance-fund-ops-blueprint.md
+│   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
@@ -4760,6 +4798,7 @@ Meridian-main
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
+│   │   ├── export-preflight-rules.md
 │   │   ├── open-source-references.md
 │   │   ├── README.md
 │   │   ├── reconciliation-break-taxonomy.md
@@ -4842,6 +4881,7 @@ Meridian-main
 │   │   ├── health-dashboard.md
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── kernel-readiness-dashboard.md
+│   │   ├── KERNEL_PARITY_STATUS.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
@@ -6150,11 +6190,13 @@ Meridian-main
 │   │   │   ├── AnalysisExportService.Formats.Xlsx.cs
 │   │   │   ├── AnalysisExportService.IO.cs
 │   │   │   ├── AnalysisQualityReport.cs
+│   │   │   ├── ExportPreflightRules.cs
 │   │   │   ├── ExportProfile.cs
 │   │   │   ├── ExportRequest.cs
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
-│   │   │   └── ExportVerificationReport.cs
+│   │   │   ├── ExportVerificationReport.cs
+│   │   │   └── PreflightRule.cs
 │   │   ├── FundAccounts
 │   │   │   ├── Migrations
 │   │   │   │   └── 001_fund_accounts.sql
@@ -6267,7 +6309,8 @@ Meridian-main
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
-│   │   │   └── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunReadService.cs
+│   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   ├── Storage
 │   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── JsonlPromotionRecordStore.cs
@@ -6568,6 +6611,8 @@ Meridian-main
 │       │   ├── NullToCollapsedConverter.cs
 │       │   ├── StringToBoolConverter.cs
 │       │   └── StringToVisibilityConverter.cs
+│       ├── Copy
+│       │   └── WorkspaceCopyCatalog.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -6597,10 +6642,12 @@ Meridian-main
 │       │   ├── ShellNavigationCatalog.Trading.cs
 │       │   ├── ShellNavigationCatalog.Workspaces.cs
 │       │   ├── ShellNavigationModels.cs
+│       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
+│       │   ├── WorkspaceQueueRegionState.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   ├── WorkspaceShellChromeModels.cs
 │       │   ├── WorkspaceShellModels.cs
@@ -7531,6 +7578,8 @@ Meridian-main
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
 │   ├── Meridian.Wpf.Tests
+│   │   ├── Copy
+│   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── Models
 │   │   │   └── ShellNavigationCatalogTests.cs
 │   │   ├── Services
@@ -7585,6 +7634,7 @@ Meridian-main
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs

@@ -18,7 +18,7 @@
     </Style>
 
     <Style x:Key="SectionCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
-        <Setter Property="Margin" Value="0,0,0,16" />
+        <Setter Property="Margin" Value="{StaticResource WorkspaceSectionCardMargin}" />
     </Style>
 
     <!-- Shared deep-page shell cleanup: let legacy pages hide duplicate hero chrome when
@@ -111,7 +111,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="14" />
+        <Setter Property="Padding" Value="{StaticResource WorkspaceCardPaddingCompact}" />
     </Style>
 
     <!-- ElevatedCardStyle: subtle drop shadow for raised panel feel -->
@@ -172,23 +172,23 @@
     </Style>
 
     <Style x:Key="SuccessBadgeStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeSuccessBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeSuccessBorderBrush}" />
     </Style>
 
     <Style x:Key="DangerBadgeStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeDangerBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeDangerBorderBrush}" />
     </Style>
 
     <Style x:Key="WarningBadgeInlineStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeWarningBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeWarningBorderBrush}" />
     </Style>
 
     <Style x:Key="InfoBadgeInlineStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
-        <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-        <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+        <Setter Property="Background" Value="{StaticResource BadgeInfoBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BadgeInfoBorderBrush}" />
     </Style>
 
     <Style x:Key="HorizontalDividerStyle" TargetType="Rectangle">
@@ -228,7 +228,7 @@
 
     <Style x:Key="WorkspaceKpiTileStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="MinWidth" Value="112" />
-        <Setter Property="Padding" Value="18,14" />
+        <Setter Property="Padding" Value="18,12" />
         <Setter Property="CornerRadius" Value="12" />
     </Style>
 

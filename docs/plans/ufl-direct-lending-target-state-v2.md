@@ -2,9 +2,9 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-04-23
 **Status:** active
-**Reviewed:** 2026-03-26
+**Reviewed:** 2026-04-23
 
 > **Naming standard:** All new F# types and DTOs in this package must follow the
 > [Domain Naming Standard](../ai/claude/CLAUDE.domain-naming.md).
@@ -1049,6 +1049,19 @@ The target state is:
 - partitioned large transactional tables when volume demands it
 
 That combination is the cleanest robust implementation for a direct-lending ledger that needs auditability, replayability, operational practicality, and real-world servicer integration.
+
+
+## 12. 2026-04 Clarifications (delta from 2026-03 baseline)
+
+To keep this document implementation-ready as teams start execution, the following constraints are now explicit:
+
+1. **Servicer replay idempotency is mandatory.** Position and transaction imports must enforce deterministic batch keys (servicer + file hash + as-of date + report type) before any canonical servicing mutation.
+2. **Projection uniqueness is a hard guardrail.** `projection_run` must enforce a unique index on `(loan_id, servicing_revision, loan_terms_version, projection_as_of)` to prevent duplicate effective snapshots during retries.
+3. **Period lock semantics apply to all financial writes.** Commands that would create `accrual_entry`, `cash_transaction`, or `journal_line` rows inside a locked period must fail fast with a recoverable domain error and operator-facing reason code.
+4. **Read-model rebuild mode cannot emit downstream side effects.** Replay pipelines must disable outbox dispatch, external notification handlers, and journal posting workers unless an explicit recompute flag is enabled for controlled backfills.
+5. **API compatibility policy is explicit.** New direct-lending endpoints should version payload contracts additively; breaking field semantics require a route or media-type version bump with coexistence for active consumers.
+
+These deltas do not change the architectural direction of V2; they tighten operational invariants so implementation and production controls are unambiguous.
 
 ## Related Documents
 

@@ -170,7 +170,10 @@ public sealed record WorkstationSecurityReference(
     string? MatchedIdentifierKind = null,
     string? MatchedIdentifierValue = null,
     string? MatchedProvider = null,
-    string? ResolutionReason = null);
+    string? ResolutionReason = null,
+    string? LookupPath = null,
+    string? LookupSource = null,
+    bool IsInferredMatch = false);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -191,7 +194,15 @@ public sealed record PortfolioSummary(
     decimal Financing,
     IReadOnlyList<PortfolioPositionSummary> Positions,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0);
+    int SecurityMissingCount = 0,
+    string? AccountScopeId = null,
+    string? AccountScopeDisplayName = null,
+    string? EntityScopeId = null,
+    string? EntityScopeDisplayName = null,
+    string? SleeveScopeId = null,
+    string? SleeveScopeDisplayName = null,
+    string? VehicleScopeId = null,
+    string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -203,7 +214,15 @@ public sealed record PortfolioPositionSummary(
     decimal RealizedPnl,
     decimal UnrealizedPnl,
     bool IsShort,
-    WorkstationSecurityReference? Security = null);
+    WorkstationSecurityReference? Security = null,
+    string? AccountScopeId = null,
+    string? AccountScopeDisplayName = null,
+    string? EntityScopeId = null,
+    string? EntityScopeDisplayName = null,
+    string? SleeveScopeId = null,
+    string? SleeveScopeDisplayName = null,
+    string? VehicleScopeId = null,
+    string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared ledger rollup for workstation governance and audit surfaces.
@@ -222,7 +241,15 @@ public sealed record LedgerSummary(
     IReadOnlyList<LedgerTrialBalanceLine> TrialBalance,
     IReadOnlyList<LedgerJournalLine> Journal,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0);
+    int SecurityMissingCount = 0,
+    string? AccountScopeId = null,
+    string? AccountScopeDisplayName = null,
+    string? EntityScopeId = null,
+    string? EntityScopeDisplayName = null,
+    string? SleeveScopeId = null,
+    string? SleeveScopeDisplayName = null,
+    string? VehicleScopeId = null,
+    string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.
@@ -234,7 +261,15 @@ public sealed record LedgerTrialBalanceLine(
     string? FinancialAccountId,
     decimal Balance,
     int EntryCount,
-    WorkstationSecurityReference? Security = null);
+    WorkstationSecurityReference? Security = null,
+    string? AccountScopeId = null,
+    string? AccountScopeDisplayName = null,
+    string? EntityScopeId = null,
+    string? EntityScopeDisplayName = null,
+    string? SleeveScopeId = null,
+    string? SleeveScopeDisplayName = null,
+    string? VehicleScopeId = null,
+    string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.
@@ -245,7 +280,15 @@ public sealed record LedgerJournalLine(
     string Description,
     decimal TotalDebits,
     decimal TotalCredits,
-    int LineCount);
+    int LineCount,
+    string? AccountScopeId = null,
+    string? AccountScopeDisplayName = null,
+    string? EntityScopeId = null,
+    string? EntityScopeDisplayName = null,
+    string? SleeveScopeId = null,
+    string? SleeveScopeDisplayName = null,
+    string? VehicleScopeId = null,
+    string? VehicleScopeDisplayName = null);
 
 /// <summary>
 /// Comparison row used when reviewing multiple runs side by side.

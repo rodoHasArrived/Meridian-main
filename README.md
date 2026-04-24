@@ -144,16 +144,40 @@ Use these documents together when planning or implementing new work:
 │   └── link-repair-report.md
 ├── .claude
 │   ├── agents
+│   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
 │   │   ├── meridian-docs.md
 │   │   ├── meridian-navigation.md
+│   │   ├── meridian-repo-navigation.md
+│   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
 │       ├── _shared
 │       │   └── project-context.md
+│       ├── meridian-archive-organizer
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── evals
+│       │   │   └── evals.json
+│       │   ├── fixtures
+│       │   │   └── superseded-adr
+│       │   │       └── docs
+│       │   │           ├── adr
+│       │   │           │   ├── ADR-015-platform-restructuring.md
+│       │   │           │   └── README.md
+│       │   │           └── generated
+│       │   │               └── repository-structure.md
+│       │   ├── references
+│       │   │   ├── archive-placement-guide.md
+│       │   │   └── evaluation-harness.md
+│       │   └── scripts
+│       │       ├── run_evals.py
+│       │       ├── score_eval.py
+│       │       └── trace_archive_candidates.py
 │       ├── meridian-blueprint
 │       │   ├── CHANGELOG.md
 │       │   ├── SKILL.md
@@ -201,6 +225,16 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── provider-patterns.md
+│       ├── meridian-repo-navigation
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
+│       ├── meridian-roadmap-strategist
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   └── references
+│       │       └── roadmap-source-map.md
 │       ├── meridian-simulated-user-panel
 │       │   ├── SKILL.md
 │       │   ├── agents
@@ -913,6 +947,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CLAUDE.fsharp.md
 │   │   │   ├── CLAUDE.providers.md
 │   │   │   ├── CLAUDE.repo-updater.md
+│   │   │   ├── CLAUDE.roadmap-learning-log.md
 │   │   │   ├── CLAUDE.storage.md
 │   │   │   ├── CLAUDE.structure.md
 │   │   │   └── CLAUDE.testing.md
@@ -956,7 +991,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
 │   │   ├── audit-results-full.json
-│   │   └── prompt-generation-results.json
+│   │   ├── prompt-generation-results.json
+│   │   └── workspace-visual-audit-checklist-2026-04-22.md
 │   ├── development
 │   │   ├── README.md
 │   │   ├── adding-custom-rules.md
@@ -4791,12 +4827,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── backtesting-quantscript-improvement-plan-2026-04.md
 │   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
 │   │   ├── fund-management-product-vision-and-capability-matrix.md
 │   │   ├── governance-fund-ops-blueprint.md
+│   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
@@ -4856,6 +4894,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
 │   │   ├── environment-variables.md
+│   │   ├── export-preflight-rules.md
 │   │   ├── open-source-references.md
 │   │   ├── reconciliation-break-taxonomy.md
 │   │   ├── research-briefing-workflow.md
@@ -4925,6 +4964,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
 │   │   ├── IMPROVEMENTS.md
+│   │   ├── KERNEL_PARITY_STATUS.md
 │   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── PROGRAM_STATE.md
 │   │   ├── README.md
@@ -6244,11 +6284,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AnalysisExportService.IO.cs
 │   │   │   ├── AnalysisExportService.cs
 │   │   │   ├── AnalysisQualityReport.cs
+│   │   │   ├── ExportPreflightRules.cs
 │   │   │   ├── ExportProfile.cs
 │   │   │   ├── ExportRequest.cs
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
-│   │   │   └── ExportVerificationReport.cs
+│   │   │   ├── ExportVerificationReport.cs
+│   │   │   └── PreflightRule.cs
 │   │   ├── FundAccounts
 │   │   │   ├── IFundAccountStore.cs
 │   │   │   └── Migrations
@@ -6363,7 +6405,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
-│   │   │   └── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunReadService.cs
+│   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   └── Storage
 │   │       ├── IPromotionRecordStore.cs
 │   │       ├── JsonlPromotionRecordStore.cs
@@ -6665,6 +6708,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NullToCollapsedConverter.cs
 │       │   ├── StringToBoolConverter.cs
 │       │   └── StringToVisibilityConverter.cs
+│       ├── Copy
+│       │   └── WorkspaceCopyCatalog.cs
 │       ├── GlobalUsings.cs
 │       ├── MainWindow.xaml
 │       ├── MainWindow.xaml.cs
@@ -6698,10 +6743,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ShellNavigationCatalog.Workspaces.cs
 │       │   ├── ShellNavigationCatalog.cs
 │       │   ├── ShellNavigationModels.cs
+│       │   ├── ShellNavigationTextStyleGuide.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
+│       │   ├── WorkspaceQueueRegionState.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   ├── WorkspaceShellChromeModels.cs
 │       │   ├── WorkspaceShellModels.cs
@@ -7626,6 +7673,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── WatchlistServiceCollection.cs
 │   │       └── WatchlistServiceTests.cs
 │   ├── Meridian.Wpf.Tests
+│   │   ├── Copy
+│   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
 │   │   ├── Models
@@ -7683,6 +7732,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
 │   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── StatusBarViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
 │   │   │   ├── StrategyRunPortfolioViewModelTests.cs
@@ -7717,6 +7767,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-605 directories, 6972 files
+622 directories, 7005 files
 ```
 <!-- readme-tree end -->

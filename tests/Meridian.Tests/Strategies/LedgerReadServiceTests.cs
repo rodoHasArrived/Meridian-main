@@ -1,7 +1,9 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Moq;
@@ -209,6 +211,74 @@ public sealed class LedgerReadServiceTests
             .BeLessThanOrEqualTo(summary.TrialBalance.Count);
     }
 
+
+    [Fact]
+    public async Task BuildSummaryAsync_WithAmbiguousSymbolAcrossVenues_UsesFinancialAccountVenueInCanonicalLookup()
+    {
+        var securityId = Guid.NewGuid();
+        var entry = BuildCompletedRun(symbol: "AAPL", financialAccountId: "ACC-NASDAQ", securityId: securityId, institution: "XNAS");
+        var resolved = new WorkstationSecurityReference(
+            SecurityId: securityId,
+            DisplayName: "Apple Inc. NASDAQ",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL");
+
+        var lookup = new Mock<ISecurityReferenceLookup>();
+        lookup
+            .Setup(l => l.GetByCanonicalAsync(
+                It.Is<SecurityReferenceLookupRequest>(request =>
+                    request.Symbol == "AAPL"
+                    && request.SecurityId == securityId
+                    && request.Venue == "XNAS"
+                    && request.Source == "ledger-journal-metadata"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(resolved);
+
+        var service = new LedgerReadService(lookup.Object);
+        var summary = await service.BuildSummaryAsync(entry);
+
+        summary.Should().NotBeNull();
+        summary!.TrialBalance
+            .Where(static line => line.Symbol == "AAPL")
+            .Should()
+            .OnlyContain(line => line.Security is not null && line.Security.SecurityId == securityId);
+    }
+
+    [Fact]
+    public async Task BuildSummaryAsync_WithMultiVenueIdentifier_PassesVenueFromTrialBalanceAccount()
+    {
+        var entry = BuildCompletedRun(symbol: "AAPL", financialAccountId: "ALPACA");
+        var resolved = new WorkstationSecurityReference(
+            SecurityId: Guid.NewGuid(),
+            DisplayName: "Apple Inc. via ALPACA",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL");
+
+        var lookup = new Mock<ISecurityReferenceLookup>();
+        lookup
+            .Setup(l => l.GetByCanonicalAsync(
+                It.Is<SecurityReferenceLookupRequest>(request =>
+                    request.Symbol == "AAPL"
+                    && request.Venue == "ALPACA"
+                    && request.SecurityId is null
+                    && request.Source == "ledger-trial-balance"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(resolved);
+
+        var service = new LedgerReadService(lookup.Object);
+        var summary = await service.BuildSummaryAsync(entry);
+
+        summary.Should().NotBeNull();
+        summary!.TrialBalance
+            .Where(static line => line.Symbol == "AAPL")
+            .Should()
+            .OnlyContain(line => line.Security is not null && line.Security.DisplayName.Contains("ALPACA"));
+    }
+
     [Fact]
     public void Constructor_NullLookup_Throws()
     {
@@ -216,9 +286,53 @@ public sealed class LedgerReadServiceTests
         act.Should().Throw<ArgumentNullException>();
     }
 
+
+    [Fact]
+    public void BuildSummary_MapsAndSerializesScopeMetadataFromRunParameters()
+    {
+        var entry = BuildCompletedRun() with
+        {
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-paper",
+                ["accountScopeDisplayName"] = "Paper Account",
+                ["entityScopeId"] = "entity-paper",
+                ["entityScopeDisplayName"] = "Paper Entity",
+                ["sleeveScopeId"] = "sleeve-paper",
+                ["sleeveScopeDisplayName"] = "Paper Sleeve",
+                ["vehicleScopeId"] = "vehicle-paper",
+                ["vehicleScopeDisplayName"] = "Paper Vehicle"
+            }
+        };
+
+        var service = new LedgerReadService();
+        var summary = service.BuildSummary(entry);
+
+        summary.Should().NotBeNull();
+        summary!.AccountScopeId.Should().Be("acct-paper");
+        summary.EntityScopeId.Should().Be("entity-paper");
+        summary.SleeveScopeId.Should().Be("sleeve-paper");
+        summary.VehicleScopeId.Should().Be("vehicle-paper");
+        summary.TrialBalance.Should().OnlyContain(line =>
+            line.AccountScopeId == "acct-paper" &&
+            line.EntityScopeId == "entity-paper" &&
+            line.SleeveScopeId == "sleeve-paper" &&
+            line.VehicleScopeId == "vehicle-paper");
+        summary.Journal.Should().OnlyContain(line => line.AccountScopeId == "acct-paper");
+
+        var json = JsonSerializer.Serialize(summary);
+        json.Should().Contain("entityScopeId");
+        json.Should().Contain("sleeveScopeDisplayName");
+        json.Should().Contain("vehicleScopeDisplayName");
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private static StrategyRunEntry BuildCompletedRun(string symbol = "AAPL")
+    private static StrategyRunEntry BuildCompletedRun(
+        string symbol = "AAPL",
+        string? financialAccountId = null,
+        Guid? securityId = null,
+        string? institution = null)
     {
         var startedAt = new DateTimeOffset(2026, 3, 1, 9, 30, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddHours(8);
@@ -226,8 +340,8 @@ public sealed class LedgerReadServiceTests
         var ledger = new LedgerImpl();
         var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
         var ownerEquity = new LedgerAccount("Owner's Equity", LedgerAccountType.Equity);
-        var tradingGains = new LedgerAccount("Trading Gains", LedgerAccountType.Revenue, Symbol: symbol);
-        var commissions = new LedgerAccount("Commissions", LedgerAccountType.Expense, Symbol: symbol);
+        var tradingGains = new LedgerAccount("Trading Gains", LedgerAccountType.Revenue, Symbol: symbol, FinancialAccountId: financialAccountId);
+        var commissions = new LedgerAccount("Commissions", LedgerAccountType.Expense, Symbol: symbol, FinancialAccountId: financialAccountId);
 
         ledger.PostLines(startedAt, "initial-capital", new[]
         {
@@ -241,7 +355,7 @@ public sealed class LedgerReadServiceTests
             (tradingGains, 0m, 10_000m),
             (commissions, 50m, 0m),
             (cash, 0m, 50m),
-        });
+        }, new JournalEntryMetadata(Symbol: symbol, SecurityId: securityId, FinancialAccountId: financialAccountId, Institution: institution));
 
         return BuildEntryWithLedger(ledger, startedAt, completedAt, symbol);
     }

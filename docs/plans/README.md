@@ -44,6 +44,7 @@ These plans can deepen Meridian's research and performance story, but they are n
 |----------|---------|
 | [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md) | High-level QuantScript blueprint and product-placement reference |
 | [quant-script-page-implementation-guide.md](quant-script-page-implementation-guide.md) | Page-level implementation guidance for the QuantScript surface |
+| [backtesting-quantscript-improvement-plan-2026-04.md](backtesting-quantscript-improvement-plan-2026-04.md) | Integrated improvement plan for backtesting trust/velocity and QuantScript workflow continuity |
 | [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | L3 inference implementation design and rollout plan |
 | [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Multi-instance and L3-focused optional follow-on roadmap |
 

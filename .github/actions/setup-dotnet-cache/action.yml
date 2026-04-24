@@ -20,7 +20,33 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Detect preinstalled .NET SDK
+      id: sdk-check
+      shell: bash
+      run: |
+        set -euo pipefail
+        requested_version="${{ inputs.dotnet-version }}"
+
+        # Convert patterns like 9.0.x to a prefix match (9.0.)
+        if [[ "$requested_version" == *".x" ]]; then
+          match_target="${requested_version%.x}."
+        else
+          match_target="$requested_version"
+        fi
+
+        escaped_target="$(printf '%s\n' "$match_target" | sed 's/[.[\*^$()+?{}|]/\\&/g')"
+
+        if command -v dotnet >/dev/null 2>&1 && dotnet --list-sdks | awk '{print $1}' | grep -Eq "^${escaped_target}"; then
+          echo "Preinstalled SDK matching '${requested_version}' found; skipping setup-dotnet download."
+          echo "needs-install=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        echo "No preinstalled SDK matching '${requested_version}' found; setup-dotnet will install it."
+        echo "needs-install=true" >> "$GITHUB_OUTPUT"
+
     - name: Setup .NET SDK
+      if: ${{ steps.sdk-check.outputs.needs-install == 'true' }}
       uses: actions/setup-dotnet@v5.2.0
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
