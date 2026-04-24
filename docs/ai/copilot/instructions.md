@@ -5367,6 +5367,7 @@ Meridian-main
 │   │   │   ├── BacktestEngine.cs
 │   │   │   ├── ContingentOrderManager.cs
 │   │   │   ├── MultiSymbolMergeEnumerator.cs
+│   │   │   ├── StageTimer.cs
 │   │   │   └── UniverseDiscovery.cs
 │   │   ├── FillModels
 │   │   │   ├── BarMidpointFillModel.cs
@@ -5417,6 +5418,7 @@ Meridian-main
 │   │   ├── BacktestProgressEvent.cs
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
+│   │   ├── BacktestStage.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
@@ -7063,6 +7065,7 @@ Meridian-main
 │   │   ├── MeridianNativeBacktestStudioEngineTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
+│   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
