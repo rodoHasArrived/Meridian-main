@@ -48,6 +48,7 @@ Closed platform work:
 - Paper-trading cockpit REST endpoints wired: `/api/execution/account`, `/api/execution/positions`, `/api/execution/portfolio`, `/api/execution/orders`, `/api/execution/health`, `/api/execution/capabilities`
 - Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
 - `Backtest → Paper → Live` promotion workflow endpoints: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
+- Trading dashboard promotion gate now supports both **approval** and **rejection** decisions with explicit operator rationale fields wired to the promotion API
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
 - Brokerage gateway framework complete: `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`, plus Alpaca/IB/StockSharp adapter implementations
