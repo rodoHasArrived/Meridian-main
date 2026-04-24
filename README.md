@@ -695,7 +695,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── 2026-04-16
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-17
+│       │   ├── 2026-04-17
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-20
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -780,6 +783,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── NewlineScanBenchmarks.cs
 │   │   ├── Program.cs
 │   │   ├── StorageSinkBenchmarks.cs
+│   │   ├── StrategyRunReadBenchmarks.cs
 │   │   └── WalChecksumBenchmarks.cs
 │   └── run-bottleneck-benchmarks.sh
 ├── build
@@ -3878,6 +3882,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Storage.TieringOptions.yml
 │   │   │   ├── Meridian.Storage.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.ILiveStrategy.yml
+│   │   │   ├── Meridian.Strategies.Interfaces.IPromotionRecordStore.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.IStrategyLifecycle.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.IStrategyRepository.yml
 │   │   │   ├── Meridian.Strategies.Interfaces.yml
@@ -3887,6 +3892,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Strategies.Models.yml
 │   │   │   ├── Meridian.Strategies.Promotions.BacktestToLivePromoter.yml
 │   │   │   ├── Meridian.Strategies.Promotions.PromotionCriteria.yml
+│   │   │   ├── Meridian.Strategies.Promotions.PromotionDecisionKinds.yml
 │   │   │   ├── Meridian.Strategies.Promotions.StrategyPromotionRecord.yml
 │   │   │   ├── Meridian.Strategies.Promotions.yml
 │   │   │   ├── Meridian.Strategies.Services.AggregatePortfolioService.yml
@@ -3913,6 +3919,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunContinuityService.yml
 │   │   │   ├── Meridian.Strategies.Services.StrategyRunReadService.yml
 │   │   │   ├── Meridian.Strategies.Services.yml
+│   │   │   ├── Meridian.Strategies.Storage.JsonlPromotionRecordStore.yml
+│   │   │   ├── Meridian.Strategies.Storage.PromotionRecordStoreOptions.yml
 │   │   │   ├── Meridian.Strategies.Storage.StrategyRunStore.yml
 │   │   │   ├── Meridian.Strategies.Storage.yml
 │   │   │   ├── Meridian.Tools.DataValidator.GapInfo.yml
@@ -4682,6 +4690,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.ConfigEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CppTraderEndpoints.yml
+│   │   │   ├── Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CredentialEndpoints.yml
 │   │   │   ├── Meridian.Ui.Shared.Endpoints.CronEndpoints.yml
@@ -4761,7 +4770,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── index.md
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
-│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   └── temp-metadata-only.json
 │   ├── evaluations
@@ -4837,6 +4845,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── kernel-parity-migration-blueprint.md
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
+│   │   ├── meridian-analytics-productization-blueprint.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── options-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
@@ -5343,6 +5352,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
+│   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
@@ -5675,8 +5685,10 @@ Use these documents together when planning or implementing new work:
 │   │       ├── FundOperationsWorkspaceDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── ResearchBriefingDtos.cs
+│   │       ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
-│   │       └── StrategyRunReadModels.cs
+│   │       ├── StrategyRunReadModels.cs
+│   │       └── WorkflowSummaryDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
 │   │   │   ├── AlpacaOptions.cs
@@ -6377,17 +6389,20 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
+│   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── IStrategyLifecycle.cs
 │   │   │   └── IStrategyRepository.cs
 │   │   ├── Meridian.Strategies.csproj
 │   │   ├── Models
 │   │   │   ├── RunType.cs
 │   │   │   ├── StrategyRunEntry.cs
+│   │   │   ├── StrategyRunRepositoryQuery.cs
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
 │   │   ├── Serialization
-│   │   │   └── FSharpInteropJsonContext.cs
+│   │   │   ├── FSharpInteropJsonContext.cs
+│   │   │   └── PromotionRecordJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
@@ -6403,12 +6418,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PromotionService.cs
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
+│   │   │   ├── ReconciliationSourceAdapters.cs
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.cs
 │   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   └── Storage
-│   │       ├── IPromotionRecordStore.cs
 │   │       ├── JsonlPromotionRecordStore.cs
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
@@ -6502,6 +6517,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── DataQualityServiceBase.cs
 │   │       ├── DataSamplingService.cs
 │   │       ├── DesktopJsonOptions.cs
+│   │       ├── DesktopShellPreferences.cs
 │   │       ├── DiagnosticsService.cs
 │   │       ├── ErrorHandlingService.cs
 │   │       ├── ErrorMessages.cs
@@ -6629,7 +6645,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
-│   │   │   └── SecurityMasterSecurityReferenceLookup.cs
+│   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
@@ -6734,6 +6752,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
+│       │   ├── QuantScriptExecutionHistoryModels.cs
 │       │   ├── QuantScriptModels.cs
 │       │   ├── SettingsModels.cs
 │       │   ├── ShellNavigationCatalog.DataOperations.cs
@@ -6795,7 +6814,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── NotificationService.cs
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
+│       │   ├── QuantScriptExecutionHistoryService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── QuantScriptStorageJsonContext.cs
+│       │   ├── QuantScriptTemplateCatalogService.cs
 │       │   ├── ReconciliationReadService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
@@ -6822,6 +6844,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── WorkstationOperatingContextService.cs
 │       │   ├── WorkstationReconciliationApiClient.cs
 │       │   ├── WorkstationResearchBriefingService.cs
+│       │   ├── WorkstationSecurityMasterApiClient.cs
 │       │   └── WpfShellServiceCollectionExtensions.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
@@ -6832,6 +6855,12 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ThemeSurfaces.xaml
 │       │   ├── ThemeTokens.xaml
 │       │   └── ThemeTypography.xaml
+│       ├── Templates
+│       │   └── QuantScript
+│       │       ├── catalog.json
+│       │       ├── hello-spy.csx
+│       │       ├── indicator-sma.csx
+│       │       └── single-symbol-backtest.csx
 │       ├── ViewModels
 │       │   ├── AccountPortfolioViewModel.cs
 │       │   ├── ActivityLogViewModel.cs
@@ -6892,6 +6921,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
 │       │   ├── ScatterAnalysisViewModel.cs
+│       │   ├── SecurityConflictLaneModels.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -7151,6 +7181,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── LedgerKernelTests.fs
 │   │   ├── Meridian.FSharp.Tests.fsproj
 │   │   ├── PipelineTests.fs
+│   │   ├── PromotionPolicyTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── TradingTransitionTests.fs
 │   │   └── ValidationTests.fs
@@ -7256,7 +7287,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── FundStructure
-│   │   │   │   └── LedgerGroupIdTests.cs
+│   │   │   │   ├── LedgerGroupIdTests.cs
+│   │   │   │   └── LedgerGroupingRulesTests.cs
+│   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -7300,11 +7333,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
+│   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMaster
-│   │   │   │   └── SecurityMasterImportServiceTests.cs
+│   │   │   │   ├── SecurityMasterImportServiceTests.cs
+│   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── CanonicalizingPublisherTests.cs
 │   │   │   │   ├── CliModeResolverTests.cs
@@ -7578,7 +7613,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
-│   │   │   └── StrategyRunReadServiceTests.cs
+│   │   │   ├── StrategyRunReadServiceTests.cs
+│   │   │   └── StrategyRunStoreTests.cs
 │   │   ├── SymbolSearch
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
@@ -7698,6 +7734,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OfflineTrackingPersistenceServiceTests.cs
 │   │   │   ├── PendingOperationsQueueServiceTests.cs
+│   │   │   ├── QuantScriptExecutionHistoryServiceTests.cs
+│   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── ResearchBriefingWorkspaceServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
@@ -7741,6 +7779,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── DashboardPageSmokeTests.cs
 │   │       ├── DataOperationsWorkspaceShellSmokeTests.cs
 │   │       ├── DataQualityPageSmokeTests.cs
+│   │       ├── DesktopWorkflowScriptTests.cs
 │   │       ├── FullNavigationSweepTests.cs
 │   │       ├── FundProfileSelectionPageSmokeTests.cs
 │   │       ├── GovernanceWorkspaceShellSmokeTests.cs
@@ -7767,6 +7806,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-622 directories, 7005 files
+625 directories, 7041 files
 ```
 <!-- readme-tree end -->
