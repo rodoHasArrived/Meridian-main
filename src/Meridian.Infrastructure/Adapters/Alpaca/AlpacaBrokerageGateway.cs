@@ -122,6 +122,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        RejectSessionScopedOrderType(request.Type);
 
         _logger.LogInformation(
             "Alpaca submitting order: {Side} {Quantity} {Symbol} @ {Type}",
@@ -414,15 +415,23 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     private static string MapOrderType(OrderType type) => type switch
     {
         OrderType.Market => "market",
-        OrderType.MarketOnOpen => "market",
-        OrderType.MarketOnClose => "market",
         OrderType.Limit => "limit",
-        OrderType.LimitOnOpen => "limit",
-        OrderType.LimitOnClose => "limit",
         OrderType.StopMarket => "stop",
         OrderType.StopLimit => "stop_limit",
-        _ => "market"
+        OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose
+            => throw new NotSupportedException(
+                $"Alpaca order mapping does not preserve the {type} session timing qualifier."),
+        _ => throw new NotSupportedException($"Alpaca order mapping does not support {type}.")
     };
+
+    private static void RejectSessionScopedOrderType(OrderType type)
+    {
+        if (type is OrderType.MarketOnOpen or OrderType.MarketOnClose or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        {
+            throw new NotSupportedException(
+                $"Alpaca gateway does not currently preserve the {type} session timing qualifier.");
+        }
+    }
 
     private static string MapTimeInForce(TimeInForce tif) => tif switch
     {

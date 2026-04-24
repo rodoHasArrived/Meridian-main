@@ -44,11 +44,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             OrderType.Market,
             OrderType.Limit,
             OrderType.StopMarket,
-            OrderType.StopLimit,
-            OrderType.MarketOnOpen,
-            OrderType.MarketOnClose,
-            OrderType.LimitOnOpen,
-            OrderType.LimitOnClose
+            OrderType.StopLimit
         },
         SupportedTimeInForce: new HashSet<TimeInForce>
         {
@@ -144,7 +140,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             return new OrderValidationResult(false, "Order quantity cannot be zero.");
         }
 
-        if (((OrderType)request.Type is OrderType.Limit or OrderType.StopLimit or OrderType.LimitOnOpen or OrderType.LimitOnClose)
+        if (((OrderType)request.Type is OrderType.Limit or OrderType.StopLimit)
             && (!request.LimitPrice.HasValue || request.LimitPrice <= 0))
         {
             return new OrderValidationResult(false, "Limit-style orders require a positive limit price.");
@@ -229,7 +225,7 @@ public sealed class PaperTradingGateway : IOrderGateway
         // A real implementation would source the fill price from the live feed via ILiveFeedAdapter.
         var fillPrice = ((OrderType)request.Type) switch
         {
-            OrderType.Limit or OrderType.StopLimit or OrderType.LimitOnOpen or OrderType.LimitOnClose
+            OrderType.Limit or OrderType.StopLimit
                 => request.LimitPrice ?? ScaffoldMarketFillPrice,
             OrderType.StopMarket => request.StopPrice ?? ScaffoldMarketFillPrice,
             _ => ScaffoldMarketFillPrice

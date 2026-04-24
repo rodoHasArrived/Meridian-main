@@ -10,22 +10,35 @@ namespace Meridian.Backtesting.Engine;
 /// </summary>
 internal sealed class StageTimer
 {
-    private readonly Stopwatch _total;
-    private readonly Stopwatch _stage;
+    private readonly Func<TimeSpan> _now;
     private readonly Dictionary<BacktestStage, TimeSpan> _cumulative = new();
+    private readonly TimeSpan _totalStartedAt;
+    private TimeSpan _stageStartedAt;
+    private TimeSpan? _stoppedTotalElapsed;
+    private TimeSpan? _stoppedStageElapsed;
 
-    public StageTimer(BacktestStage initialStage = BacktestStage.ValidatingRequest)
+    public StageTimer(BacktestStage initialStage = BacktestStage.ValidatingRequest, Func<TimeSpan>? now = null)
     {
         CurrentStage = initialStage;
-        _total = Stopwatch.StartNew();
-        _stage = Stopwatch.StartNew();
+        if (now is null)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            _now = () => stopwatch.Elapsed;
+        }
+        else
+        {
+            _now = now;
+        }
+
+        _totalStartedAt = _now();
+        _stageStartedAt = _totalStartedAt;
     }
 
     public BacktestStage CurrentStage { get; private set; }
 
-    public TimeSpan TotalElapsed => _total.Elapsed;
+    public TimeSpan TotalElapsed => _stoppedTotalElapsed ?? _now() - _totalStartedAt;
 
-    public TimeSpan StageElapsed => _stage.Elapsed;
+    public TimeSpan StageElapsed => _stoppedStageElapsed ?? _now() - _stageStartedAt;
 
     /// <summary>
     /// Ends the current stage and starts a new one. The prior stage's elapsed
@@ -35,12 +48,12 @@ internal sealed class StageTimer
     /// </summary>
     public void Transition(BacktestStage next)
     {
-        if (next == CurrentStage)
+        if (next == CurrentStage || _stoppedTotalElapsed is not null)
             return;
 
-        Accumulate(CurrentStage, _stage.Elapsed);
+        Accumulate(CurrentStage, StageElapsed);
         CurrentStage = next;
-        _stage.Restart();
+        _stageStartedAt = _now();
     }
 
     /// <summary>
@@ -49,14 +62,14 @@ internal sealed class StageTimer
     /// </summary>
     public void Stop()
     {
-        if (_stage.IsRunning)
-        {
-            Accumulate(CurrentStage, _stage.Elapsed);
-            _stage.Stop();
-        }
+        if (_stoppedTotalElapsed is not null)
+            return;
 
-        if (_total.IsRunning)
-            _total.Stop();
+        var stageElapsed = StageElapsed;
+        var totalElapsed = TotalElapsed;
+        Accumulate(CurrentStage, stageElapsed);
+        _stoppedStageElapsed = stageElapsed;
+        _stoppedTotalElapsed = totalElapsed;
     }
 
     /// <summary>
@@ -66,11 +79,11 @@ internal sealed class StageTimer
     public IReadOnlyDictionary<BacktestStage, TimeSpan> Cumulative()
     {
         var snapshot = new Dictionary<BacktestStage, TimeSpan>(_cumulative);
-        if (_stage.IsRunning)
+        if (_stoppedTotalElapsed is null)
         {
             snapshot[CurrentStage] = snapshot.TryGetValue(CurrentStage, out var prior)
-                ? prior + _stage.Elapsed
-                : _stage.Elapsed;
+                ? prior + StageElapsed
+                : StageElapsed;
         }
         return snapshot;
     }

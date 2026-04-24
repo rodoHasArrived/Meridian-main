@@ -107,6 +107,17 @@ public sealed class AlpacaBrokerageGatewayTests
         sut.BrokerageCapabilities.SupportsOrderModification.Should().BeTrue();
     }
 
+    [Fact]
+    public void BrokerageCapabilities_DoesNotAdvertiseSessionScopedOrderTypes()
+    {
+        var sut = CreateSut(new ConstantStubHandler(HttpStatusCode.OK, new StringContent("{}")));
+
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnClose);
+    }
+
     // ── ConnectAsync ──────────────────────────────────────────────────────
 
     [Fact]
@@ -163,6 +174,31 @@ public sealed class AlpacaBrokerageGatewayTests
         report.Symbol.Should().Be("AAPL");
         report.Side.Should().Be(OrderSide.Buy);
         report.OrderStatus.Should().Be(OrderStatus.Accepted);
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task SubmitOrderAsync_RejectsMarketOnCloseBeforePostingOrder()
+    {
+        var responses = new Queue<HttpResponseMessage>(new[]
+        {
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+        });
+        var sut = CreateSut(new SequentialStubHandler(responses));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.MarketOnClose,
+            Quantity = 10m,
+        }, cts.Token);
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*MarketOnClose*session timing qualifier*");
+        responses.Should().BeEmpty();
         await sut.DisposeAsync();
     }
 

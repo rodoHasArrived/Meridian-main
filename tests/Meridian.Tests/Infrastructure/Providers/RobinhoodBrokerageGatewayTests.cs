@@ -145,6 +145,17 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
     }
 
     [Fact]
+    public void BrokerageCapabilities_DoesNotAdvertiseSessionScopedOrderTypes()
+    {
+        var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")));
+
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.MarketOnClose);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnOpen);
+        sut.BrokerageCapabilities.SupportedOrderTypes.Should().NotContain(OrderType.LimitOnClose);
+    }
+
+    [Fact]
     public void IsConnected_BeforeConnect_ReturnsFalse()
     {
         var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}")));
@@ -178,6 +189,30 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
     }
 
     // ── SubmitOrderAsync ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task SubmitOrderAsync_RejectsLimitOnOpenBeforePostingOrder()
+    {
+        var handler = new RecordingHttpHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() }));
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.LimitOnOpen,
+            Quantity = 1m,
+            LimitPrice = 175m
+        }, cts.Token);
+
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*LimitOnOpen*session timing qualifier*");
+        handler.Requests.Should().ContainSingle();
+        await sut.DisposeAsync();
+    }
 
     [Fact]
     public async Task SubmitOrderAsync_MarketBuy_ReturnsNewReport()

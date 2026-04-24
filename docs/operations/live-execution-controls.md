@@ -36,12 +36,6 @@ If `MERIDIAN_EXECUTION_LIVE_ENABLED` is missing or `MERIDIAN_EXECUTION_GATEWAY` 
 
 Existing order/account seams remain in `/api/execution/*`.
 
-<<<<<<< ours
-<<<<<<< ours
-Wave 2 live-readiness endpoints:
-=======
-=======
->>>>>>> theirs
 Current execution SDK order types available through `/api/execution/orders/submit`:
 
 - `Market`
@@ -53,12 +47,22 @@ Current execution SDK order types available through `/api/execution/orders/submi
 - `LimitOnOpen`
 - `LimitOnClose`
 
-Broker adapters that do not offer native exchange-session qualifiers currently route the `*OnOpen`/`*OnClose`
-variants using their nearest base type (`Market` or `Limit`) so strategies can stay portable while provider
-capabilities evolve.
+Gateway capabilities are authoritative. A live gateway must list `MarketOnOpen`, `MarketOnClose`,
+`LimitOnOpen`, or `LimitOnClose` only when the adapter preserves the open/close timing qualifier all
+the way to the broker. If a gateway does not list one of those order types, the OMS rejects the order
+before it can be routed. Adapters must not fall back from `*OnOpen`/`*OnClose` to plain `Market` or
+`Limit` because that can turn a session-scoped instruction into an immediate order.
+
+Current provider behavior:
+
+| Gateway | `*OnOpen`/`*OnClose` behavior |
+|---|---|
+| Alpaca | Not advertised; rejected because the adapter does not preserve the qualifier. |
+| Interactive Brokers | Not advertised; rejected until Meridian maps native IB open/close order semantics end to end. |
+| Robinhood | Not advertised; rejected because the unofficial API mapping only preserves base order types. |
+| Paper | Not advertised by the `IOrderGateway` adapter; rejected because the scaffold fills immediately instead of preserving session timing. |
 
 New live-readiness endpoints:
->>>>>>> theirs
 
 - `GET /api/execution/audit`
 - `GET /api/execution/controls`

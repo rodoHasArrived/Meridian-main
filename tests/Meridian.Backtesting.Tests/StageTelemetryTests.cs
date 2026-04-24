@@ -53,8 +53,9 @@ public sealed class StageTelemetryTests : IDisposable
     [Fact]
     public void StageTimer_Transition_ResetsStageElapsed_AndPreservesTotalElapsed()
     {
-        var timer = new StageTimer(BacktestStage.ValidatingRequest);
-        Thread.Sleep(15);
+        var clock = new ManualClock();
+        var timer = new StageTimer(BacktestStage.ValidatingRequest, clock.Now);
+        clock.Advance(TimeSpan.FromMilliseconds(15));
         var totalBefore = timer.TotalElapsed;
 
         timer.Transition(BacktestStage.Replaying);
@@ -69,8 +70,9 @@ public sealed class StageTelemetryTests : IDisposable
     [Fact]
     public void StageTimer_TransitionToSameStage_IsIdempotent()
     {
-        var timer = new StageTimer(BacktestStage.Replaying);
-        Thread.Sleep(15);
+        var clock = new ManualClock();
+        var timer = new StageTimer(BacktestStage.Replaying, clock.Now);
+        clock.Advance(TimeSpan.FromMilliseconds(15));
         var stageBefore = timer.StageElapsed;
 
         timer.Transition(BacktestStage.Replaying);
@@ -83,12 +85,13 @@ public sealed class StageTelemetryTests : IDisposable
     [Fact]
     public void StageTimer_Cumulative_IncludesActiveStage_AndAccumulatesAcrossTransitions()
     {
-        var timer = new StageTimer(BacktestStage.ValidatingRequest);
-        Thread.Sleep(10);
+        var clock = new ManualClock();
+        var timer = new StageTimer(BacktestStage.ValidatingRequest, clock.Now);
+        clock.Advance(TimeSpan.FromMilliseconds(10));
         timer.Transition(BacktestStage.Replaying);
-        Thread.Sleep(10);
+        clock.Advance(TimeSpan.FromMilliseconds(20));
         timer.Transition(BacktestStage.ComputingMetrics);
-        Thread.Sleep(10);
+        clock.Advance(TimeSpan.FromMilliseconds(30));
 
         var snapshot = timer.Cumulative();
 
@@ -99,23 +102,25 @@ public sealed class StageTelemetryTests : IDisposable
             BacktestStage.ComputingMetrics,
         });
 
-        foreach (var stage in snapshot.Keys)
-            snapshot[stage].Should().BeGreaterThan(TimeSpan.Zero, $"{stage} should have accumulated time");
+        snapshot[BacktestStage.ValidatingRequest].Should().Be(TimeSpan.FromMilliseconds(10));
+        snapshot[BacktestStage.Replaying].Should().Be(TimeSpan.FromMilliseconds(20));
+        snapshot[BacktestStage.ComputingMetrics].Should().Be(TimeSpan.FromMilliseconds(30));
 
-        snapshot.Values.Sum(t => t.Ticks).Should().BeLessThanOrEqualTo(timer.TotalElapsed.Ticks + TimeSpan.FromMilliseconds(5).Ticks,
-            "cumulative sum should not exceed total elapsed (allowing a small skew for in-flight stage sampling)");
+        snapshot.Values.Sum(t => t.Ticks).Should().Be(timer.TotalElapsed.Ticks,
+            "cumulative stage time should match total elapsed when sampled from a deterministic clock");
     }
 
     [Fact]
     public void StageTimer_Stop_IsIdempotent_AndFreezesElapsedValues()
     {
-        var timer = new StageTimer(BacktestStage.Replaying);
-        Thread.Sleep(10);
+        var clock = new ManualClock();
+        var timer = new StageTimer(BacktestStage.Replaying, clock.Now);
+        clock.Advance(TimeSpan.FromMilliseconds(10));
         timer.Stop();
         var total1 = timer.TotalElapsed;
         var stage1 = timer.StageElapsed;
 
-        Thread.Sleep(10);
+        clock.Advance(TimeSpan.FromMilliseconds(10));
         timer.Stop();
 
         timer.TotalElapsed.Should().Be(total1);
@@ -131,8 +136,7 @@ public sealed class StageTelemetryTests : IDisposable
     {
         WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3), basePrice: 180m);
 
-        var events = new List<BacktestProgressEvent>();
-        var progress = new Progress<BacktestProgressEvent>(e => { lock (events) events.Add(e); });
+        var progress = new RecordingProgress();
 
         var request = new BacktestRequest(
             From: new DateOnly(2024, 1, 2),
@@ -140,14 +144,11 @@ public sealed class StageTelemetryTests : IDisposable
             DataRoot: _dataRoot);
 
         await _engine.RunAsync(request, new TelemetryNoOpStrategy(), progress);
-        await WaitForProgressDeliveryAsync(events);
 
         BacktestProgressEvent completion;
-        lock (events)
-        {
-            events.Should().NotBeEmpty("at least one progress event must be reported");
-            completion = events[^1];
-        }
+        var events = progress.Snapshot();
+        events.Should().NotBeEmpty("at least one progress event must be reported");
+        completion = events[^1];
 
         completion.ProgressFraction.Should().Be(1.0);
         completion.Stage.Should().Be(BacktestStage.Completed,
@@ -164,8 +165,7 @@ public sealed class StageTelemetryTests : IDisposable
         // giving us multiple samples to assert monotonicity.
         WriteBarJsonl("SPY", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 10), basePrice: 470m);
 
-        var events = new List<BacktestProgressEvent>();
-        var progress = new Progress<BacktestProgressEvent>(e => { lock (events) events.Add(e); });
+        var progress = new RecordingProgress();
 
         var request = new BacktestRequest(
             From: new DateOnly(2024, 1, 2),
@@ -173,13 +173,8 @@ public sealed class StageTelemetryTests : IDisposable
             DataRoot: _dataRoot);
 
         await _engine.RunAsync(request, new TelemetryNoOpStrategy(), progress);
-        await WaitForProgressDeliveryAsync(events, minCount: 2);
 
-        BacktestProgressEvent[] snapshot;
-        lock (events)
-        {
-            snapshot = events.ToArray();
-        }
+        var snapshot = progress.Snapshot();
 
         snapshot.Should().HaveCountGreaterThan(1, "multi-day replay should emit more than a single terminal event");
 
@@ -202,8 +197,7 @@ public sealed class StageTelemetryTests : IDisposable
         // The empty-universe fast path exits without reporting progress, which is
         // the pre-existing contract. We assert the path continues to return a
         // well-formed result after the telemetry refactor.
-        var events = new List<BacktestProgressEvent>();
-        var progress = new Progress<BacktestProgressEvent>(e => { lock (events) events.Add(e); });
+        var progress = new RecordingProgress();
 
         var request = new BacktestRequest(
             From: new DateOnly(2024, 1, 2),
@@ -214,27 +208,12 @@ public sealed class StageTelemetryTests : IDisposable
 
         result.Should().NotBeNull();
         result.TotalEventsProcessed.Should().Be(0);
+        progress.Snapshot().Should().BeEmpty("the empty-universe fast path returns before progress reporting starts");
     }
 
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
-
-    private static async Task WaitForProgressDeliveryAsync(List<BacktestProgressEvent> events, int minCount = 1, int timeoutMs = 1_000)
-    {
-        // Progress<T> posts to the SynchronizationContext or ThreadPool; give the
-        // posted callbacks a bounded window to drain before we assert on them.
-        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
-        while (DateTime.UtcNow < deadline)
-        {
-            lock (events)
-            {
-                if (events.Count >= minCount)
-                    return;
-            }
-            await Task.Delay(10);
-        }
-    }
 
     private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m)
     {
@@ -252,6 +231,7 @@ public sealed class StageTelemetryTests : IDisposable
             var low = open - 5m;
             var close = open + dailyGain;
 
+            var sequence = seq++;
             var bar = new HistoricalBar(
                 Symbol: symbol,
                 SessionDate: date,
@@ -261,14 +241,32 @@ public sealed class StageTelemetryTests : IDisposable
                 Close: close,
                 Volume: 1_000_000L,
                 Source: "test",
-                SequenceNumber: seq++);
+                SequenceNumber: sequence);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, seq, "test");
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, bar.SequenceNumber, "test");
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);
         }
+    }
+
+    private sealed class ManualClock
+    {
+        private TimeSpan _elapsed;
+
+        public TimeSpan Now() => _elapsed;
+
+        public void Advance(TimeSpan elapsed) => _elapsed += elapsed;
+    }
+
+    private sealed class RecordingProgress : IProgress<BacktestProgressEvent>
+    {
+        private readonly List<BacktestProgressEvent> _events = new();
+
+        public void Report(BacktestProgressEvent value) => _events.Add(value);
+
+        public BacktestProgressEvent[] Snapshot() => _events.ToArray();
     }
 }
 
