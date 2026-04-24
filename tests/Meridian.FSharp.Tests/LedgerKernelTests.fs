@@ -363,6 +363,38 @@ let ``Portfolio ledger reconciliation surfaces partial match status explicitly``
     result.Severity |> should equal "Low"
 
 [<Fact>]
+let ``Portfolio ledger reconciliation respects minute-level timing tolerance`` () =
+    let checks : PortfolioLedgerCheckDto array =
+        [|
+            {
+                CheckId = "timing-break-minutes"
+                Label = "Portfolio cash vs ledger cash minute drift"
+                ExpectedSource = "portfolio"
+                ActualSource = "ledger"
+                ExpectedAmount = 750m
+                ActualAmount = 750m
+                HasExpectedAmount = true
+                HasActualAmount = true
+                ExpectedPresent = true
+                ActualPresent = true
+                ExpectedAsOf = DateTimeOffset.Parse("2026-03-01T00:00:00Z")
+                ActualAsOf = DateTimeOffset.Parse("2026-03-01T00:30:00Z")
+                HasExpectedAsOf = true
+                HasActualAsOf = true
+                CategoryHint = "amount"
+                MissingSourceHint = ""
+                ActualKind = "amount"
+            }
+        |]
+
+    let result = LedgerInterop.ReconcilePortfolioLedgerChecks(0.01m, 5, checks) |> Array.exactlyOne
+
+    result.IsMatch |> should equal false
+    result.Category |> should equal "timing_mismatch"
+    result.Status |> should equal "open"
+    result.Severity |> should equal "High"
+
+[<Fact>]
 let ``Portfolio ledger reconciliation flags missing ledger coverage`` () =
     let checks : PortfolioLedgerCheckDto array =
         [|
@@ -793,6 +825,7 @@ let ``LedgerInterop ClassifyBreakFacts returns stable DTO values for governance 
     classifications[0].TaxonomyVersion |> should equal "reconciliation-break-taxonomy/v1"
     classifications[0].BreakClass |> should equal "Price"
     classifications[0].PrimaryReasonCode |> should equal "PriceMismatch"
+    classifications[0].Severity |> should equal "High"
     classifications[0].IsFallback |> should equal false
 
 [<Fact>]
@@ -940,6 +973,8 @@ let ``LedgerInterop ReconcilePortfolioLedgerChecks preserves category and status
     results |> Array.find (fun r -> r.CheckId = "amount-break") |> fun r ->
         r.Category |> should equal "amount_mismatch"
         r.Status |> should equal "open"
+        r.Severity |> should equal "Critical"
     results |> Array.find (fun r -> r.CheckId = "timing-break") |> fun r ->
         r.Category |> should equal "timing_mismatch"
         r.Status |> should equal "open"
+        r.Severity |> should equal "High"
