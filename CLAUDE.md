@@ -82,14 +82,38 @@ Meridian-main
 │   └── link-repair-report.md
 ├── .claude
 │   ├── agents
+│   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
 │   │   ├── meridian-docs.md
 │   │   ├── meridian-navigation.md
+│   │   ├── meridian-repo-navigation.md
+│   │   ├── meridian-roadmap-strategist.md
 │   │   └── meridian-user-panel.md
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
+│   │   ├── meridian-archive-organizer
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   └── evals.json
+│   │   │   ├── fixtures
+│   │   │   │   └── superseded-adr
+│   │   │   │       └── docs
+│   │   │   │           ├── adr
+│   │   │   │           │   ├── ADR-015-platform-restructuring.md
+│   │   │   │           │   └── README.md
+│   │   │   │           └── generated
+│   │   │   │               └── repository-structure.md
+│   │   │   ├── references
+│   │   │   │   ├── archive-placement-guide.md
+│   │   │   │   └── evaluation-harness.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── trace_archive_candidates.py
+│   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
 │   │   │   ├── references
 │   │   │   │   ├── blueprint-patterns.md
@@ -136,6 +160,16 @@ Meridian-main
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
 │   │   │   ├── CHANGELOG.md
+│   │   │   └── SKILL.md
+│   │   ├── meridian-repo-navigation
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-roadmap-strategist
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── references
+│   │   │   │   └── roadmap-source-map.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-simulated-user-panel
 │   │   │   ├── agents
