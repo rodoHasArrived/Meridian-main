@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-24 23:02:00 UTC. Do not edit manually.
+> Auto-generated on 2026-04-25 09:08:40 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -15,6 +15,7 @@
 | `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs` |
 | `src/Meridian.Application/Monitoring/ProviderLatencyService.cs` |
 | `src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs` |
+| `src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs` |
 | `src/Meridian.Application/ProviderRouting/ProviderBindingService.cs` |
 | `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` |
 | `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs` |
@@ -55,8 +56,10 @@
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/EdgarReferenceDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |
