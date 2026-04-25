@@ -115,7 +115,7 @@ public sealed class RunRiskViewModel : BindableBase
     private PlotRequest? _rollingVolatilityPlot;
 
     /// <summary>
-    /// Rolling 21-day annualised volatility time series for the <see cref="PlotRenderBehavior"/>.
+    /// Rolling 21-day annualised volatility time series for the plot render behavior.
     /// </summary>
     public PlotRequest? RollingVolatilityPlot
     {

@@ -13,8 +13,8 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// <para>
 /// The client is constructed with a stub <see cref="IHttpClientFactory"/> (no live network) and
 /// default <see cref="NYSEOptions"/>.  Because <c>IsEnabled == true</c> for the NYSE client by
-/// design, subscription contract tests call <see cref="IMarketDataClient.SubscribeTrades"/> and
-/// <see cref="IMarketDataClient.SubscribeMarketDepth"/>; these return non-negative IDs without
+/// design, subscription contract tests call <c>IMarketDataClient.SubscribeTrades</c> and
+/// <c>IMarketDataClient.SubscribeMarketDepth</c>; these return non-negative IDs without
 /// establishing a real WebSocket connection.
 /// </para>
 /// </summary>

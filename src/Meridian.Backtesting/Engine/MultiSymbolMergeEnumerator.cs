@@ -9,7 +9,7 @@ namespace Meridian.Backtesting.Engine;
 /// </summary>
 /// <remarks>
 /// Tie-breaking: when two streams have events at the same millisecond timestamp, the stream with
-/// the lower index (i.e. earlier position in the <paramref name="streams"/> list) is always
+/// the lower index (i.e. earlier position in the <c>streams</c> list) is always
 /// dequeued first. This gives deterministic replay order provided the caller passes streams in a
 /// consistent order (e.g. sorted by symbol name).
 /// </remarks>

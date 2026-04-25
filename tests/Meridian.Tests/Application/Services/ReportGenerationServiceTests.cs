@@ -335,7 +335,7 @@ public sealed class ReportGenerationServiceTests
             AssetClass: assetClass,
             Status: SecurityStatusDto.Active,
             DisplayName: displayName,
-            Currency: currency,
+            Currency: currency!,
             CommonTerms: JsonSerializer.SerializeToElement(new { }),
             AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
             Identifiers: [],

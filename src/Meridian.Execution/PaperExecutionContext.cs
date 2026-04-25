@@ -76,7 +76,7 @@ public sealed class PaperExecutionContext : IExecutionContext
 
     /// <summary>
     /// Applies corporate-action adjustments (splits, dividends) to an open position by delegating
-    /// to <see cref="PaperTradingPortfolio.ApplyCorporateActionsAsync"/>.
+    /// to <c>PaperTradingPortfolio.ApplyCorporateActionsAsync</c>.
     /// This should be called by the session coordinator whenever a corporate action ex-date
     /// is detected for a symbol that is currently held.
     /// </summary>

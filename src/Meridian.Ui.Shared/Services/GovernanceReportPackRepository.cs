@@ -135,7 +135,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             foreach (var manifestPath in Directory.EnumerateFiles(fundDirectory, "manifest.json", SearchOption.AllDirectories))
             {
                 ct.ThrowIfCancellationRequested();
-            var snapshot = await TryReadSnapshotAsync(manifestPath, ct).ConfigureAwait(false);
+                var snapshot = await TryReadSnapshotAsync(manifestPath, ct).ConfigureAwait(false);
                 if (snapshot is null)
                 {
                     continue;

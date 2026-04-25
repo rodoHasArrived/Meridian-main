@@ -19,13 +19,13 @@ namespace Meridian.Wpf.Views;
 ///
 /// Key surface:
 /// <list type="bullet">
-///   <item><see cref="LoadPage"/> — adds or activates a FrameworkElement in a named document pane.</item>
+///   <item><c>LoadPage</c> — adds or activates a FrameworkElement in a named document pane.</item>
 ///   <item><see cref="SaveLayout"/> — serialises the current dock layout to XML.</item>
 ///   <item><see cref="LoadLayout"/> — restores a previously serialised layout.</item>
 /// </list>
 ///
 /// Drag-and-drop page-tag protocol is preserved: drop a string tagged with
-/// <c>SplitPaneHostControl.PageTagFormat</c> to call <see cref="LoadPage"/>.
+/// <c>SplitPaneHostControl.PageTagFormat</c> to call <c>LoadPage</c>.
 /// </summary>
 public partial class MeridianDockingManager : UserControl
 {
@@ -40,7 +40,7 @@ public partial class MeridianDockingManager : UserControl
 
     /// <summary>
     /// Raised when a page-tag string is dropped onto this host.
-    /// The handler should call <see cref="LoadPage"/> with the resolved content.
+    /// The handler should call <c>LoadPage</c> with the resolved content.
     /// </summary>
     public event EventHandler<PaneDropEventArgs>? PaneDropRequested;
 

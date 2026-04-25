@@ -15,7 +15,7 @@ namespace Meridian.Wpf.Views;
 /// • <see cref="WriteableBitmap"/> is created once (and recreated only on resize) — no GC pressure.
 /// • <see cref="_pixelBuffer"/> (int[]) is reused every frame; filled by
 ///   <see cref="OrderBookHeatmapViewModel.RenderFrame"/> and then bulk-copied to the
-///   BackBuffer via <see cref="Marshal.Copy"/>.
+///   BackBuffer via <c>Marshal.Copy</c>.
 /// • The render loop runs at 30 fps on the UI thread via <see cref="DispatcherTimer"/>
 ///   so WriteableBitmap Lock/Unlock never crosses thread boundaries.
 /// • Business logic lives entirely in <see cref="OrderBookHeatmapViewModel"/>;

@@ -36,7 +36,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages and shell context strips. The wave order remains simple and consistent across the planning set:
 
-1. **Wave 1:** provider confidence and checkpoint evidence *(repo-closed, keep synchronized)*
+1. **Wave 1:** provider confidence and checkpoint evidence _(repo-closed, keep synchronized)_
 2. **Wave 2:** paper-trading cockpit hardening
 3. **Wave 3:** shared run / portfolio / ledger continuity
 4. **Wave 4:** governance and fund-operations productization on top of the delivered Security Master baseline

@@ -174,7 +174,7 @@ public sealed class ConfigService : ConfigServiceBase
         await SaveConfigCoreAsync(config, ct);
     }
 
-
+    /// <summary>
     /// Returns null when no active source is set.
     /// </summary>
     public async Task<string?> GetActiveDataSourceAsync(CancellationToken ct = default)

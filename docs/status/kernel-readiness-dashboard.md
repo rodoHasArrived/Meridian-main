@@ -25,7 +25,7 @@
 ## Subsystem Readiness Board
 
 | Subsystem | Wave | Owner | Parity | Explainability | Calibration | Operator Sign-off | Kernel Readiness | Next Milestone (Target Date) | Evidence / Notes |
-|---|---|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Data quality + provider trust | DK1 | Data Operations & Provider Reliability owner | ✅ | 🟡 | 🟡 | ⚪ | At Risk | Complete operator review and sign-off for the Alpaca/Robinhood/Yahoo pilot packet (2026-05-01) | Evidence pack: [DK1 pilot parity runbook](./dk1-pilot-parity-runbook.md), [trust rationale mapping](./dk1-trust-rationale-mapping.md), [baseline thresholds + FP/FN review](./dk1-baseline-trust-thresholds.md), [provider validation matrix](./provider-validation-matrix.md), and `artifacts/provider-validation/_automation/codex-dk1-packet-validation-final/dk1-pilot-parity-packet.json`. The latest packet is `ready-for-operator-review` with four required samples, validated evidence documents, and no packet blockers; DK1 remains open until operator sign-off and workflow-facing explainability/calibration review are complete. |
 | Promotion + paper-trading cockpit | DK1 -> DK2 handoff | Trading Workstation owner | ⚪ | 🟡 | ⚪ | ⚪ | Early In Progress | Lock promotion-path audit fields + pilot review checklist (2026-05-08) | Depends on DK1 trust explainability and calibrated thresholds. Current source work now persists a required `approvalChecklist` on promotion approvals alongside rationale, operator, source/target run type, lineage, manual override, and audit reference. The pilot audit sample is covered by `ExecutionWriteEndpointsTests.Scenario_SessionCloseReplayAndPromotionReview_BacktestToPaperFlowRemainsContinuousAndAuditable`; DK2 entry/exit gates remain open. |
 | Export + packaging | DK2 | Data Operations Export owner | 🟡 | 🟡 | ⚪ | ⚪ | Early In Progress | Validate governed report-pack schema v1 against pilot export scenarios (2026-05-15) | Governed report packs now carry `contractName=governance-report-pack` and `schemaVersion=1` across manifests, provenance, and artifact metadata; generation requests can pin `expectedSchemaVersion`, and incompatible future manifests are skipped by the repository. Remaining DK2 work is pilot parity across promoted run, export package, and reconciliation outputs. |
@@ -37,7 +37,7 @@
 ## Current Implementation Commitments (Wave-Aligned)
 
 | Window | Subsystem | Implemented commitment | Acceptance artifact |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 2026-04-20 -> 2026-05-01 | Data quality + provider trust (DK1) | Standardize parity-runbook structure, replay/sample set, and generated operator-review packet for DK1 pilot scope | Updated Wave 1 validation script output with `pilotReplaySampleSet`, `dk1-pilot-parity-packet.json/.md`, validated evidence-document checks, and dashboard evidence links; operator sign-off remains pending |
 | 2026-04-20 -> 2026-05-01 | Shared interop contracts (cross-wave) | Establish interop contract board, versioning policy, and compatibility matrix template | Contract compatibility matrix committed and linked from dashboard |
 | 2026-05-02 -> 2026-05-15 | Promotion + paper cockpit (DK1/DK2) | Implement promotion rationale fields and operator approval checklist coverage | Source contract now requires `approvalChecklist`; approval audit metadata includes source/target run type and audit reference; acceptance artifact is `ExecutionWriteEndpointsTests.Scenario_SessionCloseReplayAndPromotionReview_BacktestToPaperFlowRemainsContinuousAndAuditable` |
@@ -94,7 +94,7 @@
 ## Risk Register and Rollback Tracker
 
 | Subsystem | Active Risk | Indicator | Current Mitigation | Rollback Trigger | Rollback Plan |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | Data quality + provider trust | validation/script and operator UI trust drift | unresolved trust alert deltas across script vs UI outputs | weekly matrix/script/doc sync check | two consecutive unresolved drift reports | pin last verified matrix + replay baseline, pause promotion expansion, rerun DK1 calibration |
 | Promotion + paper cockpit | inconsistent approval state across UI/API | audit mismatch in promotion chain | shared promotion state schema review | any critical promotion audit mismatch | roll back to last signed promotion workflow contract, disable new lanes by feature flag |
 | Export + packaging | schema/version drift in governed exports | export validation failures or missing lineage | contract version freeze for pilot | repeated export validation failures on signed scenarios | revert exporter version, regenerate from last good run snapshots |

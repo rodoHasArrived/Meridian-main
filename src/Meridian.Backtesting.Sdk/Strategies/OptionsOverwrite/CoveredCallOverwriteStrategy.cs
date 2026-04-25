@@ -21,7 +21,7 @@ namespace Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite;
 /// <b>Option fills are simulated internally</b> rather than routed through the backtest engine's
 /// order system, because standard OHLCV bar data does not contain option chain snapshots.
 /// The underlying stock position <em>is</em> tracked via the engine (placed via
-/// <see cref="IBacktestContext.PlaceMarketOrder"/>).
+/// <c>IBacktestContext.PlaceMarketOrder</c>).
 /// </para>
 /// <para>
 /// Provide an <see cref="IOptionChainProvider"/> implementation that returns

@@ -115,7 +115,7 @@ public sealed class SecurityMasterReferenceLookupTests
             AssetClass: "",
             Status: SecurityStatusDto.Active,
             DisplayName: "",
-            Currency: null,
+            Currency: null!,
             CommonTerms: JsonSerializer.SerializeToElement(new { }),
             AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
             Identifiers: identifiers,

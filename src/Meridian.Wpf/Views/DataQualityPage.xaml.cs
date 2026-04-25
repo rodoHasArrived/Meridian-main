@@ -63,7 +63,7 @@ public partial class DataQualityPage : Page
         }
     }
 
-    private async void RepairAllGaps_Click(object sender, RoutedEventArgs e)
+    private void RepairAllGaps_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel.Gaps.Count > 0)
             ShowConfirmationPanel("Repair All Gaps", "Start repair for all listed gaps?", InteractionMode.ConfirmRepairAll);
