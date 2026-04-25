@@ -140,7 +140,8 @@ public sealed class ChartingPageViewModel : BindableBase
         try
         {
             var result = await _symbolService.GetAllSymbolsAsync();
-            if (!result.Success) return;
+            if (!result.Success)
+                return;
             foreach (var symbol in result.Symbols)
                 SymbolItems.Add(new SymbolItem(symbol.Symbol));
         }
@@ -167,8 +168,10 @@ public sealed class ChartingPageViewModel : BindableBase
 
     public void OnDateChanged(DateOnly? from, DateOnly? to)
     {
-        if (from.HasValue) _fromDate = from;
-        if (to.HasValue) _toDate = to;
+        if (from.HasValue)
+            _fromDate = from;
+        if (to.HasValue)
+            _toDate = to;
         if (_fromDate.HasValue && _toDate.HasValue)
             _ = LoadChartDataAsync();
     }
@@ -177,14 +180,17 @@ public sealed class ChartingPageViewModel : BindableBase
 
     public void OnIndicatorToggled(string id, bool isChecked)
     {
-        if (isChecked) { if (!_activeIndicators.Contains(id)) _activeIndicators.Add(id); }
-        else _activeIndicators.Remove(id);
+        if (isChecked)
+        { if (!_activeIndicators.Contains(id)) _activeIndicators.Add(id); }
+        else
+            _activeIndicators.Remove(id);
         UpdateIndicatorDisplay();
     }
 
     private async Task LoadChartDataAsync(CancellationToken ct = default)
     {
-        if (string.IsNullOrEmpty(_selectedSymbol) || !_fromDate.HasValue || !_toDate.HasValue) return;
+        if (string.IsNullOrEmpty(_selectedSymbol) || !_fromDate.HasValue || !_toDate.HasValue)
+            return;
         LoadingVisible = Visibility.Visible;
         NoChartDataVisible = Visibility.Collapsed;
 
@@ -216,7 +222,8 @@ public sealed class ChartingPageViewModel : BindableBase
 
     private void RenderCandlestickChart()
     {
-        if (_chartData == null || _chartData.Candles.Count == 0) return;
+        if (_chartData == null || _chartData.Candles.Count == 0)
+            return;
 
         var financialPoints = _chartData.Candles
             .Select(c => new FinancialPoint(c.Timestamp, (double)c.High, (double)c.Open, (double)c.Close, (double)c.Low))
@@ -268,9 +275,11 @@ public sealed class ChartingPageViewModel : BindableBase
 
     private void RenderVolumeChart()
     {
-        if (_chartData == null || _chartData.Candles.Count == 0) return;
+        if (_chartData == null || _chartData.Candles.Count == 0)
+            return;
         var max = _chartData.Candles.Max(c => c.Volume);
-        if (max == 0) max = 1;
+        if (max == 0)
+            max = 1;
 
         VolumeItems.Clear();
         foreach (var c in _chartData.Candles)
@@ -286,7 +295,8 @@ public sealed class ChartingPageViewModel : BindableBase
 
     private void UpdatePriceInfo()
     {
-        if (_chartData == null || _chartData.Candles.Count == 0) return;
+        if (_chartData == null || _chartData.Candles.Count == 0)
+            return;
         var last = _chartData.Candles.Last();
         var first = _chartData.Candles.First();
         CurrentPrice = $"{last.Close:F2}";
@@ -336,16 +346,25 @@ public sealed class ChartingPageViewModel : BindableBase
 
     private void UpdateIndicatorDisplay()
     {
-        if (_chartData == null) return;
+        if (_chartData == null)
+            return;
         var values = new List<WpfIndicatorValueVm>();
         foreach (var id in _activeIndicators)
         {
             switch (id)
             {
-                case "sma": AddSimple(values, _chartingService.CalculateSma(_chartData, 20), "SMA(20)", WarningIndicatorBrush); break;
-                case "ema": AddSimple(values, _chartingService.CalculateEma(_chartData, 20), "EMA(20)", PrimaryIndicatorBrush); break;
-                case "vwap": AddSimple(values, _chartingService.CalculateVwap(_chartData), "VWAP", SecondaryIndicatorBrush); break;
-                case "atr": AddSimple(values, _chartingService.CalculateAtr(_chartData, 14), "ATR(14)", WarningIndicatorBrush); break;
+                case "sma":
+                    AddSimple(values, _chartingService.CalculateSma(_chartData, 20), "SMA(20)", WarningIndicatorBrush);
+                    break;
+                case "ema":
+                    AddSimple(values, _chartingService.CalculateEma(_chartData, 20), "EMA(20)", PrimaryIndicatorBrush);
+                    break;
+                case "vwap":
+                    AddSimple(values, _chartingService.CalculateVwap(_chartData), "VWAP", SecondaryIndicatorBrush);
+                    break;
+                case "atr":
+                    AddSimple(values, _chartingService.CalculateAtr(_chartData, 14), "ATR(14)", WarningIndicatorBrush);
+                    break;
                 case "rsi":
                     var rsi = _chartingService.CalculateRsi(_chartData, 14);
                     if (rsi.Values.Count > 0)
@@ -358,7 +377,8 @@ public sealed class ChartingPageViewModel : BindableBase
                     var macd = _chartingService.CalculateMacd(_chartData);
                     if (macd.MacdLine.Count > 0)
                     {
-                        var mv = macd.MacdLine.Last().Value; var sv = macd.SignalLine.LastOrDefault()?.Value ?? 0;
+                        var mv = macd.MacdLine.Last().Value;
+                        var sv = macd.SignalLine.LastOrDefault()?.Value ?? 0;
                         values.Add(new WpfIndicatorValueVm { Name = "MACD", Value = $"{mv:F3}", ValueBrush = mv > sv ? BullishBrush : BearishBrush });
                         values.Add(new WpfIndicatorValueVm { Name = "Signal", Value = $"{sv:F3}", ValueBrush = WarningIndicatorBrush });
                     }
@@ -377,7 +397,8 @@ public sealed class ChartingPageViewModel : BindableBase
         }
 
         IndicatorValues.Clear();
-        foreach (var v in values) IndicatorValues.Add(v);
+        foreach (var v in values)
+            IndicatorValues.Add(v);
         NoIndicatorsVisible = values.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         ActiveIndicatorsText = _activeIndicators.Count > 0
             ? $"Active: {string.Join(", ", _activeIndicators.Select(i => i.ToUpper()))}"
@@ -392,7 +413,8 @@ public sealed class ChartingPageViewModel : BindableBase
 
     private void UpdateStatistics()
     {
-        if (_chartData == null || _chartData.Candles.Count == 0) return;
+        if (_chartData == null || _chartData.Candles.Count == 0)
+            return;
         PeriodHigh = $"{_chartData.HighestPrice:F2}";
         PeriodLow = $"{_chartData.LowestPrice:F2}";
         PeriodVolume = $"{_chartData.TotalVolume:N0}";

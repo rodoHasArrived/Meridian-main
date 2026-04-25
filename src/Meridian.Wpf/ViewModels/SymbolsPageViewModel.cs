@@ -337,10 +337,14 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
                 !symbol.Symbol.Contains(searchText, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (filter == "Trades" && !symbol.SubscribeTrades) continue;
-            if (filter == "Depth" && !symbol.SubscribeDepth) continue;
-            if (filter == "Both" && !(symbol.SubscribeTrades && symbol.SubscribeDepth)) continue;
-            if (exchangeFilter != "All" && symbol.Exchange != exchangeFilter) continue;
+            if (filter == "Trades" && !symbol.SubscribeTrades)
+                continue;
+            if (filter == "Depth" && !symbol.SubscribeDepth)
+                continue;
+            if (filter == "Both" && !(symbol.SubscribeTrades && symbol.SubscribeDepth))
+                continue;
+            if (exchangeFilter != "All" && symbol.Exchange != exchangeFilter)
+                continue;
 
             FilteredSymbols.Add(symbol);
         }
@@ -399,7 +403,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     // ── Templates ───────────────────────────────────────────────────────────
     public void AddTemplate(string templateName)
     {
-        if (!SymbolTemplates.TryGetValue(templateName, out var symbols)) return;
+        if (!SymbolTemplates.TryGetValue(templateName, out var symbols))
+            return;
         var added = 0;
         foreach (var symbol in symbols)
         {
@@ -622,7 +627,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     // ── Action Strip Commands ───────────────────────────────────────────────
     private void NavigateToLiveData()
     {
-        if (_selectedItem == null) return;
+        if (_selectedItem == null)
+            return;
         try
         {
             _navigationService.NavigateTo("LiveData", _selectedItem.Symbol);
@@ -639,7 +645,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void NavigateToOrderBook()
     {
-        if (_selectedItem == null) return;
+        if (_selectedItem == null)
+            return;
         try
         {
             _navigationService.NavigateTo("OrderBook", _selectedItem.Symbol);
@@ -656,7 +663,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void StartBackfill()
     {
-        if (_selectedItem == null) return;
+        if (_selectedItem == null)
+            return;
         try
         {
             _navigationService.NavigateTo("Backfill", _selectedItem.Symbol);
@@ -673,7 +681,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void NavigateToChart()
     {
-        if (_selectedItem == null) return;
+        if (_selectedItem == null)
+            return;
         try
         {
             _navigationService.NavigateTo("Charts", _selectedItem.Symbol);
@@ -690,7 +699,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     private void ExportSymbolData()
     {
-        if (_selectedItem == null) return;
+        if (_selectedItem == null)
+            return;
         try
         {
             _navigationService.NavigateTo("DataExport", _selectedItem.Symbol);
@@ -782,12 +792,12 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         {
             var baseUrl = _watchlistService.BaseUrl; // Use same base URL as watchlist service
             var url = $"{baseUrl}/api/security-master/search?query={Uri.EscapeDataString(ticker)}&pageSize=10";
-            
+
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(5)); // 5-second timeout
-            
+
             using var response = await _httpClient.GetAsync(url, cts.Token);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 _loggingService.LogError($"Security Master search failed with status {response.StatusCode} for {ticker}");
@@ -799,7 +809,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
             var content = await response.Content.ReadAsStringAsync(cts.Token);
             using var doc = JsonDocument.Parse(content);
-            
+
             // Look for a result with an exact Ticker identifier match
             var root = doc.RootElement;
             if (root.TryGetProperty("results", out var results) && results.ValueKind == JsonValueKind.Array)

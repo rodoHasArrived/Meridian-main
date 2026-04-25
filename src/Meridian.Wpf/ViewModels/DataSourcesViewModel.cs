@@ -391,9 +391,11 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private void BeginEditSource(string? sourceId)
     {
-        if (sourceId == null) return;
+        if (sourceId == null)
+            return;
         var source = DataSources.FirstOrDefault(s => s.Id == sourceId);
-        if (source == null) return;
+        if (source == null)
+            return;
 
         _editingSourceId = sourceId;
         EditPanelTitle = "Edit Data Source";
@@ -403,9 +405,11 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task DeleteSourceAsync(string? sourceId, CancellationToken ct = default)
     {
-        if (sourceId == null) return;
+        if (sourceId == null)
+            return;
         var source = DataSources.FirstOrDefault(s => s.Id == sourceId);
-        if (source == null) return;
+        if (source == null)
+            return;
 
         var result = MessageBox.Show(
             $"Are you sure you want to delete '{source.Name}'?",
@@ -413,7 +417,8 @@ public sealed class DataSourcesViewModel : BindableBase
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != MessageBoxResult.Yes)
+            return;
 
         try
         {
@@ -429,7 +434,8 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task SaveSourceAsync(CancellationToken ct = default)
     {
-        if (!ValidateEditForm()) return;
+        if (!ValidateEditForm())
+            return;
 
         IsSaving = true;
         try
@@ -461,18 +467,21 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async void SaveFailoverSettingsFireAndForget()
     {
-        try { await SaveFailoverSettingsAsync(); }
+        try
+        { await SaveFailoverSettingsAsync(); }
         catch (Exception ex) { ShowStatus($"Failed to update failover settings: {ex.Message}", isError: true); }
     }
 
     private async void SetDefaultSourceFireAndForget(string id, bool isHistorical)
     {
-        try { await SetDefaultSourceAsync(id, isHistorical); }
+        try
+        { await SetDefaultSourceAsync(id, isHistorical); }
         catch (Exception ex) { ShowStatus($"Failed to set default source: {ex.Message}", isError: true); }
     }
 
     private async Task SaveFailoverSettingsAsync(CancellationToken ct = default)
-    {        IsFailoverTimeoutErrorVisible = false;
+    {
+        IsFailoverTimeoutErrorVisible = false;
         if (!int.TryParse(FailoverTimeoutText, out var timeout) || timeout is < 5 or > 300)
         {
             FailoverTimeoutError = "Timeout must be between 5 and 300 seconds.";
@@ -504,7 +513,8 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task ToggleSourceEnabledAsync(DataSourceConfigDto? source, CancellationToken ct = default)
     {
-        if (source == null) return;
+        if (source == null)
+            return;
         try
         {
             await _configService.AddOrUpdateDataSourceAsync(source, ct);

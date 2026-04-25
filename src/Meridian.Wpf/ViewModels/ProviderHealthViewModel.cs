@@ -131,7 +131,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     public async Task ToggleProviderConnectionAsync(string providerId, CancellationToken ct = default)
     {
         var provider = StreamingProviders.FirstOrDefault(p => p.ProviderId == providerId);
-        if (provider == null) return;
+        if (provider == null)
+            return;
 
         if (provider.IsConnected)
         {
@@ -158,7 +159,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     public string GetProviderDetails(string providerId)
     {
         var provider = StreamingProviders.FirstOrDefault(p => p.ProviderId == providerId);
-        if (provider == null) return string.Empty;
+        if (provider == null)
+            return string.Empty;
 
         return $"Provider: {provider.Name}\n" +
                $"Status: {provider.StatusText}\n" +
@@ -337,15 +339,21 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         {
             BackfillProviders.Add(new BackfillProviderModel
             {
-                ProviderId = "stooq", Name = "Stooq", StatusText = "Available",
+                ProviderId = "stooq",
+                Name = "Stooq",
+                StatusText = "Available",
                 StatusColor = new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-                RateLimitText = "30 req/min", LastUsedText = "Last used: --"
+                RateLimitText = "30 req/min",
+                LastUsedText = "Last used: --"
             });
             BackfillProviders.Add(new BackfillProviderModel
             {
-                ProviderId = "yahoo", Name = "Yahoo Finance", StatusText = "Available",
+                ProviderId = "yahoo",
+                Name = "Yahoo Finance",
+                StatusText = "Available",
                 StatusColor = new SolidColorBrush(Color.FromRgb(63, 185, 80)),
-                RateLimitText = "100 req/min", LastUsedText = "Last used: --"
+                RateLimitText = "100 req/min",
+                LastUsedText = "Last used: --"
             });
         }
     }
@@ -362,7 +370,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
             "ALPHAVANTAGE" => "ALPHAVANTAGE__APIKEY",
             _ => null
         };
-        if (envVarName == null) return true;
+        if (envVarName == null)
+            return true;
         return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envVarName));
     }
 
@@ -431,18 +440,24 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
     private static string FormatUptime(TimeSpan uptime)
     {
-        if (uptime.TotalMinutes < 1) return "< 1m";
-        if (uptime.TotalHours < 1) return $"{(int)uptime.TotalMinutes}m";
-        if (uptime.TotalDays < 1) return $"{(int)uptime.TotalHours}h {uptime.Minutes}m";
+        if (uptime.TotalMinutes < 1)
+            return "< 1m";
+        if (uptime.TotalHours < 1)
+            return $"{(int)uptime.TotalMinutes}m";
+        if (uptime.TotalDays < 1)
+            return $"{(int)uptime.TotalHours}h {uptime.Minutes}m";
         return $"{(int)uptime.TotalDays}d {uptime.Hours}h";
     }
 
     private static string FormatTimeAgo(DateTime timestamp)
     {
         var diff = DateTime.Now - timestamp;
-        if (diff.TotalSeconds < 60) return "Just now";
-        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
-        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalSeconds < 60)
+            return "Just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours}h ago";
         return timestamp.ToString("MMM d HH:mm");
     }
 
@@ -505,7 +520,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
             while (_sparklineTimer is not null)
             {
                 await _sparklineTimer.WaitForNextTickAsync();
-                if (_sparklineTimer is null) break;
+                if (_sparklineTimer is null)
+                    break;
 
                 _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(UpdateSparklineData);
             }

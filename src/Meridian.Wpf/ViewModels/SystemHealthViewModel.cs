@@ -135,7 +135,8 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     public async Task RefreshAsync()
     {
         IsRefreshEnabled = false;
-        try { await LoadDataAsync(); }
+        try
+        { await LoadDataAsync(); }
         finally { IsRefreshEnabled = true; }
     }
 
@@ -241,7 +242,8 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                     {
                         var isHealthy = string.Equals(p.Status, "Connected", StringComparison.OrdinalIgnoreCase)
                                      || string.Equals(p.Status, "Healthy", StringComparison.OrdinalIgnoreCase);
-                        if (!isHealthy) hasUnhealthy = true;
+                        if (!isHealthy)
+                            hasUnhealthy = true;
 
                         Providers.Add(new ProviderHealthItem
                         {
@@ -277,7 +279,8 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             var storage = await _healthService.GetStorageHealthAsync();
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                if (storage == null) return;
+                if (storage == null)
+                    return;
 
                 StorageTotalText = FormatHelpers.FormatBytes(storage.TotalBytes);
                 StorageFilesText = storage.TotalFiles.ToString("N0");
@@ -359,8 +362,10 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
 
     private static string FormatUptime(TimeSpan uptime)
     {
-        if (uptime.TotalDays >= 1) return $"{(int)uptime.TotalDays}d {uptime.Hours}h";
-        if (uptime.TotalHours >= 1) return $"{(int)uptime.TotalHours}h {uptime.Minutes}m";
+        if (uptime.TotalDays >= 1)
+            return $"{(int)uptime.TotalDays}d {uptime.Hours}h";
+        if (uptime.TotalHours >= 1)
+            return $"{(int)uptime.TotalHours}h {uptime.Minutes}m";
         return $"{(int)uptime.TotalMinutes}m";
     }
 

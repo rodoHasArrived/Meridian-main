@@ -343,7 +343,8 @@ public sealed class StrategyRunReadService
             AuditReference = auditReference,
             ApprovalStatus = approvalStatus,
             ManualOverrideId = matchedRecord?.ManualOverrideId,
-            ApprovedBy = matchedRecord?.ApprovedBy
+            ApprovedBy = matchedRecord?.ApprovedBy,
+            ApprovalChecklist = matchedRecord?.ApprovalChecklist
         };
     }
 

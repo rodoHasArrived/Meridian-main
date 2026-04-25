@@ -116,6 +116,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshPageCommand = new RelayCommand(RefreshCurrentPage);
         DismissFixtureModeBannerCommand = new RelayCommand(() => FixtureModeBannerVisibility = Visibility.Collapsed);
         SwitchFundCommand = new RelayCommand(RequestContextSelection);
+        ToggleShellDensityCommand = new RelayCommand(ToggleShellDensity);
         ToggleSecondaryWorkflowSummariesCommand = new RelayCommand(ToggleSecondaryWorkflowSummaries, () => HasSecondaryWorkflowSummaries);
 
         _navigationService.Navigated += OnNavigated;
@@ -192,6 +193,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public IRelayCommand SwitchFundCommand { get; }
 
+    public IRelayCommand ToggleShellDensityCommand { get; }
+
     public IRelayCommand ToggleSecondaryWorkflowSummariesCommand { get; }
 
     public WorkstationOperatingContext? SelectedOperatingContext
@@ -243,6 +246,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
             RaisePropertyChanged(nameof(IsCompactShellDensity));
             RaisePropertyChanged(nameof(ShellDensityLabel));
+            RaisePropertyChanged(nameof(ShellDensityButtonText));
+            RaisePropertyChanged(nameof(ShellDensityToggleTooltip));
             RaisePropertyChanged(nameof(WorkflowSummaryDescriptionText));
         }
     }
@@ -250,6 +255,12 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public bool IsCompactShellDensity => ShellDensityMode == ShellDensityMode.Compact;
 
     public string ShellDensityLabel => ShellDensityMode.ToString();
+
+    public string ShellDensityButtonText => $"Density: {ShellDensityLabel}";
+
+    public string ShellDensityToggleTooltip => IsCompactShellDensity
+        ? "Switch to standard shell density"
+        : "Switch to compact shell density";
 
     public WorkspaceShellContext ShellContext
     {
@@ -715,6 +726,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private void ToggleTickerStrip()
     {
         TickerStripVisible = !TickerStripVisible;
+    }
+
+    private void ToggleShellDensity()
+    {
+        var nextDensity = IsCompactShellDensity
+            ? ShellDensityMode.Standard
+            : ShellDensityMode.Compact;
+
+        _settingsConfigurationService.SetShellDensityMode(nextDensity);
     }
 
     private void GoBack()

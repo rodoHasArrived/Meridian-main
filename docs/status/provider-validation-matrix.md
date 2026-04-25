@@ -32,13 +32,21 @@ The script writes:
 
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
+- `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`
+- `artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.md`
 
 Each generated summary now restates the active provider rows, the DK1 pilot replay/sample set,
 the cross-cutting checkpoint and Parquet closures, and the deferred-provider inventory so the
 automation output matches the authoritative Wave 1 posture described in this matrix.
 
 The DK1 sample-set contract is maintained in [`dk1-pilot-parity-runbook.md`](./dk1-pilot-parity-runbook.md)
-and emitted as `pilotReplaySampleSet` in the generated JSON summary.
+and emitted as `pilotReplaySampleSet` in the generated JSON summary. The DK1 packet generator
+validates those required samples, links the trust-rationale mapping and baseline-threshold review
+documents, checks those documents for the required DK1 reason codes, payload fields, threshold
+metrics, FP/FN review markers, and provider-matrix anchors, then reports whether the packet is
+`ready-for-operator-review` or blocked by missing or incomplete evidence. The latest regenerated
+packet at `artifacts/provider-validation/_automation/codex-dk1-packet-validation-final/dk1-pilot-parity-packet.json`
+is `ready-for-operator-review` with no blockers; DK1 exit still requires operator sign-off.
 
 ## Notes
 

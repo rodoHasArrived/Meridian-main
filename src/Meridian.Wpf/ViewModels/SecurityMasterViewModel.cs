@@ -1364,7 +1364,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         UnwireEditVmEvents();
         IsEditPanelVisible = false;
         StatusText = "Security saved successfully.";
-        
+
         // Refresh search results
         _ = SearchAsync();
     }
@@ -1398,7 +1398,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         UnwireDeactivateVmEvents();
         IsDeactivatePanelVisible = false;
         StatusText = "Security deactivated successfully.";
-        
+
         // Refresh search results
         _ = SearchAsync();
     }
@@ -1413,14 +1413,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             await _backfillService.BackfillAllAsync().ConfigureAwait(false);
 
             BackfillStatus = "Trading parameters backfill completed successfully.";
-            _notificationService.ShowNotification("Security Master", 
+            _notificationService.ShowNotification("Security Master",
                 "Trading parameters backfilled successfully.", NotificationType.Success);
         }
         catch (Exception ex)
         {
             _loggingService.LogError("Trading parameters backfill failed", ex);
             BackfillStatus = "Backfill failed. Check logs for details.";
-            _notificationService.ShowNotification("Security Master", 
+            _notificationService.ShowNotification("Security Master",
                 "Trading parameters backfill failed.", NotificationType.Error);
         }
         finally

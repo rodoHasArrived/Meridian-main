@@ -84,9 +84,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (def.InitialCash < 0)
                 throw new ArgumentOutOfRangeException(nameof(accounts), $"Account '{def.AccountId}' initial cash must be non-negative.");
 
-        _accounts[def.AccountId] = new AccountState(
-            def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
-            def.MarginType, def.MarginModel);
+            _accounts[def.AccountId] = new AccountState(
+                def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
+                def.MarginType, def.MarginModel);
 
             if (ledger is not null && def.InitialCash > 0)
             {
@@ -273,7 +273,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             foreach (var (symbol, pos) in account.Positions)
             {
-                if (!prices.TryGetValue(symbol, out var px)) continue;
+                if (!prices.TryGetValue(symbol, out var px))
+                    continue;
 
                 var req = account.MarginModel.CalculateForPosition(
                     pos.ToExecutionPosition(), px, equity);
@@ -324,7 +325,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (days < 1)
             throw new ArgumentOutOfRangeException(nameof(days), "Days must be at least 1.");
 
-        if (annualRate == 0m) return;
+        if (annualRate == 0m)
+            return;
 
         var dailyRate = annualRate / 365m;
         var periodRate = dailyRate * days;
@@ -333,11 +335,13 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             foreach (var account in _accounts.Values)
             {
-                if (account.MarginModel is null) continue; // cash account
+                if (account.MarginModel is null)
+                    continue; // cash account
 
                 foreach (var pos in account.Positions.Values)
                 {
-                    if (pos.MarginBorrowed <= 0m) continue;
+                    if (pos.MarginBorrowed <= 0m)
+                        continue;
 
                     var interest = pos.MarginBorrowed * periodRate;
                     pos.MarginBorrowed += interest; // outstanding loan grows
@@ -581,7 +585,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         pos.Quantity += coverQty;
-        if (pos.Quantity == 0m) pos.CostBasis = 0m;
+        if (pos.Quantity == 0m)
+            pos.CostBasis = 0m;
 
         // Cash: buy-to-cover cost minus the extra margin collateral released.
         account.Cash -= coverCost + commission;
@@ -616,7 +621,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         pos.Quantity -= closeQty;
-        if (pos.Quantity == 0m) pos.CostBasis = 0m;
+        if (pos.Quantity == 0m)
+            pos.CostBasis = 0m;
 
         // The trader receives proceeds minus the loan repayment.
         account.Cash += proceeds - loanRepaid - commission;

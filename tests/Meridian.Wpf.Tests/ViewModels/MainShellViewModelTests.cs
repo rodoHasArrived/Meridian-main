@@ -455,6 +455,53 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void ToggleShellDensityCommand_UpdatesShellStateAndPersistsPreference()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var preferencesPath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-main-shell-tests",
+                $"{Guid.NewGuid():N}.density-toggle.json");
+
+            try
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+                var settingsConfigurationService = SettingsConfigurationService.Instance;
+                settingsConfigurationService.SetShellDensityMode(ShellDensityMode.Standard);
+
+                using var vm = CreateMainPageViewModel(settingsConfigurationService: settingsConfigurationService);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                vm.ShellDensityButtonText.Should().Be("Density: Standard");
+                vm.ShellDensityToggleTooltip.Should().Be("Switch to compact shell density");
+
+                vm.ToggleShellDensityCommand.Execute(null);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                vm.IsCompactShellDensity.Should().BeTrue();
+                vm.ShellDensityButtonText.Should().Be("Density: Compact");
+                vm.ShellDensityToggleTooltip.Should().Be("Switch to standard shell density");
+                settingsConfigurationService.GetShellDensityMode().Should().Be(ShellDensityMode.Compact);
+
+                vm.ToggleShellDensityCommand.Execute(null);
+
+                vm.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                vm.IsCompactShellDensity.Should().BeFalse();
+                settingsConfigurationService.GetShellDensityMode().Should().Be(ShellDensityMode.Standard);
+            }
+            finally
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+                if (File.Exists(preferencesPath))
+                {
+                    File.Delete(preferencesPath);
+                }
+            }
+        });
+    }
+
+    [Fact]
     public void WorkflowSummaryPresentation_PrioritizesCurrentWorkspace()
     {
         WpfTestThread.Run(async () =>

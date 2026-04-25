@@ -41,7 +41,8 @@ public sealed class TearOffPanelService
     /// </summary>
     public void TearOff(string symbol)
     {
-        if (string.IsNullOrWhiteSpace(symbol)) return;
+        if (string.IsNullOrWhiteSpace(symbol))
+            return;
 
         if (_openPanels.TryGetValue(symbol, out var existing))
         {
@@ -116,10 +117,12 @@ public sealed class TearOffPanelService
     {
         try
         {
-            if (!File.Exists(PositionsFilePath)) return;
+            if (!File.Exists(PositionsFilePath))
+                return;
             var json = File.ReadAllText(PositionsFilePath);
             var loaded = JsonSerializer.Deserialize<Dictionary<string, double[]>>(json);
-            if (loaded is null) return;
+            if (loaded is null)
+                return;
             foreach (var (key, value) in loaded)
                 _savedPositions[key] = value;
         }

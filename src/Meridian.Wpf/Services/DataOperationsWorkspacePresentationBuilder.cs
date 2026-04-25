@@ -4,9 +4,9 @@ using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
+using NotificationHistoryItemModel = Meridian.Ui.Services.Services.NotificationHistoryItem;
 using ProviderInfoModel = Meridian.Ui.Services.Services.ProviderInfo;
 using StatusProviderInfoModel = Meridian.Ui.Services.Services.StatusProviderInfo;
-using NotificationHistoryItemModel = Meridian.Ui.Services.Services.NotificationHistoryItem;
 
 namespace Meridian.Wpf.Services;
 
@@ -474,11 +474,16 @@ public static class DataOperationsWorkspacePresentationBuilder
     private static string ResolveNotificationAction(NotificationHistoryItem notification)
     {
         var combined = $"{notification.Title} {notification.Message}";
-        if (combined.Contains("export", StringComparison.OrdinalIgnoreCase)) return "DataExport";
-        if (combined.Contains("storage", StringComparison.OrdinalIgnoreCase)) return "Storage";
-        if (combined.Contains("schedule", StringComparison.OrdinalIgnoreCase)) return "Schedules";
-        if (combined.Contains("provider", StringComparison.OrdinalIgnoreCase)) return "ProviderHealth";
-        if (combined.Contains("backfill", StringComparison.OrdinalIgnoreCase)) return "Backfill";
+        if (combined.Contains("export", StringComparison.OrdinalIgnoreCase))
+            return "DataExport";
+        if (combined.Contains("storage", StringComparison.OrdinalIgnoreCase))
+            return "Storage";
+        if (combined.Contains("schedule", StringComparison.OrdinalIgnoreCase))
+            return "Schedules";
+        if (combined.Contains("provider", StringComparison.OrdinalIgnoreCase))
+            return "ProviderHealth";
+        if (combined.Contains("backfill", StringComparison.OrdinalIgnoreCase))
+            return "Backfill";
         return "CollectionSessions";
     }
 

@@ -3,7 +3,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
-using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.Views;
 
@@ -42,26 +41,10 @@ public partial class WelcomePage : Page
     private void StepStorage_CardClick(object sender, MouseButtonEventArgs e) =>
         _viewModel.NavigateToStorageCommand.Execute(null);
 
-    private void StepDashboard_CardClick(object sender, MouseButtonEventArgs e) =>
-        _viewModel.NavigateToDashboardCommand.Execute(null);
+    private void StepOperations_CardClick(object sender, MouseButtonEventArgs e) =>
+        _viewModel.NavigateToDataOperationsWorkspaceCommand.Execute(null);
 
     private void StepDataQuality_CardClick(object sender, MouseButtonEventArgs e) =>
-        _viewModel.NavigateToDataQualityCommand.Execute(null);
-
-    // ── Button click relays ───────────────────────────────────────────────────────────
-    private void StepProvider_Click(object sender, RoutedEventArgs e) =>
-        _viewModel.NavigateToProviderCommand.Execute(null);
-
-    private void StepSymbols_Click(object sender, RoutedEventArgs e) =>
-        _viewModel.NavigateToSymbolsCommand.Execute(null);
-
-    private void StepStorage_Click(object sender, RoutedEventArgs e) =>
-        _viewModel.NavigateToStorageCommand.Execute(null);
-
-    private void StepDashboard_Click(object sender, RoutedEventArgs e) =>
-        _viewModel.NavigateToDashboardCommand.Execute(null);
-
-    private void StepDataQuality_Click(object sender, RoutedEventArgs e) =>
         _viewModel.NavigateToDataQualityCommand.Execute(null);
 
     private void OpenDocumentation_Click(object sender, RoutedEventArgs e) =>

@@ -951,12 +951,14 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private static PointCollection BuildSparkline(List<double> history, double height)
     {
         var points = new PointCollection();
-        if (history.Count < 2) return points;
+        if (history.Count < 2)
+            return points;
 
         var max = history.Max();
         var min = history.Min();
         var range = max - min;
-        if (range < 0.001) range = 1;
+        if (range < 0.001)
+            range = 1;
 
         var step = 200.0 / (history.Count - 1); // width assumed ~200px in the card canvas
         for (var i = 0; i < history.Count; i++)
@@ -976,12 +978,14 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private static PointCollection BuildSparklineFill(List<double> history, double height)
     {
         var points = new PointCollection();
-        if (history.Count < 2) return points;
+        if (history.Count < 2)
+            return points;
 
         var max = history.Max();
         var min = history.Min();
         var range = max - min;
-        if (range < 0.001) range = 1;
+        if (range < 0.001)
+            range = 1;
 
         var step = 200.0 / (history.Count - 1);
 

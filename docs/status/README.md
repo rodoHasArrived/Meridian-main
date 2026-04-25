@@ -1,6 +1,6 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-21
+**Last Reviewed:** 2026-04-25
 **Current Delivery Theme:** Executing the DK1/DK2 implementation program on top of the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
@@ -32,6 +32,12 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | [EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md) | Consolidated index of evaluations and audits |
 | [wave4-evidence-template.md](wave4-evidence-template.md) | Deterministic template and seeded scenarios for Wave 4 governance evidence capture |
 
+## Compatibility Views
+
+| Document | Description |
+| --- | --- |
+| [ROADMAP_NOW_NEXT_LATER_2026_03_25.md](ROADMAP_NOW_NEXT_LATER_2026_03_25.md) | Refreshed Now / Next / Later compatibility view for the canonical roadmap |
+
 ## Generated Status Reports
 
 | Document | Description |
@@ -57,7 +63,6 @@ Machine-readable sidecars that remain active in this folder:
 These dated snapshots remain useful for history, but they no longer act as active status guidance:
 
 - [Documentation triage (2026-03-21)](DOCUMENTATION_TRIAGE_2026_03_21.md)
-- [Now / Next / Later roadmap snapshot (2026-03-25)](ROADMAP_NOW_NEXT_LATER_2026_03_25.md)
 
 ## Recommended Reading Order
 

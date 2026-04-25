@@ -310,7 +310,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         foreach (var alert in _allAlerts.ToList())
         {
-            try { await _apiClient.AcknowledgeAnomalyAsync(alert.Id, ct).ConfigureAwait(false); }
+            try
+            { await _apiClient.AcknowledgeAnomalyAsync(alert.Id, ct).ConfigureAwait(false); }
             catch (Exception ex) { _loggingService.LogError("Failed to acknowledge alert", ex); }
         }
 
@@ -457,13 +458,25 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public static string GetGrade(double score) => score switch
     {
-        >= 95 => "A+", >= 90 => "A", >= 85 => "A-", >= 80 => "B+", >= 75 => "B",
-        >= 70 => "B-", >= 65 => "C+", >= 60 => "C", >= 55 => "C-", >= 50 => "D", _ => "F"
+        >= 95 => "A+",
+        >= 90 => "A",
+        >= 85 => "A-",
+        >= 80 => "B+",
+        >= 75 => "B",
+        >= 70 => "B-",
+        >= 65 => "C+",
+        >= 60 => "C",
+        >= 55 => "C-",
+        >= 50 => "D",
+        _ => "F"
     };
 
     public static string GetStatus(double score) => score switch
     {
-        >= 90 => "Excellent", >= 75 => "Healthy", >= 50 => "Warning", _ => "Critical"
+        >= 90 => "Excellent",
+        >= 75 => "Healthy",
+        >= 50 => "Warning",
+        _ => "Critical"
     };
 
     public void Dispose()
@@ -613,7 +626,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     private AlertModel? BuildAlertModel(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.Object) return null;
+        if (element.ValueKind != JsonValueKind.Object)
+            return null;
         var severityIndex = element.TryGetProperty("severity", out var severityNode) && severityNode.TryGetInt32(out var parsedSeverity) ? parsedSeverity : 0;
 
         return new AlertModel
@@ -629,7 +643,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     private AnomalyModel? BuildAnomalyModel(JsonElement element)
     {
-        if (element.ValueKind != JsonValueKind.Object) return null;
+        if (element.ValueKind != JsonValueKind.Object)
+            return null;
         var severityIndex = element.TryGetProperty("severity", out var severityNode) && severityNode.TryGetInt32(out var parsedSeverity) ? parsedSeverity : 0;
         var typeIndex = element.TryGetProperty("type", out var typeNode) && typeNode.TryGetInt32(out var parsedType) ? parsedType : -1;
         var timestamp = string.Empty;

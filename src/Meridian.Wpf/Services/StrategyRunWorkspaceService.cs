@@ -184,7 +184,8 @@ public sealed class StrategyRunWorkspaceService
         foreach (var run in activeTradingRuns)
         {
             var detail = await _readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
-            if (detail?.Portfolio?.Positions is null) continue;
+            if (detail?.Portfolio?.Positions is null)
+                continue;
 
             foreach (var pos in detail.Portfolio.Positions)
             {

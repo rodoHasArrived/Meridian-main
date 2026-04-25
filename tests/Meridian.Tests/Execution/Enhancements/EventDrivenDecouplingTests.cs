@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Microsoft.Extensions.Logging.Abstractions;
 using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Execution.Enhancements;
 

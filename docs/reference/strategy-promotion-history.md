@@ -19,8 +19,14 @@
 - `Decision` (`Approved` or `Rejected`)
 - `ApprovalReason`
 - `ReviewNotes`
+- `ApprovalChecklist`
 - `ApprovedBy`
 - `ManualOverrideId`
 - `AuditReference`
+
+Approvals require the canonical checklist for the target mode before a target run is created.
+`Backtest -> Paper` approvals must include DK1 trust packet, run lineage, portfolio/ledger
+continuity, and risk-control review. `Paper -> Live` approvals must also include live-override
+review.
 
 The `/api/promotion/history` endpoint returns this model directly, so these fields are exposed in endpoint payloads.

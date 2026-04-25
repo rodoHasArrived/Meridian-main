@@ -31,7 +31,8 @@ public partial class PortfolioImportPage : Page
 
     private async void ImportIndex_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button btn || btn.Tag is not string indexId) return;
+        if (sender is not Button btn || btn.Tag is not string indexId)
+            return;
         await _viewModel.ImportIndexAsync(indexId, btn.Content?.ToString() ?? indexId);
     }
 

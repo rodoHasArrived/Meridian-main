@@ -306,7 +306,8 @@ public sealed class EdgarSecurityMasterIngestProvider : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         _rateLimiter.Dispose();
         if (_ownsClients)

@@ -168,13 +168,13 @@ The Backtest page and Research shell should display those stages explicitly rath
 
 ### 6. Turn batch backtesting into a real Parameter Lab
 
-`src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` is explicitly a demo right now, and `src/Meridian.Backtesting/BatchBacktestService.cs` still runs a `NoOpStrategy`.
+`src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` is no longer only a simulated demo: it now drives validated request-level parameter sweeps through `IBatchBacktestService`, with progress, cancellation, result metrics, and ViewModel coverage. `src/Meridian.Backtesting/BatchBacktestService.cs` also applies swept parameters to each `BacktestRequest`, but it still runs a `NoOpStrategy` rather than selected strategy definitions.
 
-This slice should not ship more UI around placeholder execution.
+This slice should not ship more UI around placeholder strategy execution. The next step is to connect the new sweep controls to real strategy selection, run persistence, and sweep grouping.
 
 The fix is:
 
-- keep `IBatchBacktestService` as the low-level concurrent executor
+- keep `IBatchBacktestService` as the low-level concurrent executor and retain the new request-parameter sweep behavior
 - replace its demo request model with run definitions that carry a real strategy instance or strategy-builder result
 - add an application workflow service that builds those run definitions from a selected strategy plus parameter sweep definitions
 - persist each completed sweep run through the same run store, grouped by a new `SweepId`
@@ -400,11 +400,11 @@ public interface IResearchSweepWorkflowService
 | `src/Meridian.Wpf/ViewModels/BacktestViewModel.cs` | Replace hard-coded strategy path, bind preflight, switch to orchestrator-backed run lifecycle | Main Research launcher seam |
 | `src/Meridian.Wpf/Views/BacktestPage.xaml` | Add strategy picker, dynamic parameter region, preflight card, stage console | Main operator surface |
 | `src/Meridian.Wpf/Services/BacktestService.cs` | Refactor into orchestrator-backed adapter | Remove local-engine-only workflow |
-| `src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` | Replace simulated runs with real sweep execution | Current file is demo-only |
+| `src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs` | Connect current request-sweep execution to strategy selection and persisted sweep grouping | Request-level sweep UI exists; strategy/run persistence remains open |
 | `src/Meridian.Wpf/Views/BatchBacktestPage.xaml` | Present sweep controls and persisted results | Parameter Lab surface |
 | `src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml` | Add active run stage and recent sweep widgets | Shell coordination |
 | `src/Meridian.Wpf/Views/ResearchWorkspaceShellPage.xaml.cs` | Load preflight/run/sweep summary from services | Shell behavior |
-| `src/Meridian.Backtesting/BatchBacktestService.cs` | Accept real run definitions instead of `NoOpStrategy` | Make batch execution real |
+| `src/Meridian.Backtesting/BatchBacktestService.cs` | Accept real run definitions instead of `NoOpStrategy` | Request parameters are applied per run; selected strategy execution remains open |
 | `src/Meridian.Backtesting/MeridianNativeBacktestStudioEngine.cs` | Preserve stage-aware status for polling | Progressive console support |
 | `src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs` | Persist sweep metadata and expose richer status | Shared run orchestration |
 | `src/Meridian.Strategies/Models/StrategyRunEntry.cs` | Add `SweepId` | Durable grouping for Parameter Lab |
@@ -577,7 +577,7 @@ Mitigation:
 
 Expected repo-local breaking change:
 
-- `BatchBacktestService` request/response contracts should change from placeholder parameter-grid semantics to real run definitions. This is acceptable because the current path is not a production workflow and has no meaningful external callers.
+- `BatchBacktestService` request/response contracts may need to evolve from request-parameter-grid semantics to real run definitions. This is acceptable if the strategy-selection slice keeps current request-sweep behavior compatible for the WPF Parameter Lab.
 
 Avoided breaking change:
 

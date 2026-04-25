@@ -1,7 +1,7 @@
 # Security Master Productization Roadmap
 
-**Last Updated:** 2026-04-16
-**Status:** Delivered baseline with Wave 6 operator workflow closure
+**Last Updated:** 2026-04-25
+**Status:** Delivered Security Master baseline; Wave 4 governance and fund-operations follow-ons remain active in the canonical roadmap
 **Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
@@ -30,7 +30,7 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 
 ## Summary
 
-Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap originally captured six prioritized ideas that moved Security Master from a backend capability into a first-class platform layer. It now records the delivered workstation/read-model productization plus the completed Wave 6 operator workflow closure that made ingest posture, conflict resolution, and governance drill-ins first-class workstation journeys.
+Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap originally captured six prioritized ideas that moved Security Master from a backend capability into a first-class platform layer. It now records the delivered workstation/read-model productization plus the completed Security Master operator workflow closure that made ingest posture, conflict resolution, and governance drill-ins first-class workstation journeys.
 
 Security Master is no longer a future roadmap wave. In the canonical roadmap it is a delivered baseline feeding the active governance productization path.
 
@@ -45,14 +45,15 @@ Security Master is no longer a future roadmap wave. In the canonical roadmap it 
 | 5 | Golden Record Conflict Resolution | ✅ Delivered |
 | 6 | WPF Security Master Browser | ✅ Delivered |
 
-**Canonical status source note (2026-04-16):**
+**Canonical status source note (2026-04-25):**
 
-- Treat this roadmap as the canonical Wave 6 status source.
-- `docs/status/FEATURE_INVENTORY.md` should mirror these Wave 6 statuses and wording.
+- Treat [`../status/ROADMAP.md`](../status/ROADMAP.md) and [`../status/PROGRAM_STATE.md`](../status/PROGRAM_STATE.md) as the canonical wave status sources.
+- Treat this roadmap as the delivered-baseline reference for Security Master mechanics and the starting point for Wave 4 governance/fund-operations follow-ons.
+- `docs/status/FEATURE_INVENTORY.md` should mirror the delivered Security Master baseline without treating Security Master as a separate later-wave item.
 
-## Wave 6 Closure (2026-04-16)
+## Security Master Operator Closure (2026-04-16)
 
-The Wave 6 operator slice is now complete:
+The Security Master operator slice is now complete:
 
 1. **Automatic ingest-time conflict detection**
    - create, amend, import, and projection-write flows record `SecurityMasterConflict` entries instead of silently overwriting mismatches.

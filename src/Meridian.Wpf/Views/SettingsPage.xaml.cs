@@ -33,7 +33,8 @@ public partial class SettingsPage : Page
     // Storage preview combo change handler — keeps legacy XAML event names intact.
     private void PreviewSettings_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (StoragePreviewText == null) return;
+        if (StoragePreviewText == null)
+            return;
         var naming = GetSelectedTag(PreviewNamingCombo) ?? "BySymbol";
         var compression = GetSelectedTag(PreviewCompressionCombo) ?? "gzip";
         _viewModel.RefreshStoragePreview(naming, compression);

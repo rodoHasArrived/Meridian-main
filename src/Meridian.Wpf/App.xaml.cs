@@ -3,40 +3,44 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using System.Windows.Forms;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Meridian.Application.Services;
+using System.Windows.Threading;
 using Meridian.Application.EnvironmentDesign;
-using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
+using Meridian.Application.SecurityMaster;
+using Meridian.Application.Services;
 using Meridian.Backtesting;
+using Meridian.Backtesting.Engine;
 using Meridian.Contracts.Domain.Enums;
-using Meridian.Execution.Sdk;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
+using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
+using Meridian.Storage;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Services;
 using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Ui.Shared.Services;
-using Meridian.Wpf.Services;
-using Meridian.Wpf.Contracts;
-using Meridian.Wpf.ViewModels;
-using WpfServices = Meridian.Wpf.Services;
-using Meridian.Wpf.Views;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
+using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf;
 
@@ -46,8 +50,8 @@ namespace Meridian.Wpf;
 /// </summary>
 public partial class App : System.Windows.Application
 {
-    private static bool     _isFirstRun;
-    private static bool     _isFixtureMode;
+    private static bool _isFirstRun;
+    private static bool _isFixtureMode;
     private static string[] _launchArgs = [];
     private IHost? _host;
 
@@ -197,7 +201,8 @@ public partial class App : System.Windows.Application
             if (arg.StartsWith("--page=", StringComparison.OrdinalIgnoreCase))
             {
                 var tag = arg["--page=".Length..];
-                if (!string.IsNullOrWhiteSpace(tag)) return tag;
+                if (!string.IsNullOrWhiteSpace(tag))
+                    return tag;
             }
         }
 
@@ -385,7 +390,21 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
         services.AddSingleton<Meridian.Wpf.Services.BacktestDataAvailabilityService>();
+        services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
+            sp.GetRequiredService<ILogger<BatchBacktestService>>(),
+            request =>
+            {
+                var storageOptions = new StorageOptions { RootPath = request.DataRoot };
+                var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
+                return new BacktestEngine(
+                    sp.GetRequiredService<ILogger<BacktestEngine>>(),
+                    catalogService,
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                    sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>(),
+                    sp.GetService<IBacktestPreflightService>());
+            }));
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.BatchBacktestViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
@@ -664,7 +683,7 @@ public partial class App : System.Windows.Application
         try
         {
             var provider = WpfServices.ConnectionService.Instance.CurrentProvider ?? "default";
-            var success  = await WpfServices.ConnectionService.Instance.ConnectAsync(provider, ct);
+            var success = await WpfServices.ConnectionService.Instance.ConnectAsync(provider, ct);
 
             WpfServices.NotificationService.Instance.ShowNotification(
                 success ? "Collector Started" : "Start Failed",

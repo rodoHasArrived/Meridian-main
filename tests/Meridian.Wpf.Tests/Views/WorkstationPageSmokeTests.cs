@@ -17,6 +17,7 @@ public sealed class WorkstationPageSmokeTests
     [InlineData(typeof(PositionBlotterPage))]
     [InlineData(typeof(ServiceManagerPage))]
     [InlineData(typeof(SettingsPage))]
+    [InlineData(typeof(WelcomePage))]
     public void WorkstationPages_ShouldResolveWithApplicationResources(Type pageType)
     {
         WpfTestThread.Run(() =>
@@ -68,6 +69,7 @@ public sealed class WorkstationPageSmokeTests
     [InlineData("PositionBlotter", typeof(PositionBlotterPage))]
     [InlineData("ServiceManager", typeof(ServiceManagerPage))]
     [InlineData("Settings", typeof(SettingsPage))]
+    [InlineData("Welcome", typeof(WelcomePage))]
     public void WorkstationPages_ShouldNavigateByTag(string pageTag, Type expectedPageType)
     {
         WpfTestThread.Run(() =>

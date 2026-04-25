@@ -580,7 +580,8 @@ public static class ExecutionEndpoints
             if (portfolio is IMultiAccountPortfolioState multi)
             {
                 var account = multi.GetAccount(accountId);
-                if (account is null) return Results.NotFound();
+                if (account is null)
+                    return Results.NotFound();
                 return Results.Json(account.Positions.Values.ToArray(), jsonOptions);
             }
 

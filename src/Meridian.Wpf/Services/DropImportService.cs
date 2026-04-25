@@ -66,11 +66,11 @@ public sealed class DropImportService
     public string GetTypeFriendlyName(DropFileType type) => type switch
     {
         DropFileType.CsvHistoricalData => "Historical OHLCV data",
-        DropFileType.CsvSymbolList     => "Symbol list",
-        DropFileType.JsonConfig        => "Configuration file",
-        DropFileType.JsonlMarketData   => "Market data (JSONL)",
-        DropFileType.ParquetData       => "Parquet data file",
-        _                              => "CSV · JSON · JSONL · Parquet"
+        DropFileType.CsvSymbolList => "Symbol list",
+        DropFileType.JsonConfig => "Configuration file",
+        DropFileType.JsonlMarketData => "Market data (JSONL)",
+        DropFileType.ParquetData => "Parquet data file",
+        _ => "CSV · JSON · JSONL · Parquet"
     };
 
     /// <summary>
@@ -79,11 +79,11 @@ public sealed class DropImportService
     public string GetTargetPageKey(DropFileType type) => type switch
     {
         DropFileType.CsvHistoricalData => "DataBrowser",
-        DropFileType.CsvSymbolList     => "PortfolioImport",
-        DropFileType.JsonConfig        => "Settings",
-        DropFileType.JsonlMarketData   => "DataBrowser",
-        DropFileType.ParquetData       => "DataBrowser",
-        _                              => "DataBrowser"
+        DropFileType.CsvSymbolList => "PortfolioImport",
+        DropFileType.JsonConfig => "Settings",
+        DropFileType.JsonlMarketData => "DataBrowser",
+        DropFileType.ParquetData => "DataBrowser",
+        _ => "DataBrowser"
     };
 
     // ------------------------------------------------------------------

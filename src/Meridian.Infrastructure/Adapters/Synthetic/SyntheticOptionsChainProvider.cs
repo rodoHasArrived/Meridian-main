@@ -361,7 +361,8 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
 
     private static (double d1, double d2) D1D2(double s, double k, double r, double sigma, double t)
     {
-        if (sigma <= 0 || t <= 0 || s <= 0 || k <= 0) return (double.NaN, double.NaN);
+        if (sigma <= 0 || t <= 0 || s <= 0 || k <= 0)
+            return (double.NaN, double.NaN);
         double sqrtT = Math.Sqrt(t);
         double d1 = (Math.Log(s / k) + (r + 0.5 * sigma * sigma) * t) / (sigma * sqrtT);
         return (d1, d1 - sigma * sqrtT);
@@ -369,39 +370,47 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
 
     private static double BsmCallPrice(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0) return Math.Max(0.0, s - k);
+        if (t <= 0)
+            return Math.Max(0.0, s - k);
         var (d1, d2) = D1D2(s, k, r, sigma, t);
-        if (double.IsNaN(d1)) return Math.Max(0.0, s - k);
+        if (double.IsNaN(d1))
+            return Math.Max(0.0, s - k);
         return s * Ncdf(d1) - k * Math.Exp(-r * t) * Ncdf(d2);
     }
 
     private static double BsmPutPrice(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0) return Math.Max(0.0, k - s);
+        if (t <= 0)
+            return Math.Max(0.0, k - s);
         var (d1, d2) = D1D2(s, k, r, sigma, t);
-        if (double.IsNaN(d1)) return Math.Max(0.0, k - s);
+        if (double.IsNaN(d1))
+            return Math.Max(0.0, k - s);
         return k * Math.Exp(-r * t) * Ncdf(-d2) - s * Ncdf(-d1);
     }
 
     private static double BsmCallDelta(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0) return s > k ? 1.0 : 0.0;
+        if (t <= 0)
+            return s > k ? 1.0 : 0.0;
         var (d1, _) = D1D2(s, k, r, sigma, t);
         return double.IsNaN(d1) ? 0.0 : Ncdf(d1);
     }
 
     private static double BsmGamma(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0 || s <= 0 || sigma <= 0) return 0.0;
+        if (t <= 0 || s <= 0 || sigma <= 0)
+            return 0.0;
         var (d1, _) = D1D2(s, k, r, sigma, t);
         return double.IsNaN(d1) ? 0.0 : Npdf(d1) / (s * sigma * Math.Sqrt(t));
     }
 
     private static double BsmCallTheta(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0) return 0.0;
+        if (t <= 0)
+            return 0.0;
         var (d1, d2) = D1D2(s, k, r, sigma, t);
-        if (double.IsNaN(d1)) return 0.0;
+        if (double.IsNaN(d1))
+            return 0.0;
         double term1 = -s * Npdf(d1) * sigma / (2.0 * Math.Sqrt(t));
         double term2 = r * k * Math.Exp(-r * t) * Ncdf(d2);
         return (term1 - term2) / 365.0; // per calendar day
@@ -409,9 +418,11 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
 
     private static double BsmPutTheta(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0) return 0.0;
+        if (t <= 0)
+            return 0.0;
         var (d1, d2) = D1D2(s, k, r, sigma, t);
-        if (double.IsNaN(d1)) return 0.0;
+        if (double.IsNaN(d1))
+            return 0.0;
         double term1 = -s * Npdf(d1) * sigma / (2.0 * Math.Sqrt(t));
         double term2 = r * k * Math.Exp(-r * t) * Ncdf(-d2);
         return (term1 + term2) / 365.0; // per calendar day
@@ -419,7 +430,8 @@ public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
 
     private static double BsmVega(double s, double k, double r, double sigma, double t)
     {
-        if (t <= 0) return 0.0;
+        if (t <= 0)
+            return 0.0;
         var (d1, _) = D1D2(s, k, r, sigma, t);
         return double.IsNaN(d1) ? 0.0 : s * Npdf(d1) * Math.Sqrt(t) / 100.0; // per 1% IV move
     }

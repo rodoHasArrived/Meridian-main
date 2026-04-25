@@ -16,7 +16,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="QueueItemTemplate" DataType="{x:Type models:WorkspaceQueueItem}">
-            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+            <Border Style="{StaticResource WorkspaceToneQueueCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -29,15 +29,15 @@
                                        FontSize="14"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="10,0,8,0">
+                            <Border Style="{StaticResource WorkspaceToneBadgeStyle}" Margin="10,0,8,0">
                                 <TextBlock Text="{Binding StatusLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
                             </Border>
-                            <Border Style="{StaticResource InfoBadgeInlineStyle}">
+                            <Border Style="{StaticResource NeutralBadgeStyle}">
                                 <TextBlock Text="{Binding CountLabel}"
                                            FontSize="10"
-                                           Foreground="{StaticResource InfoColorBrush}" />
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
                             </Border>
                         </WrapPanel>
 
@@ -90,7 +90,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="RecentItemTemplate" DataType="{x:Type models:WorkspaceRecentItem}">
-            <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
+            <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}">
                 <StackPanel>
                     <TextBlock Text="{Binding Title}"
                                FontSize="13"
@@ -104,7 +104,7 @@
                     <TextBlock Text="{Binding Meta}"
                                Margin="0,6,0,0"
                                FontSize="10"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                               Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
                     <Button Tag="{Binding ActionId}"
                             Content="{Binding ActionLabel}"
                             Click="OnRecentActionClick"

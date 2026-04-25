@@ -65,11 +65,11 @@ public sealed class StorageViewModel : BindableBase
         {
             var analytics = await _analyticsService.GetAnalyticsAsync();
 
-            TotalSizeText  = FormatHelpers.FormatBytes(analytics.TotalSizeBytes);
+            TotalSizeText = FormatHelpers.FormatBytes(analytics.TotalSizeBytes);
             TotalFilesText = analytics.TotalFileCount.ToString("N0");
             SymbolCountText = analytics.SymbolBreakdown.Length.ToString("N0");
 
-            HotTierSizeText  = FormatHelpers.FormatBytes(analytics.TradeSizeBytes);
+            HotTierSizeText = FormatHelpers.FormatBytes(analytics.TradeSizeBytes);
             WarmTierSizeText = FormatHelpers.FormatBytes(analytics.DepthSizeBytes);
             ColdTierSizeText = FormatHelpers.FormatBytes(analytics.HistoricalSizeBytes);
         }
@@ -88,7 +88,8 @@ public sealed class StorageViewModel : BindableBase
     public void RefreshPreview(string dataDirectory, string naming, string compression)
     {
         var rootPath = dataDirectory?.TrimStart('.', '/') ?? "data";
-        if (string.IsNullOrWhiteSpace(rootPath)) rootPath = "data";
+        if (string.IsNullOrWhiteSpace(rootPath))
+            rootPath = "data";
 
         var symbols = new List<string> { "SPY", "AAPL", "MSFT" };
 

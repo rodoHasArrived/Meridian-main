@@ -365,7 +365,8 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
             SymbolsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                        .ToList();
 
-        if (rawSymbols.Count == 0) return;
+        if (rawSymbols.Count == 0)
+            return;
 
         var from = DateOnly.FromDateTime(FromDate);
         var to = DateOnly.FromDateTime(ToDate);
@@ -403,7 +404,8 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
                                 present >= trading * 0.75 ? CoverageLevel.Partial :
                                 present >= trading * 0.25 ? CoverageLevel.Major :
                                 CoverageLevel.None;
-                    if (level != CoverageLevel.Full) anyGaps = true;
+                    if (level != CoverageLevel.Full)
+                        anyGaps = true;
                     return new CoverageCellVm(m.Year, m.Month, level, $"{m.Year}/{m.Month}: {present}/{trading} days");
                 }).ToList();
                 rows.Add(new CoverageRowVm(symbol, cells));
@@ -412,7 +414,8 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 CoverageRows.Clear();
-                foreach (var r in rows) CoverageRows.Add(r);
+                foreach (var r in rows)
+                    CoverageRows.Add(r);
                 HasCoverageGaps = anyGaps;
                 IsCoverageLoading = false;
             });
@@ -542,7 +545,8 @@ internal sealed class BuyAndHoldStrategy : IBacktestStrategy
 
     public void OnBar(HistoricalBar bar, IBacktestContext ctx)
     {
-        if (_bought.Contains(bar.Symbol)) return;
+        if (_bought.Contains(bar.Symbol))
+            return;
         var perSymbol = ctx.Cash / Math.Max(ctx.Universe.Count, 1);
         var qty = (long)(perSymbol / bar.Close);
         if (qty > 0)

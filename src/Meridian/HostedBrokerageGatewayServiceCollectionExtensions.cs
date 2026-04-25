@@ -28,12 +28,9 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
         });
         services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog>(sp =>
-            sp.GetRequiredService<AlpacaBrokerageGateway>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync>(sp =>
-            sp.GetRequiredService<AlpacaBrokerageGateway>()));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync>(sp =>
-            sp.GetRequiredService<AlpacaBrokerageGateway>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, AlpacaBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, AlpacaBrokerageSyncAdapter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, AlpacaBrokerageSyncAdapter>());
 
         services.TryAddSingleton<RobinhoodBrokerageGateway>(sp =>
         {
@@ -44,5 +41,34 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
         services.AddBrokerageGateway("robinhood", sp => sp.GetRequiredService<RobinhoodBrokerageGateway>());
 
         return services;
+    }
+
+    private sealed class AlpacaBrokerageSyncAdapter(AlpacaBrokerageGateway gateway) :
+        IBrokerageAccountCatalog,
+        IBrokeragePortfolioSync,
+        IBrokerageActivitySync
+    {
+        private readonly IBrokerageAccountCatalog _accountCatalog = gateway;
+        private readonly IBrokeragePortfolioSync _portfolioSync = gateway;
+        private readonly IBrokerageActivitySync _activitySync = gateway;
+
+        public string ProviderId => _accountCatalog.ProviderId;
+
+        public string ProviderDisplayName => _accountCatalog.ProviderDisplayName;
+
+        Task<IReadOnlyList<BrokerageExternalAccountDto>> IBrokerageAccountCatalog.GetAccountsAsync(
+            CancellationToken ct)
+            => _accountCatalog.GetAccountsAsync(ct);
+
+        Task<BrokeragePortfolioSnapshotDto> IBrokeragePortfolioSync.GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct)
+            => _portfolioSync.GetPortfolioSnapshotAsync(externalAccountId, ct);
+
+        Task<BrokerageActivitySnapshotDto> IBrokerageActivitySync.GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since,
+            CancellationToken ct)
+            => _activitySync.GetActivitySnapshotAsync(externalAccountId, since, ct);
     }
 }

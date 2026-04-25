@@ -373,6 +373,16 @@ $md += @(
 
 $md -join [Environment]::NewLine | Set-Content -Path $mdPath
 
+$packetScript = Join-Path $PSScriptRoot "generate-dk1-pilot-parity-packet.ps1"
+if (Test-Path -LiteralPath $packetScript) {
+    if ($summary.result -ne "passed") {
+        & $packetScript -SummaryJsonPath $jsonPath -AllowFailedSummary
+    }
+    else {
+        & $packetScript -SummaryJsonPath $jsonPath
+    }
+}
+
 Write-Host ""
 Write-Host "Wave 1 validation summary written to:"
 Write-Host "  $jsonPath"

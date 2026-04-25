@@ -367,7 +367,7 @@ public sealed class PaperTradingPortfolioRegTMarginTests
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
 
         // Assert
-        portfolio.Cash.Should().Be(90_000m,    because: "only $10 000 initial margin is debited");
+        portfolio.Cash.Should().Be(90_000m, because: "only $10 000 initial margin is debited");
         portfolio.MarginBalance.Should().Be(10_000m, because: "broker loaned the other $10 000");
     }
 

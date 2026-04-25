@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
-using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging;
@@ -50,7 +50,8 @@ public sealed class BacktestService
         IBacktestStrategy strategy,
         IProgress<BacktestProgressEvent>? progress = null, CancellationToken ct = default)
     {
-        if (IsRunning) return null;
+        if (IsRunning)
+            return null;
 
         _cts = new CancellationTokenSource();
         IsRunning = true;

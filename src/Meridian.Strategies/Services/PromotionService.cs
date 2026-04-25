@@ -225,7 +225,27 @@ public sealed class PromotionService
                 Reason: "Run not found, incomplete, or has no metrics.");
         }
 
+        if (run.RunType == RunType.Live)
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Live runs cannot be promoted further.");
+        }
+
         var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+        var approvalChecklist = PromotionApprovalChecklist.Normalize(request.ApprovalChecklist);
+        var missingChecklistItems = PromotionApprovalChecklist.GetMissingRequiredItems(targetRunType, approvalChecklist);
+        if (missingChecklistItems.Length > 0)
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: $"Promotion approval checklist is incomplete: {string.Join(", ", missingChecklistItems)}.");
+        }
+
         var newRunId = Guid.NewGuid().ToString("N");
         var auditReference = Guid.NewGuid().ToString("N");
 
@@ -254,6 +274,7 @@ public sealed class PromotionService
             approvedBy: request.ApprovedBy,
             approvalReason: request.ApprovalReason,
             reviewNotes: request.ReviewNotes,
+            approvalChecklist: approvalChecklist,
             manualOverrideId: request.ManualOverrideId,
             auditReference: auditReference);
 
@@ -297,9 +318,12 @@ public sealed class PromotionService
                 {
                     ["decision"] = promotionRecord.Decision,
                     ["sourceRunId"] = promotionRecord.SourceRunId,
+                    ["sourceRunType"] = promotionRecord.SourceRunType.ToString(),
                     ["targetRunId"] = promotionRecord.TargetRunId ?? string.Empty,
+                    ["targetRunType"] = promotionRecord.TargetRunType.ToString(),
                     ["manualOverrideId"] = promotionRecord.ManualOverrideId ?? string.Empty,
                     ["reviewNotes"] = promotionRecord.ReviewNotes ?? string.Empty,
+                    ["approvalChecklist"] = string.Join(",", promotionRecord.ApprovalChecklist ?? []),
                     ["auditReference"] = promotionRecord.AuditReference ?? string.Empty
                 }), ct).ConfigureAwait(false);
         }
@@ -468,6 +492,7 @@ public sealed record PromotionApprovalRequest(
     string? ReviewNotes = null,
     string? ApprovedBy = null,
     string? ApprovalReason = null,
+    string[]? ApprovalChecklist = null,
     string? ManualOverrideId = null);
 
 /// <summary>Request to reject a strategy promotion.</summary>

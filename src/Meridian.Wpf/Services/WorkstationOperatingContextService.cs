@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.EnvironmentDesign;
-using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Application.FundStructure;
+using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;

@@ -155,6 +155,8 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
 
     private void ApplyPresentation(DataOperationsWorkspacePresentation presentation)
     {
+        OperationsHeroScopeText.Text = presentation.Context.PrimaryScopeValue;
+        OperationsHeroSummaryText.Text = presentation.QueueSummaryText;
         QueueScopeBadgeText.Text = presentation.QueueScopeBadgeText;
         QueueSummaryText.Text = presentation.QueueSummaryText;
         ProviderQueueList.ItemsSource = presentation.ProviderQueueItems;

@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -191,6 +191,7 @@ public sealed class PromotionServiceLiveGovernanceTests
             RunId: run.RunId,
             ApprovedBy: "ops",
             ApprovalReason: "Ready for live capital",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
             ManualOverrideId: manualOverride.OverrideId));
 
         result.Success.Should().BeTrue();
@@ -207,6 +208,7 @@ public sealed class PromotionServiceLiveGovernanceTests
         history[0].TargetRunId.Should().Be(result.NewRunId);
         history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
         history[0].ApprovalReason.Should().Be("Ready for live capital");
+        history[0].ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Live));
 
         var recordedRuns = new List<StrategyRunEntry>();
         await foreach (var entry in store.GetAllRunsAsync())
@@ -247,7 +249,8 @@ public sealed class PromotionServiceLiveGovernanceTests
         var result = await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ApprovedBy: "ops",
-            ApprovalReason: "Ready for live capital."));
+            ApprovalReason: "Ready for live capital.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)));
 
         result.Success.Should().BeFalse();
         result.Reason.Should().NotBeNull();
@@ -301,6 +304,7 @@ public sealed class PromotionServiceLiveGovernanceTests
             ApprovedBy: "ops",
             ApprovalReason: "Ready for live capital",
             ReviewNotes: "All controls green",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
             ManualOverrideId: manualOverride.OverrideId));
 
         var restarted = BuildService(

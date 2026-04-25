@@ -1,7 +1,7 @@
 # Meridian - Opportunity Scan
 
 **Last Updated:** 2026-04-25
-**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set evidence, and current WPF shell baseline
+**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, and current WPF shell baseline
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
@@ -17,7 +17,7 @@ The current planning set is also more mature than the prior April 8 scan. As of 
 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
 - the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
-- the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script and referenced by the pilot parity runbook
+- the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script, plus checked-in packet generation that produced a latest `ready-for-operator-review` parity packet with validated evidence-document checks and no packet blockers
 - the feature inventory and implementation anchors show that shell-first WPF consolidation, shared workstation endpoints, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
@@ -29,7 +29,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
 - **Category:** workflow completion
-- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, and promotion seams, and current cockpit work is tightening promotion rejection outcomes and audit-history refresh. The paper workflow still needs clearer daily-use acceptance criteria, broader audit visibility, and tighter behavior around persistence and replay recovery.
+- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, promotion seams, and a shared trading-readiness contract, and current cockpit work is tightening promotion rejection outcomes, approval-checklist state, and audit-history refresh. The paper workflow still needs accepted operator scenarios around persistence, replay recovery, audit visibility, and work-item handling.
 - **User or operator value:** This converts Meridian from "paper trading is present" to "paper trading can be operated confidently."
 - **Dependency it unlocks:** A credible `Backtest -> Paper` story and a safer foundation for any later `Paper -> Live` gate design.
 - **Placement:** Critical path, Wave 2.
@@ -53,7 +53,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 4. Close the DK1 pilot parity packet on top of the closed Wave 1 trust gate
 
 - **Category:** provider readiness
-- **Gap:** The active Wave 1 gate is now repo-closed, and DK1 has a concrete pilot replay/sample-set contract. The open work is to keep the matrix, roadmap, runtime artifacts, runbook, validation script, trust rationale mapping, threshold calibration, and operator sign-off aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
+- **Gap:** The active Wave 1 gate is now repo-closed, and DK1 has a concrete pilot replay/sample-set plus a generated `ready-for-operator-review` parity packet. The open work is to keep the matrix, roadmap, runtime artifacts, runbook, validation script, parity packet, trust rationale mapping, threshold calibration, and operator sign-off aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
 - **User or operator value:** Later cockpit, governance, and live-readiness claims stay credible when the trust gate remains explicit and reproducible.
 - **Dependency it unlocks:** It preserves the evidence boundary that all later waves depend on and gives Wave 2 cockpit acceptance a concrete trust packet.
 - **Placement:** Critical support track for DK1 and Waves 2-4.
@@ -107,7 +107,7 @@ That is why Wave 2 cockpit hardening now outranks additional surface expansion, 
 
 ## Recommended Next Steps
 
-1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, evidence artifacts, and repo tests treated as the source of truth.
+1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, generated parity packet, evidence artifacts, and repo tests treated as the source of truth.
 2. Define the paper-trading cockpit in operator terms: session persistence, replay confidence, audit trail visibility, and promotion review should be the acceptance center, not additional page count.
 3. Use shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work.
 4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths.

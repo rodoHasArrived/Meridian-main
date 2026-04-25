@@ -8,6 +8,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `docs/HELP.md` for verified operator and developer CLI workflows.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
+- `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
 - `README.md` for top-level onboarding and planning links.
 
 ## Current Direction
@@ -28,19 +29,32 @@ python3 build/python/cli/buildctl.py --help
 ## Run And Host Workflows
 
 ```bash
+make quickstart
 make run
 make run-backfill SYMBOLS=AAPL,MSFT
 make run-selftest
+dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 ```
 
 ## Build And Test
 
 ```bash
+make build
+make build-quick
+make lint
+make format-check
+make test
+make test-unit
+make test-fsharp
+make test-integration
+make test-all
+make pre-pr
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
-make test
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
 ```
@@ -55,13 +69,16 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 ## Desktop Workflows
 
 ```powershell
+pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -NoBuild
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
+pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
 pwsh -File ./scripts/dev/generate-desktop-user-manual.ps1
 pwsh -File ./scripts/dev/capture-desktop-screenshots.ps1
+pwsh -File ./scripts/dev/robinhood-options-smoke.ps1
 ```
 
 The desktop launcher builds the local host and WPF shell when needed, starts the host on
@@ -70,6 +87,11 @@ when the desktop exits.
 
 Named workflow automation is defined in `scripts/dev/desktop-workflows.json`; it defaults to
 fixture mode and writes run artifacts under `artifacts/desktop-workflows/`.
+
+Use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` after launching
+`run-desktop.ps1` when driving an already-open shell against live local services.
+`robinhood-options-smoke.ps1` validates Robinhood setup and the options workflow with seeded
+fixture state and writes artifacts under `artifacts/desktop-workflows/robinhood-options-smoke/`.
 
 ```bash
 make desktop-build
@@ -90,14 +112,27 @@ TODO: `docs/development/desktop-workflow-automation.md` mentions `make desktop-w
 `make desktop-manual`, and `make desktop-screenshots`, but the current `make/desktop.mk` does not
 define those targets. Use the PowerShell scripts directly unless the Make targets are added.
 
+TODO: `scripts/dev/desktop-dev.ps1` still prints `make build-wpf`,
+`make test-desktop-services`, and `make uwp-xaml-diagnose`, but the current `make/*.mk` files do
+not define those targets. Prefer `make desktop-build`, `make desktop-test`, and
+`pwsh ./scripts/dev/diagnose-uwp-xaml.ps1`.
+
 ## Provider Validation
 
 ```powershell
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1
+pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
+pwsh ./scripts/dev/build-ibapi-smoke.ps1
 ```
 
 This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet
-proof. It writes summaries under `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
+proof. It writes summaries and DK1 parity packets under
+`artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
+`run-wave1-provider-validation.ps1` invokes `generate-dk1-pilot-parity-packet.ps1` when present;
+run the packet generator directly only when rebuilding from an existing Wave 1 summary. A
+`ready-for-operator-review` DK1 packet still requires operator sign-off before DK1 exit.
+`build-ibapi-smoke.ps1` is a compile-only Interactive Brokers adapter smoke build that enables
+`EnableIbApiSmoke=true` on `src/Meridian.Infrastructure/Meridian.Infrastructure.csproj`.
 
 ## Diagnostics And Docs
 

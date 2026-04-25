@@ -78,7 +78,8 @@ public sealed record TradingPromotionReadinessDto(
     string? AuditReference,
     string? ApprovalStatus,
     string? ManualOverrideId,
-    string? ApprovedBy);
+    string? ApprovedBy,
+    IReadOnlyList<string>? ApprovalChecklist = null);
 
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,

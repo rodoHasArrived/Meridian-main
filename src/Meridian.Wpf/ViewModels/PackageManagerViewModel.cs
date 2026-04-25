@@ -59,7 +59,7 @@ public sealed class PackageManagerViewModel : BindableBase
         PortablePackagerService packagerService,
         WpfServices.NotificationService notificationService)
     {
-        _packagerService     = packagerService;
+        _packagerService = packagerService;
         _notificationService = notificationService;
 
         RefreshPackagesCommand = new AsyncRelayCommand(LoadRecentPackagesAsync);
@@ -76,7 +76,7 @@ public sealed class PackageManagerViewModel : BindableBase
     {
         if (string.IsNullOrWhiteSpace(symbolsText))
         {
-            CreateStatusText       = "Please enter at least one symbol.";
+            CreateStatusText = "Please enter at least one symbol.";
             CreateStatusForeground = GetResource("WarningColorBrush", Brushes.Orange);
             return;
         }
@@ -84,41 +84,41 @@ public sealed class PackageManagerViewModel : BindableBase
         var symbols = symbolsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         DateOnly? fromDate = DateOnly.TryParse(fromDateText, out var f) ? f : null;
-        DateOnly? toDate   = DateOnly.TryParse(toDateText,   out var t) ? t : null;
+        DateOnly? toDate = DateOnly.TryParse(toDateText, out var t) ? t : null;
 
-        CreateStatusText       = "Creating package...";
+        CreateStatusText = "Creating package...";
         CreateStatusForeground = GetResource("ConsoleTextMutedBrush", Brushes.Gray);
 
         try
         {
             var options = new PackageCreationOptions
             {
-                Name               = $"package-{DateTime.UtcNow:yyyyMMdd-HHmmss}",
-                Symbols            = symbols.ToList(),
-                FromDate           = fromDate,
-                ToDate             = toDate,
-                IncludeMetadata    = true,
-                GenerateChecksums  = true
+                Name = $"package-{DateTime.UtcNow:yyyyMMdd-HHmmss}",
+                Symbols = symbols.ToList(),
+                FromDate = fromDate,
+                ToDate = toDate,
+                IncludeMetadata = true,
+                GenerateChecksums = true
             };
 
             var result = await _packagerService.CreatePackageAsync(options);
 
             if (result.Success)
             {
-                CreateStatusText       = $"Package created: {result.PackagePath}";
+                CreateStatusText = $"Package created: {result.PackagePath}";
                 CreateStatusForeground = GetResource("SuccessColorBrush", Brushes.LimeGreen);
                 _notificationService.NotifySuccess("Package Created", $"Package with {symbols.Length} symbol(s) created.");
                 await LoadRecentPackagesAsync();
             }
             else
             {
-                CreateStatusText       = $"Package creation failed: {result.Error}";
+                CreateStatusText = $"Package creation failed: {result.Error}";
                 CreateStatusForeground = GetResource("ErrorColorBrush", Brushes.Red);
             }
         }
         catch (Exception ex)
         {
-            CreateStatusText       = $"Failed: {ex.Message}";
+            CreateStatusText = $"Failed: {ex.Message}";
             CreateStatusForeground = GetResource("ErrorColorBrush", Brushes.Red);
         }
     }
@@ -127,12 +127,12 @@ public sealed class PackageManagerViewModel : BindableBase
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            ValidateResultText       = "Please enter a package file path.";
+            ValidateResultText = "Please enter a package file path.";
             ValidateResultForeground = GetResource("WarningColorBrush", Brushes.Orange);
             return;
         }
 
-        ValidateResultText       = "Validating...";
+        ValidateResultText = "Validating...";
         ValidateResultForeground = GetResource("ConsoleTextMutedBrush", Brushes.Gray);
 
         try
@@ -141,7 +141,7 @@ public sealed class PackageManagerViewModel : BindableBase
 
             if (result.IsValid)
             {
-                ValidateResultText       = $"Package is valid.\nValid files: {result.ValidFileCount}, Size: {FormatHelpers.FormatBytes(result.TotalSizeBytes)}";
+                ValidateResultText = $"Package is valid.\nValid files: {result.ValidFileCount}, Size: {FormatHelpers.FormatBytes(result.TotalSizeBytes)}";
                 ValidateResultForeground = GetResource("SuccessColorBrush", Brushes.LimeGreen);
             }
             else
@@ -149,13 +149,13 @@ public sealed class PackageManagerViewModel : BindableBase
                 var issues = result.Issues.Count > 0
                     ? string.Join("; ", result.Issues.Select(i => i.Message).Take(3))
                     : "Unknown validation error";
-                ValidateResultText       = $"Package validation failed: {issues}";
+                ValidateResultText = $"Package validation failed: {issues}";
                 ValidateResultForeground = GetResource("ErrorColorBrush", Brushes.Red);
             }
         }
         catch (Exception ex)
         {
-            ValidateResultText       = $"Validation failed: {ex.Message}";
+            ValidateResultText = $"Validation failed: {ex.Message}";
             ValidateResultForeground = GetResource("ErrorColorBrush", Brushes.Red);
         }
     }
@@ -164,19 +164,19 @@ public sealed class PackageManagerViewModel : BindableBase
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            ImportResultText       = "Please enter a package file path.";
+            ImportResultText = "Please enter a package file path.";
             ImportResultForeground = GetResource("WarningColorBrush", Brushes.Orange);
             return;
         }
 
-        ImportResultText       = "Importing package...";
+        ImportResultText = "Importing package...";
         ImportResultForeground = GetResource("ConsoleTextMutedBrush", Brushes.Gray);
 
         try
         {
             var options = new PackageImportOptions
             {
-                PackagePath       = path,
+                PackagePath = path,
                 OverwriteExisting = false
             };
 
@@ -184,19 +184,19 @@ public sealed class PackageManagerViewModel : BindableBase
 
             if (result.Success)
             {
-                ImportResultText       = $"Package imported. Files: {result.FilesImported}";
+                ImportResultText = $"Package imported. Files: {result.FilesImported}";
                 ImportResultForeground = GetResource("SuccessColorBrush", Brushes.LimeGreen);
                 _notificationService.NotifySuccess("Package Imported", $"Imported {result.FilesImported} files.");
             }
             else
             {
-                ImportResultText       = $"Import failed: {result.Error}";
+                ImportResultText = $"Import failed: {result.Error}";
                 ImportResultForeground = GetResource("ErrorColorBrush", Brushes.Red);
             }
         }
         catch (Exception ex)
         {
-            ImportResultText       = $"Import failed: {ex.Message}";
+            ImportResultText = $"Import failed: {ex.Message}";
             ImportResultForeground = GetResource("ErrorColorBrush", Brushes.Red);
         }
     }
@@ -205,7 +205,7 @@ public sealed class PackageManagerViewModel : BindableBase
 
     private async Task LoadRecentPackagesAsync()
     {
-        PackageListStatusText       = "Loading...";
+        PackageListStatusText = "Loading...";
         PackageListStatusForeground = GetResource("ConsoleTextMutedBrush", Brushes.Gray);
 
         try
@@ -214,19 +214,19 @@ public sealed class PackageManagerViewModel : BindableBase
 
             if (packages is null || packages.Count == 0)
             {
-                PackageListStatusText       = "No packages found.";
+                PackageListStatusText = "No packages found.";
                 PackageListStatusForeground = GetResource("ConsoleTextMutedBrush", Brushes.Gray);
                 PackageItems = null;
                 return;
             }
 
-            PackageListStatusText       = $"{packages.Count} package(s) found";
+            PackageListStatusText = $"{packages.Count} package(s) found";
             PackageListStatusForeground = GetResource("ConsoleTextPrimaryBrush", Brushes.White);
             PackageItems = packages.Cast<object>().ToList();
         }
         catch (Exception ex)
         {
-            PackageListStatusText       = $"Failed to load packages: {ex.Message}";
+            PackageListStatusText = $"Failed to load packages: {ex.Message}";
             PackageListStatusForeground = GetResource("ErrorColorBrush", Brushes.Red);
         }
     }

@@ -1,8 +1,8 @@
 using System.Windows.Media;
 using Meridian.Ui.Services;
-using Palette = Meridian.Ui.Services.Services.ColorPalette;
 using ColorPalette = Meridian.Ui.Services.Services.ColorPalette;
 using IntegritySeverity = Meridian.Ui.Services.IntegritySeverity;
+using Palette = Meridian.Ui.Services.Services.ColorPalette;
 
 namespace Meridian.Wpf.Services;
 

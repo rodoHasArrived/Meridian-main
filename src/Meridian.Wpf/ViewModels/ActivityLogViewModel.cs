@@ -268,7 +268,8 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     private void ShowOfflineIndicator(string reason)
     {
-        if (_offlineIndicatorShown) return;
+        if (_offlineIndicatorShown)
+            return;
         _offlineIndicatorShown = true;
 
         _notificationService.ShowNotification(

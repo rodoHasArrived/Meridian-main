@@ -7,9 +7,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Meridian.Contracts.Archive;
 using Meridian.Ui.Services;
-using WpfServices = Meridian.Wpf.Services;
-
 using Meridian.Wpf.Services;
+using WpfServices = Meridian.Wpf.Services;
 namespace Meridian.Wpf.Views;
 
 /// <summary>

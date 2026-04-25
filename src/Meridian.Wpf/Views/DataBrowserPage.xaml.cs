@@ -126,7 +126,8 @@ public partial class DataBrowserPage : Page
 
     private void CopyJson_Click(object sender, RoutedEventArgs e)
     {
-        if (ResultsGrid.SelectedItem is not DataBrowserRecord record) return;
+        if (ResultsGrid.SelectedItem is not DataBrowserRecord record)
+            return;
 
         var json = JsonSerializer.Serialize(new
         {

@@ -19,7 +19,8 @@ public static class FundStructureEndpoints
         group.MapPost("/organizations", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateOrganizationRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -37,7 +38,8 @@ public static class FundStructureEndpoints
         group.MapPost("/businesses", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateBusinessRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -55,7 +57,8 @@ public static class FundStructureEndpoints
         group.MapPost("/clients", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateClientRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -73,7 +76,8 @@ public static class FundStructureEndpoints
         group.MapPost("/funds", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateFundRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -91,7 +95,8 @@ public static class FundStructureEndpoints
         group.MapPost("/sleeves", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateSleeveRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -109,7 +114,8 @@ public static class FundStructureEndpoints
         group.MapPost("/vehicles", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateVehicleRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -127,7 +133,8 @@ public static class FundStructureEndpoints
         group.MapPost("/entities", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateLegalEntityRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -145,7 +152,8 @@ public static class FundStructureEndpoints
         group.MapPost("/investment-portfolios", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<CreateInvestmentPortfolioRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -163,7 +171,8 @@ public static class FundStructureEndpoints
         group.MapPost("/links", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<LinkFundStructureNodesRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -181,7 +190,8 @@ public static class FundStructureEndpoints
         group.MapPost("/assignments", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var request = JsonSerializer.Deserialize<AssignFundStructureNodeRequest>(body.GetRawText(), jsonOptions);
             if (request is null)
@@ -205,7 +215,8 @@ public static class FundStructureEndpoints
         group.MapGet("/graph", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new OrganizationStructureQuery(
@@ -225,7 +236,8 @@ public static class FundStructureEndpoints
         group.MapGet("/legacy-graph", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new FundStructureQuery(
@@ -244,7 +256,8 @@ public static class FundStructureEndpoints
         group.MapGet("/businesses/{businessId:guid}/advisory-view", async (Guid businessId, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new AdvisoryStructureQuery(
@@ -265,7 +278,8 @@ public static class FundStructureEndpoints
         group.MapGet("/businesses/{businessId:guid}/fund-view", async (Guid businessId, HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new FundOperatingStructureQuery(
@@ -288,7 +302,8 @@ public static class FundStructureEndpoints
         group.MapGet("/accounting-view", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var query = new AccountingStructureQuery(
@@ -312,7 +327,8 @@ public static class FundStructureEndpoints
         group.MapGet("/cash-flow-view", async (HttpContext context) =>
         {
             var service = ResolveService(context);
-            if (service is null) return ServiceUnavailable();
+            if (service is null)
+                return ServiceUnavailable();
 
             var q = context.Request.Query;
             var scopeKind = ParseCashFlowScopeKind(q["scopeKind"]);

@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-25
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -60,8 +60,9 @@ Closed platform work:
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- current working-tree WPF shell consolidation should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- current working-tree WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, and shell/navigation smoke coverage; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
+- DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus generated parity-packet artifacts; the latest packet is `ready-for-operator-review`, and operator sign-off must stay synchronized across the validation script, provider matrix, runbook, and readiness dashboard
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path

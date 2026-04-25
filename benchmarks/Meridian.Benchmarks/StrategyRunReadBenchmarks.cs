@@ -1,11 +1,11 @@
+using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Order;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Order;
 
 namespace Meridian.Benchmarks;
 

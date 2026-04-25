@@ -20,9 +20,9 @@ public partial class MessagingHubPage : Page
 
         _viewModel = new MessagingHubViewModel(
             messagingService,
-            infoBrush:    (Brush)FindResource("InfoColorBrush"),
+            infoBrush: (Brush)FindResource("InfoColorBrush"),
             successBrush: (Brush)FindResource("SuccessColorBrush"),
-            errorBrush:   (Brush)FindResource("ErrorColorBrush"));
+            errorBrush: (Brush)FindResource("ErrorColorBrush"));
 
         DataContext = _viewModel;
     }

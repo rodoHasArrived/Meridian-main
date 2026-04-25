@@ -169,7 +169,8 @@ public sealed class CollectionSessionViewModel : BindableBase
         try
         {
             var activeSession = await _sessionService.GetActiveSessionAsync();
-            if (activeSession == null) return;
+            if (activeSession == null)
+                return;
 
             await _sessionService.PauseSessionAsync(activeSession.Id);
             _notificationService.NotifyInfo("Session Paused", $"Session '{activeSession.Name}' has been paused.");
@@ -186,7 +187,8 @@ public sealed class CollectionSessionViewModel : BindableBase
         try
         {
             var activeSession = await _sessionService.GetActiveSessionAsync();
-            if (activeSession == null) return;
+            if (activeSession == null)
+                return;
 
             await _sessionService.StopSessionAsync(activeSession.Id);
             _notificationService.NotifySuccess("Session Stopped", $"Session '{activeSession.Name}' has been completed.");

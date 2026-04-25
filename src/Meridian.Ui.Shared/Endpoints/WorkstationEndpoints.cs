@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
@@ -8,18 +9,17 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
-using Meridian.Application.ProviderRouting;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
-using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -825,14 +825,14 @@ public static class WorkstationEndpoints
             var ext = Path.GetExtension(filePath).ToLowerInvariant();
             var contentType = ext switch
             {
-                ".js"   => "application/javascript",
-                ".css"  => "text/css",
-                ".png"  => "image/png",
-                ".svg"  => "image/svg+xml",
-                ".ico"  => "image/x-icon",
+                ".js" => "application/javascript",
+                ".css" => "text/css",
+                ".png" => "image/png",
+                ".svg" => "image/svg+xml",
+                ".ico" => "image/x-icon",
                 ".woff" => "font/woff",
                 ".woff2" => "font/woff2",
-                _       => "application/octet-stream"
+                _ => "application/octet-stream"
             };
             return Results.File(filePath, contentType);
         }).ExcludeFromDescription();
@@ -1623,7 +1623,8 @@ public static class WorkstationEndpoints
                 AuditReference: record.AuditReference,
                 ApprovalStatus: record.Decision,
                 ManualOverrideId: record.ManualOverrideId,
-                ApprovedBy: record.ApprovedBy);
+                ApprovedBy: record.ApprovedBy,
+                ApprovalChecklist: record.ApprovalChecklist);
         }
 
         var summary = run?.Promotion;
@@ -1642,7 +1643,8 @@ public static class WorkstationEndpoints
             AuditReference: summary.AuditReference,
             ApprovalStatus: summary.ApprovalStatus,
             ManualOverrideId: summary.ManualOverrideId,
-            ApprovedBy: summary.ApprovedBy);
+            ApprovedBy: summary.ApprovedBy,
+            ApprovalChecklist: summary.ApprovalChecklist);
 
         return readiness with
         {
@@ -1742,7 +1744,7 @@ public static class WorkstationEndpoints
                 WorkItemId: $"promotion-trace-incomplete-{promotion.SourceRunId ?? promotion.TargetRunId ?? "unknown"}",
                 Kind: OperatorWorkItemKindDto.PromotionReview,
                 Label: "Complete promotion trace",
-                Detail: "Promotion evidence must include decision, operator, rationale, lineage, and audit reference.",
+                Detail: "Promotion evidence must include decision, operator, rationale, checklist, lineage, and audit reference.",
                 Tone: OperatorWorkItemToneDto.Warning,
                 CreatedAt: now,
                 RunId: promotion.SourceRunId,
@@ -1756,6 +1758,7 @@ public static class WorkstationEndpoints
         !string.IsNullOrWhiteSpace(record.Decision) &&
         !string.IsNullOrWhiteSpace(record.ApprovedBy) &&
         !string.IsNullOrWhiteSpace(record.ApprovalReason) &&
+        HasApprovalChecklist(record.ApprovalChecklist) &&
         !string.IsNullOrWhiteSpace(record.SourceRunId) &&
         !string.IsNullOrWhiteSpace(record.AuditReference);
 
@@ -1764,8 +1767,13 @@ public static class WorkstationEndpoints
         !string.IsNullOrWhiteSpace(promotion.ApprovalStatus) &&
         !string.IsNullOrWhiteSpace(promotion.ApprovedBy) &&
         !string.IsNullOrWhiteSpace(promotion.Reason) &&
+        HasApprovalChecklist(promotion.ApprovalChecklist) &&
         !string.IsNullOrWhiteSpace(promotion.SourceRunId) &&
         !string.IsNullOrWhiteSpace(promotion.AuditReference);
+
+    private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
+        => approvalChecklist is { Count: > 0 } &&
+           approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
 
     private static string? GetMetadata(ExecutionAuditEntry entry, string key)
     {
@@ -2809,7 +2817,7 @@ public static class WorkstationEndpoints
                     hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
                     lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
                     tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
-            },
+                },
             kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }

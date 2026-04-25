@@ -12,9 +12,9 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
-using UiBackfillService = Meridian.Ui.Services.BackfillService;
-using UiBackfillProgressEventArgs = Meridian.Ui.Services.BackfillProgressEventArgs;
 using UiBackfillCompletedEventArgs = Meridian.Ui.Services.BackfillCompletedEventArgs;
+using UiBackfillProgressEventArgs = Meridian.Ui.Services.BackfillProgressEventArgs;
+using UiBackfillService = Meridian.Ui.Services.BackfillService;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -680,7 +680,8 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     // ── Progress event handlers ─────────────────────────────────────────────
     private void OnBackfillProgressUpdated(object? sender, UiBackfillProgressEventArgs e)
     {
-        if (e.Progress == null) return;
+        if (e.Progress == null)
+            return;
         _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             UpdateProgressDisplay(e.Progress);
@@ -698,7 +699,8 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         _lastTotalSymbols = (ulong)Math.Max(1, progress.TotalSymbols);
         _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
 
-        if (progress.SymbolProgress == null) return;
+        if (progress.SymbolProgress == null)
+            return;
         for (var i = 0; i < progress.SymbolProgress.Length && i < SymbolProgress.Count; i++)
         {
             var sp = progress.SymbolProgress[i];

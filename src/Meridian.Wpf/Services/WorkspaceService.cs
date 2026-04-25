@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
-using UiServices = Meridian.Ui.Services;
-using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
 using SessionState = Meridian.Ui.Services.SessionState;
-using WorkspaceCategory = Meridian.Ui.Services.WorkspaceCategory;
-using WorkspacePage = Meridian.Ui.Services.WorkspacePage;
+using UiServices = Meridian.Ui.Services;
 using WidgetPosition = Meridian.Ui.Services.WidgetPosition;
 using WindowBounds = Meridian.Ui.Services.WindowBounds;
+using WorkspaceCategory = Meridian.Ui.Services.WorkspaceCategory;
 using WorkspaceEventArgs = Meridian.Ui.Services.WorkspaceEventArgs;
+using WorkspacePage = Meridian.Ui.Services.WorkspacePage;
+using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
 
 namespace Meridian.Wpf.Services;
 

@@ -67,7 +67,8 @@ public sealed class KeyboardShortcutService
     /// <param name="e">The key event arguments.</param>
     public void HandleKeyDown(KeyEventArgs e)
     {
-        if (!_isEnabled || e.Handled) return;
+        if (!_isEnabled || e.Handled)
+            return;
 
         var key = e.Key;
         var modifiers = Keyboard.Modifiers;
@@ -81,7 +82,8 @@ public sealed class KeyboardShortcutService
         foreach (var kvp in _shortcuts)
         {
             var action = kvp.Value;
-            if (!action.IsEnabled) continue;
+            if (!action.IsEnabled)
+                continue;
 
             if (action.Key == key && action.Modifiers == modifiers)
             {

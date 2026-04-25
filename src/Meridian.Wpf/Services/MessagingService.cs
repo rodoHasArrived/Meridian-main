@@ -35,7 +35,8 @@ public sealed class MessagingService
     /// <param name="message">The message to send.</param>
     public void Send(string message)
     {
-        if (string.IsNullOrEmpty(message)) return;
+        if (string.IsNullOrEmpty(message))
+            return;
 
         MessageReceived?.Invoke(this, message);
     }
@@ -58,7 +59,8 @@ public sealed class MessagingService
     /// <param name="payload">The optional payload.</param>
     public void SendNamed(string messageName, object? payload = null)
     {
-        if (string.IsNullOrEmpty(messageName)) return;
+        if (string.IsNullOrEmpty(messageName))
+            return;
 
         SendTyped(messageName, payload);
 
@@ -216,7 +218,8 @@ public sealed class MessagingService
 
         public void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
             _disposed = true;
             _unsubscribe?.Invoke();
             _unsubscribe = null;

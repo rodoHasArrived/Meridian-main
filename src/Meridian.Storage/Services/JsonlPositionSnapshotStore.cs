@@ -2,8 +2,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Domain;
-using Meridian.Storage.Archival;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Storage.Services;

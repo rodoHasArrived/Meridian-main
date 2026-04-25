@@ -47,6 +47,7 @@ export FINNHUB_API_KEY="your-key"
 ### 2. Run Backfill
 
 **Via CLI:**
+
 ```bash
 dotnet run -- --backfill \
   --backfill-provider stooq \
@@ -56,6 +57,7 @@ dotnet run -- --backfill \
 ```
 
 **Via Dashboard API/UI:**
+
 1. Open the dashboard **Backfill** section
 2. Select provider and symbols
 3. Optionally run preview first
@@ -64,6 +66,7 @@ dotnet run -- --backfill \
 ### 3. Monitor Progress
 
 Check backfill status via:
+
 - **HTTP API**: `GET /api/backfill/status`
 - **HTTP API (active run)**: `GET /api/backfill/progress`
 - **Dashboard UI**: Backfill status/progress panel
@@ -81,7 +84,7 @@ Check backfill status via:
 
 ### Component Overview
 
-```
+```text
 ┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
 │ BackfillRequest │────▶│HistoricalBackfillSvc │────▶│ CompositeProvider│
 └─────────────────┘     └──────────────────────┘     └─────────────────┘
@@ -107,7 +110,7 @@ Check backfill status via:
 ### Key Classes
 
 | Class | Location | Purpose |
-|-------|----------|---------|
+| ------- | ---------- | --------- |
 | `HistoricalBackfillService` | `Application/Subscriptions/` | Orchestrates backfill jobs |
 | `CompositeHistoricalDataProvider` | `Infrastructure/Adapters/Core/` | Multi-provider failover |
 | `BackfillJobQueue` | `Application/Subscriptions/` | Priority queue management |
@@ -163,7 +166,7 @@ The `CompositeHistoricalDataProvider` tries providers in priority order:
 ### Provider Rate Limits
 
 | Provider | Rate Limit | Suggested Delay | Daily Limit |
-|----------|------------|-----------------|-------------|
+| ---------- | ------------ | ----------------- | ------------- |
 | Yahoo Finance | ~2000/hr | 2 seconds | Unlimited |
 | Stooq | Respectful | 1 second | Unlimited |
 | Alpaca | 200/min | 300ms | Unlimited |
@@ -189,7 +192,7 @@ _rateLimiter = new RateLimiter(
 
 The `CompositeProvider` automatically rotates when rate limits are hit:
 
-```
+```text
 Request 1: Tiingo → Success
 Request 2: Tiingo → Rate limited → Fallback to Alpaca
 Request 3: Alpaca → Success
@@ -297,7 +300,7 @@ Remediations are executed through `BackfillCoordinator`, and lineage is persiste
 ### Gap Types
 
 | Gap Type | Description | Action |
-|----------|-------------|--------|
+| ---------- | ------------- | -------- |
 | **Weekend** | Expected (Sat-Sun) | Skip |
 | **Holiday** | Market closed | Skip |
 | **Unexpected** | Data missing | Backfill |
@@ -310,7 +313,8 @@ dotnet run -- --gap-report AAPL --from 2020-01-01
 ```
 
 Output:
-```
+
+```text
 Gap Detection Report: AAPL
 ==========================
 Period: 2020-01-01 to 2026-01-08
@@ -349,7 +353,7 @@ Console.WriteLine($"Outliers Found: {report.OutlierCount}");
 ### Quality Metrics
 
 | Metric | Description | Weight |
-|--------|-------------|--------|
+| -------- | ------------- | -------- |
 | **Completeness** | % of expected trading days | 40% |
 | **Consistency** | No price jumps > 4σ | 25% |
 | **Recency** | Data up to current date | 15% |
@@ -358,7 +362,7 @@ Console.WriteLine($"Outliers Found: {report.OutlierCount}");
 ### Quality Grades
 
 | Grade | Score | Suitability |
-|-------|-------|-------------|
+| ------- | ------- | ------------- |
 | **A+** | 95-100% | Production backtesting |
 | **A** | 90-94% | Research |
 | **B** | 80-89% | Development |
@@ -372,13 +376,13 @@ Console.WriteLine($"Outliers Found: {report.OutlierCount}");
 
 ### Storage Flow
 
-```
+```text
 Historical Data → Event Pipeline → WAL → JSONL → Parquet Archive
 ```
 
 ### File Organization
 
-```
+```text
 {DataRoot}/
 ├── historical/
 │   ├── alpaca/
@@ -401,7 +405,7 @@ Historical Data → Event Pipeline → WAL → JSONL → Parquet Archive
 ### Compression Options
 
 | Tier | Format | Compression | Use Case |
-|------|--------|-------------|----------|
+| ------ | -------- | ------------- | ---------- |
 | Hot | JSONL | Gzip | Recent data, active access |
 | Warm | Parquet | Snappy | Historical, frequent queries |
 | Cold | Parquet | ZSTD-19 | Archive, rare access |
@@ -437,27 +441,35 @@ GOOGL,2,2020-01-01,2026-01-01
 ### Common Issues
 
 **Issue: Rate limit errors**
-```
+
+```text
 Error: 429 Too Many Requests
 ```
+
 **Solution**: Increase delays between requests, or add more providers to rotation
 
 **Issue: Missing data for certain dates**
-```
+
+```text
 Warning: No data returned for AAPL 2020-03-15
 ```
+
 **Solution**: Check if market was closed (holiday/weekend), try alternative provider
 
 **Issue: Data quality too low**
-```
+
+```text
 Quality Grade: D (65%)
 ```
+
 **Solution**: Run incremental backfill, cross-validate with multiple providers
 
 **Issue: Provider authentication failed**
-```
+
+```text
 Error: 401 Unauthorized for Tiingo
 ```
+
 **Solution**: Verify API token in environment variables
 
 ### Debug Mode
@@ -498,6 +510,7 @@ Enable detailed logging:
 ### 1. Start Small
 
 Test with a single symbol before bulk backfill:
+
 ```bash
 dotnet run -- --backfill --backfill-symbols AAPL --backfill-from 2025-01-01 --dry-run
 ```
@@ -505,6 +518,7 @@ dotnet run -- --backfill --backfill-symbols AAPL --backfill-from 2025-01-01 --dr
 ### 2. Prioritize Quality
 
 Use providers with best data quality first:
+
 - Tiingo for dividend-adjusted data
 - Alpaca for recent/accurate data
 - Yahoo as fallback for coverage
@@ -512,7 +526,8 @@ Use providers with best data quality first:
 ### 3. Monitor Rate Limits
 
 Watch for rate limit warnings in logs:
-```
+
+```text
 [WRN] Rate limit approaching for Tiingo (45/50 in window)
 [INF] Rotating to Yahoo Finance
 ```
@@ -520,6 +535,7 @@ Watch for rate limit warnings in logs:
 ### 4. Schedule Off-Hours
 
 Run large backfills during off-market hours:
+
 - Less API competition
 - More stable connections
 - Better rate limit availability
@@ -527,6 +543,7 @@ Run large backfills during off-market hours:
 ### 5. Validate Results
 
 Always run quality checks after backfill:
+
 ```bash
 dotnet run -- --quality-report AAPL
 ```
@@ -534,6 +551,7 @@ dotnet run -- --quality-report AAPL
 ### 6. Archive Incrementally
 
 Don't archive until quality is acceptable:
+
 1. Backfill → JSONL (hot storage)
 2. Quality check
 3. Fix gaps if needed
@@ -561,7 +579,7 @@ dotnet run -- --help backfill
 
 ### HTTP API
 
-```
+```http
 GET  /api/backfill/providers
 GET  /api/backfill/status
 GET  /api/backfill/progress
@@ -582,4 +600,4 @@ POST /api/backfill/run
 
 ---
 
-*Last Updated: 2026-02-17*
+_Last Updated: 2026-02-17_

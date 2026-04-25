@@ -182,8 +182,14 @@ The frontend helper uses a full `PromotionApprovalRequest` payload so the cockpi
 - `runId`
 - `approvedBy`
 - `approvalReason`
+- `approvalChecklist`
 - `reviewNotes`
 - `manualOverrideId`
+
+The promotion service now rejects approvals that omit required checklist items. The canonical
+`Backtest -> Paper` checklist is `DK1_TRUST_PACKET_REVIEWED`, `RUN_LINEAGE_REVIEWED`,
+`PORTFOLIO_LEDGER_CONTINUITY_REVIEWED`, and `RISK_CONTROLS_REVIEWED`; `Paper -> Live` also
+requires `LIVE_OVERRIDE_REVIEWED`.
 
 Rejection uses the same operator-review packet shape through `RejectPromotionRequest`:
 

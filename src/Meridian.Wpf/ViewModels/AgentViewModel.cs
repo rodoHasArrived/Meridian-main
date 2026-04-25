@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.Logging;
 using Meridian.Wpf.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.ViewModels;
 

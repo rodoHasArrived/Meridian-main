@@ -147,29 +147,29 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         string checkId = "",
         string expectedSource = "",
         string actualSource = "") => category switch
-    {
-        "amount_mismatch" when IsCashCheck(checkId)
-            => ReconciliationBreakCategory.CashMismatch,
-        "amount_mismatch" when IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource)
-            => ReconciliationBreakCategory.ExternalStatementMismatch,
-        "amount_mismatch" => ReconciliationBreakCategory.AmountMismatch,
-        "missing_ledger_coverage" when IsCashCheck(checkId)
-            => ReconciliationBreakCategory.MissingCashCoverage,
-        "missing_ledger_coverage" when IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource)
-            => ReconciliationBreakCategory.MissingExternalStatementCoverage,
-        "missing_ledger_coverage" => ReconciliationBreakCategory.MissingLedgerCoverage,
-        "missing_portfolio_coverage" when string.Equals(missingSource, "bank", StringComparison.OrdinalIgnoreCase)
-            => ReconciliationBreakCategory.MissingBankCoverage,
-        "missing_portfolio_coverage" when IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource)
-            => ReconciliationBreakCategory.MissingExternalStatementCoverage,
-        "missing_portfolio_coverage" when IsCashCheck(checkId)
-            => ReconciliationBreakCategory.MissingCashCoverage,
-        "missing_portfolio_coverage" => ReconciliationBreakCategory.MissingPortfolioCoverage,
-        "classification_gap" => ReconciliationBreakCategory.ClassificationGap,
-        "timing_mismatch" => ReconciliationBreakCategory.TimingMismatch,
-        "partial_match" => ReconciliationBreakCategory.PartialMatch,
-        _ => ReconciliationBreakCategory.ClassificationGap
-    };
+        {
+            "amount_mismatch" when IsCashCheck(checkId)
+                => ReconciliationBreakCategory.CashMismatch,
+            "amount_mismatch" when IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource)
+                => ReconciliationBreakCategory.ExternalStatementMismatch,
+            "amount_mismatch" => ReconciliationBreakCategory.AmountMismatch,
+            "missing_ledger_coverage" when IsCashCheck(checkId)
+                => ReconciliationBreakCategory.MissingCashCoverage,
+            "missing_ledger_coverage" when IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource)
+                => ReconciliationBreakCategory.MissingExternalStatementCoverage,
+            "missing_ledger_coverage" => ReconciliationBreakCategory.MissingLedgerCoverage,
+            "missing_portfolio_coverage" when string.Equals(missingSource, "bank", StringComparison.OrdinalIgnoreCase)
+                => ReconciliationBreakCategory.MissingBankCoverage,
+            "missing_portfolio_coverage" when IsExternalStatementSource(expectedSource) || IsExternalStatementSource(actualSource)
+                => ReconciliationBreakCategory.MissingExternalStatementCoverage,
+            "missing_portfolio_coverage" when IsCashCheck(checkId)
+                => ReconciliationBreakCategory.MissingCashCoverage,
+            "missing_portfolio_coverage" => ReconciliationBreakCategory.MissingPortfolioCoverage,
+            "classification_gap" => ReconciliationBreakCategory.ClassificationGap,
+            "timing_mismatch" => ReconciliationBreakCategory.TimingMismatch,
+            "partial_match" => ReconciliationBreakCategory.PartialMatch,
+            _ => ReconciliationBreakCategory.ClassificationGap
+        };
 
     private static bool IsCashCheck(string checkId) =>
         checkId.Contains("cash", StringComparison.OrdinalIgnoreCase);

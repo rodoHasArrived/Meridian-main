@@ -12,10 +12,10 @@ public sealed class AddProviderWizardViewModel : BindableBase
 {
     // ---- Static brush constants (avoids FindResource in ViewModel) ----
     private static readonly SolidColorBrush SuccessBrush = new(Color.FromRgb(63, 185, 80));
-    private static readonly SolidColorBrush InfoBrush    = new(Color.FromRgb(88, 166, 255));
+    private static readonly SolidColorBrush InfoBrush = new(Color.FromRgb(88, 166, 255));
     private static readonly SolidColorBrush WarningBrush = new(Color.FromRgb(210, 153, 34));
-    private static readonly SolidColorBrush ErrorBrush   = new(Color.FromRgb(248, 81, 73));
-    private static readonly SolidColorBrush MutedBrush   = new(Color.FromRgb(139, 148, 158));
+    private static readonly SolidColorBrush ErrorBrush = new(Color.FromRgb(248, 81, 73));
+    private static readonly SolidColorBrush MutedBrush = new(Color.FromRgb(139, 148, 158));
 
     // ---- Backing fields ----
 
@@ -230,13 +230,13 @@ public sealed class AddProviderWizardViewModel : BindableBase
     /// <summary>Populates the right-panel detail properties from the selected provider entry.</summary>
     public void ApplySelectedProvider(ProviderCatalogEntry provider)
     {
-        SelectedProviderName        = provider.DisplayName;
+        SelectedProviderName = provider.DisplayName;
         SelectedProviderDescription = provider.Description;
-        DetailsVisibility           = Visibility.Visible;
-        DetailStreamingText  = provider.SupportsStreaming    ? "Yes" : "No";
-        DetailHistoricalText = provider.SupportsHistorical   ? "Yes" : "No";
-        DetailSearchText     = provider.SupportsSymbolSearch ? "Yes" : "No";
-        DetailRateLimitText  = provider.RateLimitPerMinute > 0
+        DetailsVisibility = Visibility.Visible;
+        DetailStreamingText = provider.SupportsStreaming ? "Yes" : "No";
+        DetailHistoricalText = provider.SupportsHistorical ? "Yes" : "No";
+        DetailSearchText = provider.SupportsSymbolSearch ? "Yes" : "No";
+        DetailRateLimitText = provider.RateLimitPerMinute > 0
             ? $"{provider.RateLimitPerMinute}/min"
             : "None";
         DetailCredentialsText = provider.CredentialFields.Length > 0
@@ -275,49 +275,49 @@ public sealed class AddProviderWizardViewModel : BindableBase
     {
         if (hasFields)
         {
-            CredentialsInfoText      = $"Enter your {providerName} credentials. " +
+            CredentialsInfoText = $"Enter your {providerName} credentials. " +
                                        "These will be stored as user environment variables.";
-            NoCredentialsVisibility  = Visibility.Collapsed;
+            NoCredentialsVisibility = Visibility.Collapsed;
         }
         else
         {
-            CredentialsInfoText      = $"{providerName} does not require API credentials.";
-            NoCredentialsVisibility  = Visibility.Visible;
+            CredentialsInfoText = $"{providerName} does not require API credentials.";
+            NoCredentialsVisibility = Visibility.Visible;
         }
     }
 
     /// <summary>Transitions the connection-test dot to the "testing" (warning) state.</summary>
     public void SetConnectionTestTesting(string providerName)
     {
-        ConnectionTestDotBrush     = WarningBrush;
-        ConnectionTestStatusText   = $"Testing {providerName} connectivity...";
+        ConnectionTestDotBrush = WarningBrush;
+        ConnectionTestStatusText = $"Testing {providerName} connectivity...";
     }
 
     /// <summary>Marks the connection test as successful.</summary>
     public void SetConnectionTestSuccess()
     {
-        ConnectionTestDotBrush   = SuccessBrush;
+        ConnectionTestDotBrush = SuccessBrush;
         ConnectionTestStatusText = "Credentials configured. Provider ready.";
     }
 
     /// <summary>Marks the connection test as failed due to missing credentials.</summary>
     public void SetConnectionTestError()
     {
-        ConnectionTestDotBrush   = ErrorBrush;
+        ConnectionTestDotBrush = ErrorBrush;
         ConnectionTestStatusText = "Missing credentials. Please fill in all required fields above.";
     }
 
     /// <summary>Sets a success message on the save-status line.</summary>
     public void SetSaveSuccess(string providerName)
     {
-        SaveStatusText  = $"{providerName} configured successfully.";
+        SaveStatusText = $"{providerName} configured successfully.";
         SaveStatusBrush = SuccessBrush;
     }
 
     /// <summary>Sets an error message on the save-status line.</summary>
     public void SetSaveError(string message)
     {
-        SaveStatusText  = $"Failed to save: {message}";
+        SaveStatusText = $"Failed to save: {message}";
         SaveStatusBrush = ErrorBrush;
     }
 

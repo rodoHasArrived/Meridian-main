@@ -59,7 +59,8 @@ public partial class TimeSeriesAlignmentPage : Page
             return;
         }
 
-        if (PresetCombo.SelectedItem is not ComboBoxItem item || item.Tag is not string preset) return;
+        if (PresetCombo.SelectedItem is not ComboBoxItem item || item.Tag is not string preset)
+            return;
 
         switch (preset)
         {

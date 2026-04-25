@@ -62,6 +62,31 @@ jobs:
       collect-coverage: true
     secrets: inherit
 
+  contract-compatibility:
+    name: Contract Compatibility Gate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Capture PR body
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+      run: |
+        printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+
+    - name: Run contract compatibility gate
+      run: |
+        python3 scripts/check_contract_compatibility_gate.py \
+          --base "${{ github.event.pull_request.base.sha }}" \
+          --head "HEAD" \
+          --pr-body-file "$RUNNER_TEMP/pr-body.md"
+
   config-schema:
     name: Config Schema Check
     runs-on: ubuntu-latest
@@ -326,7 +351,7 @@ jobs:
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [lint, build-and-test, config-schema, ibapi-smoke, golden-fixtures, kernel-parity, ai-pr-review]
+    needs: [lint, build-and-test, contract-compatibility, config-schema, ibapi-smoke, golden-fixtures, kernel-parity, ai-pr-review]
     if: always()
     timeout-minutes: 30
 
@@ -339,6 +364,7 @@ jobs:
         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
         echo "| Code Formatting | ${{ needs.lint.result == 'success' && 'Passed' || (needs.lint.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Build & Test | ${{ needs.build-and-test.result == 'success' && 'Passed' || (needs.build-and-test.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Contract Compatibility | ${{ needs.contract-compatibility.result == 'success' && 'Passed' || (needs.contract-compatibility.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Config Schema | ${{ needs.config-schema.result == 'success' && 'Passed' || (needs.config-schema.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| IBAPI Smoke Build | ${{ needs.ibapi-smoke.result == 'success' && 'Passed' || (needs.ibapi-smoke.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Golden Fixtures | ${{ needs.golden-fixtures.result == 'success' && 'Passed' || (needs.golden-fixtures.result == 'skipped' && 'Skipped' || 'Failed') }} |" >> $GITHUB_STEP_SUMMARY
@@ -348,6 +374,7 @@ jobs:
 
         if [[ "${{ needs.lint.result }}" == "failure" ]] || \
            [[ "${{ needs.build-and-test.result }}" == "failure" ]] || \
+           [[ "${{ needs.contract-compatibility.result }}" == "failure" ]] || \
            [[ "${{ needs.config-schema.result }}" == "failure" ]] || \
            [[ "${{ needs.ibapi-smoke.result }}" == "failure" ]] || \
            [[ "${{ needs.golden-fixtures.result }}" == "failure" ]] || \

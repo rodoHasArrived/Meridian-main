@@ -85,7 +85,8 @@ public partial class DataSourcesPage : Page
 
     private void EditPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        if (e.NewValue is not true) return;
+        if (e.NewValue is not true)
+            return;
 
         SelectComboByTag(ProviderCombo, _viewModel.SelectedProvider);
         SelectComboByTag(TypeCombo, _viewModel.SelectedType);

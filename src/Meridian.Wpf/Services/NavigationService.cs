@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
 
@@ -100,7 +100,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// <inheritdoc />
     protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
-        if (_frame == null) return false;
+        if (_frame == null)
+            return false;
 
         try
         {
@@ -151,7 +152,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         try
         {
             var tourService = Meridian.Ui.Services.OnboardingTourService.Instance;
-            if (tourService.IsTourActive) return;
+            if (tourService.IsTourActive)
+                return;
 
             var tour = tourService.GetTourForPage(pageTag);
             if (tour != null)

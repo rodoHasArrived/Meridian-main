@@ -31,7 +31,8 @@ public sealed class StorageService : StorageServiceBase
         var response = await ApiClientService.Instance.GetAsync<List<SymbolFileDto>>(
             UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolFiles, "symbol", symbol), ct);
 
-        if (response == null) return new List<DataFileInfo>();
+        if (response == null)
+            return new List<DataFileInfo>();
 
         var files = new List<DataFileInfo>();
         foreach (var dto in response)

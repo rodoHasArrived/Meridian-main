@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -27,9 +28,11 @@ BREAKING_REMOVAL_PATTERNS = (
     re.compile(r"^-\s*\.Produces<"),
 )
 
+GIT_EXECUTABLE = shutil.which("git") or shutil.which("git.cmd") or "git"
+
 
 def run_git(args: list[str]) -> str:
-    result = subprocess.run(["git", *args], check=True, capture_output=True, text=True)
+    result = subprocess.run([GIT_EXECUTABLE, *args], check=True, capture_output=True, text=True)
     return result.stdout
 
 

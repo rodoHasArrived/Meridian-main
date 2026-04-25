@@ -20,11 +20,11 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NotificationService _notificationService;
     private readonly AlertService _alertService;
     private DispatcherTimer? _alertRefreshTimer;
+    private bool _suppressFilterRefresh;
 
     public ObservableCollection<NotificationItem> AllNotifications { get; } = new();
     public ObservableCollection<NotificationItem> FilteredNotifications { get; } = new();
 
-    // ── Bindable counters ───────────────────────────────────────────────────
     private int _unreadCount;
     public int UnreadCount { get => _unreadCount; private set => SetProperty(ref _unreadCount, value); }
 
@@ -33,6 +33,88 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
 
     private bool _noNotificationsVisible = true;
     public bool NoNotificationsVisible { get => _noNotificationsVisible; private set => SetProperty(ref _noNotificationsVisible, value); }
+
+    private string _searchText = string.Empty;
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value))
+                ApplyFilters();
+        }
+    }
+
+    private bool _showUnreadOnly;
+    public bool ShowUnreadOnly
+    {
+        get => _showUnreadOnly;
+        set
+        {
+            if (SetProperty(ref _showUnreadOnly, value))
+                ApplyFilters();
+        }
+    }
+
+    private bool _showErrors = true;
+    public bool ShowErrors
+    {
+        get => _showErrors;
+        private set
+        {
+            if (SetProperty(ref _showErrors, value) && !_suppressFilterRefresh)
+                ApplyFilters();
+        }
+    }
+
+    private bool _showWarnings = true;
+    public bool ShowWarnings
+    {
+        get => _showWarnings;
+        private set
+        {
+            if (SetProperty(ref _showWarnings, value) && !_suppressFilterRefresh)
+                ApplyFilters();
+        }
+    }
+
+    private bool _showInfo = true;
+    public bool ShowInfo
+    {
+        get => _showInfo;
+        private set
+        {
+            if (SetProperty(ref _showInfo, value) && !_suppressFilterRefresh)
+                ApplyFilters();
+        }
+    }
+
+    private bool _showSuccess = true;
+    public bool ShowSuccess
+    {
+        get => _showSuccess;
+        private set
+        {
+            if (SetProperty(ref _showSuccess, value) && !_suppressFilterRefresh)
+                ApplyFilters();
+        }
+    }
+
+    public bool HasUnreadNotifications => UnreadCount > 0;
+    public bool CanMarkAllRead => UnreadCount > 0;
+    public bool HasNotificationHistory => AllNotifications.Count > 0;
+
+    public string HistorySummaryText => HasActiveFilters
+        ? $"Showing {TotalCount} of {AllNotifications.Count} notification{(AllNotifications.Count == 1 ? string.Empty : "s")}"
+        : $"{TotalCount} notification{(TotalCount == 1 ? string.Empty : "s")}";
+
+    public string EmptyStateTitle => HasNotificationHistory
+        ? "No notifications match the current filters"
+        : "No notifications yet";
+
+    public string EmptyStateDescription => HasNotificationHistory
+        ? "Clear the search term or widen the filters to see more notification history."
+        : "Notifications about connection status, data quality, and system events will appear here.";
 
     /// <summary>
     /// Fires when the grouped alerts display needs to be refreshed.
@@ -75,43 +157,40 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         AllNotifications.Clear();
 
         var history = _notificationService.GetHistory();
-        foreach (var historyItem in history)
+        for (var index = 0; index < history.Count; index++)
         {
+            var historyItem = history[index];
             var item = CreateNotificationItem(
                 historyItem.Title,
                 historyItem.Message,
                 historyItem.Type,
                 historyItem.Timestamp);
             item.IsRead = historyItem.IsRead;
+            item.HistoryIndex = index;
             AllNotifications.Add(item);
         }
 
         ApplyFilters();
-        UpdateCounters();
     }
 
-    public void ApplyFilters(string typeFilter = "All", bool unreadOnly = false)
+    private void ApplyFilters()
     {
         FilteredNotifications.Clear();
 
-        foreach (var item in AllNotifications)
+        var filteredItems = AllNotifications
+            .Where(MatchesTypeFilter)
+            .Where(item => !ShowUnreadOnly || !item.IsRead)
+            .Where(MatchesSearch)
+            .OrderBy(item => item.IsRead)
+            .ThenByDescending(item => item.RawTimestamp);
+
+        foreach (var item in filteredItems)
         {
-            if (unreadOnly && item.IsRead) continue;
-
-            var shouldShow = typeFilter switch
-            {
-                "Errors" => item.NotificationType == NotificationType.Error,
-                "Warnings" => item.NotificationType == NotificationType.Warning,
-                "Info" => item.NotificationType == NotificationType.Info,
-                "Success" => item.NotificationType == NotificationType.Success,
-                _ => true
-            };
-
-            if (shouldShow)
-                FilteredNotifications.Add(item);
+            FilteredNotifications.Add(item);
         }
 
         NoNotificationsVisible = FilteredNotifications.Count == 0;
+        UpdateCounters();
     }
 
     /// <summary>
@@ -119,30 +198,21 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     /// </summary>
     public void ApplyCheckboxFilters(bool showErrors, bool showWarnings, bool showInfo, bool showSuccess)
     {
-        FilteredNotifications.Clear();
+        _suppressFilterRefresh = true;
+        ShowErrors = showErrors;
+        ShowWarnings = showWarnings;
+        ShowInfo = showInfo;
+        ShowSuccess = showSuccess;
+        _suppressFilterRefresh = false;
 
-        foreach (var item in AllNotifications)
-        {
-            var shouldShow = item.NotificationType switch
-            {
-                NotificationType.Error => showErrors,
-                NotificationType.Warning => showWarnings,
-                NotificationType.Success => showSuccess,
-                NotificationType.Info => showInfo,
-                _ => showInfo
-            };
-
-            if (shouldShow)
-                FilteredNotifications.Add(item);
-        }
-
-        NoNotificationsVisible = FilteredNotifications.Count == 0;
+        ApplyFilters();
     }
 
     public void UpdateCounters()
     {
         UnreadCount = AllNotifications.Count(n => !n.IsRead);
         TotalCount = FilteredNotifications.Count;
+        RaiseHistoryStateChanged();
     }
 
     public void MarkAllRead()
@@ -154,7 +224,19 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         for (var i = 0; i < history.Count; i++)
             _notificationService.MarkAsRead(i);
 
-        UpdateCounters();
+        ApplyFilters();
+    }
+
+    public void MarkRead(NotificationItem? item)
+    {
+        if (item is null || item.IsRead)
+            return;
+
+        item.IsRead = true;
+        if (item.HistoryIndex >= 0)
+            _notificationService.MarkAsRead(item.HistoryIndex);
+
+        ApplyFilters();
     }
 
     public void ClearAll()
@@ -227,9 +309,12 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             var item = CreateNotificationItem(e.Title, e.Message, e.Type, DateTime.Now);
+            foreach (var existingItem in AllNotifications)
+                existingItem.HistoryIndex++;
+
+            item.HistoryIndex = 0;
             AllNotifications.Insert(0, item);
             ApplyFilters();
-            UpdateCounters();
         });
     }
 
@@ -239,6 +324,41 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         {
             AlertsRefreshRequested?.Invoke(this, EventArgs.Empty);
         });
+    }
+
+    private bool MatchesTypeFilter(NotificationItem item) =>
+        item.NotificationType switch
+        {
+            NotificationType.Error => ShowErrors,
+            NotificationType.Warning => ShowWarnings,
+            NotificationType.Success => ShowSuccess,
+            NotificationType.Info => ShowInfo,
+            _ => ShowInfo
+        };
+
+    private bool MatchesSearch(NotificationItem item)
+    {
+        if (string.IsNullOrWhiteSpace(SearchText))
+            return true;
+
+        return item.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+            || item.Message.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
+            || item.Type.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool HasActiveFilters =>
+        ShowUnreadOnly
+        || !string.IsNullOrWhiteSpace(SearchText)
+        || !(ShowErrors && ShowWarnings && ShowInfo && ShowSuccess);
+
+    private void RaiseHistoryStateChanged()
+    {
+        OnPropertyChanged(nameof(HasUnreadNotifications));
+        OnPropertyChanged(nameof(CanMarkAllRead));
+        OnPropertyChanged(nameof(HasNotificationHistory));
+        OnPropertyChanged(nameof(HistorySummaryText));
+        OnPropertyChanged(nameof(EmptyStateTitle));
+        OnPropertyChanged(nameof(EmptyStateDescription));
     }
 
     private static string FormatTimestamp(DateTime timestamp)

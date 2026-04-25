@@ -3,8 +3,8 @@ using Meridian.QuantScript.Plotting;
 using Meridian.Ui.Services.Services;
 using ScottPlot;
 using ScottPlot.WPF;
-using TickGenerators = ScottPlot.TickGenerators;
 using Palette = Meridian.Ui.Services.Services.ColorPalette;
+using TickGenerators = ScottPlot.TickGenerators;
 
 namespace Meridian.Wpf.Behaviors;
 

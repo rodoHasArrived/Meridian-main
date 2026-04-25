@@ -380,7 +380,8 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
 
     public async Task RepairGapsAsync(CancellationToken ct = default)
     {
-        if (_lastGapAnalysis == null) return;
+        if (_lastGapAnalysis == null)
+            return;
 
         try
         {
@@ -470,7 +471,8 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
             if (result.Success)
             {
                 var maxP99 = result.Providers.Count > 0 ? result.Providers.Max(p => p.P99Ms) : 100;
-                if (maxP99 < 1) maxP99 = 100;
+                if (maxP99 < 1)
+                    maxP99 = 100;
 
                 foreach (var p in result.Providers)
                 {
@@ -569,8 +571,10 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
 
     private static string FormatDuration(TimeSpan duration)
     {
-        if (duration.TotalDays >= 1) return $"{(int)duration.TotalDays}d {duration.Hours}h";
-        if (duration.TotalHours >= 1) return $"{(int)duration.TotalHours}h {duration.Minutes}m";
+        if (duration.TotalDays >= 1)
+            return $"{(int)duration.TotalDays}d {duration.Hours}h";
+        if (duration.TotalHours >= 1)
+            return $"{(int)duration.TotalHours}h {duration.Minutes}m";
         return $"{(int)duration.TotalMinutes}m";
     }
 

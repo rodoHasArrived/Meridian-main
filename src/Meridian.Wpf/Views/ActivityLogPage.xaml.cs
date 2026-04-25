@@ -68,7 +68,8 @@ public partial class ActivityLogPage : Page
             FileName = $"activity_log_{DateTime.Now:yyyyMMdd_HHmmss}"
         };
 
-        if (dialog.ShowDialog() != true) return;
+        if (dialog.ShowDialog() != true)
+            return;
 
         try
         {

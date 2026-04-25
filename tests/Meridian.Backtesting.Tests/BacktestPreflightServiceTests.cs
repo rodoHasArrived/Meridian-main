@@ -117,12 +117,13 @@ public sealed class BacktestPreflightServiceTests : IDisposable
     private sealed class LocalNoOpStrategy : IBacktestStrategy
     {
         public string Name => "local-no-op";
-        public void Initialize(BacktestContext context) { }
-        public void OnTrade(Trade trade, BacktestContext context) { }
-        public void OnQuote(BboQuotePayload quote, BacktestContext context) { }
-        public void OnBar(HistoricalBar bar, BacktestContext context) { }
-        public void OnOrderBook(LOBSnapshot orderBook, BacktestContext context) { }
-        public void OnFinished(BacktestContext context) { }
-        public void OnOrderFilled(FillEvent fill, BacktestContext context) { }
+        public void Initialize(IBacktestContext ctx) { }
+        public void OnTrade(Trade trade, IBacktestContext ctx) { }
+        public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+        public void OnBar(HistoricalBar bar, IBacktestContext ctx) { }
+        public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+        public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+        public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+        public void OnFinished(IBacktestContext ctx) { }
     }
 }

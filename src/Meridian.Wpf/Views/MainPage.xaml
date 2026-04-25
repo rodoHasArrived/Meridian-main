@@ -1228,6 +1228,26 @@
                                     </StackPanel>
                                 </Button>
 
+                                <Button x:Name="ShellDensityToggleButton"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        ToolTip="{Binding ShellDensityToggleTooltip}"
+                                        Command="{Binding ToggleShellDensityCommand}"
+                                        Margin="0,0,8,0"
+                                        AutomationProperties.AutomationId="ShellDensityToggleButton"
+                                        AutomationProperties.Name="Toggle Shell Density">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{StaticResource IconGrid}"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock x:Name="ShellDensityButtonLabelText"
+                                                   Text="{Binding ShellDensityButtonText}"
+                                                   Margin="8,0,0,0"
+                                                   VerticalAlignment="Center"
+                                                   AutomationProperties.AutomationId="ShellDensityButtonLabelText" />
+                                    </StackPanel>
+                                </Button>
+
                                 <Button Style="{StaticResource GhostButtonStyle}"
                                         ToolTip="Notifications"
                                         Margin="0,0,8,0"

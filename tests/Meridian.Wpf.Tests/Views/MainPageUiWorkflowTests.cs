@@ -148,6 +148,50 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_ShellDensityToggle_ShouldUpdateHeaderLabelAndPersistPreference()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var preferencesPath = Path.Combine(
+                Path.GetTempPath(),
+                "mainpage-ui-test-" + Guid.NewGuid().ToString("N"),
+                "desktop-shell-preferences.json");
+
+            try
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+                SettingsConfigurationService.Instance.SetShellDensityMode(ShellDensityMode.Standard);
+
+                using var facade = new MainPageUiAutomationFacade();
+
+                AutomationProperties.GetAutomationId(facade.ShellDensityToggleButton).Should().Be("ShellDensityToggleButton");
+                facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Standard");
+                ToolTipService.GetToolTip(facade.ShellDensityToggleButton).Should().Be("Switch to compact shell density");
+
+                facade.Click(facade.ShellDensityToggleButton);
+
+                facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+                facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Compact");
+                ToolTipService.GetToolTip(facade.ShellDensityToggleButton).Should().Be("Switch to standard shell density");
+                SettingsConfigurationService.Instance.GetShellDensityMode().Should().Be(ShellDensityMode.Compact);
+
+                facade.Click(facade.ShellDensityToggleButton);
+
+                facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
+                facade.ShellDensityButtonLabelText.Text.Should().Be("Density: Standard");
+            }
+            finally
+            {
+                SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+                if (File.Exists(preferencesPath))
+                {
+                    File.Delete(preferencesPath);
+                }
+            }
+        });
+    }
+
+    [Fact]
     public void MainPage_RecentPagesEmptyState_ShouldOfferCommandPaletteShortcut()
     {
         WpfTestThread.Run(() =>

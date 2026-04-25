@@ -1,8 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
-using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.Views;
 

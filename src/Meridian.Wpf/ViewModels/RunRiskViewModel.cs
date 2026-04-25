@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
-using Meridian.Strategies.Services;
 using Meridian.QuantScript.Plotting;
+using Meridian.Strategies.Services;
 using Meridian.Wpf.Services;
 using CurvePt = Meridian.Contracts.Workstation.EquityCurvePoint;
 

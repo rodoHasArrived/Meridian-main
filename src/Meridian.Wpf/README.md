@@ -10,10 +10,13 @@ The current WPF application already spans research, trading-adjacent, data-opera
 - **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
 - **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
 - **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
+- **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
 Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
+`NotificationCenter` now supports history triage with search, unread-only filtering, and per-item acknowledgement so governance operators can work events as a queue instead of a flat feed.
+`DataOperationsWorkspaceShellPage` now opens with a scope-and-handoff briefing card so operators see the active operational focus before dropping into provider, backfill, storage, and export queues.
 
 ## Why WPF?
 
@@ -97,6 +100,7 @@ On first run, the application will:
 2. Create or copy a default config when needed.
 3. Initialize services.
 4. Restore the last saved workspace/session state when available.
+5. Land on a workspace-first welcome surface that launches `Research`, `Trading`, `Data Operations`, or `Governance`, with a collection-focused quick start kept under Data Operations.
 
 ## Current Surface Map
 
@@ -104,10 +108,13 @@ The application still contains many page-level screens, but the active desktop d
 
 Examples:
 
-- `Research`: `Dashboard` portfolio operations overview, `Backtest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
-- `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
+- `Welcome`: workspace launcher plus Data Operations collection quick start
+- `Research`: `Dashboard` portfolio operations overview, `Backtest`, `BatchBacktest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
+- `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `PositionBlotter`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
 - `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
 - `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
+
+`PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
 
 ## Development Notes
 
@@ -128,6 +135,7 @@ Examples:
 
 - Keep business logic in services or view models instead of code-behind where practical.
 - Prefer extending shared run, portfolio, ledger, and workstation services before introducing parallel desktop-only models.
+- Use `IBatchBacktestService` for `BatchBacktest` request sweeps so the desktop panel exercises the same backtesting engine path as non-desktop callers.
 - Treat the workstation categories as the user-facing source of truth even when legacy pages still exist underneath.
 - Keep workstation chrome aligned with the dark Meridian operator style: navy shell surfaces, cyan focus and selection accents, compact data cards, and dense panel layouts suited to repeated market-monitoring work.
 - Avoid `.Result` / `.Wait()` in UI-facing async paths; use `await` + cancellation tokens to prevent desktop deadlocks.

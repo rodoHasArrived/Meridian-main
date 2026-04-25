@@ -1,10 +1,10 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Tests.TestHelpers;
-using System.Text.Json;
 using Xunit;
 
 namespace Meridian.Tests.Providers;

@@ -1,5 +1,5 @@
-using Meridian.Application.Coordination;
 using Meridian.Application.Backfill;
+using Meridian.Application.Coordination;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Logging;
 

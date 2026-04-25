@@ -23,14 +23,14 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 {
     // P1: Static cached brushes — avoids allocating a new SolidColorBrush per market event.
-    private static readonly SolidColorBrush BrushTrade       = new(Color.FromRgb(63, 185, 80));
-    private static readonly SolidColorBrush BrushQuote       = new(Color.FromRgb(88, 166, 255));
-    private static readonly SolidColorBrush BrushEventOther  = new(Color.FromRgb(139, 148, 158));
-    private static readonly SolidColorBrush BrushBuy         = new(Color.FromRgb(63, 185, 80));
-    private static readonly SolidColorBrush BrushSell        = new(Color.FromRgb(244, 67, 54));
-    private static readonly SolidColorBrush BrushConnected   = new(Color.FromRgb(63, 185, 80));
-    private static readonly SolidColorBrush BrushReconnecting= new(Color.FromRgb(255, 193, 7));
-    private static readonly SolidColorBrush BrushDisconnected= new(Color.FromRgb(139, 148, 158));
+    private static readonly SolidColorBrush BrushTrade = new(Color.FromRgb(63, 185, 80));
+    private static readonly SolidColorBrush BrushQuote = new(Color.FromRgb(88, 166, 255));
+    private static readonly SolidColorBrush BrushEventOther = new(Color.FromRgb(139, 148, 158));
+    private static readonly SolidColorBrush BrushBuy = new(Color.FromRgb(63, 185, 80));
+    private static readonly SolidColorBrush BrushSell = new(Color.FromRgb(244, 67, 54));
+    private static readonly SolidColorBrush BrushConnected = new(Color.FromRgb(63, 185, 80));
+    private static readonly SolidColorBrush BrushReconnecting = new(Color.FromRgb(255, 193, 7));
+    private static readonly SolidColorBrush BrushDisconnected = new(Color.FromRgb(139, 148, 158));
 
     private readonly HttpClient _httpClient = new();
     private readonly WpfServices.StatusService _statusService;
@@ -373,10 +373,14 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
                 var json = await response.Content.ReadAsStringAsync(_liveDataCts.Token);
                 var quote = JsonSerializer.Deserialize<JsonElement>(json);
 
-                if (quote.TryGetProperty("bid", out var b)) _bidPrice = b.GetDecimal();
-                if (quote.TryGetProperty("ask", out var a)) _askPrice = a.GetDecimal();
-                if (quote.TryGetProperty("bidSize", out var bs)) _bidSize = bs.GetInt32();
-                if (quote.TryGetProperty("askSize", out var as2)) _askSize = as2.GetInt32();
+                if (quote.TryGetProperty("bid", out var b))
+                    _bidPrice = b.GetDecimal();
+                if (quote.TryGetProperty("ask", out var a))
+                    _askPrice = a.GetDecimal();
+                if (quote.TryGetProperty("bidSize", out var bs))
+                    _bidSize = bs.GetInt32();
+                if (quote.TryGetProperty("askSize", out var as2))
+                    _askSize = as2.GetInt32();
 
                 UpdateQuoteDisplay();
             }
@@ -446,17 +450,22 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
     private bool ShouldShowEvent(LiveDataEventModel evt)
     {
-        if (evt.Type == "TRD" && !ShowTrades) return false;
-        if ((evt.Type == "QTE" || evt.Type == "BBO") && !ShowQuotes) return false;
+        if (evt.Type == "TRD" && !ShowTrades)
+            return false;
+        if ((evt.Type == "QTE" || evt.Type == "BBO") && !ShowQuotes)
+            return false;
         return true;
     }
 
     private void UpdateSessionStats(LiveDataEventModel evt)
     {
-        if (evt.Type != "TRD" || evt.RawPrice <= 0) return;
+        if (evt.Type != "TRD" || evt.RawPrice <= 0)
+            return;
         _lastPrice = evt.RawPrice;
-        if (!_sessionHigh.HasValue || evt.RawPrice > _sessionHigh) _sessionHigh = evt.RawPrice;
-        if (!_sessionLow.HasValue || evt.RawPrice < _sessionLow) _sessionLow = evt.RawPrice;
+        if (!_sessionHigh.HasValue || evt.RawPrice > _sessionHigh)
+            _sessionHigh = evt.RawPrice;
+        if (!_sessionLow.HasValue || evt.RawPrice < _sessionLow)
+            _sessionLow = evt.RawPrice;
         if (int.TryParse(evt.Size.Replace(",", ""), out var sz))
         {
             _sessionVolume += sz;
@@ -506,9 +515,16 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
     private void ResetSessionStats()
     {
-        _sessionHigh = null; _sessionLow = null;
-        _sessionVolume = 0; _tradeCount = 0; _vwapNumerator = 0;
-        _lastPrice = 0; _bidPrice = 0; _askPrice = 0; _bidSize = 0; _askSize = 0;
+        _sessionHigh = null;
+        _sessionLow = null;
+        _sessionVolume = 0;
+        _tradeCount = 0;
+        _vwapNumerator = 0;
+        _lastPrice = 0;
+        _bidPrice = 0;
+        _askPrice = 0;
+        _bidSize = 0;
+        _askSize = 0;
         _totalEvents = 0;
         UpdateQuoteDisplay();
         TotalEventsText = "0";
@@ -518,8 +534,10 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
     private static string FormatNumber(long num)
     {
-        if (num >= 1_000_000) return $"{num / 1_000_000.0:F1}M";
-        if (num >= 1_000) return $"{num / 1_000.0:F1}K";
+        if (num >= 1_000_000)
+            return $"{num / 1_000_000.0:F1}M";
+        if (num >= 1_000)
+            return $"{num / 1_000.0:F1}K";
         return num.ToString("N0");
     }
 

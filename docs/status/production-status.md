@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-04-25
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -29,7 +29,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
-The current working tree reinforces that direction rather than changing it. WPF workspace-shell consolidation is actively moving through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, and new shell smoke tests, but that work should still be treated as in-flight support for Waves 2-4 rather than as a closed migration milestone.
+The current working tree reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, and shell smoke tests. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
@@ -39,7 +39,7 @@ The current working tree reinforces that direction rather than changing it. WPF 
 | Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
-| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, and promotion seam are in code |
+| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, promotion seam, and the shared trading-readiness contract are in code |
 | Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; broader runtime proof remains open |
 | Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |
@@ -72,11 +72,12 @@ Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE
 - Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
 - backfill checkpoint reliability and Parquet L2 flush behavior are closed Wave 1 sub-gates backed by repo tests, including retry-safe L2 flush retention on failed or cancelled writes
 - Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
-- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, and the latest generated validation summary instead of architecture intent
+- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, the generated DK1 parity packet, and the latest generated validation summary instead of architecture intent; the current DK1 packet is ready for operator review, but sign-off remains open
 
 ### Wave 2: Paper-trading cockpit hardening
 
 - the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
+- `/api/workstation/trading/readiness` now gives Wave 2 a single DTO surface for active paper-session state, replay consistency, execution controls, promotion approval checklist state, brokerage sync posture, and operator work items
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
 

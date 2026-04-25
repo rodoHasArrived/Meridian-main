@@ -7,11 +7,11 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Execution;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
-using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -24,9 +24,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using ExecutionServices = Meridian.Execution.Services;
-using ExecutionOrderRequest = Meridian.Execution.Sdk.OrderRequest;
 using Xunit;
+using ExecutionOrderRequest = Meridian.Execution.Sdk.OrderRequest;
+using ExecutionServices = Meridian.Execution.Services;
 
 namespace Meridian.Tests.Ui;
 
@@ -417,7 +417,8 @@ public sealed class ExecutionWriteEndpointsTests
                 RunId: "run-backtest-01",
                 ReviewNotes: "Replay is consistent with durable fill log.",
                 ApprovedBy: "ops-promoter",
-                ApprovalReason: "Replay source and session continuity verified.")));
+                ApprovalReason: "Replay source and session continuity verified.",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper))));
         approveResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var approval = await ReadAsync<PromotionDecisionResult>(approveResponse);
 
@@ -452,7 +453,9 @@ public sealed class ExecutionWriteEndpointsTests
                 record.StrategyId == "strat-wave2" &&
                 record.SourceRunType == RunType.Backtest &&
                 record.TargetRunType == RunType.Paper &&
-                record.ApprovedBy == "ops-promoter");
+                record.ApprovedBy == "ops-promoter" &&
+                record.ApprovalChecklist != null &&
+                record.ApprovalChecklist.Length > 0);
 
             audits.Should().Contain(entry =>
                 entry.Action == "ReplayPaperSession" &&
@@ -465,7 +468,13 @@ public sealed class ExecutionWriteEndpointsTests
                 entry.RunId == "run-backtest-01" &&
                 entry.Outcome == "Approved" &&
                 entry.CorrelationId == approval.PromotionId &&
-                entry.Message == "Replay source and session continuity verified.");
+                entry.Message == "Replay source and session continuity verified." &&
+                entry.Metadata != null &&
+                entry.Metadata["sourceRunType"] == nameof(RunType.Backtest) &&
+                entry.Metadata["targetRunType"] == nameof(RunType.Paper) &&
+                entry.Metadata["targetRunId"] == approval.NewRunId &&
+                entry.Metadata["auditReference"] == approval.AuditReference &&
+                entry.Metadata["approvalChecklist"].Contains(PromotionApprovalChecklist.Dk1TrustPacketReviewed, StringComparison.Ordinal));
         }
     }
 

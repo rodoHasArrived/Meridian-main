@@ -121,7 +121,8 @@ public sealed class ProviderSparklineItem : INotifyPropertyChanged
 
         var points = new PointCollection();
         var maxLatency = _latencySamples.Max();
-        if (maxLatency == 0) maxLatency = 1;
+        if (maxLatency == 0)
+            maxLatency = 1;
 
         double canvasHeight = 40.0;
         double canvasWidth = 280.0;

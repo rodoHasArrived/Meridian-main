@@ -381,7 +381,8 @@ public partial class NotificationCenterPage : Page
             return;
 
         var parts = tagValue.Split('|', 2);
-        if (parts.Length < 2) return;
+        if (parts.Length < 2)
+            return;
 
         _alertService.AddSuppressionRule(parts[0], parts[1], TimeSpan.FromHours(24));
         _notificationService.ShowNotification(
@@ -403,6 +404,14 @@ public partial class NotificationCenterPage : Page
         _viewModel.ClearAll();
     }
 
+    private void MarkRead_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: NotificationItem item })
+        {
+            _viewModel.MarkRead(item);
+        }
+    }
+
     private bool _suppressFilterEvents;
     private void FilterChanged(object sender, RoutedEventArgs e)
     {
@@ -415,7 +424,8 @@ public partial class NotificationCenterPage : Page
             return;
         }
 
-        if (_suppressFilterEvents) return;
+        if (_suppressFilterEvents)
+            return;
 
         if (sender == FilterAllCheck)
         {
@@ -443,7 +453,6 @@ public partial class NotificationCenterPage : Page
             FilterWarningsCheck.IsChecked == true,
             FilterInfoCheck.IsChecked == true,
             FilterSuccessCheck.IsChecked == true);
-        _viewModel.UpdateCounters();
     }
 
     private static string FormatTimestamp(DateTime timestamp)

@@ -318,7 +318,8 @@ public sealed class TradingOperatorReadinessService
                 AuditReference: record.AuditReference,
                 ApprovalStatus: record.Decision,
                 ManualOverrideId: record.ManualOverrideId,
-                ApprovedBy: record.ApprovedBy);
+                ApprovedBy: record.ApprovedBy,
+                ApprovalChecklist: record.ApprovalChecklist);
         }
 
         var promotion = latestRun?.Promotion ?? latestRun?.Summary.Promotion;
@@ -334,13 +335,15 @@ public sealed class TradingOperatorReadinessService
                 AuditReference: promotion.AuditReference,
                 ApprovalStatus: promotion.ApprovalStatus,
                 ManualOverrideId: promotion.ManualOverrideId,
-                ApprovedBy: promotion.ApprovedBy);
+                ApprovedBy: promotion.ApprovedBy,
+                ApprovalChecklist: promotion.ApprovalChecklist);
     }
 
     private static bool IsPromotionRecordTraceComplete(StrategyPromotionRecord record) =>
         !string.IsNullOrWhiteSpace(record.Decision) &&
         !string.IsNullOrWhiteSpace(record.ApprovedBy) &&
         !string.IsNullOrWhiteSpace(record.ApprovalReason) &&
+        HasApprovalChecklist(record.ApprovalChecklist) &&
         !string.IsNullOrWhiteSpace(record.SourceRunId) &&
         !string.IsNullOrWhiteSpace(record.AuditReference);
 
@@ -349,8 +352,13 @@ public sealed class TradingOperatorReadinessService
         !string.IsNullOrWhiteSpace(promotion.ApprovalStatus) &&
         !string.IsNullOrWhiteSpace(promotion.ApprovedBy) &&
         !string.IsNullOrWhiteSpace(promotion.Reason) &&
+        HasApprovalChecklist(promotion.ApprovalChecklist) &&
         !string.IsNullOrWhiteSpace(promotion.SourceRunId) &&
         !string.IsNullOrWhiteSpace(promotion.AuditReference);
+
+    private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
+        => approvalChecklist is { Count: > 0 } &&
+           approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
 
     private static string? GetMetadata(ExecutionAuditEntry entry, string key)
     {

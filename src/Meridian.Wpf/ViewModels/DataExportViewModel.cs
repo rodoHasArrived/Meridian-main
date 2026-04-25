@@ -362,7 +362,8 @@ public sealed class DataExportViewModel : BindableBase
 
     private async Task ExportDataAsync(CancellationToken ct = default)
     {
-        if (!ValidateExportInputs()) return;
+        if (!ValidateExportInputs())
+            return;
 
         IsExporting = true;
         IsExportProgressVisible = true;
@@ -503,7 +504,8 @@ public sealed class DataExportViewModel : BindableBase
     private void ValidateScheduleTime()
     {
         IsScheduleTimeErrorVisible = false;
-        if (!IsScheduleEnabled) return;
+        if (!IsScheduleEnabled)
+            return;
 
         if (!TimeSpan.TryParse(ScheduleTimeText, out _))
         {

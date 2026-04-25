@@ -92,6 +92,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public TextBlock TickerStripToggleLabelText => GetRequired<TextBlock>("TickerStripToggleLabelText");
 
+    public Button ShellDensityToggleButton => GetRequired<Button>("ShellDensityToggleButton");
+
+    public TextBlock ShellDensityButtonLabelText => GetRequired<TextBlock>("ShellDensityButtonLabelText");
+
     public Border FixtureModeBanner => GetRequired<Border>("FixtureModeBanner");
 
     public TextBlock FixtureModeLabel => GetRequired<TextBlock>("FixtureModeLabel");

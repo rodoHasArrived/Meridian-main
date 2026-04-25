@@ -28,7 +28,7 @@ public partial class PackageManagerPage : Page
         // Set default date range text on the input boxes (view-only default values)
         var today = DateTime.UtcNow;
         PackageFromInput.Text = today.AddDays(-30).ToString("yyyy-MM-dd");
-        PackageToInput.Text   = today.ToString("yyyy-MM-dd");
+        PackageToInput.Text = today.ToString("yyyy-MM-dd");
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e) =>

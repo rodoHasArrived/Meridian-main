@@ -1,5 +1,5 @@
-using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Services;
 

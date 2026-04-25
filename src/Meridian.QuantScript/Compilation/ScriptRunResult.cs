@@ -1,5 +1,5 @@
-using Meridian.QuantScript.Plotting;
 using Meridian.Backtesting.Sdk;
+using Meridian.QuantScript.Plotting;
 
 namespace Meridian.QuantScript.Compilation;
 

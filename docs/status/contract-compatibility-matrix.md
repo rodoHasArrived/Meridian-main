@@ -1,6 +1,6 @@
 # Contract Compatibility Matrix
 
-Last reviewed: 2026-04-21  
+Last reviewed: 2026-04-25
 Scope: workstation contracts and shared service/ledger interfaces consumed by workstation APIs.
 
 This matrix defines compatibility commitments for:
@@ -51,7 +51,7 @@ This matrix defines compatibility commitments for:
 Any pull request touching scoped surfaces must pass:
 
 1. **Standard PR gates:** existing build/test/format gates in `.github/workflows/pr-checks.yml`.
-2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` (PR and release workflows).
+2. **Contract compatibility gate:** `scripts/check_contract_compatibility_gate.py` from the `contract-compatibility` PR job and the release workflow.
 3. **Contract regression tests (required when contract code changes):**
    - targeted workstation contract serialization/deserialization tests,
    - strategy service interface compatibility tests,
@@ -64,6 +64,7 @@ Any pull request touching scoped surfaces must pass:
 Use this section for every potential contract-breaking change. Entries must be append-only.
 
 - 2026-04-21: Established initial compatibility matrix and CI policy gate for workstation contracts/services/ledger/endpoints. No runtime break introduced in this change.
+- 2026-04-25: Wired the contract compatibility gate into `.github/workflows/pr-checks.yml` so pull requests and releases both enforce the matrix. No runtime contract break introduced.
 
 ## Pull Request Author Checklist
 

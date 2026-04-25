@@ -115,23 +115,28 @@ public sealed class TradingHoursViewModel : BindableBase
 
         if (day is DayOfWeek.Saturday or DayOfWeek.Sunday)
         {
-            state  = "Closed"; reason = "Weekend";
+            state = "Closed";
+            reason = "Weekend";
         }
         else if (time >= new TimeOnly(4, 0) && time < new TimeOnly(9, 30))
         {
-            state  = "PreMarket"; reason = "Pre-market session";
+            state = "PreMarket";
+            reason = "Pre-market session";
         }
         else if (time >= new TimeOnly(9, 30) && time < new TimeOnly(16, 0))
         {
-            state  = "Open"; reason = "Regular trading session";
+            state = "Open";
+            reason = "Regular trading session";
         }
         else if (time >= new TimeOnly(16, 0) && time < new TimeOnly(20, 0))
         {
-            state  = "AfterHours"; reason = "After-hours session";
+            state = "AfterHours";
+            reason = "After-hours session";
         }
         else
         {
-            state  = "Closed"; reason = "Outside trading hours";
+            state = "Closed";
+            reason = "Outside trading hours";
         }
 
         UpdateStatusBanner(state, reason, nextSession: null);
@@ -142,22 +147,22 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         var (label, dotColor, textColor) = state switch
         {
-            "Open"       => ("Open",        GetResource("SuccessColorBrush",  Brushes.LimeGreen),     GetResource("SuccessColorBrush",  Brushes.LimeGreen)),
-            "PreMarket"  => ("Pre-Market",  GetResource("InfoColorBrush",     Brushes.CornflowerBlue), GetResource("InfoColorBrush",     Brushes.CornflowerBlue)),
-            "AfterHours" => ("After-Hours", GetResource("WarningColorBrush",  Brushes.Orange),         GetResource("WarningColorBrush",  Brushes.Orange)),
-            _            => ("Closed",      GetResource("ErrorColorBrush",    Brushes.Red),             GetResource("ErrorColorBrush",    Brushes.Red))
+            "Open" => ("Open", GetResource("SuccessColorBrush", Brushes.LimeGreen), GetResource("SuccessColorBrush", Brushes.LimeGreen)),
+            "PreMarket" => ("Pre-Market", GetResource("InfoColorBrush", Brushes.CornflowerBlue), GetResource("InfoColorBrush", Brushes.CornflowerBlue)),
+            "AfterHours" => ("After-Hours", GetResource("WarningColorBrush", Brushes.Orange), GetResource("WarningColorBrush", Brushes.Orange)),
+            _ => ("Closed", GetResource("ErrorColorBrush", Brushes.Red), GetResource("ErrorColorBrush", Brushes.Red))
         };
 
-        MarketStatusDotFill           = dotColor;
-        MarketStatusText              = label;
-        MarketStatusTextForeground    = textColor;
-        MarketStatusReasonText        = reason;
-        MarketStatusTimeText          = $"As of {DateTime.UtcNow:HH:mm} UTC";
+        MarketStatusDotFill = dotColor;
+        MarketStatusText = label;
+        MarketStatusTextForeground = textColor;
+        MarketStatusReasonText = reason;
+        MarketStatusTimeText = $"As of {DateTime.UtcNow:HH:mm} UTC";
 
         if (nextSession.HasValue)
         {
             var eastern = GetEasternTimeZone();
-            var local   = TimeZoneInfo.ConvertTime(nextSession.Value, eastern);
+            var local = TimeZoneInfo.ConvertTime(nextSession.Value, eastern);
             NextSessionText = $"Next session: {local:ddd, MMM d} at {local:h:mm tt} ET";
         }
         else
@@ -168,17 +173,17 @@ public sealed class TradingHoursViewModel : BindableBase
 
     private void UpdateSessionRows(string state)
     {
-        var isOpen      = state == "Open";
-        var openBrush   = GetResource("SuccessColorBrush", Brushes.LimeGreen);
-        var closedBrush = GetResource("ErrorColorBrush",   Brushes.Red);
+        var isOpen = state == "Open";
+        var openBrush = GetResource("SuccessColorBrush", Brushes.LimeGreen);
+        var closedBrush = GetResource("ErrorColorBrush", Brushes.Red);
 
-        NyseRegularStatusDotFill      = isOpen ? openBrush   : closedBrush;
-        NyseRegularStatusText         = isOpen ? "Open"      : "Closed";
-        NyseRegularStatusForeground   = isOpen ? openBrush   : closedBrush;
+        NyseRegularStatusDotFill = isOpen ? openBrush : closedBrush;
+        NyseRegularStatusText = isOpen ? "Open" : "Closed";
+        NyseRegularStatusForeground = isOpen ? openBrush : closedBrush;
 
-        NasdaqRegularStatusDotFill    = isOpen ? openBrush   : closedBrush;
-        NasdaqRegularStatusText       = isOpen ? "Open"      : "Closed";
-        NasdaqRegularStatusForeground = isOpen ? openBrush   : closedBrush;
+        NasdaqRegularStatusDotFill = isOpen ? openBrush : closedBrush;
+        NasdaqRegularStatusText = isOpen ? "Open" : "Closed";
+        NasdaqRegularStatusForeground = isOpen ? openBrush : closedBrush;
     }
 
     private async Task LoadHolidaysAsync(CancellationToken ct = default)
@@ -200,7 +205,7 @@ public sealed class TradingHoursViewModel : BindableBase
                         Holidays.Add(new HolidayDisplayItem
                         {
                             DateText = $"{date:MMM d} ({date:ddd})",
-                            Name     = h.Name ?? string.Empty
+                            Name = h.Name ?? string.Empty
                         });
                     }
                 }
@@ -219,7 +224,8 @@ public sealed class TradingHoursViewModel : BindableBase
 
     private static TimeZoneInfo GetEasternTimeZone()
     {
-        try   { return TimeZoneInfo.FindSystemTimeZoneById("America/New_York"); }
+        try
+        { return TimeZoneInfo.FindSystemTimeZoneById("America/New_York"); }
         catch { return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); }
     }
 
@@ -231,7 +237,7 @@ public sealed class TradingHoursViewModel : BindableBase
     public sealed class HolidayDisplayItem
     {
         public string DateText { get; set; } = string.Empty;
-        public string Name     { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
 }
 

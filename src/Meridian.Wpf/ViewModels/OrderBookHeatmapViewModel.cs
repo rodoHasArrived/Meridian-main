@@ -84,7 +84,8 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
             double sz = (double)bids[i].RawSize;
             _bidPrices[i] = (double)bids[i].RawPrice;
             _bidDepthRatios[i] = sz;
-            if (sz > maxSize) maxSize = sz;
+            if (sz > maxSize)
+                maxSize = sz;
         }
 
         // ── Copy asks ────────────────────────────────────────────────────────
@@ -94,14 +95,17 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
             double sz = (double)asks[i].RawSize;
             _askPrices[i] = (double)asks[i].RawPrice;
             _askDepthRatios[i] = sz;
-            if (sz > maxSize) maxSize = sz;
+            if (sz > maxSize)
+                maxSize = sz;
         }
 
         // ── Normalize depth ratios to [0, 1] ─────────────────────────────────
         if (maxSize > 0)
         {
-            for (int i = 0; i < _bidsCount; i++) _bidDepthRatios[i] /= maxSize;
-            for (int i = 0; i < _asksCount; i++) _askDepthRatios[i] /= maxSize;
+            for (int i = 0; i < _bidsCount; i++)
+                _bidDepthRatios[i] /= maxSize;
+            for (int i = 0; i < _asksCount; i++)
+                _askDepthRatios[i] /= maxSize;
         }
 
         // ── Sort arrays in-place (allocation-free) ───────────────────────────
@@ -152,14 +156,17 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
         if ((_bidsCount == 0 && _asksCount == 0) || priceRange <= 0 || _midPrice <= 0)
         {
             int total = width * height;
-            for (int i = 0; i < total; i++) pixelBuffer[i] = bg;
+            for (int i = 0; i < total; i++)
+                pixelBuffer[i] = bg;
             return;
         }
 
         // ── Pre-compute mid-price row (clamped) ───────────────────────────────
         int midRow = (int)((_priceMax - _midPrice) / priceRange * height);
-        if (midRow < 0) midRow = 0;
-        if (midRow >= height) midRow = height - 1;
+        if (midRow < 0)
+            midRow = 0;
+        if (midRow >= height)
+            midRow = height - 1;
 
         // ── Render each row ───────────────────────────────────────────────────
         for (int y = 0; y < height; y++)
@@ -258,7 +265,8 @@ public sealed class OrderBookHeatmapViewModel : BindableBase
         const int count = 5;
         PriceLabels.Clear();
 
-        if (_priceMax <= _priceMin || _controlHeight <= 0) return;
+        if (_priceMax <= _priceMin || _controlHeight <= 0)
+            return;
 
         double range = _priceMax - _priceMin;
         double usableHeight = _controlHeight - 14.0; // reserve one label-height at bottom

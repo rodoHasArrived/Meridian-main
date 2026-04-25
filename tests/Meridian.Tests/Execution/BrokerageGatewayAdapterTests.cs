@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Execution.Exceptions;
 using Meridian.Execution.Adapters;
+using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging.Abstractions;

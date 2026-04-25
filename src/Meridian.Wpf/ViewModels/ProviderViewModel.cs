@@ -154,7 +154,8 @@ public sealed class ProviderViewModel : BindableBase
 
     public async Task LoadProviderSettingsAsync(CancellationToken ct = default)
     {
-        if (_isLoading) return;
+        if (_isLoading)
+            return;
         IsLoading = true;
 
         try
@@ -344,7 +345,8 @@ public sealed class ProviderViewModel : BindableBase
 
     public async Task OnProviderToggleChangedAsync(ProviderSettingsViewModel vm)
     {
-        if (_isLoading) return;
+        if (_isLoading)
+            return;
 
         try
         {
@@ -363,7 +365,8 @@ public sealed class ProviderViewModel : BindableBase
 
     public async Task OnPriorityLostFocusAsync(ProviderSettingsViewModel vm, string rawText)
     {
-        if (_isLoading) return;
+        if (_isLoading)
+            return;
 
         if (!int.TryParse(rawText, out var priority) || priority < 0)
         {
@@ -401,7 +404,8 @@ public sealed class ProviderViewModel : BindableBase
 
     public async Task OnRateLimitLostFocusAsync(ProviderSettingsViewModel vm)
     {
-        if (_isLoading) return;
+        if (_isLoading)
+            return;
 
         try
         {

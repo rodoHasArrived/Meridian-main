@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, Execution, Governance, and Platform contributors
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-25
 **Status:** Active addendum - converts the canonical Waves 2-4 roadmap into concrete workstreams with ownership lanes, dependency rules, and exit criteria
 
 ---
@@ -37,6 +37,8 @@ This document therefore adds:
 2. per-wave workstreams
 3. concrete dependencies
 4. wave and workstream exit criteria
+
+**Current-state refresh (2026-04-25):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, and Wave 4 governance readiness remains dependent on durable casework, governed outputs, and shared projection paths.
 
 It should be read with:
 

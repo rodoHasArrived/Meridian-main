@@ -86,7 +86,8 @@ public sealed class BlotterEntry : INotifyPropertyChanged
         get => _isSelected;
         set
         {
-            if (_isSelected == value) return;
+            if (_isSelected == value)
+                return;
             _isSelected = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
         }
@@ -132,7 +133,8 @@ public sealed class BlotterGroup : INotifyPropertyChanged
         get => _isExpanded;
         set
         {
-            if (_isExpanded == value) return;
+            if (_isExpanded == value)
+                return;
             _isExpanded = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ExpandIcon)));
@@ -148,7 +150,8 @@ public sealed class BlotterGroup : INotifyPropertyChanged
         get => _isSelected;
         set
         {
-            if (_isSelected == value) return;
+            if (_isSelected == value)
+                return;
             _isSelected = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
             foreach (var entry in Entries)
@@ -182,3 +185,15 @@ public sealed class BlotterGroup : INotifyPropertyChanged
 /// An active filter chip displayed in the filter bar.
 /// </summary>
 public sealed record BlotterFilterChip(string Label, string Value);
+
+/// <summary>
+/// Display-only selection preview shown in the Position Blotter review rail.
+/// </summary>
+public sealed record BlotterSelectionPreview(
+    string Group,
+    string ProductDescription,
+    string QuantityText,
+    string UnrealisedPnlText,
+    Brush PnlBrush,
+    string EligibilityLabel,
+    string EligibilityTone);

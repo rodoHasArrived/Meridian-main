@@ -146,7 +146,7 @@ jobs:
             --self-contained true `
             -p:TargetFramework=net9.0-windows10.0.19041.0 `
             -p:PublishSingleFile=true `
-            -p:PublishReadyToRun=true `
+            -p:PublishReadyToRun=false `
             -p:EnableCompressionInSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true
 
@@ -159,7 +159,7 @@ jobs:
             --self-contained false `
             -p:TargetFramework=net9.0-windows10.0.19041.0 `
             -p:PublishSingleFile=true `
-            -p:PublishReadyToRun=true
+            -p:PublishReadyToRun=false
 
       - name: Copy configuration
         run: |

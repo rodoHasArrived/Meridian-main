@@ -2,10 +2,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
-using Meridian.Wpf.Copy;
+using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -424,7 +426,8 @@ public partial class ResearchWorkspaceShellPage : ResearchWorkspaceShellPageBase
                 RunId: activeRun.RunId,
                 ReviewNotes: "Promoted from research workspace shell.",
                 ApprovedBy: Environment.UserName,
-                ApprovalReason: "Research workstation promotion"));
+                ApprovalReason: "Research workstation promotion",
+                ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
 
             if (result.Success && !string.IsNullOrWhiteSpace(result.NewRunId))
             {

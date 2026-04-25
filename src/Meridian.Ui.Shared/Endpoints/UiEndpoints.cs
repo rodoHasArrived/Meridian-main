@@ -29,8 +29,8 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static class UiEndpoints
 {
     /// <summary>
-     /// Registers all shared services required by UI endpoints using the centralized composition root.
-     /// Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality.
+    /// Registers all shared services required by UI endpoints using the centralized composition root.
+    /// Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
@@ -416,8 +416,8 @@ public static class UiEndpoints
     }
 
     /// <summary>
-     /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
-     /// </summary>
+    /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
+    /// </summary>
     public const string MutationRateLimitPolicy = "mutation";
 
     /// <summary>

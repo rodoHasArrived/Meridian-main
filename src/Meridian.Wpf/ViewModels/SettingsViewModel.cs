@@ -411,9 +411,11 @@ public sealed class SettingsViewModel : BindableBase
 
     private void SelectProfile(string? profileId)
     {
-        if (string.IsNullOrEmpty(profileId)) return;
+        if (string.IsNullOrEmpty(profileId))
+            return;
         var profile = Profiles.FirstOrDefault(p => p.Id == profileId);
-        if (profile == null) return;
+        if (profile == null)
+            return;
 
         _notificationService.ShowNotification(
             "Profile Selected",
@@ -450,13 +452,15 @@ public sealed class SettingsViewModel : BindableBase
 
     private void TestCredential(string? resource)
     {
-        if (string.IsNullOrEmpty(resource)) return;
+        if (string.IsNullOrEmpty(resource))
+            return;
         _notificationService.ShowNotification("Credential Test", $"Testing {resource} credentials...", NotificationType.Info);
     }
 
     private void RemoveCredential(string? name)
     {
-        if (string.IsNullOrEmpty(name)) return;
+        if (string.IsNullOrEmpty(name))
+            return;
 
         var result = MessageBox.Show(
             $"Are you sure you want to remove the credential '{name}'?",
@@ -542,16 +546,16 @@ public sealed class SettingsViewModel : BindableBase
 
         if (result == MessageBoxResult.Yes)
         {
-            ThemeIndex             = 0;
-            AccentColorIndex       = 0;
+            ThemeIndex = 0;
+            AccentColorIndex = 0;
             SelectedShellDensityMode = ShellDensityMode.Standard;
             IsNotificationsEnabled = true;
             MaxConcurrentDownloads = "4";
-            WriteBufferSize        = "64";
-            IsMetricsEnabled       = true;
-            IsDebugLoggingEnabled  = false;
-            ApiBaseUrl             = "http://localhost:8080";
-            StatusRefreshInterval  = "2";
+            WriteBufferSize = "64";
+            IsMetricsEnabled = true;
+            IsDebugLoggingEnabled = false;
+            ApiBaseUrl = "http://localhost:8080";
+            StatusRefreshInterval = "2";
 
             _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
         }

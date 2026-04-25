@@ -1,6 +1,6 @@
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;

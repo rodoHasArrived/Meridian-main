@@ -10,9 +10,10 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Ledger;
+using Meridian.ProviderSdk;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -20,7 +21,6 @@ using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
-using Meridian.ProviderSdk;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -549,7 +549,8 @@ public sealed class WorkstationEndpointsTests
         var decision = await app.Services.GetRequiredService<PromotionService>().ApproveAsync(new PromotionApprovalRequest(
             RunId: "run-wave2-backtest",
             ApprovedBy: "ops.lead",
-            ApprovalReason: "Replay, audit, and paper controls accepted for Wave 2."));
+            ApprovalReason: "Replay, audit, and paper controls accepted for Wave 2.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
 
         decision.Success.Should().BeTrue();
 
@@ -573,6 +574,7 @@ public sealed class WorkstationEndpointsTests
         readiness.Promotion!.ApprovalStatus.Should().Be(PromotionDecisionKinds.Approved);
         readiness.Promotion.ApprovedBy.Should().Be("ops.lead");
         readiness.Promotion.AuditReference.Should().Be(decision.AuditReference);
+        readiness.Promotion.ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
         readiness.WorkItems.Should().NotContain(item => item.Tone == OperatorWorkItemToneDto.Critical);
         readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PaperReplay);
         readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PromotionReview);

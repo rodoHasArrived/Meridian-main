@@ -1,124 +1,295 @@
 <Page x:Class="Meridian.Wpf.Views.BatchBacktestPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       Title="Batch Backtest"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="BatchBacktest">
 
     <Page.Resources>
-        <Style x:Key="HeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="18" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+
+        <Style x:Key="MetricValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-            <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
 
-        <Style x:Key="StatusStyle" TargetType="TextBlock">
+        <Style x:Key="MetricCaptionStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
-            <Setter Property="Margin" Value="0,0,0,8" />
-        </Style>
-
-        <Style x:Key="ButtonStyle" TargetType="Button">
-            <Setter Property="Padding" Value="12,8" />
-            <Setter Property="Margin" Value="8,0,0,0" />
-            <Setter Property="MinWidth" Value="90" />
+            <Setter Property="Margin" Value="0,4,0,0" />
         </Style>
     </Page.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <StackPanel MaxWidth="1400">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-        <!-- Header -->
-        <TextBlock Grid.Row="0" Style="{StaticResource HeaderStyle}" Text="Batch Backtest" />
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44"
+                                Height="44"
+                                CornerRadius="14"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}"
+                                BorderThickness="1">
+                            <TextBlock Text="&#xE768;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Border>
+                        <StackPanel Margin="12,0,0,0">
+                            <TextBlock Text="Batch Backtest" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Sweep request parameters through the native Meridian backtest service."
+                                       Style="{StaticResource CardDescriptionStyle}" />
+                        </StackPanel>
+                    </StackPanel>
 
-        <!-- Control Panel -->
-        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}">
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding StatusText}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   HorizontalAlignment="Right"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="420" />
+                        <TextBlock Text="{Binding SummaryText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   HorizontalAlignment="Right"
+                                   Margin="0,4,0,0"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="420" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="380" />
+                    <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Style="{StaticResource StatusStyle}">
-                        <Run Text="Completed: " />
-                        <Run Text="{Binding CompletedRuns, Mode=OneWay}" />
-                        <Run Text="/" />
-                        <Run Text="{Binding TotalRuns, Mode=OneWay}" />
-                    </TextBlock>
-                    <TextBlock Style="{StaticResource StatusStyle}" Text="{Binding CurrentLabel}" />
+                <StackPanel Grid.Column="0">
+                    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Base Request" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+
+                            <TextBlock Text="Symbols" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Text="{Binding SymbolsText, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     Margin="0,0,0,12" />
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="12" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="From" Style="{StaticResource FormLabelStyle}" />
+                                    <DatePicker SelectedDate="{Binding FromDate, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="To" Style="{StaticResource FormLabelStyle}" />
+                                    <DatePicker SelectedDate="{Binding ToDate, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Initial Capital" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Text="{Binding InitialCash, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     Margin="0,0,0,12" />
+
+                            <TextBlock Text="Annual Margin Rate" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Text="{Binding AnnualMarginRate, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     Margin="0,0,0,12" />
+
+                            <TextBlock Text="Data Root" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Text="{Binding DataRoot, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Sweep" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
+
+                            <TextBlock Text="Parameter" Style="{StaticResource FormLabelStyle}" />
+                            <ComboBox ItemsSource="{Binding SweepParameters}"
+                                      SelectedItem="{Binding SelectedSweepParameter}"
+                                      DisplayMemberPath="Label"
+                                      Style="{StaticResource FormComboBoxStyle}"
+                                      Margin="0,0,0,12" />
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Start" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBox Text="{Binding SweepStart, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Stop" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBox Text="{Binding SweepStop, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="Step" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBox Text="{Binding SweepStep, UpdateSourceTrigger=PropertyChanged}"
+                                             Style="{StaticResource FormTextBoxStyle}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="Max Concurrency" Style="{StaticResource FormLabelStyle}" />
+                            <TextBox Text="{Binding MaxConcurrency, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     Margin="0,0,0,12" />
+
+                            <TextBlock Text="{Binding ParameterPreviewText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap" />
+
+                            <TextBlock Text="{Binding ValidationSummary}"
+                                       Foreground="{StaticResource ErrorColorBrush}"
+                                       Margin="0,12,0,0"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding ValidationSummary, Converter={StaticResource StringToVisibilityConverter}}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource ButtonStyle}"
-                            Command="{Binding StartBatchCommand}"
-                            Content="Start" />
-                    <Button Style="{StaticResource ButtonStyle}"
-                            Command="{Binding CancelCommand}"
-                            Content="Cancel" />
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{Binding CurrentLabel}"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                                <ProgressBar Minimum="0"
+                                             Maximum="100"
+                                             Height="8"
+                                             Margin="0,12,0,0"
+                                             Value="{Binding ProgressPercent}"
+                                             Foreground="{StaticResource ConsoleAccentBlueAlpha80Brush}"
+                                             Background="{StaticResource ConsoleWindowBackgroundBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                                <Button Content="Start Batch"
+                                        Command="{Binding StartBatchCommand}"
+                                        IsEnabled="{Binding CanStartBatch}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Margin="0,0,8,0" />
+                                <Button Content="Cancel"
+                                        Command="{Binding CancelCommand}"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="0,0,8,0" />
+                                <Button Content="Clear"
+                                        Command="{Binding ClearResultsCommand}"
+                                        Style="{StaticResource GhostButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding CompletedRuns}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="Completed" Style="{StaticResource MetricCaptionStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding SucceededRuns}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="Succeeded" Style="{StaticResource MetricCaptionStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="4" Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding FailedRuns}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="Failed" Style="{StaticResource MetricCaptionStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="6" Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding TotalDurationText}" Style="{StaticResource MetricValueStyle}" />
+                                <TextBlock Text="Duration" Style="{StaticResource MetricCaptionStyle}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock Text="Sweep Results"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock DockPanel.Dock="Right"
+                                           Text="{Binding SummaryText}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
+                            </DockPanel>
+
+                            <DataGrid ItemsSource="{Binding Results}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      IsReadOnly="True"
+                                      MinHeight="420"
+                                      ColumnHeaderHeight="32"
+                                      RowHeight="28">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Parameters" Binding="{Binding ParametersSummary}" Width="220" />
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+                                    <DataGridTextColumn Header="Return" Binding="{Binding TotalReturnText}" Width="90" />
+                                    <DataGridTextColumn Header="Sharpe" Binding="{Binding SharpeRatioText}" Width="80" />
+                                    <DataGridTextColumn Header="Drawdown" Binding="{Binding MaxDrawdownText}" Width="95" />
+                                    <DataGridTextColumn Header="Net PnL" Binding="{Binding NetPnlText}" Width="110" />
+                                    <DataGridTextColumn Header="Trades" Binding="{Binding TradesText}" Width="80" />
+                                    <DataGridTextColumn Header="Events" Binding="{Binding EventsText}" Width="90" />
+                                    <DataGridTextColumn Header="Duration" Binding="{Binding DurationText}" Width="90" />
+                                    <DataGridTextColumn Header="Error" Binding="{Binding ErrorMessage}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </Grid>
-        </Border>
-
-        <!-- Progress Bar -->
-        <ProgressBar Grid.Row="3"
-                     Height="6"
-                     Minimum="0"
-                     Maximum="100"
-                     Value="{Binding ProgressPercent}"
-                     Foreground="{StaticResource ConsoleAccentBlueAlpha80Brush}"
-                     Background="{StaticResource ConsoleWindowBackgroundBrush}" />
-
-        <!-- Results Grid -->
-        <DataGrid Grid.Row="5"
-                  ItemsSource="{Binding Results}"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  CanUserDeleteRows="False"
-                  IsReadOnly="True"
-                  ColumnHeaderHeight="32"
-                  RowHeight="24"
-                  BorderThickness="0"
-                  Background="{StaticResource ShellWindowBackgroundBrush}"
-                  Foreground="{StaticResource ConsoleTextPrimaryBrush}">
-
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="Padding" Value="8,4" />
-                    <Setter Property="BorderThickness" Value="0" />
-                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
-                </Style>
-            </DataGrid.CellStyle>
-
-            <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="{StaticResource ConsoleWindowBackgroundBrush}" />
-                    <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
-                    <Setter Property="FontSize" Value="11" />
-                    <Setter Property="FontWeight" Value="SemiBold" />
-                    <Setter Property="Padding" Value="8,4" />
-                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleWindowBorderBrush}" />
-                </Style>
-            </DataGrid.ColumnHeaderStyle>
-
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Parameters" Binding="{Binding ParametersSummary}" Width="200" />
-                <DataGridTextColumn Header="Sharpe Ratio" Binding="{Binding SharpeRatio, StringFormat=N2}" Width="100" />
-                <DataGridTextColumn Header="Total Return %" Binding="{Binding TotalReturnPct, StringFormat=N1}" Width="120" />
-                <DataGridTextColumn Header="Max Drawdown %" Binding="{Binding MaxDrawdownPct, StringFormat=N1}" Width="120" />
-                <DataGridTextColumn Header="Duration (ms)" Binding="{Binding DurationMs}" Width="100" />
-                <DataGridCheckBoxColumn Header="Error" Binding="{Binding HasError}" Width="60" />
-                <DataGridTextColumn Header="Error Message" Binding="{Binding ErrorMessage}" Width="*" />
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

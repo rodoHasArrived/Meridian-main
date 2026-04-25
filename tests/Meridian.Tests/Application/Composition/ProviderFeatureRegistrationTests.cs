@@ -8,8 +8,8 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Robinhood;
-using Microsoft.Extensions.DependencyInjection;
 using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
 

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using Meridian.QuantScript.Documents;
 using Meridian.Wpf.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.Services;
 

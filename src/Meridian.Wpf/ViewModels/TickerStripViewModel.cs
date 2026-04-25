@@ -223,7 +223,8 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         {
             var url = $"{baseUrl}/api/live/{Uri.EscapeDataString(symbol)}/quote";
             var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode) return;
+            if (!response.IsSuccessStatusCode)
+                return;
 
             var json = await response.Content.ReadAsStringAsync();
             var quote = JsonSerializer.Deserialize<JsonElement>(json);
@@ -233,7 +234,8 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
             var last = quote.TryGetProperty("last", out var l) ? l.GetDecimal() : 0m;
 
             // Fall back to "price" key if "last" is absent (some endpoints use this)
-            if (last == 0 && quote.TryGetProperty("price", out var p)) last = p.GetDecimal();
+            if (last == 0 && quote.TryGetProperty("price", out var p))
+                last = p.GetDecimal();
 
             var prevLast = _lastPrices.TryGetValue(symbol, out var prev) ? prev : 0m;
             var uptick = last >= prevLast;

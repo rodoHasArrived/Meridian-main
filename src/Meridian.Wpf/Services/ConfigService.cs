@@ -137,7 +137,8 @@ public sealed class ConfigService : ConfigServiceBase
     public new async Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
     {
         var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
-        if (config.DataSources?.Sources == null) return;
+        if (config.DataSources?.Sources == null)
+            return;
 
         config.DataSources.Sources = config.DataSources.Sources
             .Where(s => s.Id != id)

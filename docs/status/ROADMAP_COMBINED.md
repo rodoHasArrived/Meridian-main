@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
 **Last Updated:** 2026-04-25
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set evidence, and current WPF shell baseline
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set/parity-packet evidence, and current WPF shell baseline
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -44,7 +44,7 @@ Meridian already has strong platform foundations, meaningful workstation flows i
 6. **Wave 6:** live integration readiness
 7. **Optional advanced research / scale tracks**
 
-Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-25, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract, while the dashboard still marks DK1 data-quality/provider-trust and shared interop readiness as **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, while export and reconciliation remain **Not Started**. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
+Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-25, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract and a generated `dk1-pilot-parity-packet.*` artifact; the latest packet is `ready-for-operator-review` with validated evidence-document checks and no packet blockers. DK1 still needs operator sign-off plus workflow-facing explainability/calibration review, and shared interop readiness remains **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, while export and reconciliation remain **Not Started**. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
 
 ---
 
@@ -60,7 +60,7 @@ This document keeps concise framing only; detailed readiness evidence remains in
 
 ### 1. Wave 2: Harden the paper-trading cockpit already in code
 
-The paper-trading cockpit should move from "implemented" to "dependable."
+The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, promotion checklist, brokerage-sync, and work-item posture; the next step is proving that contract through operator scenarios rather than treating the endpoint as completion.
 
 ### 2. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 
@@ -72,7 +72,7 @@ Security Master is already the delivered baseline; the opportunity is turning th
 
 ### 4. DK1 / Wave 1: Keep the closed provider-confidence and checkpoint-evidence gate synchronized
 
-Wave 1 is now repo-closed, but it remains the trust boundary that every downstream readiness claim depends on. DK1 now turns that boundary into a pilot parity packet with an emitted `pilotReplaySampleSet`, trust rationale mapping, threshold calibration, and operator sign-off.
+Wave 1 is now repo-closed, but it remains the trust boundary that every downstream readiness claim depends on. DK1 now turns that boundary into a pilot parity packet with an emitted `pilotReplaySampleSet`, generated parity-packet artifacts, trust rationale mapping, threshold calibration, and pending operator sign-off.
 
 ### 5. Wave 5: Unify Backtest Studio after the core operator-readiness path is stable
 
@@ -90,7 +90,7 @@ Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow ser
 
 Delivery Kernel governance to avoid piecemeal adoption:
 
-- **DK1 (maps to Wave 2 + trust-dependent Wave 3 scope):** requires parity, explainability, calibration, and operator sign-off before promotion scope expands; the pilot review contract is the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`
+- **DK1 (maps to Wave 2 + trust-dependent Wave 3 scope):** requires parity, explainability, calibration, and operator sign-off before promotion scope expands; the pilot review contract is the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` plus generated `dk1-pilot-parity-packet.*` artifacts
 - **DK2 (maps to Wave 3-4 integration scope):** requires the same four gates across promotion, export, and reconciliation
 - **Subsystem ownership:** Data Operations, Trading, Export, Governance, and a Shared Platform Interop owner for contract governance
 - **Single status surface:** track subsystem readiness and rollback posture in [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md)

@@ -107,7 +107,8 @@ public sealed class PromotionServiceTests
         var result = await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ApprovedBy: "ops",
-            ApprovalReason: "Metrics cleared for paper."));
+            ApprovalReason: "Metrics cleared for paper.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
 
         result.Success.Should().BeTrue();
         result.NewRunId.Should().NotBeNullOrWhiteSpace();
@@ -119,6 +120,7 @@ public sealed class PromotionServiceTests
         history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
         history[0].ApprovedBy.Should().Be("ops");
         history[0].ApprovalReason.Should().Be("Metrics cleared for paper.");
+        history[0].ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
     }
 
     [Fact]
@@ -150,6 +152,80 @@ public sealed class PromotionServiceTests
 
         result.Success.Should().BeFalse();
         result.Reason.Should().Contain("approver");
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenApprovalChecklistMissing_ReturnsFailureWithoutCreatingRun()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics cleared for paper."));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("approval checklist").And.Contain(PromotionApprovalChecklist.Dk1TrustPacketReviewed);
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenApprovalChecklistPartial_ReturnsMissingItemsWithoutCreatingRun()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics cleared for paper.",
+            ApprovalChecklist:
+            [
+                PromotionApprovalChecklist.Dk1TrustPacketReviewed,
+                "run-lineage-reviewed"
+            ]));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should()
+            .Contain(PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed)
+            .And.Contain(PromotionApprovalChecklist.RiskControlsReviewed);
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApproveAsync_WhenRunIsLive_ReturnsFailureWithoutCreatingRun()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Live) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Already live.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("Live runs cannot be promoted");
         var history = await service.GetPromotionHistoryAsync();
         history.Should().BeEmpty();
     }
@@ -223,7 +299,8 @@ public sealed class PromotionServiceTests
         await service.ApproveAsync(new PromotionApprovalRequest(
             run.RunId,
             ApprovedBy: "ops",
-            ApprovalReason: "Metrics cleared for paper."));
+            ApprovalReason: "Metrics cleared for paper.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
 
         var history = await service.GetPromotionHistoryAsync();
 
@@ -256,7 +333,8 @@ public sealed class PromotionServiceTests
             run.RunId,
             ReviewNotes: "Ready for paper",
             ApprovedBy: "ops",
-            ApprovalReason: "Metrics cleared"));
+            ApprovalReason: "Metrics cleared",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper)));
 
         var restarted = BuildService(out _, durableStore);
         var history = await restarted.GetPromotionHistoryAsync();
@@ -268,6 +346,7 @@ public sealed class PromotionServiceTests
         history[0].ApprovedBy.Should().Be("ops");
         history[0].ApprovalReason.Should().Be("Metrics cleared");
         history[0].ReviewNotes.Should().Be("Ready for paper");
+        history[0].ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
     }
 
     // ---- Helpers ----

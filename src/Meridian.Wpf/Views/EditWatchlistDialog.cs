@@ -1,7 +1,7 @@
-using Meridian.Wpf.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 

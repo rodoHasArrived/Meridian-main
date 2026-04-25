@@ -52,7 +52,7 @@ public sealed record OptionDetails(
     public decimal IntrinsicValue(decimal underlyingPrice) => Right switch
     {
         OptionRight.Call => Math.Max(0m, underlyingPrice - Strike),
-        OptionRight.Put  => Math.Max(0m, Strike - underlyingPrice),
+        OptionRight.Put => Math.Max(0m, Strike - underlyingPrice),
         _ => 0m
     };
 

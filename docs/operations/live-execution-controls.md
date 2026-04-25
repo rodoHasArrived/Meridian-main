@@ -1,6 +1,6 @@
 # Live Execution Controls
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-25
 
 This guide covers the operator-facing controls that gate live execution in Meridian while preserving `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` as the stable backend seam.
 
@@ -78,7 +78,7 @@ Cockpit write conventions:
 - order submits include `metadata.actor` and `metadata.correlationId`
 - order submits should also include `metadata.sessionId` for paper-session continuity
 - order submits should include `metadata.runId` when the order is tied to a promoted run
-- promotion approvals use the full `PromotionApprovalRequest` payload: `runId`, `reviewNotes`, `approvedBy`, `approvalReason`, and `manualOverrideId`
+- promotion approvals use the full `PromotionApprovalRequest` payload: `runId`, `reviewNotes`, `approvedBy`, `approvalReason`, `approvalChecklist`, and `manualOverrideId`
 
 ## Audit Categories
 
@@ -92,6 +92,9 @@ Expected categories:
 - `OperatorAction`: REST-initiated submit/cancel/close actions
 - `Control`: circuit-breaker and manual-override changes
 - `Promotion`: approval and rejection decisions for mode promotion
+
+Promotion approval audit metadata includes `sourceRunId`, `sourceRunType`, `targetRunId`,
+`targetRunType`, `approvalChecklist`, `manualOverrideId`, `reviewNotes`, and `auditReference`.
 
 ## Standard Operator Flow
 
@@ -131,6 +134,13 @@ POST /api/promotion/approve
   "reviewNotes": "Replay verified and controls green.",
   "approvedBy": "ops",
   "approvalReason": "Risk review completed",
+  "approvalChecklist": [
+    "DK1_TRUST_PACKET_REVIEWED",
+    "RUN_LINEAGE_REVIEWED",
+    "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
+    "RISK_CONTROLS_REVIEWED",
+    "LIVE_OVERRIDE_REVIEWED"
+  ],
   "manualOverrideId": "ovr-..."
 }
 ```
@@ -146,6 +156,10 @@ POST /api/execution/controls/manual-overrides/ovr-.../clear
 ```
 
 1. Confirm the resulting `auditReference` from the approval response and review recent audit entries.
+
+Promotion approvals are rejected unless the checklist includes all required items for the target
+mode. `Backtest -> Paper` approvals require the four non-live items above. `Paper -> Live` also
+requires `LIVE_OVERRIDE_REVIEWED`.
 
 ## Notes
 

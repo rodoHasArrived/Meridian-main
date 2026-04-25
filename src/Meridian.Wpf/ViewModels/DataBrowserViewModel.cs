@@ -59,10 +59,14 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
         get
         {
             var count = 0;
-            if (!string.Equals(SelectedDataType, "All", StringComparison.OrdinalIgnoreCase)) count++;
-            if (!string.Equals(SelectedVenue, "All", StringComparison.OrdinalIgnoreCase)) count++;
-            if (FromDate.HasValue) count++;
-            if (ToDate.HasValue) count++;
+            if (!string.Equals(SelectedDataType, "All", StringComparison.OrdinalIgnoreCase))
+                count++;
+            if (!string.Equals(SelectedVenue, "All", StringComparison.OrdinalIgnoreCase))
+                count++;
+            if (FromDate.HasValue)
+                count++;
+            if (ToDate.HasValue)
+                count++;
             return count;
         }
     }
@@ -278,7 +282,8 @@ public sealed class DataBrowserViewModel : BindableBase, IDataErrorInfo
             FileName = $"data-browser-export-{DateTime.Now:yyyyMMdd-HHmmss}.csv"
         };
 
-        if (dialog.ShowDialog() != true) return;
+        if (dialog.ShowDialog() != true)
+            return;
 
         var sb = new StringBuilder();
         sb.AppendLine("Timestamp,Symbol,DataType,Venue,Price,Size");

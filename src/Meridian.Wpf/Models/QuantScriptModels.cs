@@ -1,8 +1,8 @@
-using Meridian.QuantScript.Documents;
+using System.Globalization;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
-using System.Globalization;
 
 namespace Meridian.Wpf.Models;
 

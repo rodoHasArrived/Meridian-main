@@ -20,7 +20,7 @@ public sealed class SingleInstanceService : IDisposable
 {
     // Global prefix makes the mutex cross-session (all desktop sessions on this machine).
     private const string MutexName = "Global\\Meridian.Desktop.SingleInstance";
-    private const string PipeName  = "Meridian.Desktop.SingleInstance.Pipe";
+    private const string PipeName = "Meridian.Desktop.SingleInstance.Pipe";
 
     private static readonly Lazy<SingleInstanceService> _instance =
         new(() => new SingleInstanceService());
@@ -28,7 +28,7 @@ public sealed class SingleInstanceService : IDisposable
     public static SingleInstanceService Instance => _instance.Value;
 
     private Mutex? _mutex;
-    private bool   _ownsMutex;
+    private bool _ownsMutex;
     private CancellationTokenSource? _pipeListenerCts;
 
     /// <summary>
@@ -49,7 +49,7 @@ public sealed class SingleInstanceService : IDisposable
     {
         try
         {
-            _mutex     = new Mutex(initiallyOwned: true, MutexName, out _ownsMutex);
+            _mutex = new Mutex(initiallyOwned: true, MutexName, out _ownsMutex);
             return _ownsMutex;
         }
         catch (Exception)
@@ -89,7 +89,7 @@ public sealed class SingleInstanceService : IDisposable
             pipe.Connect(2000);
 
             var payload = string.Join("\n", args);
-            var bytes   = Encoding.UTF8.GetBytes(payload);
+            var bytes = Encoding.UTF8.GetBytes(payload);
             pipe.Write(bytes, 0, bytes.Length);
             pipe.Flush();
         }
@@ -115,8 +115,8 @@ public sealed class SingleInstanceService : IDisposable
 
                 await server.WaitForConnectionAsync(ct).ConfigureAwait(false);
 
-                using var reader  = new StreamReader(server, Encoding.UTF8, leaveOpen: true);
-                var       payload = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
+                using var reader = new StreamReader(server, Encoding.UTF8, leaveOpen: true);
+                var payload = await reader.ReadToEndAsync(ct).ConfigureAwait(false);
 
                 var args = payload.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                 if (args.Length > 0)
@@ -142,7 +142,8 @@ public sealed class SingleInstanceService : IDisposable
 
     private static void ActivateMainWindow()
     {
-        if (System.Windows.Application.Current?.MainWindow is not Window win) return;
+        if (System.Windows.Application.Current?.MainWindow is not Window win)
+            return;
 
         if (win.WindowState == WindowState.Minimized)
             win.WindowState = WindowState.Normal;
@@ -158,7 +159,8 @@ public sealed class SingleInstanceService : IDisposable
 
         if (_ownsMutex)
         {
-            try { _mutex?.ReleaseMutex(); }
+            try
+            { _mutex?.ReleaseMutex(); }
             catch (ApplicationException) { /* Already released */ }
         }
 

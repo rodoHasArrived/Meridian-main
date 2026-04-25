@@ -30,14 +30,14 @@ public sealed class JumpListService
             var jumpList = new JumpList
             {
                 ShowFrequentCategory = false,
-                ShowRecentCategory   = true,
+                ShowRecentCategory = true,
             };
 
-            jumpList.JumpItems.Add(CreateTask("Start Data Collection", "--start-collector",  "Start holdings data collection immediately", exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Portfolio Operations", "--page=Dashboard",   "Open holdings and data-quality oversight", exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Data Browser",  "--page=DataBrowser", "Browse collected market data",      exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Symbol Search", "--page=Symbols",     "Manage and search symbols",         exePath));
-            jumpList.JumpItems.Add(CreateTask("Open Backtest",      "--page=Backtest",    "Run a strategy backtest",           exePath));
+            jumpList.JumpItems.Add(CreateTask("Start Data Collection", "--start-collector", "Start holdings data collection immediately", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Portfolio Operations", "--page=Dashboard", "Open holdings and data-quality oversight", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Data Browser", "--page=DataBrowser", "Browse collected market data", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Symbol Search", "--page=Symbols", "Manage and search symbols", exePath));
+            jumpList.JumpItems.Add(CreateTask("Open Backtest", "--page=Backtest", "Run a strategy backtest", exePath));
 
             JumpList.SetJumpList(System.Windows.Application.Current, jumpList);
 
@@ -67,10 +67,10 @@ public sealed class JumpListService
     private static JumpTask CreateTask(string title, string arguments, string description, string exePath) =>
         new()
         {
-            Title            = title,
-            Arguments        = arguments,
-            Description      = description,
-            ApplicationPath  = exePath,
+            Title = title,
+            Arguments = arguments,
+            Description = description,
+            ApplicationPath = exePath,
             IconResourcePath = exePath,
         };
 

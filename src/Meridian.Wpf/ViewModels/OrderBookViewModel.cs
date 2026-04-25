@@ -306,7 +306,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                     RawTotal = runningTotal,
                     Total = FormatSize((int)runningTotal)
                 });
-                if (size > maxSize) maxSize = size;
+                if (size > maxSize)
+                    maxSize = size;
             }
         }
 
@@ -328,7 +329,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                     RawTotal = runningTotal,
                     Total = FormatSize((int)runningTotal)
                 });
-                if (size > maxSize) maxSize = size;
+                if (size > maxSize)
+                    maxSize = size;
             }
         }
 
@@ -339,10 +341,12 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
 
         Bids.Clear();
-        foreach (var bid in newBids) Bids.Add(bid);
+        foreach (var bid in newBids)
+            Bids.Add(bid);
 
         Asks.Clear();
-        foreach (var ask in newAsks.OrderByDescending(a => a.RawPrice)) Asks.Add(ask);
+        foreach (var ask in newAsks.OrderByDescending(a => a.RawPrice))
+            Asks.Add(ask);
 
         UpdateStatistics(newBids, newAsks);
     }
@@ -370,8 +374,10 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             var askSize = random.Next(100, 5000);
             bidTotal += bidSize;
             askTotal += askSize;
-            if (bidSize > maxSize) maxSize = bidSize;
-            if (askSize > maxSize) maxSize = askSize;
+            if (bidSize > maxSize)
+                maxSize = bidSize;
+            if (askSize > maxSize)
+                maxSize = askSize;
 
             bidList.Add(new OrderBookDisplayLevel
             {
@@ -401,10 +407,12 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
             level.DepthWidth = maxSize > 0 ? (double)level.RawSize / (double)maxSize * maxWidth : 0;
 
         Bids.Clear();
-        foreach (var bid in bidList) Bids.Add(bid);
+        foreach (var bid in bidList)
+            Bids.Add(bid);
 
         Asks.Clear();
-        foreach (var ask in askList.OrderByDescending(a => a.RawPrice)) Asks.Add(ask);
+        foreach (var ask in askList.OrderByDescending(a => a.RawPrice))
+            Asks.Add(ask);
 
         UpdateStatistics(bidList, askList);
         NoDataVisible = false;
@@ -489,7 +497,8 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
     /// </summary>
     private static void ApplyHighlighting(List<OrderBookDisplayLevel> levels)
     {
-        if (levels.Count == 0) return;
+        if (levels.Count == 0)
+            return;
         double avg = levels.Average(l => (double)l.RawSize);
         double threshold = avg * 2.0;
         foreach (var level in levels)
@@ -523,8 +532,10 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
                         var side = trade.TryGetProperty("side", out var sd) ? sd.GetString() ?? "" : "";
                         var isBuy = side.Equals("buy", StringComparison.OrdinalIgnoreCase);
 
-                        if (isBuy) buyVolume += size;
-                        else sellVolume += size;
+                        if (isBuy)
+                            buyVolume += size;
+                        else
+                            sellVolume += size;
 
                         RecentTrades.Add(new RecentTradeModel
                         {
@@ -554,8 +565,10 @@ public sealed class OrderBookViewModel : BindableBase, IDisposable
 
     private static string FormatSize(int size)
     {
-        if (size >= 1000000) return $"{size / 1000000.0:F1}M";
-        if (size >= 1000) return $"{size / 1000.0:F1}K";
+        if (size >= 1000000)
+            return $"{size / 1000000.0:F1}M";
+        if (size >= 1000)
+            return $"{size / 1000.0:F1}K";
         return size.ToString("N0");
     }
 

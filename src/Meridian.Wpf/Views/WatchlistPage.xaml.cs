@@ -47,7 +47,8 @@ public partial class WatchlistPage : Page
 
     private void WatchlistMenu_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: string watchlistId }) return;
+        if (sender is not Button { Tag: string watchlistId })
+            return;
 
         var contextMenu = new ContextMenu();
 

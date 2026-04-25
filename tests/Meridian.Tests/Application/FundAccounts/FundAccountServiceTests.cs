@@ -40,7 +40,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task CreateAccount_WithCustodyType_StoresAndReturnsCustodianDetails()
     {
-        var svc     = CreateService();
+        var svc = CreateService();
         var details = new CustodianAccountDetailsDto(
             SubAccountNumber: "SUB-001",
             DtcParticipantCode: "0352",
@@ -60,7 +60,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task CreateAccount_WithBankType_StoresBankAccountDetails()
     {
-        var svc     = CreateService();
+        var svc = CreateService();
         var details = new BankAccountDetailsDto(
             AccountNumber: "00112233",
             BankName: "JPMorgan Chase",
@@ -84,7 +84,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task CreateAccount_Duplicate_ThrowsInvalidOperation()
     {
-        var svc     = CreateService();
+        var svc = CreateService();
         var request = MakeCustodyRequest();
         await svc.CreateAccountAsync(request);
 
@@ -97,7 +97,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task GetFundAccounts_WithMultipleAccounts_ReturnsSeparatedByType()
     {
-        var svc    = CreateService();
+        var svc = CreateService();
         var fundId = Guid.NewGuid();
 
         await svc.CreateAccountAsync(MakeCustodyRequest(fundId: fundId));
@@ -121,9 +121,9 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task UpdateCustodianDetails_ReplacesDetails()
     {
-        var svc    = CreateService();
-        var req    = MakeCustodyRequest();
-        var acct   = await svc.CreateAccountAsync(req);
+        var svc = CreateService();
+        var req = MakeCustodyRequest();
+        var acct = await svc.CreateAccountAsync(req);
 
         var newDetails = new CustodianAccountDetailsDto(
             SubAccountNumber: "SUB-999", DtcParticipantCode: "9999",
@@ -143,7 +143,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task UpdateCustodianDetails_UnknownAccount_ReturnsNull()
     {
-        var svc    = CreateService();
+        var svc = CreateService();
         var result = await svc.UpdateCustodianDetailsAsync(
             Guid.NewGuid(),
             new UpdateCustodianAccountDetailsRequest(
@@ -158,8 +158,8 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task RecordBalanceSnapshot_StoresAndReturnsLatest()
     {
-        var svc   = CreateService();
-        var acct  = await svc.CreateAccountAsync(MakeBankRequest());
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
@@ -175,7 +175,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task GetBalanceHistory_FiltersByDateRange()
     {
-        var svc  = CreateService();
+        var svc = CreateService();
         var acct = await svc.CreateAccountAsync(MakeBankRequest());
 
         var d1 = new DateOnly(2025, 1, 1);
@@ -197,8 +197,8 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task IngestCustodianStatement_StoresPositionLines()
     {
-        var svc   = CreateService();
-        var acct  = await svc.CreateAccountAsync(MakeCustodyRequest());
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeCustodyRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         var lines = new List<CustodianPositionLineDto>
@@ -221,8 +221,8 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task IngestBankStatement_StoresBankLines()
     {
-        var svc   = CreateService();
-        var acct  = await svc.CreateAccountAsync(MakeBankRequest());
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         var lines = new List<BankStatementLineDto>
@@ -246,8 +246,8 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task ReconcileAccount_WithBalanceSnapshot_ReturnsMatchedRun()
     {
-        var svc   = CreateService();
-        var acct  = await svc.CreateAccountAsync(MakeBankRequest());
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         await svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
@@ -275,8 +275,8 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task GetReconciliationRuns_ReturnsAllRunsForAccount()
     {
-        var svc   = CreateService();
-        var acct  = await svc.CreateAccountAsync(MakeBankRequest());
+        var svc = CreateService();
+        var acct = await svc.CreateAccountAsync(MakeBankRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         await svc.ReconcileAccountAsync(new ReconcileAccountRequest(acct.AccountId, today, "user-a"));
@@ -291,9 +291,9 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task DeactivateAccount_RemovesFromActiveQuery()
     {
-        var svc    = CreateService();
+        var svc = CreateService();
         var fundId = Guid.NewGuid();
-        var acct   = await svc.CreateAccountAsync(MakeBankRequest(fundId: fundId));
+        var acct = await svc.CreateAccountAsync(MakeBankRequest(fundId: fundId));
 
         await svc.DeactivateAccountAsync(acct.AccountId, "test");
 
@@ -306,7 +306,7 @@ public sealed class FundAccountServiceTests
     [Fact]
     public async Task DeactivateAccount_SetsIsActiveToFalse()
     {
-        var svc  = CreateService();
+        var svc = CreateService();
         var acct = await svc.CreateAccountAsync(MakeBankRequest());
 
         var deactivated = await svc.DeactivateAccountAsync(acct.AccountId, "test");

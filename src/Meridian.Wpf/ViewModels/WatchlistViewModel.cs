@@ -194,7 +194,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     private async Task CreateWatchlistAsync(CancellationToken ct = default)
     {
         var dialog = new CreateWatchlistDialog();
-        if (dialog.ShowDialog() != true) return;
+        if (dialog.ShowDialog() != true)
+            return;
 
         try
         {
@@ -232,7 +233,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
             Title = "Import Watchlist"
         };
 
-        if (dialog.ShowDialog() != true) return;
+        if (dialog.ShowDialog() != true)
+            return;
 
         try
         {
@@ -258,7 +260,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
 
     public async Task LoadWatchlistAsync(string? watchlistId, CancellationToken ct = default)
     {
-        if (string.IsNullOrEmpty(watchlistId)) return;
+        if (string.IsNullOrEmpty(watchlistId))
+            return;
         try
         {
             var watchlist = await _watchlistService.GetWatchlistAsync(watchlistId, ct);
@@ -280,14 +283,17 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
 
     public async Task EditWatchlistAsync(string? watchlistId, CancellationToken ct = default)
     {
-        if (string.IsNullOrEmpty(watchlistId)) return;
+        if (string.IsNullOrEmpty(watchlistId))
+            return;
         try
         {
             var watchlist = await _watchlistService.GetWatchlistAsync(watchlistId, ct);
-            if (watchlist == null) return;
+            if (watchlist == null)
+                return;
 
             var dialog = new EditWatchlistDialog(watchlist);
-            if (dialog.ShowDialog() != true) return;
+            if (dialog.ShowDialog() != true)
+                return;
 
             if (dialog.ShouldDelete)
             {
@@ -337,11 +343,13 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
 
     public async Task PinWatchlistAsync(string? watchlistId, CancellationToken ct = default)
     {
-        if (string.IsNullOrEmpty(watchlistId)) return;
+        if (string.IsNullOrEmpty(watchlistId))
+            return;
         try
         {
             var watchlist = await _watchlistService.GetWatchlistAsync(watchlistId, ct);
-            if (watchlist == null) return;
+            if (watchlist == null)
+                return;
 
             await _watchlistService.UpdateWatchlistAsync(watchlistId, isPinned: !watchlist.IsPinned);
             _notificationService.ShowNotification(
@@ -362,10 +370,12 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         try
         {
             var watchlist = await _watchlistService.GetWatchlistAsync(watchlistId, ct);
-            if (watchlist == null) return;
+            if (watchlist == null)
+                return;
 
             var json = await _watchlistService.ExportWatchlistAsync(watchlistId, ct);
-            if (json == null) return;
+            if (json == null)
+                return;
 
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
@@ -392,7 +402,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         try
         {
             var watchlist = await _watchlistService.GetWatchlistAsync(watchlistId, ct);
-            if (watchlist == null) return;
+            if (watchlist == null)
+                return;
 
             await _watchlistService.CreateWatchlistAsync($"{watchlist.Name} (Copy)", watchlist.Symbols, watchlist.Color);
             _notificationService.ShowNotification("Watchlist Duplicated", $"Created copy of '{watchlist.Name}'.", NotificationType.Success);
@@ -410,7 +421,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         try
         {
             var watchlist = await _watchlistService.GetWatchlistAsync(watchlistId, ct);
-            if (watchlist == null) return;
+            if (watchlist == null)
+                return;
 
             var result = MessageBox.Show(
                 $"Are you sure you want to delete '{watchlist.Name}'?",
@@ -438,17 +450,22 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     {
         if (string.IsNullOrEmpty(color))
             return (Color)ColorConverter.ConvertFromString("#3A3A4E");
-        try { return (Color)ColorConverter.ConvertFromString(color); }
+        try
+        { return (Color)ColorConverter.ConvertFromString(color); }
         catch { return (Color)ColorConverter.ConvertFromString("#3A3A4E"); }
     }
 
     private static string FormatModifiedDate(DateTimeOffset date)
     {
         var diff = DateTimeOffset.UtcNow - date;
-        if (diff.TotalMinutes < 1) return "Just now";
-        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes}m ago";
-        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours}h ago";
-        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+        if (diff.TotalMinutes < 1)
+            return "Just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays}d ago";
         return date.ToString("MMM d, yyyy");
     }
 }

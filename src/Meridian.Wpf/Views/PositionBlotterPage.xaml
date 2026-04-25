@@ -204,7 +204,7 @@
                               VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
+                            <WrapPanel />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -440,10 +440,11 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                <Border x:Name="PositionBlotterSelectionReviewRail"
+                        Style="{StaticResource WorkspaceInspectorCardStyle}"
                         AutomationProperties.AutomationId="PositionBlotterSelectionInspector">
                     <StackPanel>
-                        <TextBlock Text="Selection Posture" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="Selected Position Review" Style="{StaticResource CardHeaderStyle}" />
                         <TextBlock Text="{Binding SelectionSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
 
                         <UniformGrid Columns="2" Margin="0,0,0,8">
@@ -461,17 +462,109 @@
                             </Border>
                             <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
                                 <StackPanel>
+                                    <TextBlock Text="{Binding SelectedLongQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Long quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedShortQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Short quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,8">
+                                <StackPanel>
                                     <TextBlock Text="{Binding SelectedNetQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
                                     <TextBlock Text="Net quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedGrossQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Gross quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
                                 <StackPanel>
                                     <TextBlock Text="{Binding SelectedUnrealisedPnlText}" Style="{StaticResource NumericMetricTextStyle}" Foreground="{Binding SelectedUnrealisedPnlBrush}" />
                                     <TextBlock Text="Unrealised PnL" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                 </StackPanel>
                             </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding UnsupportedActionCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                    <TextBlock Text="Review-only rows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
                         </UniformGrid>
+
+                        <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,4,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Action eligibility" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding SelectedActionEligibilityText}"
+                                           Margin="0,6,0,0"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Selected Preview"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Margin="0,0,0,8" />
+
+                        <ScrollViewer MaxHeight="190"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl x:Name="SelectedPositionPreviewList"
+                                          ItemsSource="{Binding SelectedPositionPreviews}"
+                                          AutomationProperties.AutomationId="SelectedPositionPreviewList"
+                                          AutomationProperties.Name="Selected Position Preview List">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models:BlotterSelectionPreview}">
+                                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Group}"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <TextBlock Text="{Binding ProductDescription}"
+                                                               Margin="0,3,0,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding EligibilityLabel}"
+                                                               Margin="0,5,0,0"
+                                                               FontSize="10"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource InfoColorBrush}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1"
+                                                            Margin="10,0,0,0"
+                                                            HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding QuantityText}"
+                                                               Style="{StaticResource NumericCellTextStyle}" />
+                                                    <TextBlock Text="{Binding UnrealisedPnlText}"
+                                                               Margin="0,4,0,0"
+                                                               Style="{StaticResource NumericCellTextStyle}"
+                                                               Foreground="{Binding PnlBrush}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </StackPanel>
                 </Border>
 
