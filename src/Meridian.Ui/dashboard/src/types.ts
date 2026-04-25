@@ -249,6 +249,11 @@ export interface DataOperationsProviderRecord {
   capability: string;
   latency: string;
   note: string;
+  trustScore?: string;
+  signalSource?: string;
+  reasonCode?: string;
+  recommendedAction?: string;
+  gateImpact?: string;
 }
 
 export interface DataOperationsBackfillRecord {

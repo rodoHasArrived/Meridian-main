@@ -1,6 +1,7 @@
 using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Logging;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Alpaca;
@@ -11,6 +12,7 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Contracts;
+using Meridian.ProviderSdk;
 using Serilog;
 using static Meridian.Application.Services.AutoConfigurationService;
 
@@ -41,19 +43,22 @@ public sealed class ConfigurationService : IAsyncDisposable
     private readonly AutoConfigurationService _autoConfig;
     private readonly ProviderCredentialResolver _credentialResolver;
     private readonly ConfigurationPipeline _pipeline;
+    private readonly IBestOfBreedProviderSelector? _providerSelector;
     private ConfigWatcher? _watcher;
 
     public ConfigurationService(
         ILogger? log = null,
         ConfigurationWizard? wizard = null,
         AutoConfigurationService? autoConfig = null,
-        ProviderCredentialResolver? credentialResolver = null)
+        ProviderCredentialResolver? credentialResolver = null,
+        IBestOfBreedProviderSelector? providerSelector = null)
     {
         _log = log ?? LoggingSetup.ForContext<ConfigurationService>();
         _wizard = wizard ?? new ConfigurationWizard();
         _autoConfig = autoConfig ?? new AutoConfigurationService();
         _credentialResolver = credentialResolver ?? new ProviderCredentialResolver(_log);
         _pipeline = new ConfigurationPipeline(_log, _credentialResolver);
+        _providerSelector = providerSelector;
     }
 
     /// <summary>
@@ -120,10 +125,31 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public DetectedProvider? GetBestRealTimeProvider()
     {
-        return GetProvidersByCapability("RealTime")
+        var eligibleProviders = GetProvidersByCapability("RealTime")
             .Where(p => p.HasCredentials)
-            .OrderBy(p => p.SuggestedPriority)
-            .FirstOrDefault();
+            .ToList();
+
+        if (eligibleProviders.Count == 0)
+            return null;
+
+        if (_providerSelector is null)
+            return eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
+
+        var selection = _providerSelector.SelectAsync(
+                new ProviderRouteContext(ProviderCapabilityKind.RealtimeMarketData))
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
+
+        var selected = selection.SelectedDecision;
+        if (selected is null)
+            return eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
+
+        return eligibleProviders.FirstOrDefault(provider =>
+                   string.Equals(provider.Name, selected.ProviderFamilyId, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(provider.Name, selected.ConnectionId, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(provider.DisplayName, selected.ConnectionId, StringComparison.OrdinalIgnoreCase))
+               ?? eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
     }
 
     /// <summary>

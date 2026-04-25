@@ -28,4 +28,9 @@ public sealed record BacktestProgressEvent(
     /// <summary>
     /// Wall-clock time since the engine run started, across all stages.
     /// </summary>
-    TimeSpan TotalElapsed = default);
+    TimeSpan TotalElapsed = default,
+    /// <summary>
+    /// Consolidated stage telemetry for consumers that prefer a single object graph
+    /// instead of individual stage and timing fields.
+    /// </summary>
+    BacktestStageTelemetryDto? StageTelemetry = null);

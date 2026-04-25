@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage;
 using Meridian.Storage.Services;
@@ -33,6 +34,7 @@ public sealed class BacktestService
     /// Set this before the first backtest run.
     /// </summary>
     public ICorporateActionAdjustmentService? CorporateActionAdjustmentService { get; set; }
+    public IBacktestPreflightService? BacktestPreflightService { get; set; }
 
     public BacktestResult? LastResult { get; private set; }
     public bool IsRunning { get; private set; }
@@ -62,7 +64,8 @@ public sealed class BacktestService
                 engineLogger,
                 catalogService,
                 SecurityMasterQueryService,
-                CorporateActionAdjustmentService);
+                CorporateActionAdjustmentService,
+                BacktestPreflightService);
 
             var result = await engine.RunAsync(request, strategy, progress, _cts.Token);
             LastResult = result;

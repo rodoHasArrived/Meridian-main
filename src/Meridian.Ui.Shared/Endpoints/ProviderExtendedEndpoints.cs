@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Config;
+using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
@@ -49,9 +50,15 @@ public static class ProviderExtendedEndpoints
         .Produces(404);
 
         // Failover configuration
-        group.MapGet(UiApiRoutes.ProviderFailover, ([FromServices] ConfigStore store) =>
+        group.MapGet(UiApiRoutes.ProviderFailover, async ([FromServices] ConfigStore store, [FromServices] ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
         {
             var cfg = store.Load();
+            var selection = await explainabilityService.PreviewAsync(
+                new RoutePreviewRequest(
+                    Capability: "RealtimeMarketData",
+                    Symbol: cfg.Symbols?.FirstOrDefault()?.Symbol),
+                ct).ConfigureAwait(false);
+
             return Results.Json(new
             {
                 enabled = cfg.DataSources?.EnableFailover ?? true,
@@ -59,6 +66,8 @@ public static class ProviderExtendedEndpoints
                 sources = cfg.DataSources?.Sources?.OrderBy(s => s.Priority)
                     .Select(s => new { id = s.Id, name = s.Name, priority = s.Priority, enabled = s.Enabled })
                     .ToArray() ?? Array.Empty<object>(),
+                selection,
+                rankedAlternatives = selection.RankedAlternatives ?? Array.Empty<RoutePreviewCandidateDto>(),
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })

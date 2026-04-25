@@ -1,6 +1,6 @@
 # Historical Data Backfill Guide
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-24
 **Version:** 1.6.2
 
 This document provides a comprehensive guide for backfilling historical market data using the Meridian.
@@ -269,6 +269,30 @@ foreach (var gap in gaps)
     Console.WriteLine($"Missing: {gap.Start} to {gap.End}");
 }
 ```
+
+### Auto Gap Remediation Coordinator
+
+Meridian includes an `AutoGapRemediationService` (`src/Meridian.Application/Backfill/`) that consumes:
+
+- real-time `DataQualityMonitoringService` gap events,
+- `DataGapAnalyzer` scan results (scheduled gap-fill analysis),
+- quality alert signals when API/workflow callers forward them.
+
+Before dispatching remediation, it enforces:
+
+- minimum gap duration / size,
+- symbol/provider cooldown windows,
+- idempotency (`symbol + provider + date-range`),
+- max concurrent remediations.
+
+Remediations are executed through `BackfillCoordinator`, and lineage is persisted in `BackfillExecutionHistory` with:
+
+- `autoRemediationTriggerReason`
+- `autoRemediationAttemptCount`
+- `autoRemediationLastOutcome`
+- `autoRemediationIdempotencyKey`
+
+`/api/backfill/executions` and `/api/backfill/statistics` now expose these fields and an auto-remediation summary block.
 
 ### Gap Types
 

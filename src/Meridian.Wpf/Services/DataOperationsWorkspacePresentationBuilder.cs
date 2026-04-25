@@ -15,6 +15,9 @@ public static class DataOperationsWorkspacePresentationBuilder
     internal const string ProvidersUnavailableSummary = "No providers";
     internal const string BackfillUnavailableSummary = "No active backfill";
     internal const string StorageUnavailableSummary = "No data";
+    private const string ProviderStreamSignalSource = "Provider quote/trade stream health telemetry";
+    private const string ProviderStreamReasonCode = "PROVIDER_STREAM_DEGRADED";
+    private const string ProviderStreamRecommendedAction = "Verify provider connectivity and entitlements, then monitor for recovery before promotion decisions.";
 
     public static DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data)
     {
@@ -298,14 +301,17 @@ public static class DataOperationsWorkspacePresentationBuilder
                 ? "No providers are configured yet. Use Providers to register sources, then open Provider Health to confirm readiness."
                 : data.ProviderStatus?.IsConnected == true && !string.IsNullOrWhiteSpace(data.ProviderStatus.ActiveProvider)
                     ? degradedProviders.Length > 0
-                        ? $"{data.ProviderStatus.ActiveProvider} is connected, but {degradedProviders.Length} provider(s) need review: {string.Join(", ", degradedProviders.Take(2))}."
+                        ? $"{data.ProviderStatus.ActiveProvider} is connected, but {degradedProviders.Length} provider(s) need review: {string.Join(", ", degradedProviders.Take(2))}. {BuildProviderTrustRationale()}"
                         : $"{data.ProviderStatus.ActiveProvider} is connected. {healthyProviderCount}/{providerCount} providers report healthy across the current routing chain."
                     : degradedProviders.Length > 0
-                        ? $"No active provider is connected. Review degraded providers {string.Join(", ", degradedProviders.Take(2))} before resuming collection, backfill, or export work."
-                        : "Provider telemetry is present, but no active route is currently connected. Open Provider Health to restore readiness before the next operational run.";
+                        ? $"No active provider is connected. Review degraded providers {string.Join(", ", degradedProviders.Take(2))} before resuming collection, backfill, or export work. {BuildProviderTrustRationale()}"
+                        : $"Provider telemetry is present, but no active route is currently connected. Open Provider Health to restore readiness before the next operational run. {BuildProviderTrustRationale()}";
 
         return new WorkspaceQueueItem { Title = "Provider health", Detail = detail, StatusLabel = statusLabel, CountLabel = countLabel, Tone = tone, PrimaryActionId = "ProviderHealth", PrimaryActionLabel = "Provider Health", SecondaryActionId = "Provider", SecondaryActionLabel = "Providers" };
     }
+
+    private static string BuildProviderTrustRationale()
+        => $"Signal source: {ProviderStreamSignalSource}. Reason code: {ProviderStreamReasonCode}. Recommended action: {ProviderStreamRecommendedAction}";
 
     private static WorkspaceQueueItem BuildBackfillItem(DataOperationsWorkspaceData data, BackfillExecution? latestExecution, int resumableCount, int activeResumables, int pendingSymbols, int enabledSchedules)
     {

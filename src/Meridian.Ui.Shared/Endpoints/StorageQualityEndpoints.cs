@@ -178,29 +178,36 @@ public static class StorageQualityEndpoints
         group.MapGet(UiApiRoutes.StorageQualityTrends, async (
             HttpContext ctx,
             IDataQualityService? qualityService,
-            StorageOptions opts,
             CancellationToken ct) =>
         {
             if (qualityService is null)
                 return Results.Json(new { message = "Data quality service not available" }, jsonOptions);
 
             var days = int.TryParse(ctx.Request.Query["days"].FirstOrDefault(), out var d) ? d : 30;
+            var symbol = ctx.Request.Query["symbol"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(symbol))
+                symbol = "SPY";
 
             try
             {
-                var report = await qualityService.GenerateReportAsync(
-                    new QualityReportOptions(
-                        Paths: new[] { Path.GetFullPath(opts.RootPath) },
-                        From: DateTimeOffset.UtcNow.AddDays(-days),
-                        IncludeRecommendations: false), ct);
-
-                return Results.Json(new
+                var trend = await qualityService.GetTrendAsync(symbol, TimeSpan.FromDays(days), ct);
+                var payload = new
                 {
-                    period = $"last {days} days",
-                    averageScore = report.AverageScore,
-                    scoresByDimension = report.ScoresByDimension,
-                    filesAnalyzed = report.FilesAnalyzed
-                }, jsonOptions);
+                    symbol = trend.Symbol,
+                    requestedWindowDays = days,
+                    granularity = trend.WindowGranularity,
+                    hasConfidence = trend.HasConfidence,
+                    sparseData = trend.IsSparseData,
+                    currentScore = trend.CurrentScore,
+                    priorWindowBaseline = trend.PreviousScore,
+                    trendDirection = trend.TrendDirection,
+                    improvingDimensions = trend.ImprovingDimensions,
+                    degradingDimensions = trend.DegradingDimensions,
+                    points = trend.ScoreHistory.Zip(trend.ScoreValues, (at, value) => new { timestamp = at, score = value }),
+                    dimensions = trend.DimensionSeries
+                };
+
+                return Results.Json(payload, jsonOptions);
             }
             catch (Exception ex)
             {

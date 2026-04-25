@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Application.Monitoring;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
@@ -1503,15 +1504,24 @@ public static class WorkstationEndpoints
         var metricsStatus = configStore?.TryLoadProviderMetrics();
         var healthyProviderCount = metricsStatus?.HealthyProviders ?? 0;
         object[] providers = metricsStatus is { Providers.Length: > 0 }
-            ? metricsStatus.Providers.Select(static p => (object)new
+            ? metricsStatus.Providers.Select(static p =>
             {
-                provider = p.ProviderId,
-                status = p.IsConnected ? "Healthy" : "Offline",
-                capability = p.ProviderType,
-                latency = $"{p.AverageLatencyMs:F0}ms p50",
-                note = p.IsConnected
-                    ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {p.DataQualityScore:P0}."
-                    : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC."
+                var trust = BuildProviderTrustRationale(p);
+                return (object)new
+                {
+                    provider = p.ProviderId,
+                    status = trust.Status,
+                    capability = p.ProviderType,
+                    latency = $"{p.AverageLatencyMs:F0}ms p50",
+                    note = p.IsConnected
+                        ? $"Active subscriptions: {p.ActiveSubscriptions}. Quality score: {trust.TrustScore}."
+                        : $"Provider disconnected. Last seen: {p.Timestamp:HH:mm} UTC.",
+                    trustScore = trust.TrustScore,
+                    signalSource = trust.SignalSource,
+                    reasonCode = trust.ReasonCode,
+                    recommendedAction = trust.RecommendedAction,
+                    gateImpact = trust.GateImpact
+                };
             }).ToArray()
             : [];
 
@@ -1579,9 +1589,45 @@ public static class WorkstationEndpoints
             },
             providers = new[]
             {
-                new { provider = "Interactive Brokers", status = "Healthy", capability = "Execution + fills", latency = "21ms p50", note = "Paper adapter routing is available." },
-                new { provider = "Polygon", status = "Healthy", capability = "Streaming equities", latency = "16ms p50", note = "Realtime subscriptions are steady." },
-                new { provider = "Databento", status = "Warning", capability = "Historical replay", latency = "69ms p50", note = "Replay queue is elevated but within tolerance." }
+                new
+                {
+                    provider = "Interactive Brokers",
+                    status = "Healthy",
+                    capability = "Execution + fills",
+                    latency = "21ms p50",
+                    note = "Paper adapter routing is available.",
+                    trustScore = "100%",
+                    signalSource = "Provider baseline health snapshot",
+                    reasonCode = "HEALTHY_BASELINE",
+                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
+                    gateImpact = "Normal operation"
+                },
+                new
+                {
+                    provider = "Polygon",
+                    status = "Healthy",
+                    capability = "Streaming equities",
+                    latency = "16ms p50",
+                    note = "Realtime subscriptions are steady.",
+                    trustScore = "100%",
+                    signalSource = "Provider baseline health snapshot",
+                    reasonCode = "HEALTHY_BASELINE",
+                    recommendedAction = "Continue monitoring provider health; no DK1 action is required.",
+                    gateImpact = "Normal operation"
+                },
+                new
+                {
+                    provider = "Databento",
+                    status = "Warning",
+                    capability = "Historical replay",
+                    latency = "69ms p50",
+                    note = "Replay queue is elevated but within tolerance.",
+                    trustScore = "86%",
+                    signalSource = "Latency monitor",
+                    reasonCode = "LATENCY_REGRESSION",
+                    recommendedAction = "Delay operator promotion actions; review latency trend and compare against baseline window.",
+                    gateImpact = "Watch"
+                }
             },
             backfills = new[]
             {
@@ -1596,6 +1642,99 @@ public static class WorkstationEndpoints
             kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
+
+    private static ProviderTrustRationalePayload BuildProviderTrustRationale(ProviderMetrics metrics)
+    {
+        var trustScore = NormalizeScore(metrics.DataQualityScore);
+        var successRate = NormalizeScore(metrics.ConnectionSuccessRate);
+        var gateImpact = BuildProviderGateImpact(trustScore);
+
+        if (!metrics.IsConnected)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Provider quote/trade stream health telemetry",
+                ReasonCode: "PROVIDER_STREAM_DEGRADED",
+                RecommendedAction: "Verify provider connectivity and entitlements, then monitor for recovery before promotion decisions.",
+                GateImpact: gateImpact);
+        }
+
+        if (metrics.ConnectionFailures > 0 && (metrics.ConnectionAttempts == 0 || successRate < 0.75d))
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Provider reconnect monitor",
+                ReasonCode: "RECONNECT_INSTABILITY",
+                RecommendedAction: "Keep run in observation mode; require a stable reconnect window before trusting parity-sensitive outputs.",
+                GateImpact: gateImpact);
+        }
+
+        if (metrics.MessagesDropped > 0)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Degraded",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Missing data completeness checker",
+                ReasonCode: "DATA_COMPLETENESS_GAP",
+                RecommendedAction: "Trigger targeted backfill or replay and block trust sign-off for impacted symbols or windows.",
+                GateImpact: gateImpact);
+        }
+
+        if (metrics.AverageLatencyMs >= 250d)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: "Warning",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Latency monitor",
+                ReasonCode: "LATENCY_REGRESSION",
+                RecommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
+                GateImpact: gateImpact);
+        }
+
+        if (trustScore < 0.90d)
+        {
+            return new ProviderTrustRationalePayload(
+                Status: trustScore < 0.80d ? "Degraded" : "Warning",
+                TrustScore: FormatScore(trustScore),
+                SignalSource: "Cross-provider parity comparator",
+                ReasonCode: "PARITY_DRIFT_DETECTED",
+                RecommendedAction: "Re-run the parity packet and treat results as non-promotable until drift is explained or corrected.",
+                GateImpact: gateImpact);
+        }
+
+        return new ProviderTrustRationalePayload(
+            Status: "Healthy",
+            TrustScore: FormatScore(trustScore),
+            SignalSource: "Provider baseline health snapshot",
+            ReasonCode: "HEALTHY_BASELINE",
+            RecommendedAction: "Continue monitoring provider health; no DK1 action is required.",
+            GateImpact: gateImpact);
+    }
+
+    private static double NormalizeScore(double value)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            return 0d;
+        }
+
+        var normalized = value > 1d ? value / 100d : value;
+        return Math.Clamp(normalized, 0d, 1d);
+    }
+
+    private static string FormatScore(double score)
+        => score.ToString("P0", CultureInfo.InvariantCulture);
+
+    private static string BuildProviderGateImpact(double trustScore)
+        => trustScore >= 0.90d
+            ? "Normal operation"
+            : trustScore >= 0.80d
+                ? "Watch"
+                : trustScore >= 0.70d
+                    ? "Degraded"
+                    : "Critical";
 
     private static async Task<object> BuildGovernancePayloadAsync(HttpContext context)
     {
@@ -3150,6 +3289,14 @@ public static class WorkstationEndpoints
         string Description,
         bool LoaderScript,
         bool DataDictionary);
+
+    private sealed record ProviderTrustRationalePayload(
+        string Status,
+        string TrustScore,
+        string SignalSource,
+        string ReasonCode,
+        string RecommendedAction,
+        string GateImpact);
 }
 
 /// <summary>Request to compare multiple strategy runs side by side.</summary>

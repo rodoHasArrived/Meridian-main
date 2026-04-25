@@ -276,6 +276,42 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
     }
 
     [Fact]
+    public void Build_WithDisconnectedProvider_ShouldSurfaceDk1TrustRationaleInProviderQueue()
+    {
+        var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData
+        {
+            ScopeLabel = "DK1 pilot providers",
+            RetrievedAt = new DateTimeOffset(2026, 04, 24, 14, 30, 00, TimeSpan.Zero),
+            Providers =
+            [
+                new ProviderInfoModel { ProviderId = "alpaca", DisplayName = "Alpaca", Description = "DK1 pilot streaming provider" }
+            ],
+            ProviderStatus = new StatusProviderInfoModel
+            {
+                ActiveProvider = "Alpaca",
+                IsConnected = false,
+                ConnectionCount = 1,
+                AvailableProviders = ["Alpaca"]
+            },
+            BackfillHealth = new BackfillHealthResponse
+            {
+                IsHealthy = false,
+                Providers = new Dictionary<string, BackfillProviderHealth>
+                {
+                    ["Alpaca"] = new() { IsAvailable = false, ErrorMessage = "connection closed" }
+                }
+            }
+        });
+
+        presentation.ProviderQueueItems.Should().ContainSingle();
+        var providerQueue = presentation.ProviderQueueItems[0];
+        providerQueue.StatusLabel.Should().Be("Offline");
+        providerQueue.Detail.Should().Contain("Signal source: Provider quote/trade stream health telemetry");
+        providerQueue.Detail.Should().Contain("Reason code: PROVIDER_STREAM_DEGRADED");
+        providerQueue.Detail.Should().Contain("Recommended action: Verify provider connectivity");
+    }
+
+    [Fact]
     public void Build_WithUnreadNotifications_UsesAlertCountAndRoutesRecentActions()
     {
         var retrievedAt = new DateTimeOffset(2026, 04, 16, 14, 30, 00, TimeSpan.Zero);

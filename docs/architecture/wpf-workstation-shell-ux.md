@@ -55,6 +55,8 @@ The context strip is powered by `WorkspaceShellContextService` and standardizes:
 
 This makes governance, trading, research, and data operations surfaces show the same trust vocabulary even when their working sets differ.
 
+Data Operations provider trust now uses the DK1 rationale vocabulary directly. The workstation API provider rows expose `signalSource`, `reasonCode`, `recommendedAction`, `trustScore`, and `gateImpact`; the WPF provider queue shows the same source, code, and action in the visible provider-health detail when a provider route is degraded or disconnected.
+
 ## Workflow Summary Guidance
 
 The shell now has a second shared seam for operator guidance: `WorkstationWorkflowSummaryService`.

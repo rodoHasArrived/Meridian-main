@@ -31,6 +31,12 @@ public sealed class DataQualityMonitoringService : IAsyncDisposable
     /// </summary>
     public event Action<RealTimeQualityMetrics>? OnMetricsUpdated;
 
+    /// <summary>
+    /// Event raised when the underlying gap analyzer detects a gap.
+    /// Exposed so remediation services can subscribe without directly depending on sub-components.
+    /// </summary>
+    public event Action<DataGap>? OnGapDetected;
+
     public DataQualityMonitoringService(DataQualityMonitoringConfig? config = null, IEventMetrics? eventMetrics = null)
     {
         config ??= DataQualityMonitoringConfig.Default;
@@ -55,6 +61,7 @@ public sealed class DataQualityMonitoringService : IAsyncDisposable
         {
             _log.Debug("Gap detected for {Symbol}: {Duration}", gap.Symbol, gap.Duration);
             UpdateSymbolHealth(gap.Symbol, HealthState.Degraded, $"Gap: {gap.Duration}");
+            OnGapDetected?.Invoke(gap);
         };
 
         AnomalyDetector.OnAnomalyDetected += anomaly =>

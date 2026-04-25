@@ -155,7 +155,13 @@ public sealed record RoutePreviewCandidateDto(
     int Priority,
     string[] ReasonCodes,
     string[] FallbackConnectionIds,
-    string? PolicyGate = null);
+    string? PolicyGate = null,
+    double CompositeScore = 0,
+    double HealthScore = 0,
+    double LatencyScore = 0,
+    double DataQualityScore = 0,
+    double CoverageScore = 0,
+    double PolicyGateScore = 0);
 
 /// <summary>
 /// Route preview response.
@@ -171,7 +177,8 @@ public sealed record RoutePreviewResponse(
     string[] SkippedCandidates,
     string[] FallbackConnectionIds,
     string? PolicyGate,
-    RoutePreviewCandidateDto[] Candidates);
+    RoutePreviewCandidateDto[] Candidates,
+    RoutePreviewCandidateDto[]? RankedAlternatives = null);
 
 /// <summary>
 /// Shared scope DTO used by provider routing APIs.

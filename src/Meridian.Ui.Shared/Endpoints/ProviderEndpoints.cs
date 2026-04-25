@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.Config;
+using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
@@ -170,9 +171,15 @@ public static class ProviderEndpoints
         .Produces(200);
 
         // Provider comparison view
-        group.MapGet(UiApiRoutes.ProviderComparison, (ConfigStore store) =>
+        group.MapGet(UiApiRoutes.ProviderComparison, async (ConfigStore store, ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
         {
             var metricsStatus = store.TryLoadProviderMetrics();
+            var cfg = store.Load();
+            var selection = await explainabilityService.PreviewAsync(
+                new RoutePreviewRequest(
+                    Capability: "RealtimeMarketData",
+                    Symbol: cfg.Symbols?.FirstOrDefault()?.Symbol),
+                ct).ConfigureAwait(false);
 
             if (metricsStatus is not null)
             {
@@ -200,11 +207,18 @@ public static class ProviderEndpoints
                     TotalProviders: metricsStatus.TotalProviders,
                     HealthyProviders: metricsStatus.HealthyProviders
                 );
-                return Results.Json(comparison, jsonOptions);
+                return Results.Json(new
+                {
+                    comparison.Timestamp,
+                    comparison.Providers,
+                    comparison.TotalProviders,
+                    comparison.HealthyProviders,
+                    selection,
+                    rankedAlternatives = selection.RankedAlternatives ?? Array.Empty<RoutePreviewCandidateDto>()
+                }, jsonOptions);
             }
 
             // Fallback to configuration-based data
-            var cfg = store.Load();
             var sources = cfg.DataSources?.Sources ?? Array.Empty<DataSourceConfig>();
             var fallbackProviders = sources.Select(s => CreateFallbackMetrics(s)).ToArray();
 
@@ -214,7 +228,15 @@ public static class ProviderEndpoints
                 TotalProviders: sources.Length,
                 HealthyProviders: sources.Count(s => s.Enabled)
             );
-            return Results.Json(fallbackComparison, jsonOptions);
+            return Results.Json(new
+            {
+                fallbackComparison.Timestamp,
+                fallbackComparison.Providers,
+                fallbackComparison.TotalProviders,
+                fallbackComparison.HealthyProviders,
+                selection,
+                rankedAlternatives = selection.RankedAlternatives ?? Array.Empty<RoutePreviewCandidateDto>()
+            }, jsonOptions);
         })
         .WithName("GetProviderComparison")
         .WithDescription("Returns a side-by-side comparison of all provider metrics including latency, quality, and throughput.")

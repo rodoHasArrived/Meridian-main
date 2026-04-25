@@ -259,16 +259,20 @@ public sealed class ProviderCertificationService
 /// </summary>
 public sealed class ProviderRouteExplainabilityService
 {
+    private readonly IBestOfBreedProviderSelector _selector;
     private readonly ProviderRoutingService _routingService;
 
-    public ProviderRouteExplainabilityService(ProviderRoutingService routingService)
+    public ProviderRouteExplainabilityService(
+        IBestOfBreedProviderSelector selector,
+        ProviderRoutingService routingService)
     {
+        _selector = selector;
         _routingService = routingService;
     }
 
     public async Task<RoutePreviewResponse> PreviewAsync(RoutePreviewRequest request, CancellationToken ct = default)
     {
-        var result = await _routingService.RouteAsync(ProviderRoutingMapper.ToRouteContext(request), ct).ConfigureAwait(false);
+        var result = await _selector.SelectAsync(ProviderRoutingMapper.ToRouteContext(request), ct).ConfigureAwait(false);
         return ProviderRoutingMapper.ToDto(result);
     }
 

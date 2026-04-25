@@ -1,6 +1,6 @@
 # DK1 Operator Trust Rationale Mapping
 
-**Last Updated:** 2026-04-21  
+**Last Updated:** 2026-04-24  
 **Owners:** Data Operations + Trading  
 **Scope:** Operator-facing trust rationale for DK1 alerts (signal source, reason code, recommended action)
 
@@ -18,6 +18,7 @@ Define the required explainability contract for DK1 trust alerts so every alert 
 
 | Signal source | Reason code | Operator-facing meaning | Recommended action |
 |---|---|---|---|
+| Provider baseline health snapshot | `HEALTHY_BASELINE` | Provider is within the current DK1 trust baseline and has no active alert. | Continue monitoring provider health; no DK1 action is required. |
 | Provider quote/trade stream health telemetry | `PROVIDER_STREAM_DEGRADED` | Live stream reliability dropped below expected baseline. | Verify provider connectivity + entitlements, then monitor for recovery before promotion decisions. |
 | Provider reconnect monitor | `RECONNECT_INSTABILITY` | Frequent reconnects indicate unstable session quality. | Keep run in observation mode; require stable reconnect window before trusting parity-sensitive outputs. |
 | Error-rate monitor | `ERROR_RATE_SPIKE` | Provider/API errors exceeded acceptable rate for the active window. | Inspect recent provider errors and suppress downstream trust claims until error rate normalizes. |
@@ -43,3 +44,8 @@ For every trust alert in pilot operations, the UI/API payload must expose:
 - `recommendedAction`
 
 Alerts missing any field are treated as **explainability failures** for DK1 gate review.
+
+## Current implementation surface
+
+- `GET /api/workstation/data-operations` provider rows expose `trustScore`, `signalSource`, `reasonCode`, `recommendedAction`, and `gateImpact` for provider metrics loaded from `_status/providers.json`.
+- The WPF Data Operations provider queue includes the DK1 signal source, reason code, and recommended action in its visible provider-health detail when provider routing is degraded or disconnected.

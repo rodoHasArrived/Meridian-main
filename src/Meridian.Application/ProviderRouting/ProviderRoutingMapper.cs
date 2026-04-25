@@ -87,7 +87,11 @@ internal static class ProviderRoutingMapper
             SkippedCandidates: result.SkippedCandidates.ToArray(),
             FallbackConnectionIds: selected?.FallbackConnectionIds.ToArray() ?? Array.Empty<string>(),
             PolicyGate: result.PolicyGate,
-            Candidates: result.Candidates.Select(ToDto).ToArray());
+            Candidates: result.Candidates.Select(ToDto).ToArray(),
+            RankedAlternatives: result.Candidates
+                .Where(c => !string.Equals(c.ConnectionId, selected?.ConnectionId, StringComparison.OrdinalIgnoreCase))
+                .Select(ToDto)
+                .ToArray());
     }
 
     public static RoutePreviewCandidateDto ToDto(ProviderRouteDecision decision)
@@ -99,7 +103,13 @@ internal static class ProviderRoutingMapper
             Priority: decision.Priority,
             ReasonCodes: decision.ReasonCodes.ToArray(),
             FallbackConnectionIds: decision.FallbackConnectionIds.ToArray(),
-            PolicyGate: decision.PolicyGate);
+            PolicyGate: decision.PolicyGate,
+            CompositeScore: decision.CompositeScore,
+            HealthScore: decision.HealthScore,
+            LatencyScore: decision.LatencyScore,
+            DataQualityScore: decision.DataQualityScore,
+            CoverageScore: decision.CoverageScore,
+            PolicyGateScore: decision.PolicyGateScore);
 
     public static ProviderRouteContext ToRouteContext(RoutePreviewRequest request)
         => new(

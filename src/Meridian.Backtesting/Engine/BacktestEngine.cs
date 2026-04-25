@@ -3,6 +3,8 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
+using Meridian.Contracts.Backtesting;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
@@ -18,7 +20,8 @@ public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
     Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
-    ICorporateActionAdjustmentService? corporateActionAdjustment = null)
+    ICorporateActionAdjustmentService? corporateActionAdjustment = null,
+    IBacktestPreflightService? backtestPreflightService = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -40,6 +43,35 @@ public sealed class BacktestEngine(
         var stageTimer = new StageTimer(BacktestStage.ValidatingRequest);
         logger.LogInformation("Backtesting '{Strategy}' from {From} to {To} in {DataRoot}",
             strategy.Name, request.From, request.To, request.DataRoot);
+
+        if (backtestPreflightService is not null)
+        {
+            var preflightReport = await backtestPreflightService
+                .RunAsync(new BacktestPreflightRequestDto(request.From, request.To, request.DataRoot, request.Symbols), ct)
+                .ConfigureAwait(false);
+
+            progress?.Report(new BacktestProgressEvent(
+                ProgressFraction: 0d,
+                CurrentDate: request.From,
+                PortfolioValue: request.InitialCash,
+                EventsProcessed: 0,
+                Message: preflightReport.SummaryMessage,
+                LiveMetrics: null,
+                Stage: stageTimer.CurrentStage,
+                StageElapsed: stageTimer.StageElapsed,
+                TotalElapsed: stageTimer.TotalElapsed,
+                StageTelemetry: BuildStageTelemetry(stageTimer, preflightReport.SummaryMessage)));
+
+            if (!preflightReport.IsReadyToRun)
+            {
+                var failures = string.Join("; ",
+                    preflightReport.Checks
+                        .Where(c => c.Status == BacktestPreflightCheckStatusDto.Failed)
+                        .Select(c => $"{c.Name}: {c.Message}"));
+
+                throw new InvalidOperationException($"Backtest preflight failed: {failures}");
+            }
+        }
 
         // 1. Discover universe
         stageTimer.Transition(BacktestStage.ValidatingCoverage);
@@ -157,7 +189,8 @@ public sealed class BacktestEngine(
             LiveMetrics: null,
             Stage: stageTimer.CurrentStage,
             StageElapsed: stageTimer.StageElapsed,
-            TotalElapsed: stageTimer.TotalElapsed));
+            TotalElapsed: stageTimer.TotalElapsed,
+            StageTelemetry: BuildStageTelemetry(stageTimer, "Complete")));
 
         if (double.IsNaN(metrics.Xirr))
             logger.LogWarning("XIRR bisection did not converge for this backtest run; Xirr will be reported as NaN. Check cash-flow patterns for non-standard sign changes.");
@@ -354,9 +387,13 @@ public sealed class BacktestEngine(
                 LiveMetrics: liveMetrics,
                 Stage: stageTimer.CurrentStage,
                 StageElapsed: stageTimer.StageElapsed,
-                TotalElapsed: stageTimer.TotalElapsed));
+                TotalElapsed: stageTimer.TotalElapsed,
+                StageTelemetry: BuildStageTelemetry(stageTimer)));
         }
     }
+
+    private static BacktestStageTelemetryDto BuildStageTelemetry(StageTimer stageTimer, string? stageMessage = null)
+        => new(stageTimer.CurrentStage, stageTimer.StageElapsed, stageTimer.TotalElapsed, stageMessage);
 
     private static async IAsyncEnumerable<MarketEvent> FilterBySymbolAndDate(
         IAsyncEnumerable<MarketEvent> source,

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.Monitoring;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -137,6 +138,85 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_DataOperationsProviderMetrics_ShouldExposeDk1TrustRationale()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-metrics", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "_status"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, """{"DataRoot":"."}""");
+
+        var metrics = new ProviderMetricsStatus(
+            Timestamp: new DateTimeOffset(2026, 4, 24, 17, 0, 0, TimeSpan.Zero),
+            Providers:
+            [
+                new ProviderMetrics(
+                    ProviderId: "yahoo",
+                    ProviderType: "Historical bars",
+                    IsConnected: true,
+                    TradesReceived: 0,
+                    DepthUpdatesReceived: 0,
+                    QuotesReceived: 2400,
+                    ConnectionAttempts: 1,
+                    ConnectionFailures: 0,
+                    MessagesDropped: 0,
+                    ActiveSubscriptions: 4,
+                    AverageLatencyMs: 42,
+                    MinLatencyMs: 25,
+                    MaxLatencyMs: 80,
+                    DataQualityScore: 0.96,
+                    ConnectionSuccessRate: 1,
+                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 59, 0, TimeSpan.Zero)),
+                new ProviderMetrics(
+                    ProviderId: "alpaca",
+                    ProviderType: "Streaming equities",
+                    IsConnected: false,
+                    TradesReceived: 12,
+                    DepthUpdatesReceived: 0,
+                    QuotesReceived: 30,
+                    ConnectionAttempts: 4,
+                    ConnectionFailures: 4,
+                    MessagesDropped: 0,
+                    ActiveSubscriptions: 2,
+                    AverageLatencyMs: 510,
+                    MinLatencyMs: 90,
+                    MaxLatencyMs: 900,
+                    DataQualityScore: 0.62,
+                    ConnectionSuccessRate: 0,
+                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 58, 0, TimeSpan.Zero))
+            ],
+            TotalProviders: 2,
+            HealthyProviders: 1);
+        var metricsJson = JsonSerializer.Serialize(metrics, ServerJsonOptions);
+        await File.WriteAllTextAsync(Path.Combine(root, "_status", "providers.json"), metricsJson);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
+        });
+        var client = app.GetTestClient();
+
+        using var dataOperations = await ReadJsonAsync(client, "/api/workstation/data-operations");
+        var providers = dataOperations.RootElement.GetProperty("providers");
+        providers.GetArrayLength().Should().Be(2);
+
+        var healthy = providers[0];
+        healthy.GetProperty("provider").GetString().Should().Be("yahoo");
+        healthy.GetProperty("status").GetString().Should().Be("Healthy");
+        healthy.GetProperty("trustScore").GetString().Should().Be("96%");
+        healthy.GetProperty("reasonCode").GetString().Should().Be("HEALTHY_BASELINE");
+        healthy.GetProperty("recommendedAction").GetString().Should().Contain("no DK1 action");
+
+        var degraded = providers[1];
+        degraded.GetProperty("provider").GetString().Should().Be("alpaca");
+        degraded.GetProperty("status").GetString().Should().Be("Degraded");
+        degraded.GetProperty("trustScore").GetString().Should().Be("62%");
+        degraded.GetProperty("signalSource").GetString().Should().Be("Provider quote/trade stream health telemetry");
+        degraded.GetProperty("reasonCode").GetString().Should().Be("PROVIDER_STREAM_DEGRADED");
+        degraded.GetProperty("recommendedAction").GetString().Should().Contain("Verify provider connectivity");
+        degraded.GetProperty("gateImpact").GetString().Should().Be("Critical");
     }
 
     [Fact]

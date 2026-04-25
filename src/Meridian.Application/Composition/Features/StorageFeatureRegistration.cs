@@ -61,6 +61,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         // Core storage services
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
+        services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();
         services.AddSingleton<IStorageSearchService, StorageSearchService>();
         services.AddSingleton<ITierMigrationService, TierMigrationService>();
