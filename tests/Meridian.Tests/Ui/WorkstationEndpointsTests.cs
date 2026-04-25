@@ -10,10 +10,12 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
@@ -487,6 +489,102 @@ public sealed class WorkstationEndpointsTests
         brokerage.GetProperty("provider").GetString().Should().Be("Paper trading");
         brokerage.GetProperty("notes").GetString().Should().Contain("blocked");
         brokerage.GetProperty("notes").GetString().Should().Contain("paper trading");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldJoinSessionReplayAuditControlsAndPromotion()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            services.AddSingleton<ExecutionOperatorControlService>(sp => new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(Path.Combine(rootPath, "controls")),
+                NullLogger<ExecutionOperatorControlService>.Instance,
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+            services.AddSingleton<BacktestToLivePromoter>();
+            services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
+                Path.Combine(rootPath, "promotions"),
+                NullLogger<JsonlPromotionRecordStore>.Instance));
+            services.AddSingleton<PromotionService>(sp => new PromotionService(
+                sp.GetRequiredService<IStrategyRepository>(),
+                sp.GetRequiredService<BacktestToLivePromoter>(),
+                sp.GetRequiredService<IPromotionRecordStore>(),
+                NullLogger<PromotionService>.Instance,
+                operatorControls: sp.GetRequiredService<ExecutionOperatorControlService>(),
+                auditTrail: sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-wave2-backtest",
+            strategyId: "strat-wave2",
+            strategyName: "Wave 2 Acceptance",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 4, 24, 15, 30, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-wave2",
+            StrategyName: "Wave 2 Acceptance",
+            InitialCash: 250_000m,
+            Symbols: ["AAPL"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-wave2", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-wave2", "AAPL", 10m, 190m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+
+        var decision = await app.Services.GetRequiredService<PromotionService>().ApproveAsync(new PromotionApprovalRequest(
+            RunId: "run-wave2-backtest",
+            ApprovedBy: "ops.lead",
+            ApprovalReason: "Replay, audit, and paper controls accepted for Wave 2."));
+
+        decision.Success.Should().BeTrue();
+
+        var client = app.GetTestClient();
+        var readiness = await client.GetFromJsonAsync<TradingOperatorReadinessDto>(
+            "/api/workstation/trading/readiness",
+            ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.ActiveSession.Should().NotBeNull();
+        readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        readiness.ActiveSession.OrderCount.Should().Be(1);
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.IsConsistent.Should().BeTrue();
+        readiness.Replay.ComparedFillCount.Should().Be(1);
+        readiness.Replay.ComparedOrderCount.Should().Be(1);
+        readiness.Replay.VerificationAuditId.Should().Be(verification!.VerificationAuditId);
+        readiness.Controls.CircuitBreakerOpen.Should().BeFalse();
+        readiness.Controls.ManualOverrideCount.Should().Be(0);
+        readiness.Promotion.Should().NotBeNull();
+        readiness.Promotion!.ApprovalStatus.Should().Be(PromotionDecisionKinds.Approved);
+        readiness.Promotion.ApprovedBy.Should().Be("ops.lead");
+        readiness.Promotion.AuditReference.Should().Be(decision.AuditReference);
+        readiness.WorkItems.Should().NotContain(item => item.Tone == OperatorWorkItemToneDto.Critical);
+        readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PaperReplay);
+        readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PromotionReview);
+
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+        trading.RootElement
+            .GetProperty("readiness")
+            .GetProperty("activeSession")
+            .GetProperty("sessionId")
+            .GetString()
+            .Should()
+            .Be(session.SessionId);
     }
 
     [Fact]
@@ -1714,6 +1812,31 @@ public sealed class WorkstationEndpointsTests
             TradingHoursUtc: "13:30-20:00",
             CircuitBreakerThresholdPct: null,
             AsOf: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero));
+
+    private static OrderState CreateExecutionOrderState(string orderId, string symbol, decimal quantity) => new()
+    {
+        OrderId = orderId,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        Type = Meridian.Execution.Sdk.OrderType.Market,
+        Quantity = quantity,
+        Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+        CreatedAt = DateTimeOffset.UtcNow,
+        LastUpdatedAt = DateTimeOffset.UtcNow
+    };
+
+    private static ExecutionReport CreateExecutionFill(string orderId, string symbol, decimal quantity, decimal fillPrice) => new()
+    {
+        OrderId = orderId,
+        ReportType = ExecutionReportType.Fill,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+        OrderQuantity = quantity,
+        FilledQuantity = quantity,
+        FillPrice = fillPrice,
+        Timestamp = DateTimeOffset.UtcNow
+    };
 
     private static JsonElement CreateEmptyJson()
         => JsonDocument.Parse("{}").RootElement.Clone();

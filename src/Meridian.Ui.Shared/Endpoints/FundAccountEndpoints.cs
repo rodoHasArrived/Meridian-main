@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Application.FundAccounts;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -116,6 +118,74 @@ public static class FundAccountEndpoints
         .WithName("DeactivateFundAccount")
         .Produces<AccountSummaryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+
+        // ── Brokerage read-side sync ──────────────────────────────────────────
+
+        group.MapGet("/brokerage-sync/accounts", async (HttpContext context) =>
+        {
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null) return BrokerageSyncUnavailable();
+
+            var accounts = await sync.DiscoverAccountsAsync(context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(accounts, jsonOptions);
+        })
+        .WithName("DiscoverBrokerageSyncAccounts")
+        .Produces<IReadOnlyList<WorkstationBrokerageAccountDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapGet("/{accountId:guid}/brokerage-sync/status", async (Guid accountId, HttpContext context) =>
+        {
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null) return BrokerageSyncUnavailable();
+
+            var status = await sync.GetStatusAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(status, jsonOptions);
+        })
+        .WithName("GetAccountBrokerageSyncStatus")
+        .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapPost("/{accountId:guid}/brokerage-sync/run", async (Guid accountId, HttpContext context) =>
+        {
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null) return BrokerageSyncUnavailable();
+
+            var request = await ReadBrokerageSyncRequestAsync(context, jsonOptions).ConfigureAwait(false)
+                ?? new WorkstationBrokerageSyncRunRequestDto();
+            var status = await sync.RunSyncAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(status, jsonOptions);
+        })
+        .WithName("RunAccountBrokerageSync")
+        .Accepts<WorkstationBrokerageSyncRunRequestDto>("application/json")
+        .Produces<WorkstationBrokerageSyncStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapGet("/{accountId:guid}/brokerage-sync/positions", async (Guid accountId, HttpContext context) =>
+        {
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null) return BrokerageSyncUnavailable();
+
+            var positions = await sync.GetPositionsAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(positions, jsonOptions);
+        })
+        .WithName("GetAccountBrokerageSyncPositions")
+        .Produces<IReadOnlyList<WorkstationBrokeragePositionDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        group.MapGet("/{accountId:guid}/brokerage-sync/activity", async (Guid accountId, HttpContext context) =>
+        {
+            var sync = ResolveBrokerageSyncService(context);
+            if (sync is null) return BrokerageSyncUnavailable();
+
+            var view = await sync.GetActivityAsync(accountId, context.RequestAborted).ConfigureAwait(false);
+            return view is null
+                ? Results.NotFound()
+                : Results.Json(view, jsonOptions);
+        })
+        .WithName("GetAccountBrokerageSyncActivity")
+        .Produces<WorkstationBrokerageSyncViewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
 
         // ── Balance snapshots ─────────────────────────────────────────────────
 
@@ -270,6 +340,28 @@ public static class FundAccountEndpoints
     private static IFundAccountService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundAccountService>();
 
+    private static BrokeragePortfolioSyncService? ResolveBrokerageSyncService(HttpContext context) =>
+        context.RequestServices.GetService<BrokeragePortfolioSyncService>();
+
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund account service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static IResult BrokerageSyncUnavailable() =>
+        Results.Problem("Brokerage sync service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static async Task<WorkstationBrokerageSyncRunRequestDto?> ReadBrokerageSyncRequestAsync(
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (context.Request.ContentLength is null or 0)
+        {
+            return null;
+        }
+
+        return await JsonSerializer.DeserializeAsync<WorkstationBrokerageSyncRunRequestDto>(
+                context.Request.Body,
+                jsonOptions,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+    }
 }

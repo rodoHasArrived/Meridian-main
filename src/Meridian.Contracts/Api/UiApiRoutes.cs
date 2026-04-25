@@ -461,12 +461,14 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
+    public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
     public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
+    public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
@@ -475,8 +477,16 @@ public static class UiApiRoutes
     public const string WorkstationSecurityMasterTrustSnapshot = "/api/workstation/security-master/securities/{securityId:guid}/trust-snapshot";
     public const string WorkstationSecurityMasterBulkResolveConflicts = "/api/workstation/security-master/conflicts/bulk-resolve";
     public const string ReconciliationBreakQueue = "/api/workstation/reconciliation/break-queue";
+    public const string ReconciliationBreakAudit = "/api/workstation/reconciliation/break-queue/{breakId}/audit";
     public const string ReconciliationBreakReview = "/api/workstation/reconciliation/break-queue/{breakId}/review";
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
+
+    // Fund account brokerage read-side sync endpoints
+    public const string FundAccountBrokerageSyncAccounts = "/api/fund-accounts/brokerage-sync/accounts";
+    public const string FundAccountBrokerageSyncStatus = "/api/fund-accounts/{accountId}/brokerage-sync/status";
+    public const string FundAccountBrokerageSyncRun = "/api/fund-accounts/{accountId}/brokerage-sync/run";
+    public const string FundAccountBrokerageSyncPositions = "/api/fund-accounts/{accountId}/brokerage-sync/positions";
+    public const string FundAccountBrokerageSyncActivity = "/api/fund-accounts/{accountId}/brokerage-sync/activity";
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";

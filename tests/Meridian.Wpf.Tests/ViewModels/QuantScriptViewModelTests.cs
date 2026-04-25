@@ -228,6 +228,21 @@ public sealed class QuantScriptViewModelTests
     }
 
     [Fact]
+    public async Task RunAndAdvanceCommand_WhenDateRangeInvalid_BlocksRunAndReportsStatus()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        vm.FromDate = new DateTime(2025, 1, 2);
+        vm.ToDate = new DateTime(2025, 1, 1);
+
+        await vm.RunAndAdvanceCommand.ExecuteAsync(null);
+
+        runner.CallCount.Should().Be(0);
+        vm.StatusText.Should().Contain("Invalid date range");
+        vm.Diagnostics.Should().Contain(entry => entry.Key == "Validation");
+    }
+
+    [Fact]
     public async Task RunScriptCommand_IncludesNormalizedToolbarContextInParameters()
     {
         var runner = new FakeScriptRunner();

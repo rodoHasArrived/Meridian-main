@@ -80,8 +80,8 @@ public sealed class DashboardHoldingSnapshotItem
     public string ParValue { get; set; } = string.Empty;
     public string BookValue { get; set; } = string.Empty;
     public string MarketValue { get; set; } = string.Empty;
-    public string UnrealizedGainLoss { get; set; } = string.Empty;
-    public Brush UnrealizedGainLossBrush { get; set; } = Brushes.Transparent;
+    public string ValuationDelta { get; set; } = string.Empty;
+    public Brush ValuationDeltaBrush { get; set; } = Brushes.Transparent;
     public string DataStatus { get; set; } = string.Empty;
     public Brush DataStatusBackground { get; set; } = Brushes.Transparent;
     public Brush DataStatusBorderBrush { get; set; } = Brushes.Transparent;

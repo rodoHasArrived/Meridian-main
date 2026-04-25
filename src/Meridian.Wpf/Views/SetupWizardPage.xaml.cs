@@ -277,7 +277,7 @@ public partial class SetupWizardPage : Page
             return;
         }
 
-        ValidationStatusText.Text = "Configuration saved and backend verified. Redirecting to dashboard...";
+        ValidationStatusText.Text = "Configuration saved and backend verified. Opening Portfolio Operations...";
         _notificationService.NotifySuccess("Setup Wizard", "Setup complete. Welcome!");
 
         _navigationService.NavigateTo("Dashboard");

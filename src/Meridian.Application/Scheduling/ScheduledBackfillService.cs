@@ -391,7 +391,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                 if (_autoGapRemediationService is not null)
                 {
                     await _autoGapRemediationService
-                        .HandleGapAnalysisResultAsync(gapAnalysis, schedule.Provider, ct)
+                        .HandleGapAnalysisResultAsync(gapAnalysis, schedule.PreferredProviders.FirstOrDefault(), ct)
                         .ConfigureAwait(false);
                 }
 

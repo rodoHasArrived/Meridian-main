@@ -113,6 +113,10 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
         builder.Services.AddSingleton<StrategyRunContinuityService>();
+        builder.Services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
+        builder.Services.AddSingleton<BrokeragePortfolioSyncService>();
+        builder.Services.AddSingleton<TradingOperatorReadinessService>();
+        builder.Services.AddSingleton<StrategyRunReviewPacketService>();
         builder.Services.AddSingleton<WorkstationWorkflowSummaryService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         // Durable promotion-record store is required by PromotionService; without it

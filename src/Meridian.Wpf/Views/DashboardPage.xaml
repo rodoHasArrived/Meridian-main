@@ -9,7 +9,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Dashboard">
+      AutomationProperties.Name="Portfolio Operations Dashboard">
 
     <Page.Resources>
         <Style x:Key="DashboardMetricItemBorderStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
@@ -50,8 +50,8 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Dashboard" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Portfolio operations overview and data-quality monitoring."
+                            <TextBlock Text="Portfolio Operations" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Holdings oversight, valuation readiness, and data-quality controls."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="0,6,0,0" />
                         </StackPanel>
@@ -75,7 +75,7 @@
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
                                                FontSize="14"
                                                Margin="0,0,6,0" />
-                                    <TextBlock Text="Data Quality" />
+                                    <TextBlock Text="Quality Worklist" />
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -127,8 +127,8 @@
 
                     <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                         <StackPanel>
-                            <TextBlock Text="Data Quality by Category" Style="{StaticResource SectionHeaderStyle}" />
-                            <TextBlock Text="Exception categories that can affect valuation readiness and accounting exports."
+                            <TextBlock Text="Quality Exceptions by Category" Style="{StaticResource SectionHeaderStyle}" />
+                            <TextBlock Text="Open exceptions affecting valuation, security master, and ledger export readiness."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="0,4,0,18" />
 
@@ -178,7 +178,7 @@
                     <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="10,0,0,0">
                         <StackPanel>
                             <TextBlock Text="Upcoming Maturities" Style="{StaticResource SectionHeaderStyle}" />
-                            <TextBlock Text="Securities maturing in the next 90 days."
+                            <TextBlock Text="Cash-facing maturities and term-data readiness over the next 90 days."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="0,4,0,18" />
 
@@ -194,7 +194,7 @@
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="110" />
                                                     <ColumnDefinition Width="92" />
-                                                    <ColumnDefinition Width="78" />
+                                                    <ColumnDefinition Width="96" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0"
                                                            Text="{Binding Issuer}"
@@ -242,7 +242,7 @@
                                 </Border>
                             </StackPanel>
                             <TextBlock Grid.Column="1"
-                                       Text="Portfolio holdings, valuation basis, and data workflow status"
+                                       Text="Holdings, valuation basis, and data-quality workflow status"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        VerticalAlignment="Center" />
                         </Grid>
@@ -266,27 +266,27 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="CUSIP" Binding="{Binding Cusip}" Width="98" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
                                 <DataGridTextColumn Header="Issuer" Binding="{Binding Issuer}" Width="160" ElementStyle="{StaticResource DashboardTextCellStyle}" />
-                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="185" ElementStyle="{StaticResource DashboardMutedCellStyle}" />
+                                <DataGridTextColumn Header="Instrument" Binding="{Binding Description}" Width="185" ElementStyle="{StaticResource DashboardMutedCellStyle}" />
                                 <DataGridTextColumn Header="Asset Class" Binding="{Binding AssetClass}" Width="104" ElementStyle="{StaticResource DashboardTextCellStyle}" />
                                 <DataGridTextColumn Header="Rating" Binding="{Binding Rating}" Width="92" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
                                 <DataGridTextColumn Header="Coupon" Binding="{Binding Coupon}" Width="78" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
                                 <DataGridTextColumn Header="Maturity" Binding="{Binding Maturity}" Width="96" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
-                                <DataGridTextColumn Header="Par Value" Binding="{Binding ParValue}" Width="96" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
-                                <DataGridTextColumn Header="Book Value" Binding="{Binding BookValue}" Width="96" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
-                                <DataGridTextColumn Header="Market Value" Binding="{Binding MarketValue}" Width="104" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
-                                <DataGridTemplateColumn Header="Unrealized G/L" Width="112">
+                                <DataGridTextColumn Header="Par / Qty" Binding="{Binding ParValue}" Width="100" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
+                                <DataGridTextColumn Header="Book Basis" Binding="{Binding BookValue}" Width="100" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
+                                <DataGridTextColumn Header="Valuation" Binding="{Binding MarketValue}" Width="104" ElementStyle="{StaticResource DashboardMonoCellTextStyle}" />
+                                <DataGridTemplateColumn Header="Valuation Delta" Width="118">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding UnrealizedGainLoss}"
+                                            <TextBlock Text="{Binding ValuationDelta}"
                                                        FontFamily="{StaticResource MeridianDataFontFamily}"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{Binding UnrealizedGainLossBrush}"
+                                                       Foreground="{Binding ValuationDeltaBrush}"
                                                        VerticalAlignment="Center"
                                                        TextAlignment="Right" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Status" Width="96">
+                                <DataGridTemplateColumn Header="Data Quality" Width="118">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border Background="{Binding DataStatusBackground}"
@@ -299,6 +299,7 @@
                                                 <TextBlock Text="{Binding DataStatus}"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"
                                                            Foreground="{Binding DataStatusForeground}" />
                                             </Border>
                                         </DataTemplate>
@@ -319,11 +320,11 @@
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="9" Height="9" Fill="{StaticResource SuccessColorBrush}" VerticalAlignment="Center" />
-                                <TextBlock Text="All portfolio data services operational"
+                                <TextBlock Text="Holdings and data-quality controls current"
                                            Style="{StaticResource BodyStrongTextBlockStyle}"
                                            Margin="8,0,0,0" />
                             </StackPanel>
-                            <TextBlock Text="Pricing feed · current · 14:32:07 UTC · Validation engine · nominal · Accounting export · ready"
+                            <TextBlock Text="Pricing coverage current · Security master checks clear · Ledger export ready · Reference data synchronized"
                                        FontFamily="{StaticResource MeridianDataFontFamily}"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"

@@ -34,6 +34,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
+    private readonly TradingOperatorReadinessService? _operatorReadinessService;
     private WorkflowNextAction? _currentWorkflowAction;
 
     public TradingWorkspaceShellPage(
@@ -45,7 +46,8 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         WorkstationOperatingContextService? operatingContextService,
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService,
-        WorkstationWorkflowSummaryService? workflowSummaryService = null)
+        WorkstationWorkflowSummaryService? workflowSummaryService = null,
+        TradingOperatorReadinessService? operatorReadinessService = null)
         : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
@@ -55,6 +57,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         _cashFinancingReadService = cashFinancingReadService;
         _shellContextService = shellContextService;
         _workflowSummaryService = workflowSummaryService;
+        _operatorReadinessService = operatorReadinessService;
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -93,10 +96,12 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         {
             var summaryTask = _runService.GetTradingSummaryAsync();
             var workflowTask = GetTradingWorkflowSummaryAsync();
-            await System.Threading.Tasks.Task.WhenAll(summaryTask, workflowTask).ConfigureAwait(true);
+            var readinessTask = GetTradingOperatorReadinessAsync();
+            await System.Threading.Tasks.Task.WhenAll(summaryTask, workflowTask, readinessTask).ConfigureAwait(true);
 
             var summary = await summaryTask.ConfigureAwait(true);
             var workflow = await workflowTask.ConfigureAwait(true);
+            var readiness = await readinessTask.ConfigureAwait(true);
 
             PaperRunsText.Text = summary.PaperRunCount.ToString();
             LiveRunsText.Text = summary.LiveRunCount.ToString();
@@ -168,6 +173,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             UpdateActiveRun(summary.ActiveRunContext, summary);
             UpdateStatusCard(summary);
             ApplyWorkflowGuidance(workflow);
+            ApplyOperatorReadiness(readiness);
             ViewModel.CommandGroup = BuildCommandGroup();
             CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
@@ -178,6 +184,23 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             ApplyWorkflowGuidance(null);
             RiskRailText.Text = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.";
             DeskActionStatusText.Text = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.";
+        }
+    }
+
+    private async Task<TradingOperatorReadinessDto?> GetTradingOperatorReadinessAsync()
+    {
+        if (_operatorReadinessService is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await _operatorReadinessService.GetAsync().ConfigureAwait(true);
+        }
+        catch
+        {
+            return null;
         }
     }
 
@@ -265,6 +288,69 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
         TradingWorkflowTargetText.Text = $"Target page: {effectiveWorkflow.NextAction.TargetPageTag}";
         TradingWorkflowPrimaryButton.Content = effectiveWorkflow.NextAction.Label;
+    }
+
+    private void ApplyOperatorReadiness(TradingOperatorReadinessDto? readiness)
+    {
+        if (readiness is null)
+        {
+            ValidationStatusDetailText.Text = "Operator readiness is unavailable. Replay evidence, controls, and brokerage sync freshness may be stale.";
+            DeskActionStatusText.Text = "Shared readiness evidence is unavailable. Recheck local host services before accepting this cockpit state.";
+            return;
+        }
+
+        TradingStatusSummaryText.Text = readiness.Summary;
+        TradingStatusBadgeText.Text = readiness.IsOperatorReady ? "Ready" : "Attention";
+        ApplyTone(
+            TradingStatusBadgeBorder,
+            TradingStatusBadgeText,
+            readiness.IsOperatorReady ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning);
+
+        ApplyStatusItem(
+            PromotionStatusPill,
+            PromotionStatusLabelText,
+            PromotionStatusDetailText,
+            new TradingWorkspaceStatusItem
+            {
+                Label = readiness.Promotion?.StatusLabel ?? "Promotion evidence unavailable",
+                Detail = readiness.Promotion?.Detail ?? "Promotion posture has not been projected into shared readiness yet.",
+                Tone = readiness.Promotion?.NeedsReview == true ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info
+            });
+
+        ApplyStatusItem(
+            AuditStatusPill,
+            AuditStatusLabelText,
+            AuditStatusDetailText,
+            new TradingWorkspaceStatusItem
+            {
+                Label = readiness.Controls?.ControlsReady == true ? "Controls ready" : "Controls need review",
+                Detail = readiness.Controls?.Summary ?? "Execution controls have not been projected into shared readiness yet.",
+                Tone = readiness.Controls?.ControlsReady == true ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning
+            });
+
+        ApplyStatusItem(
+            ValidationStatusPill,
+            ValidationStatusLabelText,
+            ValidationStatusDetailText,
+            new TradingWorkspaceStatusItem
+            {
+                Label = readiness.Replay?.StatusLabel ?? "Replay evidence unavailable",
+                Detail = readiness.Replay?.Detail ?? "Paper replay verification has not produced shared readiness evidence yet.",
+                Tone = readiness.Replay?.HasMismatch == true ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info
+            });
+
+        if (readiness.Warnings.Count > 0)
+        {
+            RiskRailText.Text = readiness.Warnings[0];
+        }
+        else
+        {
+            RiskRailText.Text = "Paper session, controls, brokerage sync, and Security Master coverage are aligned for operator review.";
+        }
+
+        DeskActionStatusText.Text = readiness.BrokerageSync is null
+            ? "Brokerage sync evidence is unavailable. Portfolio and cash continuity are based on local paper and ledger state only."
+            : $"Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {readiness.BrokerageSync.LastSuccessfulSyncUtc?.ToLocalTime():MMM dd HH:mm}; {readiness.BrokerageSync.PositionCount} position(s), {readiness.BrokerageSync.OpenOrderCount} open order(s).";
     }
 
     private void UpdateActiveRun(ActiveRunContext? activeRun, TradingWorkspaceSummary? summary = null)

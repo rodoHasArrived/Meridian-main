@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-21
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 17 roadmap
+**Last Updated:** 2026-04-25
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical roadmap, DK1 pilot sample-set evidence, and current WPF shell baseline
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, and a delivered Security Master baseline. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, and a WPF shell/navigation baseline organized around the four workspace model. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence *(repo-closed, keep synchronized)*
 2. **Wave 2:** paper-trading cockpit hardening
@@ -44,7 +44,7 @@ Meridian already has strong platform foundations, meaningful workstation flows i
 6. **Wave 6:** live integration readiness
 7. **Optional advanced research / scale tracks**
 
-Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
+Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). As of 2026-04-25, DK1 has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` review contract, while the dashboard still marks DK1 data-quality/provider-trust and shared interop readiness as **At Risk / in progress**. The promotion handoff lane is early in progress through cockpit audit-feedback hardening, while export and reconciliation remain **Not Started**. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
 
 ---
 
@@ -70,9 +70,9 @@ Research, Trading, and Governance should keep converging on the same run-centere
 
 Security Master is already the delivered baseline; the opportunity is turning that baseline into deeper account/entity, multi-ledger, cash-flow, reconciliation, and reporting workflows.
 
-### 4. Wave 1: Keep the closed provider-confidence and checkpoint-evidence gate synchronized
+### 4. DK1 / Wave 1: Keep the closed provider-confidence and checkpoint-evidence gate synchronized
 
-Wave 1 is now repo-closed, but it remains the trust boundary that every downstream readiness claim depends on.
+Wave 1 is now repo-closed, but it remains the trust boundary that every downstream readiness claim depends on. DK1 now turns that boundary into a pilot parity packet with an emitted `pilotReplaySampleSet`, trust rationale mapping, threshold calibration, and operator sign-off.
 
 ### 5. Wave 5: Unify Backtest Studio after the core operator-readiness path is stable
 
@@ -86,11 +86,11 @@ Live-readiness should follow proven provider evidence and a dependable paper wor
 
 QuantScript expansion, queue-aware simulation, multi-instance coordination, and Phase 16 performance work deepen Meridian's ceiling after the core workstation product is already trustworthy and coherent.
 
-Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities.
+Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities. The WPF shell/navigation baseline is now present enough to judge it by workflow value, not by additional shell surface area.
 
 Delivery Kernel governance to avoid piecemeal adoption:
 
-- **DK1 (maps to Wave 2 + trust-dependent Wave 3 scope):** requires parity, explainability, calibration, and operator sign-off before promotion scope expands
+- **DK1 (maps to Wave 2 + trust-dependent Wave 3 scope):** requires parity, explainability, calibration, and operator sign-off before promotion scope expands; the pilot review contract is the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`
 - **DK2 (maps to Wave 3-4 integration scope):** requires the same four gates across promotion, export, and reconciliation
 - **Subsystem ownership:** Data Operations, Trading, Export, Governance, and a Shared Platform Interop owner for contract governance
 - **Single status surface:** track subsystem readiness and rollback posture in [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md)

@@ -1,4 +1,5 @@
 using Meridian.Execution;
+using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,12 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             return new AlpacaBrokerageGateway(httpClientFactory, options, logger);
         });
         services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog>(sp =>
+            sp.GetRequiredService<AlpacaBrokerageGateway>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync>(sp =>
+            sp.GetRequiredService<AlpacaBrokerageGateway>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync>(sp =>
+            sp.GetRequiredService<AlpacaBrokerageGateway>()));
 
         services.TryAddSingleton<RobinhoodBrokerageGateway>(sp =>
         {

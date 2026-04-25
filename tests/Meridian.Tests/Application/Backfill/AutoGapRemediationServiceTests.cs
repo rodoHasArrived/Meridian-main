@@ -5,6 +5,10 @@ using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
 using System.Net.Http;
 using Xunit;
+using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using QualityDataGap = Meridian.Application.Monitoring.DataQuality.DataGap;
+using QualityGapSeverity = Meridian.Application.Monitoring.DataQuality.GapSeverity;
+using StorageGapAnalysisResult = Meridian.Infrastructure.Adapters.Core.GapAnalysisResult;
 
 namespace Meridian.Tests.Application.Backfill;
 
@@ -26,7 +30,7 @@ public sealed class AutoGapRemediationServiceTests
                 MaxConcurrentRemediations: 2,
                 DefaultProvider: "stooq"));
 
-        var gap = new DataGap(
+        var gap = new QualityDataGap(
             Symbol: "AAPL",
             EventType: "Trade",
             GapStart: DateTimeOffset.UtcNow.AddMinutes(-10),
@@ -35,7 +39,7 @@ public sealed class AutoGapRemediationServiceTests
             MissedSequenceStart: 1,
             MissedSequenceEnd: 10,
             EstimatedMissedEvents: 10,
-            Severity: GapSeverity.Significant,
+            Severity: QualityGapSeverity.Significant,
             PossibleCause: null);
 
         await service.HandleDataQualityGapAsync(gap);
@@ -81,7 +85,7 @@ public sealed class AutoGapRemediationServiceTests
                 MaxConcurrentRemediations: 2,
                 DefaultProvider: "stooq"));
 
-        var scanResult = new GapAnalysisResult
+        var scanResult = new StorageGapAnalysisResult
         {
             FromDate = new DateOnly(2026, 03, 20),
             ToDate = new DateOnly(2026, 03, 20),
@@ -112,7 +116,7 @@ public sealed class AutoGapRemediationServiceTests
         public int Calls { get; private set; }
         public Func<int, BackfillResult>? Handler { get; init; }
 
-        public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
+        public Task<BackfillResult> RunAsync(AppBackfillRequest request, CancellationToken ct = default)
         {
             Calls++;
             if (Handler is not null)
@@ -123,7 +127,7 @@ public sealed class AutoGapRemediationServiceTests
             return Task.FromResult(new BackfillResult(
                 Success: true,
                 Provider: request.Provider,
-                Symbols: request.Symbols,
+                Symbols: request.Symbols.ToArray(),
                 From: request.From,
                 To: request.To,
                 BarsWritten: 10,

@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class AlpacaBrokerageGateway : IBrokerageGateway
+public sealed class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync
 {
     private const string PaperBaseUrl = "https://paper-api.alpaca.markets";
     private const string LiveBaseUrl = "https://api.alpaca.markets";
@@ -88,6 +88,14 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
             shortSelling: true,
             fractional: true,
             extendedHours: true);
+
+    string IBrokerageAccountCatalog.ProviderId => GatewayId;
+
+    string IBrokerageAccountCatalog.ProviderDisplayName => BrokerDisplayName;
+
+    string IBrokeragePortfolioSync.ProviderId => GatewayId;
+
+    string IBrokerageActivitySync.ProviderId => GatewayId;
 
     private string BaseUrl => _options.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
 
@@ -386,6 +394,137 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct = default)
+    {
+        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        return
+        [
+            new BrokerageExternalAccountDto(
+                ProviderId: GatewayId,
+                AccountId: account.AccountId,
+                DisplayName: string.IsNullOrWhiteSpace(account.AccountId) ? BrokerDisplayName : $"{BrokerDisplayName} {account.AccountId}",
+                Status: account.Status,
+                Currency: account.Currency,
+                RetrievedAt: account.RetrievedAt,
+                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["environment"] = _options.UseSandbox ? "paper" : "live",
+                    ["broker"] = BrokerDisplayName
+                })
+        ];
+    }
+
+    /// <inheritdoc />
+    public async Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+        string externalAccountId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
+
+        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var positions = await GetPositionsAsync(ct).ConfigureAwait(false);
+        var accountDto = new BrokerageExternalAccountDto(
+            ProviderId: GatewayId,
+            AccountId: account.AccountId,
+            DisplayName: string.IsNullOrWhiteSpace(account.AccountId) ? BrokerDisplayName : $"{BrokerDisplayName} {account.AccountId}",
+            Status: account.Status,
+            Currency: account.Currency,
+            RetrievedAt: account.RetrievedAt,
+            Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["requestedAccountId"] = externalAccountId,
+                ["environment"] = _options.UseSandbox ? "paper" : "live"
+            });
+
+        return new BrokeragePortfolioSnapshotDto(
+            Account: accountDto,
+            Balance: new BrokerageBalanceSnapshotDto(
+                Cash: account.Cash,
+                Equity: account.Equity,
+                BuyingPower: account.BuyingPower,
+                Currency: account.Currency),
+            Positions: positions
+                .Select(static position => new BrokeragePositionSnapshotDto(
+                    Symbol: position.Symbol,
+                    Quantity: position.Quantity,
+                    AverageEntryPrice: position.AverageEntryPrice,
+                    MarketPrice: position.MarketPrice,
+                    MarketValue: position.MarketValue,
+                    UnrealizedPnl: position.UnrealizedPnl,
+                    AssetClass: position.AssetClass,
+                    Description: position.Description,
+                    PositionId: position.PositionId,
+                    Metadata: position.Metadata))
+                .ToArray(),
+            RetrievedAt: DateTimeOffset.UtcNow);
+    }
+
+    /// <inheritdoc />
+    public async Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+        string externalAccountId,
+        DateTimeOffset? since = null,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(externalAccountId);
+
+        var openOrdersTask = GetOpenOrdersAsync(ct);
+        var activitiesTask = GetAccountActivitiesAsync(since, ct);
+
+        await Task.WhenAll(openOrdersTask, activitiesTask).ConfigureAwait(false);
+
+        var openOrders = await openOrdersTask.ConfigureAwait(false);
+        var activities = await activitiesTask.ConfigureAwait(false);
+
+        var fills = activities
+            .Where(static activity => string.Equals(activity.ActivityType, "FILL", StringComparison.OrdinalIgnoreCase))
+            .Select(activity => new BrokerageFillSnapshotDto(
+                FillId: activity.Id ?? Guid.NewGuid().ToString("N"),
+                OrderId: activity.OrderId,
+                Symbol: activity.Symbol ?? string.Empty,
+                Side: string.Equals(activity.Side, "sell", StringComparison.OrdinalIgnoreCase) ? OrderSide.Sell : OrderSide.Buy,
+                Quantity: ParseDecimal(activity.Qty),
+                Price: ParseDecimal(activity.Price ?? activity.PerShareAmount),
+                FilledAt: ParseActivityTimestamp(activity),
+                Venue: activity.Exchange,
+                Commission: ParseNullableDecimal(activity.Commission)))
+            .ToArray();
+
+        var cashTransactions = activities
+            .Where(static activity => !string.Equals(activity.ActivityType, "FILL", StringComparison.OrdinalIgnoreCase))
+            .Select(activity => new BrokerageCashTransactionDto(
+                TransactionId: activity.Id ?? Guid.NewGuid().ToString("N"),
+                TransactionType: activity.ActivityType ?? "unknown",
+                Amount: ParseDecimal(activity.NetAmount),
+                Currency: activity.Currency ?? "USD",
+                PostedAt: ParseActivityTimestamp(activity),
+                Symbol: activity.Symbol,
+                Description: activity.Description))
+            .ToArray();
+
+        return new BrokerageActivitySnapshotDto(
+            ProviderId: GatewayId,
+            AccountId: externalAccountId,
+            RetrievedAt: DateTimeOffset.UtcNow,
+            Orders: openOrders
+                .Select(static order => new BrokerageOrderSnapshotDto(
+                    OrderId: order.OrderId,
+                    ClientOrderId: order.ClientOrderId,
+                    Symbol: order.Symbol,
+                    Side: order.Side,
+                    Type: order.Type,
+                    Status: order.Status,
+                    Quantity: order.Quantity,
+                    FilledQuantity: order.FilledQuantity,
+                    LimitPrice: order.LimitPrice,
+                    StopPrice: order.StopPrice,
+                    CreatedAt: order.CreatedAt,
+                    UpdatedAt: null))
+                .ToArray(),
+            Fills: fills,
+            CashTransactions: cashTransactions);
+    }
+
+    /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -410,6 +549,26 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         client.DefaultRequestHeaders.Add("APCA-API-KEY-ID", _options.KeyId);
         client.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", _options.SecretKey);
         return client;
+    }
+
+    private async Task<IReadOnlyList<AlpacaAccountActivityResponse>> GetAccountActivitiesAsync(
+        DateTimeOffset? since,
+        CancellationToken ct)
+    {
+        using var client = CreateHttpClient();
+        var path = $"{BaseUrl}/v2/account/activities?direction=desc&page_size=100";
+        if (since.HasValue)
+        {
+            path += $"&after={Uri.EscapeDataString(since.Value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture))}";
+        }
+
+        var response = await client.GetAsync(path, ct).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var activities = await response.Content.ReadFromJsonAsync(
+            AlpacaBrokerageSerializerContext.Default.AlpacaAccountActivityResponseArray, ct).ConfigureAwait(false);
+
+        return activities ?? Array.Empty<AlpacaAccountActivityResponse>();
     }
 
     private static string MapOrderType(OrderType type) => type switch
@@ -468,6 +627,25 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
     private static decimal ParseDecimal(string? value) =>
         decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
             CultureInfo.InvariantCulture, out var result) ? result : 0m;
+
+    private static decimal? ParseNullableDecimal(string? value) =>
+        decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+            CultureInfo.InvariantCulture, out var result) ? result : null;
+
+    private static DateTimeOffset ParseActivityTimestamp(AlpacaAccountActivityResponse activity)
+    {
+        if (activity.TransactionTime.HasValue)
+        {
+            return activity.TransactionTime.Value;
+        }
+
+        if (activity.Date.HasValue)
+        {
+            return new DateTimeOffset(activity.Date.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        }
+
+        return DateTimeOffset.UtcNow;
+    }
 
     // ── JSON DTOs (ADR-014: source generators) ─────────────────────────
 
@@ -531,6 +709,25 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
         /// <summary>Accrued interest for fixed income positions (bonds, treasuries).</summary>
         [JsonPropertyName("accrued_interest")] public string? AccruedInterest { get; set; }
     }
+
+    internal sealed class AlpacaAccountActivityResponse
+    {
+        [JsonPropertyName("id")] public string? Id { get; set; }
+        [JsonPropertyName("activity_type")] public string? ActivityType { get; set; }
+        [JsonPropertyName("transaction_time")] public DateTimeOffset? TransactionTime { get; set; }
+        [JsonPropertyName("date")] public DateOnly? Date { get; set; }
+        [JsonPropertyName("symbol")] public string? Symbol { get; set; }
+        [JsonPropertyName("qty")] public string? Qty { get; set; }
+        [JsonPropertyName("price")] public string? Price { get; set; }
+        [JsonPropertyName("side")] public string? Side { get; set; }
+        [JsonPropertyName("order_id")] public string? OrderId { get; set; }
+        [JsonPropertyName("net_amount")] public string? NetAmount { get; set; }
+        [JsonPropertyName("per_share_amount")] public string? PerShareAmount { get; set; }
+        [JsonPropertyName("commission")] public string? Commission { get; set; }
+        [JsonPropertyName("currency")] public string? Currency { get; set; }
+        [JsonPropertyName("exchange")] public string? Exchange { get; set; }
+        [JsonPropertyName("description")] public string? Description { get; set; }
+    }
 }
 
 /// <summary>
@@ -542,5 +739,6 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaOrderResponse[]))]
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaAccountResponse))]
 [JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaPositionResponse[]))]
+[JsonSerializable(typeof(AlpacaBrokerageGateway.AlpacaAccountActivityResponse[]))]
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 internal sealed partial class AlpacaBrokerageSerializerContext : JsonSerializerContext;

@@ -7,9 +7,11 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Application.ProviderRouting;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -84,6 +86,17 @@ public static class WorkstationEndpoints
             return await BuildTradingPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationTrading");
+
+        group.MapGet("/trading/readiness", async (Guid? fundAccountId, HttpContext context) =>
+        {
+            var readinessService = context.RequestServices.GetService<TradingOperatorReadinessService>();
+            var readiness = readinessService is null
+                ? await BuildTradingOperatorReadinessAsync(context).ConfigureAwait(false)
+                : await readinessService.GetAsync(fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(readiness, jsonOptions);
+        })
+        .WithName("GetWorkstationTradingReadiness")
+        .Produces<TradingOperatorReadinessDto>(200);
 
         group.MapGet("/data-operations", async (HttpContext context) =>
         {
@@ -174,6 +187,25 @@ public static class WorkstationEndpoints
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
 
+        group.MapGet("/reconciliation/break-queue/{breakId}/audit", async (string breakId, HttpContext context) =>
+        {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
+            var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
+            if (repository is null)
+            {
+                return Results.Problem("Reconciliation break queue repository is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var history = await repository.GetAuditHistoryAsync(breakId, context.RequestAborted).ConfigureAwait(false);
+            return history.Count == 0
+                ? Results.NotFound()
+                : Results.Json(history, jsonOptions);
+        })
+        .WithName("GetReconciliationBreakAudit")
+        .Produces<IReadOnlyList<ReconciliationBreakQueueAuditEvent>>(200)
+        .Produces(404)
+        .Produces(501);
+
         group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
@@ -253,6 +285,24 @@ public static class WorkstationEndpoints
         })
         .WithName("GetRunContinuity")
         .Produces<StrategyRunContinuityDetail>(200)
+        .Produces(404)
+        .Produces(501);
+
+        group.MapGet("/runs/{runId}/review-packet", async (string runId, Guid? fundAccountId, HttpContext context) =>
+        {
+            var reviewPacketService = context.RequestServices.GetService<StrategyRunReviewPacketService>();
+            if (reviewPacketService is null)
+            {
+                return Results.Problem("Strategy run review packet service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var packet = await reviewPacketService.GetAsync(runId, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            return packet is null
+                ? Results.NotFound()
+                : Results.Json(packet, jsonOptions);
+        })
+        .WithName("GetRunReviewPacket")
+        .Produces<StrategyRunReviewPacketDto>(200)
         .Produces(404)
         .Produces(501);
 
@@ -1362,6 +1412,11 @@ public static class WorkstationEndpoints
             fills = Array.Empty<object>();
         }
 
+        var readinessService = context.RequestServices.GetService<TradingOperatorReadinessService>();
+        var readiness = readinessService is null
+            ? await BuildTradingOperatorReadinessAsync(context).ConfigureAwait(false)
+            : await readinessService.GetAsync(null, context.RequestAborted).ConfigureAwait(false);
+
         return new
         {
             metrics = new[]
@@ -1401,10 +1456,334 @@ public static class WorkstationEndpoints
                 fillFeed = portfolio is not null ? "healthy" : "—",
                 notes = BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)
             },
+            readiness,
             comparisons = run is null ? Array.Empty<object>() : BuildModeComparisons([run]),
             drillIn = run is null ? null : BuildRunDrillInLinks(run)
         };
     }
+
+    private static async Task<TradingOperatorReadinessDto> BuildTradingOperatorReadinessAsync(HttpContext context)
+    {
+        var ct = context.RequestAborted;
+        var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+        var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+        var controlsService = context.RequestServices.GetService<ExecutionOperatorControlService>();
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var promotionService = context.RequestServices.GetService<PromotionService>();
+
+        var sessions = Array.Empty<TradingPaperSessionReadinessDto>();
+        TradingPaperSessionReadinessDto? activeSession = null;
+
+        if (persistence is not null)
+        {
+            await persistence.InitialiseAsync(ct).ConfigureAwait(false);
+            sessions = persistence
+                .GetSessions()
+                .Select(summary => BuildPaperSessionReadiness(persistence, summary))
+                .ToArray();
+            activeSession = sessions.FirstOrDefault(static session => session.IsActive) ?? sessions.FirstOrDefault();
+        }
+
+        var auditEntries = auditTrail is null
+            ? Array.Empty<ExecutionAuditEntry>()
+            : await auditTrail.GetRecentAsync(100, ct).ConfigureAwait(false);
+        var replay = BuildReplayReadiness(activeSession?.SessionId, auditEntries);
+        var controls = BuildControlReadiness(controlsService?.GetSnapshot());
+        var selectedRun = await ResolveTradingReadinessRunAsync(readService, ct).ConfigureAwait(false);
+        var promotionHistory = promotionService is null
+            ? Array.Empty<StrategyPromotionRecord>()
+            : await promotionService.GetPromotionHistoryAsync(ct).ConfigureAwait(false);
+        var promotion = BuildPromotionReadiness(selectedRun, promotionHistory);
+        var workItems = BuildTradingReadinessWorkItems(activeSession, replay, controls, promotion, auditEntries);
+
+        return new TradingOperatorReadinessDto(
+            AsOf: DateTimeOffset.UtcNow,
+            ActiveSession: activeSession,
+            Sessions: sessions,
+            Replay: replay,
+            Controls: controls,
+            Promotion: promotion,
+            BrokerageSync: null,
+            WorkItems: workItems,
+            Warnings: workItems
+                .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
+                .Select(static item => item.Detail)
+                .ToArray());
+    }
+
+    private static TradingPaperSessionReadinessDto BuildPaperSessionReadiness(
+        PaperSessionPersistenceService persistence,
+        PaperSessionSummaryDto summary)
+    {
+        var detail = persistence.GetSession(summary.SessionId);
+
+        return new TradingPaperSessionReadinessDto(
+            SessionId: summary.SessionId,
+            StrategyId: summary.StrategyId,
+            StrategyName: summary.StrategyName,
+            IsActive: summary.IsActive,
+            InitialCash: summary.InitialCash,
+            CreatedAt: summary.CreatedAt,
+            ClosedAt: summary.ClosedAt,
+            SymbolCount: detail?.Symbols.Count ?? 0,
+            OrderCount: detail?.OrderHistory?.Count ?? 0,
+            PositionCount: detail?.Portfolio?.Positions.Count ?? 0,
+            PortfolioValue: detail?.Portfolio?.PortfolioValue);
+    }
+
+    private static TradingReplayReadinessDto? BuildReplayReadiness(
+        string? sessionId,
+        IReadOnlyList<ExecutionAuditEntry> auditEntries)
+    {
+        var replayAudit = auditEntries.FirstOrDefault(entry =>
+            (string.Equals(entry.Action, "ReplayPaperSession", StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(entry.Action, "VerifyReplay", StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(sessionId) ||
+             string.Equals(GetMetadata(entry, "sessionId"), sessionId, StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(entry.CorrelationId, sessionId, StringComparison.OrdinalIgnoreCase)));
+
+        if (replayAudit is null)
+        {
+            return null;
+        }
+
+        var mismatchCount = ParseIntMetadata(replayAudit, "mismatchCount") ?? 0;
+        var isConsistent = ParseBoolMetadata(replayAudit, "isConsistent")
+            ?? (mismatchCount == 0 && !string.Equals(replayAudit.Outcome, "AttentionRequired", StringComparison.OrdinalIgnoreCase));
+        var resolvedSessionId = GetMetadata(replayAudit, "sessionId")
+            ?? sessionId
+            ?? replayAudit.CorrelationId
+            ?? string.Empty;
+        var mismatchReasons = isConsistent
+            ? Array.Empty<string>()
+            : new[]
+            {
+                replayAudit.Message ?? "Replay verification recorded a mismatch."
+            };
+
+        return new TradingReplayReadinessDto(
+            SessionId: resolvedSessionId,
+            ReplaySource: GetMetadata(replayAudit, "replaySource") ?? "ExecutionAudit",
+            IsConsistent: isConsistent,
+            ComparedFillCount: ParseIntMetadata(replayAudit, "comparedFillCount") ?? 0,
+            ComparedOrderCount: ParseIntMetadata(replayAudit, "comparedOrderCount") ?? 0,
+            ComparedLedgerEntryCount: ParseIntMetadata(replayAudit, "comparedLedgerEntryCount") ?? 0,
+            VerifiedAt: replayAudit.OccurredAt,
+            LastPersistedFillAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedFillAt"),
+            LastPersistedOrderUpdateAt: ParseDateTimeOffsetMetadata(replayAudit, "lastPersistedOrderUpdateAt"),
+            VerificationAuditId: replayAudit.AuditId,
+            MismatchReasons: mismatchReasons);
+    }
+
+    private static TradingControlReadinessDto BuildControlReadiness(ExecutionControlSnapshot? snapshot) =>
+        new(
+            CircuitBreakerOpen: snapshot?.CircuitBreaker.IsOpen ?? false,
+            CircuitBreakerReason: snapshot?.CircuitBreaker.Reason,
+            CircuitBreakerChangedBy: snapshot?.CircuitBreaker.ChangedBy,
+            CircuitBreakerChangedAt: snapshot?.CircuitBreaker.ChangedAt,
+            ManualOverrideCount: snapshot?.ManualOverrides.Count ?? 0,
+            SymbolLimitCount: snapshot?.SymbolPositionLimits.Count ?? 0,
+            DefaultMaxPositionSize: snapshot?.DefaultMaxPositionSize);
+
+    private static async Task<StrategyRunSummary?> ResolveTradingReadinessRunAsync(
+        StrategyRunReadService? readService,
+        CancellationToken ct)
+    {
+        if (readService is null)
+        {
+            return null;
+        }
+
+        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+        return runs.FirstOrDefault(static run => run.Mode == StrategyRunMode.Paper)
+            ?? runs.FirstOrDefault(static run => run.Promotion?.RequiresReview == true)
+            ?? runs.FirstOrDefault();
+    }
+
+    private static TradingPromotionReadinessDto? BuildPromotionReadiness(
+        StrategyRunSummary? run,
+        IReadOnlyList<StrategyPromotionRecord> promotionHistory)
+    {
+        var record = promotionHistory.FirstOrDefault(candidate =>
+                run is null ||
+                string.Equals(candidate.SourceRunId, run.RunId, StringComparison.Ordinal) ||
+                string.Equals(candidate.TargetRunId, run.RunId, StringComparison.Ordinal) ||
+                string.Equals(candidate.StrategyId, run.StrategyId, StringComparison.Ordinal))
+            ?? promotionHistory.FirstOrDefault();
+
+        if (record is not null)
+        {
+            return new TradingPromotionReadinessDto(
+                State: record.Decision,
+                Reason: record.ApprovalReason ?? record.ReviewNotes ?? "Promotion decision recorded.",
+                RequiresReview: !IsPromotionRecordTraceComplete(record),
+                SourceRunId: record.SourceRunId,
+                TargetRunId: record.TargetRunId,
+                SuggestedNextMode: record.TargetRunType.ToString(),
+                AuditReference: record.AuditReference,
+                ApprovalStatus: record.Decision,
+                ManualOverrideId: record.ManualOverrideId,
+                ApprovedBy: record.ApprovedBy);
+        }
+
+        var summary = run?.Promotion;
+        if (summary is null)
+        {
+            return null;
+        }
+
+        var readiness = new TradingPromotionReadinessDto(
+            State: summary.State.ToString(),
+            Reason: summary.Reason,
+            RequiresReview: summary.RequiresReview,
+            SourceRunId: summary.SourceRunId,
+            TargetRunId: summary.TargetRunId,
+            SuggestedNextMode: summary.SuggestedNextMode?.ToString(),
+            AuditReference: summary.AuditReference,
+            ApprovalStatus: summary.ApprovalStatus,
+            ManualOverrideId: summary.ManualOverrideId,
+            ApprovedBy: summary.ApprovedBy);
+
+        return readiness with
+        {
+            RequiresReview = readiness.RequiresReview || !IsPromotionTraceComplete(readiness)
+        };
+    }
+
+    private static IReadOnlyList<OperatorWorkItemDto> BuildTradingReadinessWorkItems(
+        TradingPaperSessionReadinessDto? activeSession,
+        TradingReplayReadinessDto? replay,
+        TradingControlReadinessDto controls,
+        TradingPromotionReadinessDto? promotion,
+        IReadOnlyList<ExecutionAuditEntry> auditEntries)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var items = new List<OperatorWorkItemDto>();
+
+        if (activeSession is null)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "paper-session-missing",
+                Kind: OperatorWorkItemKindDto.PaperReplay,
+                Label: "Create paper session",
+                Detail: "Create or restore a paper session before accepting the trading cockpit.",
+                Tone: OperatorWorkItemToneDto.Critical,
+                CreatedAt: now));
+        }
+
+        if (activeSession is not null && replay is null)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: $"paper-replay-missing-{activeSession.SessionId}",
+                Kind: OperatorWorkItemKindDto.PaperReplay,
+                Label: "Verify session replay",
+                Detail: $"Run replay verification for paper session {activeSession.SessionId}.",
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now));
+        }
+        else if (replay is { IsConsistent: false })
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: $"paper-replay-mismatch-{replay.SessionId}",
+                Kind: OperatorWorkItemKindDto.PaperReplay,
+                Label: "Resolve replay mismatch",
+                Detail: replay.MismatchReasons.FirstOrDefault() ?? $"Replay verification for {replay.SessionId} did not match persisted state.",
+                Tone: OperatorWorkItemToneDto.Critical,
+                CreatedAt: now,
+                AuditReference: replay.VerificationAuditId));
+        }
+
+        if (auditEntries.Count == 0)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "execution-audit-empty",
+                Kind: OperatorWorkItemKindDto.PaperReplay,
+                Label: "Capture audit evidence",
+                Detail: "No execution audit entries are visible for the paper acceptance lane.",
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now));
+        }
+
+        if (controls.CircuitBreakerOpen)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "execution-circuit-breaker-open",
+                Kind: OperatorWorkItemKindDto.PromotionReview,
+                Label: "Resolve circuit breaker",
+                Detail: controls.CircuitBreakerReason ?? "The execution circuit breaker is open.",
+                Tone: OperatorWorkItemToneDto.Critical,
+                CreatedAt: now));
+        }
+
+        if (controls.ManualOverrideCount > 0)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "execution-manual-overrides-open",
+                Kind: OperatorWorkItemKindDto.PromotionReview,
+                Label: "Review manual overrides",
+                Detail: $"{controls.ManualOverrideCount} execution manual override(s) must be reviewed before promotion acceptance.",
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now));
+        }
+
+        if (promotion is null)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "promotion-decision-missing",
+                Kind: OperatorWorkItemKindDto.PromotionReview,
+                Label: "Evaluate promotion gate",
+                Detail: "Evaluate and record the paper promotion decision before accepting the cockpit.",
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now));
+        }
+        else if (promotion.RequiresReview || !IsPromotionTraceComplete(promotion))
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: $"promotion-trace-incomplete-{promotion.SourceRunId ?? promotion.TargetRunId ?? "unknown"}",
+                Kind: OperatorWorkItemKindDto.PromotionReview,
+                Label: "Complete promotion trace",
+                Detail: "Promotion evidence must include decision, operator, rationale, lineage, and audit reference.",
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now,
+                RunId: promotion.SourceRunId,
+                AuditReference: promotion.AuditReference));
+        }
+
+        return items;
+    }
+
+    private static bool IsPromotionRecordTraceComplete(StrategyPromotionRecord record) =>
+        !string.IsNullOrWhiteSpace(record.Decision) &&
+        !string.IsNullOrWhiteSpace(record.ApprovedBy) &&
+        !string.IsNullOrWhiteSpace(record.ApprovalReason) &&
+        !string.IsNullOrWhiteSpace(record.SourceRunId) &&
+        !string.IsNullOrWhiteSpace(record.AuditReference);
+
+    private static bool IsPromotionTraceComplete(TradingPromotionReadinessDto? promotion) =>
+        promotion is not null &&
+        !string.IsNullOrWhiteSpace(promotion.ApprovalStatus) &&
+        !string.IsNullOrWhiteSpace(promotion.ApprovedBy) &&
+        !string.IsNullOrWhiteSpace(promotion.Reason) &&
+        !string.IsNullOrWhiteSpace(promotion.SourceRunId) &&
+        !string.IsNullOrWhiteSpace(promotion.AuditReference);
+
+    private static string? GetMetadata(ExecutionAuditEntry entry, string key)
+    {
+        return entry.Metadata is not null && entry.Metadata.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? value
+            : null;
+    }
+
+    private static bool? ParseBoolMetadata(ExecutionAuditEntry entry, string key) =>
+        bool.TryParse(GetMetadata(entry, key), out var value) ? value : null;
+
+    private static int? ParseIntMetadata(ExecutionAuditEntry entry, string key) =>
+        int.TryParse(GetMetadata(entry, key), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) ? value : null;
+
+    private static DateTimeOffset? ParseDateTimeOffsetMetadata(ExecutionAuditEntry entry, string key) =>
+        DateTimeOffset.TryParse(GetMetadata(entry, key), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var value)
+            ? value
+            : null;
 
     private static string BuildTradingBrokerageNotes(
         StrategyRunSummary? run,

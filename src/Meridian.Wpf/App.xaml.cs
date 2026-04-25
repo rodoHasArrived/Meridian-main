@@ -520,6 +520,10 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
+        services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.AddSingleton<BrokeragePortfolioSyncService>();
+        services.AddSingleton<TradingOperatorReadinessService>();
+        services.AddSingleton<StrategyRunReviewPacketService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
         services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         services.AddSingleton<PromotionService>();

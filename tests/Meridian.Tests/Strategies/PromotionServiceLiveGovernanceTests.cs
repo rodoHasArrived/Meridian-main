@@ -244,7 +244,10 @@ public sealed class PromotionServiceLiveGovernanceTests
         };
         await store.RecordRunAsync(run);
 
-        var result = await service.ApproveAsync(new PromotionApprovalRequest(run.RunId, ApprovedBy: "ops"));
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Ready for live capital."));
 
         result.Success.Should().BeFalse();
         result.Reason.Should().NotBeNull();

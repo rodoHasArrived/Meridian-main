@@ -117,6 +117,10 @@ public static class UiEndpoints
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
+        services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton<TradingOperatorReadinessService>();
+        services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
         services.TryAddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();

@@ -34,6 +34,7 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
+  TradingOperatorReadiness,
   TradingWorkspaceResponse,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride
@@ -91,6 +92,10 @@ export function getTradingWorkspace() {
   return getJson<TradingWorkspaceResponse>("/api/workstation/trading");
 }
 
+export function getTradingReadiness() {
+  return getJson<TradingOperatorReadiness>("/api/workstation/trading/readiness");
+}
+
 export function getDataOperationsWorkspace() {
   return getJson<DataOperationsWorkspaceResponse>("/api/workstation/data-operations");
 }
@@ -117,8 +122,16 @@ export function approvePromotion(request: ApprovePromotionRequest) {
   return postJson<PromotionDecisionResult>("/api/promotion/approve", request);
 }
 
-export function rejectPromotion(runId: string, reason: string) {
-  return postJson<PromotionDecisionResult>("/api/promotion/reject", { runId, reason });
+export interface RejectPromotionRequest {
+  runId: string;
+  reason: string;
+  rejectedBy?: string;
+  reviewNotes?: string;
+  manualOverrideId?: string;
+}
+
+export function rejectPromotion(request: RejectPromotionRequest) {
+  return postJson<PromotionDecisionResult>("/api/promotion/reject", request);
 }
 
 export function getPromotionHistory() {
@@ -178,11 +191,11 @@ export function getExecutionControls() {
 }
 
 export function createExecutionManualOverride(request: CreateExecutionManualOverrideRequest) {
-  return postJson<ExecutionManualOverride>("/api/execution/controls/manual-override", request);
+  return postJson<ExecutionManualOverride>("/api/execution/controls/manual-overrides", request);
 }
 
 export function clearExecutionManualOverride(overrideId: string) {
-  return postJson<ExecutionControlSnapshot>(`/api/execution/controls/manual-override/${encodeURIComponent(overrideId)}/clear`);
+  return postJson<TradingActionResult>(`/api/execution/controls/manual-overrides/${encodeURIComponent(overrideId)}/clear`);
 }
 
 // --- Strategy lifecycle ---

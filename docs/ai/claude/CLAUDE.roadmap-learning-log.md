@@ -45,7 +45,7 @@ From §"Open Questions" of the sprint blueprint:
 
 1. Replay gate scope: `VerifyReplayAsync` already reports fill/order/ledger compared counts, but there is no place in the cockpit or endpoint contract that *blocks* on order-history or ledger divergence — only the numbers are returned.
 2. Where durable promotion records live: the repo chose the strategies layer (`JsonlPromotionRecordStore`), not `ExecutionAuditTrailService`. The sprint left this ambiguous; the code has now taken a position, but it is not reflected back in the sprint doc.
-3. No single aggregated cockpit-readiness endpoint has been added; `trading-screen.tsx` still composes sessions, controls, replay, and promotion state client-side via separate routes.
+3. Updated 2026-04-25: `GET /api/workstation/trading/readiness` now provides the aggregated cockpit-readiness lane, and `trading-screen.tsx` can consume the shared readiness payload from `/api/workstation/trading` while the focused routes remain available for drill-in and write actions.
 
 ### Takeaways for future work on this branch
 

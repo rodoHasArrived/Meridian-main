@@ -1,6 +1,6 @@
 # Provider Validation Matrix
 
-**Last Updated:** 2026-04-20  
+**Last Updated:** 2026-04-25
 **Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence or committed runtime artifacts. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
@@ -33,9 +33,12 @@ The script writes:
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
 
-Each generated summary now restates the active provider rows, the cross-cutting checkpoint and
-Parquet closures, and the deferred-provider inventory so the automation output matches the
-authoritative Wave 1 posture described in this matrix.
+Each generated summary now restates the active provider rows, the DK1 pilot replay/sample set,
+the cross-cutting checkpoint and Parquet closures, and the deferred-provider inventory so the
+automation output matches the authoritative Wave 1 posture described in this matrix.
+
+The DK1 sample-set contract is maintained in [`dk1-pilot-parity-runbook.md`](./dk1-pilot-parity-runbook.md)
+and emitted as `pilotReplaySampleSet` in the generated JSON summary.
 
 ## Notes
 

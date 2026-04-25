@@ -1,6 +1,6 @@
 # DK1 Operator Trust Rationale Mapping
 
-**Last Updated:** 2026-04-24  
+**Last Updated:** 2026-04-24
 **Owners:** Data Operations + Trading  
 **Scope:** Operator-facing trust rationale for DK1 alerts (signal source, reason code, recommended action)
 

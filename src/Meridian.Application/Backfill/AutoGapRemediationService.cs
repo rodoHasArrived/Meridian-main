@@ -5,6 +5,8 @@ using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Scheduling;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
+using QualityDataGap = Meridian.Application.Monitoring.DataQuality.DataGap;
+using StorageGapAnalysisResult = Meridian.Infrastructure.Adapters.Core.GapAnalysisResult;
 
 namespace Meridian.Application.Backfill;
 
@@ -108,7 +110,7 @@ public sealed class AutoGapRemediationService : IDisposable
         _disposed = true;
     }
 
-    public Task HandleDataQualityGapAsync(DataGap gap, string? provider = null, CancellationToken ct = default)
+    public Task HandleDataQualityGapAsync(QualityDataGap gap, string? provider = null, CancellationToken ct = default)
     {
         if (gap.Duration < _policy.MinimumGapDuration)
         {
@@ -129,7 +131,7 @@ public sealed class AutoGapRemediationService : IDisposable
             ct);
     }
 
-    public async Task HandleGapAnalysisResultAsync(GapAnalysisResult result, string? provider = null, CancellationToken ct = default)
+    public async Task HandleGapAnalysisResultAsync(StorageGapAnalysisResult result, string? provider = null, CancellationToken ct = default)
     {
         foreach (var (symbol, info) in result.SymbolGaps)
         {
@@ -166,7 +168,7 @@ public sealed class AutoGapRemediationService : IDisposable
             ct);
     }
 
-    private void OnQualityGapDetected(DataGap gap)
+    private void OnQualityGapDetected(QualityDataGap gap)
     {
         _ = HandleDataQualityGapAsync(gap);
     }

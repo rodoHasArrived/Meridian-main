@@ -1,8 +1,8 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-21
-**Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Waves 2-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
-**Repository Snapshot (2026-04-13 working tree):** solution projects: 39 | `src/` project files: 27 | test projects: 9 | workflow files: 42
+**Last Updated:** 2026-04-25
+**Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, DK1 is now tracked through a concrete pilot replay/sample-set contract, Waves 2-4 remain the core operator-readiness path, and the WPF workspace-shell baseline is in code with workflow validation still open
+**Repository Snapshot (2026-04-25 working tree):** solution projects: 36 | `src/` project files: 27 | test projects: 9 | workflow files: 42
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance without letting the product split into parallel subsystems.
 
@@ -58,7 +58,9 @@ Meridian's platform foundations are already broad enough that roadmap priority s
 - a WPF workstation baseline with run-centered pages, Security Master drill-ins, and desktop shell modernization already landed
 - a delivered Security Master platform seam with shared coverage and provenance flowing across research, trading, portfolio, ledger, reconciliation, governance, and WPF drill-ins
 
-The meaningful repo delta since the April 8 planning refresh is not a new product direction. It is stronger evidence that WPF workflow-first consolidation is actively moving. The current working tree now includes `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` shell orchestration, and new shell smoke coverage in `tests/Meridian.Wpf.Tests/Views/`. That is meaningful K1 progress, but it should still be treated as in-flight rather than a closed migration milestone.
+The meaningful repo delta since the April 8 planning refresh is not a new product direction. It is stronger evidence that WPF workflow-first consolidation and DK trust-gate hardening are now execution tracks, not only plans. The working tree includes `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` shell orchestration, deep-page hosting, shell-context strips, and shell/navigation smoke coverage in `tests/Meridian.Wpf.Tests/Views/`. That closes the shell/navigation baseline enough to stop treating it as a greenfield migration, while the workflow value still remains open until Wave 2-4 paths are validated against cockpit, shared-model, and governance use cases.
+
+The DK1 evidence posture also sharpened after the prior roadmap snapshot. [`provider-validation-matrix.md`](provider-validation-matrix.md), [`dk1-pilot-parity-runbook.md`](dk1-pilot-parity-runbook.md), and [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md) now point to a `pilotReplaySampleSet` contract emitted by `scripts/dev/run-wave1-provider-validation.ps1`. As of 2026-04-25, DK1 data-quality/provider-trust and shared interop readiness remain **At Risk / in progress**. The promotion handoff lane has started in a narrow cockpit audit-feedback slice, while export and reconciliation DK2 lanes are still **Not Started** in the dashboard.
 
 ---
 
@@ -87,6 +89,7 @@ For implementation detail and evidence, use:
 - The four-workspace model is present in both planning and implementation.
 - The web workstation contains material workflows for `Research`, `Trading`, `Data Operations`, and `Governance` rather than only navigation and summary surfaces.
 - WPF already has meaningful run-centered workstation pages on top of the broader desktop page inventory.
+- The WPF shell/navigation baseline is materially delivered: four workspace shell pages, metadata-driven navigation, deep-page hosting, command/search metadata, context strips, and navigation/shell smoke tests are present. The remaining roadmap question is whether those surfaces measurably improve active Wave 2-4 workflows.
 
 ### Shared-model baseline
 
@@ -108,9 +111,10 @@ For implementation detail and evidence, use:
 ## What Remains
 
 - **Wave 1 maintenance:** keep the closed provider-confidence, checkpoint, and Parquet evidence gate aligned around Alpaca, Robinhood, and Yahoo
-- **Wave 2:** turn the current paper-trading cockpit from "visible" into "dependable"
-- **Wave 3:** make run history, portfolio, ledger, cash-flow, and reconciliation behave like one cross-workspace model
-- **Wave 4:** deepen governance and fund-operations workflows on top of the delivered Security Master baseline
+- **DK1 execution:** complete the pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, trust rationale mapping, threshold calibration, and Data Operations + Trading sign-off
+- **Wave 2:** turn the current paper-trading cockpit from "visible" into "dependable," with acceptance evidence tied to DK1 trust signals
+- **Wave 3:** make run history, portfolio, ledger, cash-flow, and reconciliation behave like one cross-workspace model under the shared compatibility matrix
+- **Wave 4:** deepen governance and fund-operations workflows on top of the delivered Security Master baseline, then prove them through DK2 promotion/export/reconciliation gates
 - **Wave 5:** unify native and Lean workflows into one Backtest Studio once the shared model is stable enough to support it cleanly
 - **Wave 6:** expand into controlled live integration readiness only after trust and paper-workflow gates are materially closed
 - **Optional:** pursue advanced research, simulation, scale-out, and performance tracks only after the core workstation product is coherent and trustworthy
@@ -141,9 +145,10 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 - keep Robinhood supported-surface evidence aligned with its bounded runtime artifact set without overstating live readiness
 - formalize Yahoo as a historical-only core provider row backed by deterministic repo tests
 - keep checkpoint reliability and Parquet L2 flush behavior on the passing suite list inside `run-wave1-provider-validation.ps1`
+- keep the emitted DK1 `pilotReplaySampleSet` synchronized with the pilot parity runbook and provider-validation matrix
 - keep provider-confidence docs, deferred-provider language, runtime artifact folders, the validation matrix, and the latest automation summary synchronized with executable evidence
 
-**Exit signal:** The Wave 1 matrix, roadmap, status docs, and automation summary all describe the same active provider set, Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly bounded, checkpoint and L2 rows stay closed in repo tests, and deferred providers are not implied to be current blockers.
+**Exit signal:** The Wave 1 matrix, roadmap, status docs, DK1 pilot runbook, and automation summary all describe the same active provider set and pilot replay/sample contract; Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly bounded, checkpoint and L2 rows stay closed in repo tests, and deferred providers are not implied to be current blockers.
 
 ### Wave 2: Web paper-trading cockpit completion
 
@@ -152,7 +157,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 **Focus:**
 
 - tighten positions, orders, fills, replay, sessions, and risk workflows into a dependable operator lane
-- keep promotion evaluation and approval explicitly tied to operator review
+- keep promotion evaluation, approval, and rejection rationale explicitly tied to operator review, with outcome severity and history refresh behavior visible in the cockpit
 - verify session persistence and replay behavior under realistic scenarios
 - align cockpit behavior with brokerage-adapter and provider-confidence evidence
 
@@ -345,8 +350,8 @@ Any proposed work item that cannot map to Wave 2, 3, or 4 plus DK1/DK2 gates sho
 
 To move from planning into execution, the DK program now carries date-bounded commitments tracked in the dashboard:
 
-1. **2026-04-20 -> 2026-05-01:** close DK1 pilot parity runbook and replay/sample standardization for Alpaca/Robinhood/Yahoo.
-2. **2026-04-20 -> 2026-05-01:** publish shared interop compatibility matrix template and contract-review cadence.
+1. **2026-04-20 -> 2026-05-01:** close DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`, trust rationale mapping, and threshold review.
+2. **2026-04-20 -> 2026-05-01:** keep the shared interop compatibility matrix and contract-review cadence active, with dashboard status tied to the cross-wave owner.
 3. **2026-05-02 -> 2026-05-15:** lock promotion rationale fields and operator approval checklist coverage for DK1 -> DK2 handoff.
 4. **2026-05-09 -> 2026-05-22:** freeze governed export schema/version contract and validate pilot scenarios.
 5. **2026-05-16 -> 2026-05-29:** calibrate reconciliation tolerance profiles and exception routing for governance sign-off readiness.

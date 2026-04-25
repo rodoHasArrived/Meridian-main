@@ -197,6 +197,24 @@ public sealed class PromotionService
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        if (string.IsNullOrWhiteSpace(request.ApprovedBy))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Promotion approval requires an approver.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.ApprovalReason))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Promotion approval requires an approval reason.");
+        }
+
         var run = await FindRunAsync(request.RunId, ct).ConfigureAwait(false);
         if (run?.Metrics is null || !run.EndedAt.HasValue)
         {
@@ -303,6 +321,24 @@ public sealed class PromotionService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        if (string.IsNullOrWhiteSpace(request.RejectedBy))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Promotion rejection requires an operator.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Promotion rejection requires a rationale.");
+        }
 
         var run = await FindRunAsync(request.RunId, ct).ConfigureAwait(false);
         if (run?.Metrics is null)

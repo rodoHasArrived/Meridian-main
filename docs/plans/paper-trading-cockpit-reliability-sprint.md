@@ -1,6 +1,6 @@
 # Paper Trading Cockpit Reliability Sprint
 
-**Last Reviewed:** 2026-04-20
+**Last Reviewed:** 2026-04-25
 
 ## Summary
 
@@ -19,7 +19,7 @@ The gap is not basic visibility. The gap is dependable operator proof:
 - replay confidence is only partially exposed as a workflow gate
 - session persistence is stronger in the service layer than in the cockpit acceptance story
 - risk state is visible, but not yet fully explainable from audited control and policy decisions
-- promotion traceability exists in fragments, but not yet as one durable chain that survives restart and review
+- promotion traceability now has durable storage and cockpit operator fields, but approval and rejection paths must keep enforcing a complete operator, rationale, lineage, and audit-reference packet
 
 This sprint closes that gap with four explicit acceptance gates:
 
@@ -58,7 +58,7 @@ This sprint closes that gap with four explicit acceptance gates:
 | Replay confidence | Operators can verify a selected paper session and see whether replay matches current state after normal use and after restart. | `PaperSessionPersistenceService.VerifyReplayAsync`, `ExecutionEndpoints`, trading cockpit replay panel | replay mismatch with no surfaced reason; replay proves portfolio only but leaves operator blind to order-history drift; no durable audit of verification |
 | Session persistence | A paper session can be created, restored after restart, verified, and closed without losing symbol scope, order history, or ledger continuity. | `PaperSessionPersistenceService.InitialiseAsync`, session endpoints, session detail DTOs | session metadata survives but order or ledger continuity does not; order updates are not durably awaited; restore path cannot prove continuity |
 | Risk auditability | Every material order/control outcome is explainable by audited evidence visible from the cockpit. | `OrderManagementSystem`, `ExecutionAuditTrailService`, `ExecutionOperatorControlService`, trading-screen audit view | risk state only shown as summary copy; rejects or control blocks lack actor or scope; cockpit cannot see manual overrides or breaker state |
-| Promotion traceability | Every promotion decision yields one durable trace chain from source run to target run, approver, reason, override, and audit reference. | `PromotionService`, `PromotionEndpoints`, `StrategyRunEntry`, workstation run read models | history disappears on restart; approval request omits approver or override; source and target runs are linked but not reviewable as one chain |
+| Promotion traceability | Every promotion decision yields one durable trace chain from source run to target run when present, operator, rationale, override, decision state, and audit reference. | `PromotionService`, `PromotionEndpoints`, `StrategyRunEntry`, workstation run read models | request omits operator or rationale; rejection path is not audit-linked; source and target runs are linked but not reviewable as one chain |
 
 ## Architecture
 
@@ -69,9 +69,9 @@ The codebase already has most of the needed primitives, but they are not yet ass
 - Session persistence is durable in `PaperSessionPersistenceService`, but the trading cockpit does not treat session continuity as a first-class readiness check.
 - Replay verification compares current and replayed portfolio state, but not yet the broader operator continuity story around orders and ledger visibility.
 - Execution audit durability exists and order submissions can be audited, but the cockpit does not yet expose the control state that explains why risk decisions were allowed or blocked.
-- Promotion approvals create new runs and write audit entries, but `PromotionService.GetPromotionHistory()` is in-memory only, which breaks restart-safe traceability.
-- `docs/operations/live-execution-controls.md` documents manual-override flows, but `src/Meridian.Contracts/Api/UiApiRoutes.cs` currently exposes no matching execution-control manual-override routes, which is a doc and delivery drift risk.
-- The web cockpit approves promotions through `approvePromotion(runId, reviewNotes?)`; it does not currently collect or send `approvedBy`, `approvalReason`, or `manualOverrideId`, so live-promotion governance cannot be traced from the UI.
+- Promotion approvals and rejections write durable JSONL promotion history through `IPromotionRecordStore`, and `PromotionService.GetPromotionHistoryAsync()` reloads history after restart.
+- `docs/operations/live-execution-controls.md` documents manual-override flows, and `src/Meridian.Contracts/Api/UiApiRoutes.cs` now exposes the matching pluralized execution-control manual-override routes.
+- The web cockpit now sends operator, approval/rejection rationale, review notes, and manual override IDs, and its acceptance card treats promotion review as ready only when the latest history record includes decision, operator, rationale, lineage, and audit reference.
 
 ### Target Shape
 
@@ -105,8 +105,8 @@ The cockpit should remain the orchestration surface, but it should read from sha
 #### Slice 3: Promotion trace chain
 
 - make promotion approval requests carry full operator context
-- persist promotion records durably instead of keeping history in process memory only
-- keep source run, target run, audit reference, approval reason, and manual override visible together in the trading and research surfaces
+- keep durable promotion records as the acceptance source for cockpit readiness
+- keep decision state, source run, target run when created, audit reference, rationale, operator, and manual override visible together in the trading and research surfaces
 
 ## Interfaces And Models
 
@@ -118,6 +118,19 @@ The cockpit should remain the orchestration surface, but it should read from sha
 - keep `StrategyRunEntry.ParentRunId` and `StrategyRunEntry.AuditReference` as the base promotion-link seam
 
 ### Proposed Additions
+
+#### `TradingOperatorReadinessDto`
+
+`GET /api/workstation/trading/readiness` is the shared acceptance-lane contract for Wave 2. It aggregates:
+
+- active and historical paper session readiness
+- latest replay verification evidence from the execution audit trail
+- execution-control state, including circuit breaker and manual overrides
+- durable promotion decision state and trace completeness
+- optional brokerage sync status when a fund account is supplied
+- operator work items and warnings
+
+`GET /api/workstation/trading` also includes the same readiness payload so the web cockpit can render session, replay, audit/control, and promotion decisions from one operator-ready lane.
 
 #### `PaperSessionReplayVerificationDto`
 
@@ -164,11 +177,19 @@ These should map directly to `ExecutionOperatorControlService.CreateManualOverri
 
 #### Frontend promotion request
 
-Change the frontend helper from a thin `(runId, reviewNotes?)` signature to a full `PromotionApprovalRequest` payload so the cockpit can submit:
+The frontend helper uses a full `PromotionApprovalRequest` payload so the cockpit can submit:
 
 - `runId`
 - `approvedBy`
 - `approvalReason`
+- `reviewNotes`
+- `manualOverrideId`
+
+Rejection uses the same operator-review packet shape through `RejectPromotionRequest`:
+
+- `runId`
+- `reason`
+- `rejectedBy`
 - `reviewNotes`
 - `manualOverrideId`
 
@@ -202,14 +223,14 @@ Change the frontend helper from a thin `(runId, reviewNotes?)` signature to a fu
 
 1. Operator evaluates a completed run for `Backtest -> Paper` or `Paper -> Live`.
 2. Policy evaluation returns readiness, review status, blocking reasons, and override requirements.
-3. Approval request includes approver identity, approval reason, optional review notes, and optional manual override ID.
-4. `PromotionService` persists a durable promotion record, writes audit evidence, and creates the target run with `ParentRunId` and `AuditReference`.
+3. Approval or rejection request includes operator identity, rationale, optional review notes, and optional manual override ID; `/api/promotion/*` also falls back to `X-Meridian-Actor` when the body omits an operator.
+4. `PromotionService` rejects missing operator/rationale context, persists a durable promotion record, writes audit evidence, and creates the target run with `ParentRunId` and `AuditReference` for approvals.
 5. Cockpit and shared run read models can reconstruct the full promotion chain after restart.
 
 ## Edge Cases And Risks
 
 - Replay currently validates portfolio continuity but not yet the full blotter continuity story. If order-history mismatch is ignored, operators may trust a session that is only partially reconstructed.
-- Promotion history is currently memory-backed. Without durable storage, restart wipes one of the core Wave 2 acceptance signals.
+- Promotion history now has durable JSONL storage; the remaining risk is runtime registration drift that would prevent `PromotionService` and the readiness lane from reading the same store.
 - The operations doc already describes manual-override routes that are not visible in `UiApiRoutes`. If that drift persists, operator instructions will outrun executable capability.
 - Order audit quality still depends on metadata such as actor, correlation, and run scope being present on requests. The cockpit should stop relying on optional ad hoc metadata for critical trace fields.
 - Workstation risk copy in `WorkstationEndpoints` is currently derived from portfolio heuristics. That is useful, but it is not sufficient as an operator evidence trail by itself.
@@ -263,4 +284,4 @@ npm --prefix src/Meridian.Ui/dashboard test -- trading-screen api.trading
 - Should the Wave 2 replay gate compare only portfolio state, or should it also block on order-history and ledger divergence?
 - Should durable promotion records live in the strategies store, the execution audit trail, or both?
 - Should `Backtest -> Paper` approvals require explicit approver identity immediately, or can that become mandatory only for `Paper -> Live`?
-- Do we want a single cockpit readiness endpoint that aggregates sessions, controls, replay, and promotion state, or should the screen continue composing existing endpoints client-side?
+- Answered 2026-04-25: use `GET /api/workstation/trading/readiness` as the single cockpit readiness endpoint, while keeping the existing focused session, replay, controls, audit, and promotion routes for drill-in and write actions.

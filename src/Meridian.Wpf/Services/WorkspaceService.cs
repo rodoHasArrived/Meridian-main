@@ -576,7 +576,7 @@ public sealed class WorkspaceService
                 UpdatedAt = DateTime.UtcNow,
                 Pages = new List<WorkspacePage>
                 {
-                    new WorkspacePage { PageTag = "Dashboard", Title = "Dashboard", IsDefault = true },
+                    new WorkspacePage { PageTag = "Dashboard", Title = "Portfolio Operations", IsDefault = true },
                     new WorkspacePage { PageTag = "Backtest", Title = "Backtest" },
                     new WorkspacePage { PageTag = "BatchBacktest", Title = "Batch Backtest" },
                     new WorkspacePage { PageTag = "QuantScript", Title = "QuantScript" },

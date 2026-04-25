@@ -367,6 +367,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private async Task RunAndAdvanceAsync(CancellationToken ct)
     {
+        if (!ValidateToolbarContext())
+            return;
+
         if (SelectedCell is null)
             return;
 

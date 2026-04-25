@@ -26,7 +26,7 @@ public static class WorkspaceRegistry
             Icon: "\uEC35",   // TestBeaker  — SVG: Assets/Icons/research.svg
             Pages: new WorkspacePageEntry[]
             {
-                new("Dashboard",    "Dashboard",    "\uE71D"),  // Dashboard (tiles)
+                new("Dashboard",    "Portfolio Ops", "\uE71D"), // Portfolio operations dashboard
                 new("LiveData",     "Live Data",    "\uE9D2"),  // LineChart
                 new("OrderBook",    "Order Book",   "\uE8FD"),  // List
                 new("Charts",       "Charting",     "\uE9D9"),  // Chart

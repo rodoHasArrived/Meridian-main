@@ -152,6 +152,63 @@ $activeProviderRows = @(
     }
 )
 
+$pilotReplaySampleSet = @(
+    [ordered]@{
+        id = "DK1-ALPACA-QUOTE-GOLDEN"
+        provider = "Alpaca"
+        lane = "repo-closed quote pipeline parity"
+        sampleUniverse = @("AAPL")
+        sampleWindow = "2026-03-19T14:30:00Z"
+        evidenceAnchors = @(
+            "tests/Meridian.Tests/TestData/Golden/alpaca-quote-pipeline.json",
+            "AlpacaQuotePipelineGoldenTests"
+        )
+        automationStep = "Alpaca core provider confidence"
+        acceptanceCheck = "Parser, canonical publisher, and JSONL sink output match the committed golden subset."
+    },
+    [ordered]@{
+        id = "DK1-ALPACA-PARSER-EDGE-CASES"
+        provider = "Alpaca"
+        lane = "repo-closed trade and quote parser coverage"
+        sampleUniverse = @("AAPL", "MSFT", "QQQ", "SPY")
+        sampleWindow = "2024-06-15 parser fixture window"
+        evidenceAnchors = @(
+            "AlpacaMessageParsingTests",
+            "AlpacaQuoteRoutingTests",
+            "AlpacaCredentialAndReconnectTests"
+        )
+        automationStep = "Alpaca core provider confidence"
+        acceptanceCheck = "Trade and quote edge cases preserve symbol separation, timestamp handling, duplicate suppression, routing, and reconnect behavior."
+    },
+    [ordered]@{
+        id = "DK1-ROBINHOOD-SUPPORTED-SURFACE"
+        provider = "Robinhood"
+        lane = "bounded polling and brokerage surface"
+        sampleUniverse = @("AAPL", "MSFT")
+        sampleWindow = "2026-04-09 bounded runtime packet plus offline polling fixtures"
+        evidenceAnchors = @(
+            "RobinhoodMarketDataClientTests",
+            "RobinhoodBrokerageGatewayTests",
+            "artifacts/provider-validation/robinhood/2026-04-09/manifest.json"
+        )
+        automationStep = "Robinhood supported surface"
+        acceptanceCheck = "Offline polling, symbol search, historical bars, and execution seam tests pass; runtime evidence remains explicitly bounded."
+    },
+    [ordered]@{
+        id = "DK1-YAHOO-HISTORICAL-FALLBACK"
+        provider = "Yahoo"
+        lane = "repo-closed historical-only fallback"
+        sampleUniverse = @("AAPL", "SPY")
+        sampleWindow = "2024-01-01 through 2024-01-02 daily fixtures and 2024-01-02 intraday session fixtures"
+        evidenceAnchors = @(
+            "YahooFinanceHistoricalDataProviderTests",
+            "YahooFinanceIntradayContractTests"
+        )
+        automationStep = "Yahoo historical-only core provider"
+        acceptanceCheck = "Daily, adjusted daily, and intraday aggregate fixtures deserialize into stable historical/fallback bars without implying live-provider readiness."
+    }
+)
+
 $crossCuttingClosures = @(
     [ordered]@{
         name = "Checkpoint reliability"
@@ -234,6 +291,7 @@ $summary = [ordered]@{
     scope = "Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof"
     result = if ($failedResults.Count -eq 0) { "passed" } else { "failed" }
     activeProviderRows = $activeProviderRows
+    pilotReplaySampleSet = $pilotReplaySampleSet
     crossCuttingClosures = $crossCuttingClosures
     deferredProviders = $deferredProviders
     steps = $results
@@ -267,6 +325,20 @@ foreach ($provider in $activeProviderRows) {
 
     $notes = $provider.notes -join " "
     $md += "| $($provider.name) | $($provider.posture) | $($provider.lane) | $runtimeEvidence | $notes |"
+}
+
+$md += @(
+    "",
+    "## DK1 Pilot Replay / Sample Standard",
+    "",
+    "| Sample ID | Provider | Lane | Sample universe | Replay / fixture window | Evidence anchor | Acceptance check |",
+    "|---|---|---|---|---|---|---|"
+)
+
+foreach ($sample in $pilotReplaySampleSet) {
+    $sampleUniverse = $sample.sampleUniverse -join "<br>"
+    $evidenceAnchors = $sample.evidenceAnchors -join "<br>"
+    $md += "| $($sample.id) | $($sample.provider) | $($sample.lane) | $sampleUniverse | $($sample.sampleWindow) | $evidenceAnchors | $($sample.acceptanceCheck) |"
 }
 
 $md += @(

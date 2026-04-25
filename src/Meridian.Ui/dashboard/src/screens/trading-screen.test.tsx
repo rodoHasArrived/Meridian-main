@@ -104,8 +104,8 @@ vi.mock("@/lib/api", async () => {
     seekReplay: vi.fn().mockResolvedValue({}),
     setReplaySpeed: vi.fn().mockResolvedValue({}),
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
-    approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved" }),
-    rejectPromotion: vi.fn().mockResolvedValue({ success: true, promotionId: null, newRunId: null, reason: "Run breached risk gate." }),
+    approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved", auditReference: "audit-promo-1", approvedBy: "operator-7" }),
+    rejectPromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-reject-1", newRunId: null, reason: "Promotion rejected: Run breached risk gate.", auditReference: "audit-reject-1", approvedBy: "operator-7" }),
     getPromotionHistory: vi.fn().mockResolvedValue([{
       promotionId: "promo-1",
       strategyId: "strat-1",
@@ -113,9 +113,13 @@ vi.mock("@/lib/api", async () => {
       sourceRunType: "backtest",
       targetRunType: "paper",
       runId: "run-1",
+      sourceRunId: "run-1",
+      targetRunId: "paper-1",
+      decision: "Approved",
       approvedBy: "operator-7",
       approvalReason: "Meets risk constraints",
       reviewNotes: "Checked replay consistency",
+      auditReference: "audit-promo-1",
       manualOverrideId: "override-9",
       qualifyingSharpe: 1.2,
       qualifyingMaxDrawdownPercent: 5,
@@ -158,11 +162,22 @@ describe("TradingScreen", () => {
     expect(screen.getByText(/Active overrides:/i)).toHaveTextContent("BypassOrderControls (AAPL)");
   });
 
+  it("surfaces cockpit readiness against operator acceptance gates", async () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+
+    expect(screen.getByText("Paper cockpit readiness")).toBeInTheDocument();
+    await screen.findByText("2/4 ready");
+    expect(screen.getByText("Restore required")).toBeInTheDocument();
+    expect(screen.getByText("Verify required")).toBeInTheDocument();
+    expect(screen.getByText(/recent execution audit entry is visible/i)).toBeInTheDocument();
+    expect(screen.getByText(/Approved by operator-7: Meets risk constraints\. Audit audit-promo-1\./i)).toBeInTheDocument();
+  });
+
   it("handles promotion happy path", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
     await user.type(screen.getByLabelText("Run id"), "run-1");
-    await user.type(screen.getByLabelText("Approved by"), "operator-7");
+    await user.type(screen.getByLabelText("Operator id"), "operator-7");
     await user.type(screen.getByLabelText("Approval reason"), "Meets risk constraints");
     await user.type(screen.getByLabelText("Review notes"), "Checked replay consistency");
     await user.type(screen.getByLabelText("Manual override id"), "override-9");
@@ -179,6 +194,7 @@ describe("TradingScreen", () => {
     });
     await screen.findByText(/by operator-7/i);
     await screen.findByText(/reason: Meets risk constraints/i);
+    await screen.findByText(/audit: audit-promo-1/i);
     await screen.findByText(/override: override-9/i);
     await screen.findByText(/notes: Checked replay consistency/i);
   });
@@ -210,13 +226,72 @@ describe("TradingScreen", () => {
   it("supports rejecting a promotion with a required rationale", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await screen.findByText(/reason: Meets risk constraints/i);
+    vi.mocked(api.getPromotionHistory).mockClear();
+    vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
+      promotionId: "promo-reject-1",
+      strategyId: "strat-1",
+      strategyName: "S1",
+      sourceRunType: "backtest",
+      targetRunType: "paper",
+      runId: "run-1",
+      sourceRunId: "run-1",
+      targetRunId: null,
+      decision: "Rejected",
+      approvedBy: "operator-7",
+      approvalReason: "Risk review failed on drawdown stability.",
+      reviewNotes: null,
+      auditReference: "audit-reject-1",
+      manualOverrideId: null,
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      promotedAt: "2026-01-01T01:00:00Z"
+    }]);
 
     await user.type(screen.getByLabelText("Run id"), "run-1");
+    await user.type(screen.getByLabelText("Operator id"), "operator-7");
     await user.type(screen.getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
     await user.click(screen.getByRole("button", { name: /reject promotion/i }));
 
-    await screen.findByText(/Promotion rejected: Run breached risk gate\./i);
-    expect(api.rejectPromotion).toHaveBeenCalledWith("run-1", "Risk review failed on drawdown stability.");
+    const rejectionStatus = await screen.findByText(/Promotion rejected: Run breached risk gate\./i);
+    expect(rejectionStatus).toHaveClass("text-warning");
+    expect(rejectionStatus).not.toHaveClass("text-success");
+    expect(api.rejectPromotion).toHaveBeenCalledWith({
+      runId: "run-1",
+      reason: "Risk review failed on drawdown stability.",
+      rejectedBy: "operator-7",
+      reviewNotes: undefined,
+      manualOverrideId: undefined
+    });
+    await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
+    await screen.findByText(/reason: Risk review failed on drawdown stability\./i);
+    await screen.findByText(/audit: audit-reject-1/i);
+    expect(screen.getByLabelText("Rejection reason")).toHaveValue("");
+  });
+
+  it("renders unsuccessful rejection responses as errors", async () => {
+    vi.mocked(api.rejectPromotion).mockResolvedValueOnce({
+      success: false,
+      promotionId: null,
+      newRunId: null,
+      reason: "Run not found or has no metrics available for rejection trace."
+    });
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await screen.findByText(/reason: Meets risk constraints/i);
+    vi.mocked(api.getPromotionHistory).mockClear();
+
+    await user.type(screen.getByLabelText("Run id"), "missing-run");
+    await user.type(screen.getByLabelText("Operator id"), "operator-7");
+    await user.type(screen.getByLabelText("Rejection reason"), "Risk review failed on drawdown stability.");
+    await user.click(screen.getByRole("button", { name: /reject promotion/i }));
+
+    const rejectionStatus = await screen.findByText(/Run not found or has no metrics available for rejection trace\./i);
+    expect(rejectionStatus).toHaveClass("text-destructive");
+    expect(rejectionStatus).not.toHaveClass("text-success");
+    await waitFor(() => expect(api.getPromotionHistory).toHaveBeenCalledTimes(1));
+    expect(screen.getByLabelText("Rejection reason")).toHaveValue("Risk review failed on drawdown stability.");
   });
 
   it("supports replay start and restore session for reconnect/resume workflows", async () => {
@@ -243,6 +318,7 @@ describe("TradingScreen", () => {
     expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
     expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
+    await screen.findByText("4/4 ready");
   });
 
   it("opens confirmation dialog when Cancel order button is clicked", () => {

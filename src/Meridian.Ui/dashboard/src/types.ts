@@ -56,6 +56,10 @@ export interface PromotionEvaluationResult {
   reason: string;
   found: boolean;
   ready: boolean;
+  requiresHumanApproval?: boolean;
+  requiresManualOverride?: boolean;
+  requiredManualOverrideKind?: string | null;
+  blockingReasons?: string[] | null;
 }
 
 export interface PromotionDecisionResult {
@@ -63,6 +67,8 @@ export interface PromotionDecisionResult {
   promotionId: string | null;
   newRunId: string | null;
   reason: string;
+  auditReference?: string | null;
+  approvedBy?: string | null;
 }
 
 export interface PromotionRecord {
@@ -72,9 +78,13 @@ export interface PromotionRecord {
   sourceRunType: string;
   targetRunType: string;
   runId?: string;
+  sourceRunId?: string | null;
+  targetRunId?: string | null;
+  decision?: string | null;
   approvedBy?: string | null;
   approvalReason?: string | null;
   reviewNotes?: string | null;
+  auditReference?: string | null;
   manualOverrideId?: string | null;
   qualifyingSharpe: number;
   qualifyingMaxDrawdownPercent: number;
@@ -191,6 +201,109 @@ export interface ExecutionControlSnapshot {
   symbolPositionLimits: Record<string, number>;
   manualOverrides: ExecutionManualOverride[];
   asOf: string;
+}
+
+export type OperatorWorkItemKind =
+  | "PaperReplay"
+  | "PromotionReview"
+  | "BrokerageSync"
+  | "SecurityMasterCoverage"
+  | "ReconciliationBreak"
+  | "ReportPackApproval";
+
+export type OperatorWorkItemTone = "Info" | "Success" | "Warning" | "Critical";
+
+export interface OperatorWorkItem {
+  workItemId: string;
+  kind: OperatorWorkItemKind;
+  label: string;
+  detail: string;
+  tone: OperatorWorkItemTone;
+  createdAt: string;
+  runId: string | null;
+  fundAccountId: string | null;
+  auditReference: string | null;
+}
+
+export interface TradingPaperSessionReadiness {
+  sessionId: string;
+  strategyId: string;
+  strategyName: string | null;
+  isActive: boolean;
+  initialCash: number;
+  createdAt: string;
+  closedAt: string | null;
+  symbolCount: number;
+  orderCount: number;
+  positionCount: number;
+  portfolioValue: number | null;
+}
+
+export interface TradingReplayReadiness {
+  sessionId: string;
+  replaySource: string;
+  isConsistent: boolean;
+  comparedFillCount: number;
+  comparedOrderCount: number;
+  comparedLedgerEntryCount: number;
+  verifiedAt: string;
+  lastPersistedFillAt: string | null;
+  lastPersistedOrderUpdateAt: string | null;
+  verificationAuditId: string | null;
+  mismatchReasons: string[];
+}
+
+export interface TradingControlReadiness {
+  circuitBreakerOpen: boolean;
+  circuitBreakerReason: string | null;
+  circuitBreakerChangedBy: string | null;
+  circuitBreakerChangedAt: string | null;
+  manualOverrideCount: number;
+  symbolLimitCount: number;
+  defaultMaxPositionSize: number | null;
+}
+
+export interface TradingPromotionReadiness {
+  state: string;
+  reason: string;
+  requiresReview: boolean;
+  sourceRunId: string | null;
+  targetRunId: string | null;
+  suggestedNextMode: string | null;
+  auditReference: string | null;
+  approvalStatus: string | null;
+  manualOverrideId: string | null;
+  approvedBy: string | null;
+}
+
+export interface WorkstationBrokerageSyncStatus {
+  fundAccountId: string;
+  providerId: string | null;
+  externalAccountId: string | null;
+  health: "Unlinked" | "Healthy" | "Stale" | "Degraded" | "Failed";
+  isLinked: boolean;
+  isStale: boolean;
+  lastAttemptedSyncAt: string | null;
+  lastSuccessfulSyncAt: string | null;
+  lastError: string | null;
+  positionCount: number;
+  openOrderCount: number;
+  fillCount: number;
+  cashTransactionCount: number;
+  securityMissingCount: number;
+  warnings: string[];
+}
+
+export interface TradingOperatorReadiness {
+  asOf: string;
+  activeSession: TradingPaperSessionReadiness | null;
+  sessions: TradingPaperSessionReadiness[];
+  replay: TradingReplayReadiness | null;
+  controls: TradingControlReadiness;
+  promotion: TradingPromotionReadiness | null;
+  brokerageSync: WorkstationBrokerageSyncStatus | null;
+  workItems: OperatorWorkItem[];
+  warnings: string[];
 }
 
 export interface CreateExecutionManualOverrideRequest {
@@ -343,6 +456,7 @@ export interface TradingWorkspaceResponse {
   fills: TradingFill[];
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
+  readiness?: TradingOperatorReadiness | null;
 }
 
 export interface GovernanceReconciliationRecord {

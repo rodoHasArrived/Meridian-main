@@ -171,7 +171,7 @@ public static class ProviderEndpoints
         .Produces(200);
 
         // Provider comparison view
-        group.MapGet(UiApiRoutes.ProviderComparison, async (ConfigStore store, ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
+        group.MapGet(UiApiRoutes.ProviderComparison, async ([FromServices] ConfigStore store, [FromServices] ProviderRouteExplainabilityService explainabilityService, CancellationToken ct) =>
         {
             var metricsStatus = store.TryLoadProviderMetrics();
             var cfg = store.Load();

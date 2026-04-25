@@ -326,7 +326,7 @@
                             </Grid>
                         </Border>
 
-                        <Button Content="Go to Dashboard"
+                        <Button Content="Open Portfolio Operations"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 HorizontalAlignment="Left"
                                 Margin="0,16,0,0"

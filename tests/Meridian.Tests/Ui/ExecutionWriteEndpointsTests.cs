@@ -480,6 +480,7 @@ public sealed class ExecutionWriteEndpointsTests
         });
 
         var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops-risk");
 
         var evaluateResponse = await client.GetAsync("/api/promotion/evaluate/run-backtest-risk-blocked");
         evaluateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -492,6 +493,10 @@ public sealed class ExecutionWriteEndpointsTests
                 Reason: "Max drawdown exceeded cockpit guardrail and return is negative.")));
         rejectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var rejection = await ReadAsync<PromotionDecisionResult>(rejectResponse);
+
+        var historyResponse = await client.GetAsync("/api/promotion/history");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await ReadAsync<StrategyPromotionRecord[]>(historyResponse);
 
         using (new AssertionScope())
         {
@@ -509,6 +514,14 @@ public sealed class ExecutionWriteEndpointsTests
             rejection.NewRunId.Should().BeNull();
             rejection.Reason.Should().Contain("Promotion rejected");
             rejection.Reason.Should().ContainEquivalentOf("drawdown");
+            rejection.AuditReference.Should().NotBeNullOrWhiteSpace();
+            rejection.ApprovedBy.Should().Be("ops-risk");
+
+            history.Should().ContainSingle(record =>
+                record.Decision == PromotionDecisionKinds.Rejected &&
+                record.ApprovedBy == "ops-risk" &&
+                record.ApprovalReason == "Max drawdown exceeded cockpit guardrail and return is negative." &&
+                !string.IsNullOrWhiteSpace(record.AuditReference));
         }
     }
 

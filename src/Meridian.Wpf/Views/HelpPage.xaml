@@ -209,7 +209,7 @@
                                     <TextBlock Text="Ctrl + 1" FontFamily="Cascadia Code, Consolas"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                 </Border>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Go to Dashboard" VerticalAlignment="Center"
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="Go to Portfolio Operations" VerticalAlignment="Center"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="8,0,0,0" />
 
                                 <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource KeyboardShortcutStyle}">

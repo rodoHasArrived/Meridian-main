@@ -13,7 +13,7 @@ import {
 import { MetricCard } from "@/components/meridian/metric-card";
 import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, rejectPromotion, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -53,6 +53,40 @@ interface OrderState {
   orderId: string | null;
   error: string | null;
 }
+
+type PromotionOutcomeLevel = "success" | "warning" | "error";
+
+interface PromotionOutcome {
+  level: PromotionOutcomeLevel;
+  message: string;
+}
+
+type AcceptanceLevel = "ready" | "review" | "atRisk";
+
+interface CockpitAcceptanceItem {
+  label: string;
+  value: string;
+  detail: string;
+  level: AcceptanceLevel;
+}
+
+const promotionOutcomeTone: Record<PromotionOutcomeLevel, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  error: "text-destructive"
+};
+
+const acceptanceTone: Record<AcceptanceLevel, string> = {
+  ready: "border-success/30 bg-success/10 text-success",
+  review: "border-warning/30 bg-warning/10 text-warning",
+  atRisk: "border-destructive/30 bg-destructive/10 text-destructive"
+};
+
+const acceptanceLabel: Record<AcceptanceLevel, string> = {
+  ready: "Ready",
+  review: "Review",
+  atRisk: "At risk"
+};
 
 // --- Shared confirmation state for all write actions ---
 
@@ -179,7 +213,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [promotionError, setPromotionError] = useState<string | null>(null);
   const [promotionBusy, setPromotionBusy] = useState(false);
-  const [promotionResult, setPromotionResult] = useState<string | null>(null);
+  const [promotionOutcome, setPromotionOutcome] = useState<PromotionOutcome | null>(null);
 
   async function refreshExecutionAudit() {
     try {
@@ -354,7 +388,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
     if (!promotionRunId.trim()) return;
     setPromotionBusy(true);
     setPromotionError(null);
-    setPromotionResult(null);
+    setPromotionOutcome(null);
     try {
       const evaluation = await evaluatePromotion(promotionRunId.trim());
       setPromotionEval(evaluation);
@@ -367,11 +401,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
 
   async function handlePromoteToPaper() {
     if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
-      setPromotionError("Approver and approval reason are required.");
+      setPromotionError("Operator and approval reason are required.");
+      setPromotionOutcome(null);
       return;
     }
     setPromotionBusy(true);
     setPromotionError(null);
+    setPromotionOutcome(null);
     try {
       const result = await approvePromotion({
         runId: promotionRunId.trim(),
@@ -380,7 +416,12 @@ export function TradingScreen({ data }: TradingScreenProps) {
         reviewNotes: promotionReviewNotes.trim() || undefined,
         manualOverrideId: promotionManualOverrideId.trim() || undefined
       });
-      setPromotionResult(result.success ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}` : result.reason);
+      setPromotionOutcome({
+        level: result.success ? "success" : "error",
+        message: result.success
+          ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}${result.auditReference ? ` · Audit: ${result.auditReference}` : ""}`
+          : result.reason
+      });
       const history = await getPromotionHistory();
       setPromotionHistory(history);
     } catch (err) {
@@ -391,19 +432,32 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   async function handleRejectPromotion() {
-    if (!promotionRunId.trim() || !promotionRejectionReason.trim()) {
-      setPromotionError("Run id and rejection reason are required.");
+    if (!promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionRejectionReason.trim()) {
+      setPromotionError("Run id, operator, and rejection reason are required.");
+      setPromotionOutcome(null);
       return;
     }
 
     setPromotionBusy(true);
     setPromotionError(null);
-    setPromotionResult(null);
+    setPromotionOutcome(null);
     try {
-      const result = await rejectPromotion(promotionRunId.trim(), promotionRejectionReason.trim());
-      setPromotionResult(result.success ? `Promotion rejected: ${result.reason}` : result.reason);
+      const result = await rejectPromotion({
+        runId: promotionRunId.trim(),
+        reason: promotionRejectionReason.trim(),
+        rejectedBy: promotionApprovedBy.trim(),
+        reviewNotes: promotionReviewNotes.trim() || undefined,
+        manualOverrideId: promotionManualOverrideId.trim() || undefined
+      });
+      setPromotionOutcome({
+        level: result.success ? "warning" : "error",
+        message: `${result.reason}${result.auditReference ? ` · Audit: ${result.auditReference}` : ""}`
+      });
       const history = await getPromotionHistory();
       setPromotionHistory(history);
+      if (result.success) {
+        setPromotionRejectionReason("");
+      }
     } catch (err) {
       setPromotionError(err instanceof Error ? err.message : "Promotion rejection failed.");
     } finally {
@@ -421,6 +475,19 @@ export function TradingScreen({ data }: TradingScreenProps) {
       </Card>
     );
   }
+
+  const cockpitAcceptance = buildCockpitAcceptance({
+    operatorReadiness: data.readiness ?? null,
+    sessions,
+    selectedSessionDetail,
+    sessionReplayVerification,
+    executionAudit,
+    executionControls,
+    promotionEval,
+    promotionHistory,
+    promotionApprovedBy,
+    promotionApprovalReason
+  });
 
   return (
     <div className="space-y-8">
@@ -477,6 +544,8 @@ export function TradingScreen({ data }: TradingScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      <AcceptanceStatusCard items={cockpitAcceptance} />
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
@@ -1127,7 +1196,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
               className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
             />
             <input
-              aria-label="Approved by"
+              aria-label="Operator id"
               placeholder="operator id"
               value={promotionApprovedBy}
               onChange={(e) => setPromotionApprovedBy(e.target.value)}
@@ -1166,16 +1235,31 @@ export function TradingScreen({ data }: TradingScreenProps) {
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
               <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
-              <Button size="sm" variant="destructive" onClick={handleRejectPromotion} disabled={promotionBusy || !promotionRunId.trim() || !promotionRejectionReason.trim()}>Reject promotion</Button>
+              <Button size="sm" variant="destructive" onClick={handleRejectPromotion} disabled={promotionBusy || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionRejectionReason.trim()}>Reject promotion</Button>
             </div>
             {promotionEval && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
                 <p>Eligible: {promotionEval.isEligible ? "Yes" : "No"}</p>
                 <p>Sharpe: {promotionEval.sharpeRatio} · Max DD: {promotionEval.maxDrawdownPercent}% · Return: {promotionEval.totalReturn}%</p>
                 <p>{promotionEval.reason}</p>
+                {promotionEval.requiresHumanApproval && <p>Human approval required</p>}
+                {promotionEval.requiresManualOverride && (
+                  <p>Manual override required{promotionEval.requiredManualOverrideKind ? `: ${promotionEval.requiredManualOverrideKind}` : ""}</p>
+                )}
+                {promotionEval.blockingReasons && promotionEval.blockingReasons.length > 0 && (
+                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                    {promotionEval.blockingReasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
-            {promotionResult && <p className="text-xs text-success">{promotionResult}</p>}
+            {promotionOutcome && (
+              <p role="status" className={cn("text-xs", promotionOutcomeTone[promotionOutcome.level])}>
+                {promotionOutcome.message}
+              </p>
+            )}
             {promotionError && <p className="text-xs text-destructive">{promotionError}</p>}
             <div className="rounded-lg border border-border/60 p-3">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
@@ -1183,8 +1267,12 @@ export function TradingScreen({ data }: TradingScreenProps) {
                 {promotionHistory.slice(0, 4).map((record) => (
                   <li key={record.promotionId} className="font-mono">
                     {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
+                    {record.decision ? ` · ${record.decision}` : ""}
+                    {record.sourceRunId ? ` · source: ${record.sourceRunId}` : record.runId ? ` · source: ${record.runId}` : ""}
+                    {record.targetRunId ? ` · target: ${record.targetRunId}` : ""}
                     {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
                     {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
+                    {record.auditReference ? ` · audit: ${record.auditReference}` : ""}
                     {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
                     {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
                   </li>
@@ -1200,6 +1288,239 @@ export function TradingScreen({ data }: TradingScreenProps) {
         onClose={closeConfirm}
         onConfirm={executeConfirmedAction}
       />
+    </div>
+  );
+}
+
+function buildCockpitAcceptance({
+  operatorReadiness,
+  sessions,
+  selectedSessionDetail,
+  sessionReplayVerification,
+  executionAudit,
+  executionControls,
+  promotionEval,
+  promotionHistory,
+  promotionApprovedBy,
+  promotionApprovalReason
+}: {
+  operatorReadiness: TradingOperatorReadiness | null;
+  sessions: PaperSessionSummary[];
+  selectedSessionDetail: PaperSessionDetail | null;
+  sessionReplayVerification: PaperSessionReplayVerification | null;
+  executionAudit: ExecutionAuditEntry[];
+  executionControls: ExecutionControlSnapshot | null;
+  promotionEval: PromotionEvaluationResult | null;
+  promotionHistory: PromotionRecord[];
+  promotionApprovedBy: string;
+  promotionApprovalReason: string;
+}): CockpitAcceptanceItem[] {
+  const readinessSession = operatorReadiness?.activeSession ?? null;
+  const sessionCount = Math.max(sessions.length, operatorReadiness?.sessions.length ?? 0);
+  const readinessReplay = operatorReadiness?.replay ?? null;
+  const replayEvidence = sessionReplayVerification
+    ? {
+        isConsistent: sessionReplayVerification.isConsistent,
+        comparedFillCount: sessionReplayVerification.comparedFillCount,
+        comparedOrderCount: sessionReplayVerification.comparedOrderCount,
+        comparedLedgerEntryCount: sessionReplayVerification.comparedLedgerEntryCount,
+        mismatchReasons: sessionReplayVerification.mismatchReasons
+      }
+    : readinessReplay;
+  const readinessControls = operatorReadiness?.controls ?? null;
+  const circuitBreakerOpen = readinessControls?.circuitBreakerOpen ?? executionControls?.circuitBreaker.isOpen ?? false;
+  const circuitBreakerReason = readinessControls?.circuitBreakerReason ?? executionControls?.circuitBreaker.reason ?? null;
+  const manualOverrideCount = readinessControls?.manualOverrideCount ?? executionControls?.manualOverrides.length ?? 0;
+  const serverAuditEvidenceCount = (readinessReplay?.verificationAuditId ? 1 : 0) + (operatorReadiness?.promotion?.auditReference ? 1 : 0);
+  const latestPromotion = promotionHistory[0];
+  const latestPromotionHasRationale = Boolean(
+    latestPromotion?.approvalReason || latestPromotion?.reviewNotes
+  );
+  const latestPromotionHasLineage = Boolean(
+    latestPromotion?.sourceRunId || latestPromotion?.runId
+  );
+  const latestPromotionTraceComplete = Boolean(
+    latestPromotion?.decision &&
+    latestPromotion?.approvedBy &&
+    latestPromotionHasRationale &&
+    latestPromotionHasLineage &&
+    latestPromotion?.auditReference
+  );
+  const promotionReviewPrepared = Boolean(
+    promotionEval?.isEligible &&
+    promotionApprovedBy.trim() &&
+    promotionApprovalReason.trim()
+  );
+  const readinessPromotion = operatorReadiness?.promotion ?? null;
+  const readinessPromotionTraceComplete = Boolean(
+    readinessPromotion?.approvalStatus &&
+    readinessPromotion?.approvedBy &&
+    readinessPromotion?.reason &&
+    readinessPromotion?.sourceRunId &&
+    readinessPromotion?.auditReference &&
+    !readinessPromotion?.requiresReview
+  );
+
+  return [
+    selectedSessionDetail
+      ? {
+          label: "Session persistence",
+          value: "Ready",
+          detail: `Restored ${selectedSessionDetail.summary.sessionId} with ${selectedSessionDetail.orderHistory?.length ?? 0} retained orders.`,
+          level: "ready"
+        }
+      : readinessSession
+        ? {
+            label: "Session persistence",
+            value: readinessSession.isActive ? "Active" : "Restored",
+            detail: `${readinessSession.sessionId} tracks ${readinessSession.orderCount} retained orders and ${readinessSession.positionCount} positions.`,
+            level: readinessSession.isActive ? "ready" : "review"
+          }
+      : sessionCount > 0
+        ? {
+            label: "Session persistence",
+            value: "Restore required",
+            detail: "Restore a paper session before treating the cockpit as operator-ready.",
+            level: "review"
+          }
+        : {
+            label: "Session persistence",
+            value: "No session",
+            detail: "Create a paper session so orders, fills, and portfolio state can be retained.",
+            level: "atRisk"
+          },
+    replayEvidence
+      ? {
+          label: "Replay confidence",
+          value: replayEvidence.isConsistent ? "Ready" : "Mismatch detected",
+          detail: replayEvidence.isConsistent
+            ? `Compared ${replayEvidence.comparedFillCount} fills, ${replayEvidence.comparedOrderCount} orders, and ${replayEvidence.comparedLedgerEntryCount} ledger entries.`
+            : replayEvidence.mismatchReasons[0] ?? "Replay output differs from current session state.",
+          level: replayEvidence.isConsistent ? "ready" : "atRisk"
+        }
+      : {
+          label: "Replay confidence",
+          value: "Verify required",
+          detail: "Run replay verification for the selected paper session before accepting cockpit readiness.",
+          level: "review"
+        },
+    circuitBreakerOpen
+      ? {
+          label: "Audit + controls",
+          value: "Circuit open",
+          detail: circuitBreakerReason ?? "The execution circuit breaker must be resolved before acceptance.",
+          level: "atRisk"
+        }
+      : executionAudit.length > 0 || serverAuditEvidenceCount > 0
+        ? {
+            label: "Audit + controls",
+            value: "Ready",
+            detail: `${executionAudit.length || serverAuditEvidenceCount} audit ${executionAudit.length + serverAuditEvidenceCount === 1 ? "entry is" : "entries are"} linked; ${manualOverrideCount} manual override(s) active.`,
+            level: manualOverrideCount > 0 ? "review" : "ready"
+          }
+        : {
+            label: "Audit + controls",
+            value: "No entries",
+            detail: "Execution actions need visible audit and control evidence for daily operation.",
+            level: "review"
+          },
+    readinessPromotionTraceComplete
+      ? {
+          label: "Promotion review",
+          value: "Ready",
+          detail: `${readinessPromotion!.approvalStatus} by ${readinessPromotion!.approvedBy}: ${readinessPromotion!.reason}. Audit ${readinessPromotion!.auditReference}.`,
+          level: "ready"
+        }
+      : readinessPromotion
+        ? {
+            label: "Promotion review",
+            value: "Trace incomplete",
+            detail: readinessPromotion.reason || "Promotion decision is missing operator, lineage, rationale, or audit linkage.",
+            level: "review"
+          }
+      : latestPromotionTraceComplete
+        ? {
+            label: "Promotion review",
+            value: "Ready",
+            detail: `${latestPromotion!.decision} by ${latestPromotion!.approvedBy}: ${latestPromotion!.approvalReason ?? latestPromotion!.reviewNotes}. Audit ${latestPromotion!.auditReference}.`,
+            level: "ready"
+          }
+        : latestPromotion && latestPromotionHasRationale
+          ? {
+              label: "Promotion review",
+              value: "Trace incomplete",
+              detail: "Latest promotion decision has rationale but is missing operator, lineage, or audit linkage.",
+              level: "review"
+            }
+        : promotionEval
+          ? {
+              label: "Promotion review",
+              value: promotionEval.isEligible
+                ? promotionReviewPrepared ? "Trace pending" : "Rationale required"
+                : "Gate blocked",
+              detail: promotionEval.isEligible
+                ? promotionReviewPrepared
+                  ? "Confirm promotion to write the durable audit-linked decision record."
+                  : "Add operator and approval reason before confirming promotion."
+                : promotionEval.blockingReasons?.[0] ?? promotionEval.reason,
+              level: promotionEval.isEligible ? "review" : "atRisk"
+            }
+      : {
+          label: "Promotion review",
+          value: "Evaluate gate",
+          detail: "Evaluate a backtest run before promoting it into paper operation.",
+          level: "review"
+        }
+  ];
+}
+
+function AcceptanceStatusCard({ items }: { items: CockpitAcceptanceItem[] }) {
+  const readyCount = items.filter((item) => item.level === "ready").length;
+  const totalCount = items.length;
+  const hasAtRisk = items.some((item) => item.level === "atRisk");
+  const overallLevel: AcceptanceLevel = readyCount === totalCount ? "ready" : hasAtRisk ? "atRisk" : "review";
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="eyebrow-label">Operator Acceptance</div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              Paper cockpit readiness
+            </CardTitle>
+            <CardDescription>
+              Session, replay, audit, and promotion signals for the current paper workflow.
+            </CardDescription>
+          </div>
+          <span className={cn("rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]", acceptanceTone[overallLevel])}>
+            {readyCount}/{totalCount} ready
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {items.map((item) => (
+          <AcceptanceRow key={item.label} item={item} />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
+  return (
+    <div className={cn("rounded-xl border px-4 py-3", acceptanceTone[item.level])}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] opacity-80">{item.label}</p>
+          <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
+        </div>
+        <span className="rounded-full bg-background/70 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground">
+          {acceptanceLabel[item.level]}
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-foreground/80">{item.detail}</p>
     </div>
   );
 }

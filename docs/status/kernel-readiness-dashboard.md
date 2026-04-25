@@ -1,6 +1,6 @@
 # Kernel Readiness Dashboard (DK Program)
 
-**Last Updated:** 2026-04-21  
+**Last Updated:** 2026-04-25
 **Program Scope:** Delivery Kernel waves DK1-DK2 mapped to Waves 2-4 in [`ROADMAP.md`](ROADMAP.md)  
 **Purpose:** single hand-authored status dashboard for subsystem kernel readiness, gate progression, implementation commitments, and rollback posture.
 
@@ -26,8 +26,8 @@
 
 | Subsystem | Wave | Owner | Parity | Explainability | Calibration | Operator Sign-off | Kernel Readiness | Next Milestone (Target Date) | Evidence / Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| Data quality + provider trust | DK1 | Data Operations & Provider Reliability owner | 🟡 | 🟡 | 🟡 | ⚪ | At Risk | Complete pilot parity runbook for Alpaca/Robinhood/Yahoo set (2026-05-01) | Evidence pack: [DK1 pilot parity runbook](./dk1-pilot-parity-runbook.md), [trust rationale mapping](./dk1-trust-rationale-mapping.md), [baseline thresholds + FP/FN review](./dk1-baseline-trust-thresholds.md), [provider validation matrix](./provider-validation-matrix.md) |
-| Promotion + paper-trading cockpit | DK1 -> DK2 handoff | Trading Workstation owner | ⚪ | ⚪ | ⚪ | ⚪ | Not Started | Lock promotion-path audit fields + pilot review checklist (2026-05-08) | Depends on DK1 trust explainability and calibrated thresholds |
+| Data quality + provider trust | DK1 | Data Operations & Provider Reliability owner | 🟡 | 🟡 | 🟡 | ⚪ | At Risk | Complete pilot parity runbook for Alpaca/Robinhood/Yahoo set (2026-05-01) | Evidence pack: [DK1 pilot parity runbook](./dk1-pilot-parity-runbook.md), [trust rationale mapping](./dk1-trust-rationale-mapping.md), [baseline thresholds + FP/FN review](./dk1-baseline-trust-thresholds.md), [provider validation matrix](./provider-validation-matrix.md). The Wave 1 validation summary now emits the DK1 `pilotReplaySampleSet` for parity review. |
+| Promotion + paper-trading cockpit | DK1 -> DK2 handoff | Trading Workstation owner | ⚪ | 🟡 | ⚪ | ⚪ | Early In Progress | Lock promotion-path audit fields + pilot review checklist (2026-05-08) | Depends on DK1 trust explainability and calibrated thresholds. Current source work is hardening rejection outcome severity, history refresh, and rationale preservation; DK2 entry/exit gates remain open. |
 | Export + packaging | DK2 | Data Operations Export owner | ⚪ | ⚪ | ⚪ | ⚪ | Not Started | Freeze export schema/version contract for governed pilot outputs (2026-05-15) | Must remain aligned with shared run/portfolio/ledger contract versions |
 | Reconciliation + governance | DK2 | Governance/Fund Ops owner | ⚪ | ⚪ | ⚪ | ⚪ | Not Started | Approve reconciliation tolerance profile + exception playbook (2026-05-22) | Requires promotion/export lineage continuity from DK2 |
 | Shared run/portfolio/ledger interop contracts | Cross-wave (DK1 + DK2) | Shared Platform Interop owner (Architecture + Contracts) | 🟡 | 🟡 | 🟡 | ⚪ | At Risk | Publish compatibility matrix + contract-change review cadence (2026-04-29) | Governs DTO/API compatibility across Trading, Data Ops, Governance |
@@ -38,7 +38,7 @@
 
 | Window | Subsystem | Implemented commitment | Acceptance artifact |
 |---|---|---|---|
-| 2026-04-20 -> 2026-05-01 | Data quality + provider trust (DK1) | Standardize parity-runbook structure and replay/sample set for DK1 pilot scope | Updated Wave 1 validation script output + dashboard evidence links |
+| 2026-04-20 -> 2026-05-01 | Data quality + provider trust (DK1) | Standardize parity-runbook structure and replay/sample set for DK1 pilot scope | Updated Wave 1 validation script output with `pilotReplaySampleSet` + dashboard evidence links |
 | 2026-04-20 -> 2026-05-01 | Shared interop contracts (cross-wave) | Establish interop contract board, versioning policy, and compatibility matrix template | Contract compatibility matrix committed and linked from dashboard |
 | 2026-05-02 -> 2026-05-15 | Promotion + paper cockpit (DK1/DK2) | Implement promotion rationale fields and operator approval checklist coverage | Promotion flow audit sample with end-to-end traceability |
 | 2026-05-09 -> 2026-05-22 | Export + packaging (DK2) | Freeze governed export schema and add version-compatibility checks | Export contract validation report for pilot scenarios |

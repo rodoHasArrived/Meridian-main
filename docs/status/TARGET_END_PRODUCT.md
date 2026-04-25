@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-08
-**Status:** Current end-state product summary aligned to the canonical April 8 roadmap refresh
+**Last Updated:** 2026-04-25
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, and current WPF shell baseline
 
 ---
 
@@ -9,7 +9,7 @@
 
 Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
 
-Data Operations establishes evidence-backed provider trust, Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
+Data Operations establishes evidence-backed provider trust through reproducible provider, replay, checkpoint, and DK1 pilot parity evidence. Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
 
 The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
 
@@ -54,7 +54,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 - portfolio, fills, attribution, ledger, cash-flow, and reconciliation visibility from the same run-centered model
 - the delivered Security Master baseline as the authoritative instrument-definition layer
 - governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
-- web and WPF surfaces that reinforce the same operator model instead of diverging from it
+- web and WPF surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline is present, while workflow-level acceptance remains tied to Waves 2-4
 
 ---
 
@@ -62,7 +62,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 
 ### Wave 1: Provider confidence and checkpoint evidence
 
-Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence.
+Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence. The current DK1 wrapper extends this into an Alpaca/Robinhood/Yahoo pilot parity packet with an emitted `pilotReplaySampleSet`, trust rationale mapping, threshold calibration, and operator sign-off.
 
 ### Wave 2: Paper-trading cockpit hardening
 

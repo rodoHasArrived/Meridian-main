@@ -42,7 +42,11 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var result = await service.ApproveAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var normalizedRequest = string.IsNullOrWhiteSpace(request.ApprovedBy)
+                ? request with { ApprovedBy = ResolveActor(context) }
+                : request;
+
+            var result = await service.ApproveAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
 
             return result.Success
                 ? Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created)
@@ -59,7 +63,11 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            var result = await service.RejectAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var normalizedRequest = string.IsNullOrWhiteSpace(request.RejectedBy)
+                ? request with { RejectedBy = ResolveActor(context) }
+                : request;
+
+            var result = await service.RejectAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RejectPromotion")
@@ -78,5 +86,19 @@ public static class PromotionEndpoints
         .WithName("GetPromotionHistory")
         .Produces<IReadOnlyList<StrategyPromotionRecord>>(200)
         .Produces(501);
+    }
+
+    private static string? ResolveActor(HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorValues))
+        {
+            var actor = actorValues.ToString().Trim();
+            if (!string.IsNullOrWhiteSpace(actor))
+            {
+                return actor;
+            }
+        }
+
+        return null;
     }
 }

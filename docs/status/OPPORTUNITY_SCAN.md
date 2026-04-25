@@ -1,7 +1,7 @@
 # Meridian - Opportunity Scan
 
-**Last Updated:** 2026-04-17
-**Status:** Repo-grounded opportunity scan aligned to the 2026-04-17 canonical roadmap refresh and the 2026-04-16 feature inventory snapshot
+**Last Updated:** 2026-04-25
+**Status:** Repo-grounded opportunity scan aligned to the canonical roadmap, DK1 pilot sample-set evidence, and current WPF shell baseline
 
 This document turns the current repository state into the next opportunity order. It is intentionally narrower than a full roadmap refresh: it identifies the best next opportunities, why they matter now, what they unlock, and where they belong in the active delivery sequence.
 
@@ -13,11 +13,12 @@ Use this with [`ROADMAP.md`](ROADMAP.md), [`FEATURE_INVENTORY.md`](FEATURE_INVEN
 
 Meridian's best opportunities are no longer broad platform-build items. The repo already shows a strong ingestion, storage, replay, export, execution, workstation, and Security Master baseline, plus concrete shared run, portfolio, ledger, and promotion seams. The highest-value opportunities now are the ones that remove trust ambiguity, harden operator workflows already in code, and keep the desktop shell consolidation tied to the same shared workflow model instead of drifting into a parallel UX program.
 
-The current planning set is also more mature than the prior April 8 scan. As of 2026-04-17 and 2026-04-16:
+The current planning set is also more mature than the prior April 8 scan. As of 2026-04-25:
 
 - the canonical roadmap treats Waves 1-4 as the core operator-readiness path
-- the six-week plan narrows execution to provider confidence, paper-trading hardening, shared-model continuity, and the first deeper governance slices
-- the feature inventory and improvement tracker show that shell-first WPF consolidation, shared workstation endpoints, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
+- the six-week plan narrows execution to DK1 provider-trust parity, paper-trading hardening, shared-model continuity, and the first deeper governance slices
+- the DK1 evidence track now has a concrete Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` emitted by the Wave 1 validation script and referenced by the pilot parity runbook
+- the feature inventory and implementation anchors show that shell-first WPF consolidation, shared workstation endpoints, and the Security Master baseline are materially present in the repo, but still not enough to call the end-to-end product finished
 
 That means the opportunity order should stay delivery-aware: preserve the closed trust gate, finish the operator lane, unify the shared model, then deepen governance on top of the delivered baseline.
 
@@ -28,7 +29,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 1. Harden the existing paper-trading cockpit into a dependable operator lane
 
 - **Category:** workflow completion
-- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, and promotion seams, but the paper workflow still needs clearer daily-use acceptance criteria, stronger audit visibility, and tighter behavior around persistence and replay recovery.
+- **Gap:** The repo already exposes positions, orders, fills, risk, replay, sessions, and promotion seams, and current cockpit work is tightening promotion rejection outcomes and audit-history refresh. The paper workflow still needs clearer daily-use acceptance criteria, broader audit visibility, and tighter behavior around persistence and replay recovery.
 - **User or operator value:** This converts Meridian from "paper trading is present" to "paper trading can be operated confidently."
 - **Dependency it unlocks:** A credible `Backtest -> Paper` story and a safer foundation for any later `Paper -> Live` gate design.
 - **Placement:** Critical path, Wave 2.
@@ -49,18 +50,18 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 - **Dependency it unlocks:** Better reconciliations, stronger governed outputs, and a clearer fund-operations product story.
 - **Placement:** Near-term strategic wave, Wave 4.
 
-### 4. Keep the closed Wave 1 trust gate synchronized
+### 4. Close the DK1 pilot parity packet on top of the closed Wave 1 trust gate
 
 - **Category:** provider readiness
-- **Gap:** The active Wave 1 gate is now repo-closed, but it still depends on keeping the matrix, roadmap, runtime artifacts, and validation script aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
+- **Gap:** The active Wave 1 gate is now repo-closed, and DK1 has a concrete pilot replay/sample-set contract. The open work is to keep the matrix, roadmap, runtime artifacts, runbook, validation script, trust rationale mapping, threshold calibration, and operator sign-off aligned around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush proof.
 - **User or operator value:** Later cockpit, governance, and live-readiness claims stay credible when the trust gate remains explicit and reproducible.
-- **Dependency it unlocks:** It preserves the evidence boundary that all later waves depend on.
-- **Placement:** Supporting maintenance track that underpins Waves 2-4.
+- **Dependency it unlocks:** It preserves the evidence boundary that all later waves depend on and gives Wave 2 cockpit acceptance a concrete trust packet.
+- **Placement:** Critical support track for DK1 and Waves 2-4.
 
-### 5. Validate the current WPF shell direction as workflow support, not a separate program
+### 5. Validate the delivered WPF shell baseline as workflow support, not a separate program
 
 - **Category:** operator UX
-- **Gap:** The repo now clearly contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, and `MainPageViewModel`-anchored orchestration, but that progress still needs to be judged by whether it improves active Wave 2-4 workflows rather than by shell surface area alone.
+- **Gap:** The repo now contains workspace shell pages, metadata-driven shell navigation, shared deep-page hosting, shell-context strips, and `MainPageViewModel`-anchored orchestration with smoke coverage. That baseline should now be judged by whether it improves active Wave 2-4 workflows rather than by additional shell surface area.
 - **User or operator value:** Operators benefit when the desktop shell clarifies high-traffic tasks and preserves trust-state cues instead of becoming a second workstation model.
 - **Dependency it unlocks:** Confident desktop consolidation that reinforces the same run-centered and governance-centered seams already used elsewhere.
 - **Placement:** Supporting track inside Waves 2-4, not an independent roadmap wave.
@@ -106,7 +107,7 @@ That is why Wave 2 cockpit hardening now outranks additional surface expansion, 
 
 ## Recommended Next Steps
 
-1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, evidence artifacts, and repo tests treated as the source of truth.
+1. Keep the closed Wave 1 provider-confidence gate as the first release gate, with the validation matrix, emitted DK1 `pilotReplaySampleSet`, evidence artifacts, and repo tests treated as the source of truth.
 2. Define the paper-trading cockpit in operator terms: session persistence, replay confidence, audit trail visibility, and promotion review should be the acceptance center, not additional page count.
 3. Use shared run, portfolio, ledger, and reconciliation seams as the required integration boundary for both workstation and governance work.
 4. Treat WPF shell consolidation as successful only when it reduces workflow friction in active Wave 2-4 paths.

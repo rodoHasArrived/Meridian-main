@@ -1,8 +1,8 @@
 # Meridian 6-Week Roadmap
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-25
 **Horizon:** Next 6 weeks
-**Status:** Short-horizon execution slice derived from the 2026-04-17 canonical roadmap refresh
+**Status:** Short-horizon execution slice derived from the canonical roadmap and current DK readiness dashboard
 
 This document is the six-week execution slice of [`ROADMAP.md`](../status/ROADMAP.md). It is intentionally narrower than the canonical roadmap and advances the active Wave 2-4 core operator-readiness path while keeping the closed Wave 1 trust gate synchronized.
 
@@ -14,7 +14,7 @@ Use this with [`waves-2-4-operator-readiness-addendum.md`](waves-2-4-operator-re
 
 The next six weeks should focus on four outcomes:
 
-1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and synchronized
+1. keep the closed Wave 1 provider-confidence and checkpoint-evidence gate green and close the DK1 pilot parity packet around the emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet`
 2. harden the Wave 2 paper-trading cockpit that is already visible in the workstation
 3. deepen Wave 3 shared run / portfolio / ledger continuity across workspaces while consolidating the active WPF shell direction
 4. land the first Wave 4 governance and fund-operations slices on top of the delivered Security Master baseline
@@ -33,13 +33,14 @@ Explicit non-goals in this window:
 This plan starts from the current repo state:
 
 - the web and WPF workstation shells are active and already organized around `Research`, `Trading`, `Data Operations`, and `Governance`
-- the current working tree shows active WPF shell consolidation in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, and new smoke tests, so this window should consolidate and validate that direction rather than start a second desktop UX track
+- the current working tree contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, and shell/navigation smoke tests, so this window should validate workflow value rather than start a second desktop UX track
 - the paper-trading cockpit is partially productized, not greenfield
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
 - governance already has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
 - the closed Wave 1 trust gate remains the first release gate for every downstream claim
+- DK1 status is active but not closed: provider-trust and shared interop readiness are still in progress / at risk in `docs/status/kernel-readiness-dashboard.md`; promotion handoff is early in progress through cockpit audit-feedback hardening, while export and reconciliation DK2 lanes are not started
 
 ---
 
@@ -55,9 +56,9 @@ This plan starts from the current repo state:
 ### Delivery guardrails in this window
 
 - keep WPF workflow-first consolidation and MVVM extraction limited to work that directly supports active Wave 2-4 flows
-- keep validation and documentation synchronized with executable evidence, not summary language
+- keep validation and documentation synchronized with executable evidence, not summary language; the DK1 `pilotReplaySampleSet` is now part of that evidence contract
 - keep shared DTOs, read models, workflow services, and export seams as the integration boundary across active work
-- treat current working-tree shell work as in-flight until it is validated and clearly wired into run-centered workflows
+- treat current shell workflow validation as open until the delivered shell/navigation baseline is clearly wired into run-centered workflows
 
 ### Explicitly deferred beyond this window
 
@@ -72,6 +73,7 @@ This plan starts from the current repo state:
 ### Outcome 1: The closed Wave 1 trust gate stays reproducible and synchronized
 
 - Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly runtime-bounded, and deferred providers stay clearly outside the active gate
+- the DK1 pilot replay/sample-set contract is emitted by `scripts/dev/run-wave1-provider-validation.ps1` and reviewed through the DK1 pilot parity runbook
 - backfill checkpoints, gap detection, and Parquet L2 flush behavior remain on the passing command matrix instead of drifting back into assumed reliability
 - the active Wave 1 scope stays synchronized with the provider-validation matrix, provider-confidence language, and generated validation summaries
 
@@ -80,6 +82,7 @@ This plan starts from the current repo state:
 - the web workstation cockpit is tightened around positions, orders, fills, replay, sessions, and risk flows already in code
 - `Backtest -> Paper` remains explicit, auditable, and easier to exercise end to end
 - session persistence and replay behavior have clearer operator acceptance criteria
+- the trading cockpit now surfaces a single operator acceptance card for session persistence, replay confidence, audit visibility, and promotion review readiness
 
 ### Outcome 3: Wave 3 shared-model continuity is stronger across workspaces
 
@@ -99,9 +102,9 @@ This plan starts from the current repo state:
 
 | Week | Focus | Goals | Deliverables |
 |---|---|---|---|
-| 1 | Wave 1 closeout confirmation | rerun the closed trust gate and remove planning contradictions around the active provider set | refreshed validation summary; synchronized provider/runtime evidence list; explicit deferred-provider wording |
+| 1 | DK1 / Wave 1 closeout confirmation | rerun the closed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links |
 | 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
-| 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion workflow gap list; cockpit operator-path checklist |
+| 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion approval/rejection rationale checklist; cockpit operator-path checklist |
 | 4 | Wave 3 continuity | reduce cross-workspace seams between Research, Trading, and Governance while validating the active WPF shell direction | run-model continuity backlog; fills/attribution/ledger/reconciliation linkage notes; shell-navigation validation targets tied to active flows |
 | 5 | Wave 4 governance slice | connect the delivered Security Master baseline to concrete governance product slices | account/entity and strategy-structure targets; first multi-ledger/cash-flow/reconciliation slice decisions; reporting/profile follow-ons |
 | 6 | Hardening and closeout | make the six-week baseline easy to continue from without widening scope | docs/status refresh; acceptance-criteria review; narrowed follow-on backlog that still stays within Waves 1-4 |
@@ -115,6 +118,7 @@ This plan starts from the current repo state:
 Priorities:
 
 - keep Alpaca and Yahoo explicit as repo-closed rows and Robinhood explicit as the only runtime-bounded active row
+- keep the DK1 `pilotReplaySampleSet` synchronized across the validation script, generated summaries, provider-validation matrix, and pilot parity runbook
 - keep deferred-provider guidance synchronized so Polygon, Interactive Brokers, NYSE, and StockSharp do not drift back into the active gate by prose alone
 - rerun `run-wave1-provider-validation.ps1` whenever provider, checkpoint, or Parquet proof surfaces change
 - keep provider-confidence docs, runtime artifacts, and validation summaries synchronized
@@ -127,6 +131,7 @@ Priorities:
 - keep replay, session, audit, and risk behavior tied to realistic operator use
 - prefer reliability and workflow continuity over new cockpit surface area
 - define operator-visible acceptance criteria for the paper workflow already in code
+- keep the cockpit readiness card aligned with DK1 acceptance language so unresolved session, replay, audit, or promotion-review gaps are visible during daily operation
 
 ### Workstream C: Wave 3 shared run / portfolio / ledger continuity
 
@@ -152,7 +157,7 @@ Priorities:
 - prioritize high-traffic WPF pages and shell surfaces that directly support active cockpit, shared-model, or governance work
 - continue MVVM extraction where pages still depend heavily on code-behind orchestration in active areas
 - keep navigation, command-palette entries, and workspace framing aligned with the same workstation model used in the web shell
-- validate the current `ShellNavigationCatalog` and workspace-shell direction against active run-centered workflows before widening it further
+- validate the current `ShellNavigationCatalog`, workspace-shell, deep-page host, and shell-context-strip baseline against active run-centered workflows before widening it further
 - pull validation and contradiction checks forward whenever workstation or governance surfaces expand
 
 ---
@@ -193,7 +198,7 @@ Mitigation:
 
 ## Exit Criteria After 6 Weeks
 
-- provider/runtime guidance for the active Wave 1 gate remains reproducible and contradiction-free
+- provider/runtime guidance for the active Wave 1 gate remains reproducible and contradiction-free, including the emitted DK1 pilot replay/sample-set contract
 - backfill checkpoint and gap-handling confidence remains backed by passing evidence instead of only document claims
 - the paper-trading cockpit has a tighter, more dependable operator story
 - shared run, portfolio, ledger, cash-flow, and reconciliation flows are easier to follow across workspaces

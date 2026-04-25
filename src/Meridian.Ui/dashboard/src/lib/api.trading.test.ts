@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { approvePromotion, clearExecutionManualOverride, createExecutionManualOverride, evaluatePromotion, getExecutionControls, getPaperSessionDetail, getReplayStatus, pauseReplay, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay } from "@/lib/api";
+import { approvePromotion, clearExecutionManualOverride, createExecutionManualOverride, evaluatePromotion, getExecutionControls, getPaperSessionDetail, getReplayStatus, getTradingReadiness, pauseReplay, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay } from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
   const fetchMock = vi.fn();
@@ -57,6 +57,7 @@ describe("trading endpoint wiring", () => {
 
   it("wires execution controls and manual override endpoints", async () => {
     await getExecutionControls();
+    await getTradingReadiness();
     await createExecutionManualOverride({
       kind: "BypassOrderControls",
       reason: "maintenance",
@@ -65,12 +66,13 @@ describe("trading endpoint wiring", () => {
     await clearExecutionManualOverride("ovr-1");
 
     expect(fetchMock).toHaveBeenCalledWith("/api/execution/controls", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/trading/readiness", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/execution/controls/manual-override",
+      "/api/execution/controls/manual-overrides",
       expect.objectContaining({ method: "POST" })
     );
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/execution/controls/manual-override/ovr-1/clear",
+      "/api/execution/controls/manual-overrides/ovr-1/clear",
       expect.objectContaining({ method: "POST" })
     );
   });

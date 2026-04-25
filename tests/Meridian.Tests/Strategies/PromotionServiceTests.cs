@@ -104,7 +104,10 @@ public sealed class PromotionServiceTests
         };
         await store.RecordRunAsync(run);
 
-        var result = await service.ApproveAsync(new PromotionApprovalRequest(run.RunId));
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics cleared for paper."));
 
         result.Success.Should().BeTrue();
         result.NewRunId.Should().NotBeNullOrWhiteSpace();
@@ -114,6 +117,8 @@ public sealed class PromotionServiceTests
         history[0].SourceRunId.Should().Be(run.RunId);
         history[0].TargetRunId.Should().Be(result.NewRunId);
         history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
+        history[0].ApprovedBy.Should().Be("ops");
+        history[0].ApprovalReason.Should().Be("Metrics cleared for paper.");
     }
 
     [Fact]
@@ -121,16 +126,38 @@ public sealed class PromotionServiceTests
     {
         var service = BuildService(out _);
 
-        var result = await service.ApproveAsync(new PromotionApprovalRequest("missing-run"));
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(
+            "missing-run",
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics cleared for paper."));
 
         result.Success.Should().BeFalse();
         result.NewRunId.Should().BeNull();
     }
 
+    [Fact]
+    public async Task ApproveAsync_WhenOperatorContextMissing_ReturnsFailureWithoutCreatingRun()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.ApproveAsync(new PromotionApprovalRequest(run.RunId));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("approver");
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
+    }
+
     // ---- RejectAsync ----
 
     [Fact]
-    public async Task RejectAsync_AlwaysReturnsSuccess()
+    public async Task RejectAsync_WhenOperatorContextProvided_RecordsRejectedTrace()
     {
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
@@ -158,6 +185,27 @@ public sealed class PromotionServiceTests
         history[0].ApprovalReason.Should().Be("Not ready");
         history[0].ReviewNotes.Should().Be("Threshold drift");
         history[0].ManualOverrideId.Should().Be("ovr-1");
+        history[0].ApprovedBy.Should().Be("ops");
+        history[0].AuditReference.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task RejectAsync_WhenOperatorContextMissing_ReturnsFailureWithoutHistory()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.RejectAsync(new PromotionRejectionRequest(run.RunId, "Not ready"));
+
+        result.Success.Should().BeFalse();
+        result.Reason.Should().Contain("operator");
+        var history = await service.GetPromotionHistoryAsync();
+        history.Should().BeEmpty();
     }
 
     // ---- GetPromotionHistory ----
@@ -172,7 +220,10 @@ public sealed class PromotionServiceTests
             Metrics = BuildPassingResult()
         };
         await store.RecordRunAsync(run);
-        await service.ApproveAsync(new PromotionApprovalRequest(run.RunId));
+        await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics cleared for paper."));
 
         var history = await service.GetPromotionHistoryAsync();
 
@@ -182,6 +233,8 @@ public sealed class PromotionServiceTests
         history[0].SourceRunId.Should().Be(run.RunId);
         history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
         history[0].Decision.Should().Be(PromotionDecisionKinds.Approved);
+        history[0].ApprovedBy.Should().Be("ops");
+        history[0].ApprovalReason.Should().Be("Metrics cleared for paper.");
     }
 
     [Fact]

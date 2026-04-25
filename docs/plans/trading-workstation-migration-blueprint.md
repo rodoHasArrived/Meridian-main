@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
-**Last Updated:** 2026-04-09
-**Status:** Active blueprint — documentation-aligned, implementation pending
+**Last Updated:** 2026-04-25
+**Status:** Active blueprint — WPF shell/navigation baseline is implemented; workflow validation and cockpit/shared-model/governance hardening remain in progress
 
 ---
 
@@ -37,26 +37,26 @@ Meridian already contains strong underlying capabilities:
 - a double-entry ledger implementation
 - a broad WPF page inventory and supporting UI services
 
-However, those capabilities are still exposed through multiple page- and service-centric flows. The current UX is optimized for **feature access** rather than **operator workflow**.
+However, those capabilities are still exposed through multiple page- and service-centric flows. The WPF shell now has a four-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, and smoke coverage, but the product still needs to prove that the active workflows are better, not just that the shell is more organized.
 
 ### Current pain points
 
-1. **Backtesting is split across multiple experiences**
+1. **Backtesting is still split across multiple experiences**
    - Native WPF backtest page
    - Lean integration page
    - no unified run browser or comparison workflow
 
-2. **Paper trading is infrastructure-first, operator-second**
+2. **Paper trading is still infrastructure-first, operator-second**
    - OMS and paper gateway exist
-   - trading cockpit, positions, blotter, and risk surfaces are not yet the primary UX
+   - trading cockpit, positions, blotter, and risk surfaces exist, but daily-use acceptance still depends on DK1 trust evidence, promotion rationale, replay/session reliability, and operator sign-off
 
-3. **Ledger capability is mostly invisible**
+3. **Ledger capability is still not consistently first-class**
    - accounting exists in the engine
-   - users do not yet get journal-first, account-first, or reconciliation-first views
+   - users have run-centered ledger, trial-balance, and reconciliation seams, but broader account/entity, cash-flow, multi-ledger, and governed-output workflows remain incomplete
 
-4. **The UI is page-dense**
+4. **The UI is still page-dense below the shell**
    - many pages are individually useful
-   - fewer end-to-end workflows feel cohesive
+   - the shell baseline is in place, but end-to-end workflows still need acceptance evidence across active Wave 2-4 paths
 
 ---
 
@@ -279,6 +279,8 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Make new functionality discoverable without requiring core engine rewrites.
 
+**Current status (2026-04-25):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, and shell/navigation smoke tests are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
+
 **Work**
 - Register all existing trading/backtesting pages consistently in WPF navigation.
 - Add command palette entries for backtest, trading, and portfolio-ledger workflows.
@@ -292,6 +294,8 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 ## Phase 2 — Shared Run and Portfolio read models
 
 **Goal:** Unify backtest, paper, and live-facing state around common models.
+
+**Current status (2026-04-25):** Partial. Shared run, portfolio, ledger, reconciliation, and promotion endpoint seams are present, but the roadmap still treats cross-workspace continuity and compatibility governance as Wave 3 / DK2 work.
 
 **Work**
 - Introduce shared run DTOs/read models.
@@ -330,6 +334,8 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 ## Phase 5 — Paper-trading cockpit and execution hardening
 
 **Goal:** Turn paper trading into a reliable pre-live environment.
+
+**Current status (2026-04-25):** Partial. Paper/execution primitives, cockpit surfaces, and position/order/fill/replay/session paths are present. Promotion rejection outcome severity and audit-history refresh are being hardened, but dependable daily operation is still a Wave 2 / DK1 acceptance problem.
 
 **Work**
 - Add positions, orders, fills, exposure, and risk panels.
@@ -417,7 +423,7 @@ The migration should be considered successful when the following are true:
 ## 11. Immediate Next Actions
 
 1. Align documentation and status reporting around this blueprint.
-2. Fix WPF capability discoverability gaps (navigation + command palette).
-3. Define shared `StrategyRun`, `PortfolioSummary`, and `LedgerSummary` contracts.
-4. Design the first `Research` and `Trading` workspace shells before deeper page rewrites.
-5. Prioritize Phase 1 and Phase 2 work so future UI effort builds on shared contracts rather than one-off page logic.
+2. Validate the implemented WPF shell baseline against real `Research`, `Trading`, `Data Operations`, and `Governance` workflows.
+3. Keep shared `StrategyRun`, `PortfolioSummary`, `LedgerSummary`, reconciliation, and promotion contracts under the compatibility matrix.
+4. Tie cockpit acceptance to DK1 provider trust, replay/sample parity, promotion rationale, and session/replay reliability.
+5. Prioritize Phase 2, Phase 4, and Phase 5 work that reduces page-local orchestration and strengthens shared contracts rather than broadening shell surface area.
