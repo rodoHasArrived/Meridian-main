@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-25 06:40:22 UTC. Do not edit manually.
+> Auto-generated on 2026-04-25 09:08:40 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -495,7 +495,10 @@ Meridian-main
 │       │   ├── 2026-04-17
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-20
+│       │   ├── 2026-04-20
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-25
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -4691,10 +4694,12 @@ Meridian-main
 │   │   └── stocksharp-connectors.md
 │   ├── reference
 │   │   ├── api-reference.md
+│   │   ├── backtest-preflight-and-stage-telemetry.md
 │   │   ├── brand-assets.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
+│   │   ├── edgar-reference-data.md
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
 │   │   ├── governance-report-packs.md
@@ -4902,6 +4907,8 @@ Meridian-main
 │   │   └── UiServer.cs
 │   ├── Meridian.Application
 │   │   ├── Backfill
+│   │   │   ├── AutoGapRemediationService.cs
+│   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillResult.cs
@@ -4909,8 +4916,10 @@ Meridian-main
 │   │   │   ├── BackfillStatusStoreJsonContext.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
+│   │   │   ├── IBackfillExecutionGateway.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
+│   │   │   ├── BacktestPreflightService.cs
 │   │   │   └── BacktestStudioContracts.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
@@ -5125,6 +5134,7 @@ Meridian-main
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
 │   │   ├── ProviderRouting
+│   │   │   ├── BestOfBreedProviderSelector.cs
 │   │   │   ├── KernelObservabilityService.cs
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConnectionService.cs
@@ -5143,6 +5153,8 @@ Meridian-main
 │   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── EdgarIngestOrchestrator.cs
+│   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
@@ -5309,6 +5321,7 @@ Meridian-main
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
 │   │   ├── BacktestStage.cs
+│   │   ├── BacktestStageTelemetryDto.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
@@ -5354,6 +5367,8 @@ Meridian-main
 │   │   │   └── UserRole.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillProgress.cs
+│   │   ├── Backtesting
+│   │   │   └── BacktestPreflightDtos.cs
 │   │   ├── Banking
 │   │   │   └── BankingModels.cs
 │   │   ├── Catalog
@@ -5458,6 +5473,7 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
@@ -5469,6 +5485,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterOptions.cs
 │   │   │   └── SecurityQueries.cs
 │   │   ├── Services
+│   │   │   ├── IBacktestPreflightService.cs
 │   │   │   └── IConnectivityProbeService.cs
 │   │   ├── Session
 │   │   │   └── CollectionSession.cs
@@ -5477,6 +5494,7 @@ Meridian-main
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
+│   │   │   ├── BrokerageSyncDtos.cs
 │   │   │   ├── FundLedgerDtos.cs
 │   │   │   ├── FundOperationsDtos.cs
 │   │   │   ├── FundOperationsWorkspaceDtos.cs
@@ -5485,6 +5503,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   ├── StrategyRunReadModels.cs
+│   │   │   ├── TradingOperatorReadinessDtos.cs
 │   │   │   └── WorkflowSummaryDtos.cs
 │   │   └── Meridian.Contracts.csproj
 │   ├── Meridian.Core
@@ -5661,6 +5680,7 @@ Meridian-main
 │   │   │   └── OptionGreeks.cs
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageValidationEvaluator.cs
+│   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
@@ -5792,8 +5812,11 @@ Meridian-main
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
 │   │   │   ├── Edgar
+│   │   │   │   ├── EdgarReferenceDataProvider.cs
+│   │   │   │   ├── EdgarSecurityDocumentParser.cs
 │   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
-│   │   │   │   └── EdgarSymbolSearchProvider.cs
+│   │   │   │   ├── EdgarSymbolSearchProvider.cs
+│   │   │   │   └── IEdgarReferenceDataProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -6140,6 +6163,8 @@ Meridian-main
 │   │   │   │   ├── 001_security_master.sql
 │   │   │   │   ├── 002_security_master_fts.sql
 │   │   │   │   └── 003_security_master_corp_actions.sql
+│   │   │   ├── FileEdgarReferenceDataStore.cs
+│   │   │   ├── IEdgarReferenceDataStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
@@ -6162,6 +6187,7 @@ Meridian-main
 │   │   │   ├── MaintenanceScheduler.cs
 │   │   │   ├── MetadataTagService.cs
 │   │   │   ├── ParquetConversionService.cs
+│   │   │   ├── QualityTrendStore.cs
 │   │   │   ├── QuotaEnforcementService.cs
 │   │   │   ├── RetentionComplianceReporter.cs
 │   │   │   ├── SourceRegistry.cs
@@ -6392,6 +6418,7 @@ Meridian-main
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
+│   │   │   ├── EdgarReferenceDataEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
@@ -6431,11 +6458,14 @@ Meridian-main
 │   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BackfillCoordinator.cs
+│   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── StrategyRunReviewPacketService.cs
+│   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── DtoExtensions.cs
 │   │   ├── GlobalUsings.cs
@@ -6944,6 +6974,7 @@ Meridian-main
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestMetricsEngineTests.cs
+│   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
@@ -7016,6 +7047,7 @@ Meridian-main
 │   │   ├── Application
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
+│   │   │   │   ├── AutoGapRemediationServiceTests.cs
 │   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillStatusStoreTests.cs
@@ -7049,6 +7081,7 @@ Meridian-main
 │   │   │   │   ├── DryRunCommandTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
+│   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
 │   │   │   │   ├── SelfTestCommandTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
 │   │   │   │   └── ValidateConfigCommandTests.cs
@@ -7105,6 +7138,7 @@ Meridian-main
 │   │   │   │   ├── ProviderDegradationCalibrationTests.cs
 │   │   │   │   ├── ProviderDegradationScorerTests.cs
 │   │   │   │   ├── ProviderLatencyServiceTests.cs
+│   │   │   │   ├── QualityTrendCalculationTests.cs
 │   │   │   │   ├── SchemaValidationServiceTests.cs
 │   │   │   │   ├── SloDefinitionRegistryTests.cs
 │   │   │   │   ├── SpreadMonitorTests.cs
@@ -7131,10 +7165,12 @@ Meridian-main
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
+│   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── SecurityMaster
+│   │   │   │   ├── EdgarIngestOrchestratorTests.cs
 │   │   │   │   ├── SecurityMasterImportServiceTests.cs
 │   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
@@ -7248,6 +7284,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
@@ -7436,7 +7473,9 @@ Meridian-main
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
+│   │   │   ├── BrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs
+│   │   │   ├── EdgarReferenceDataEndpointsTests.cs
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
@@ -7613,6 +7652,7 @@ Meridian-main
 ├── .globalconfig
 ├── .markdownlint.json
 ├── .vsconfig
+├── AGENTS.md
 ├── CLAUDE.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
