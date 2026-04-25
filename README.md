@@ -627,6 +627,7 @@ Use these documents together when planning or implementing new work:
 │   │           └── project.assets.json
 │   └── dotnet-dump.exe
 ├── .vsconfig
+├── AGENTS.md
 ├── CLAUDE.md
 ├── Directory.Build.props
 ├── Directory.Packages.props
@@ -698,7 +699,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── 2026-04-17
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-20
+│       │   ├── 2026-04-20
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-25
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -4898,10 +4902,12 @@ Use these documents together when planning or implementing new work:
 │   ├── reference
 │   │   ├── README.md
 │   │   ├── api-reference.md
+│   │   ├── backtest-preflight-and-stage-telemetry.md
 │   │   ├── brand-assets.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
+│   │   ├── edgar-reference-data.md
 │   │   ├── environment-variables.md
 │   │   ├── export-preflight-rules.md
 │   │   ├── governance-report-packs.md
@@ -5107,6 +5113,8 @@ Use these documents together when planning or implementing new work:
 │   │   └── runtimeconfig.template.json
 │   ├── Meridian.Application
 │   │   ├── Backfill
+│   │   │   ├── AutoGapRemediationService.cs
+│   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillResult.cs
@@ -5114,8 +5122,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillStatusStoreJsonContext.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
+│   │   │   ├── IBackfillExecutionGateway.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
+│   │   │   ├── BacktestPreflightService.cs
 │   │   │   └── BacktestStudioContracts.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
@@ -5332,6 +5342,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
 │   │   ├── ProviderRouting
+│   │   │   ├── BestOfBreedProviderSelector.cs
 │   │   │   ├── KernelObservabilityService.cs
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConnectionService.cs
@@ -5350,6 +5361,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── OperationalScheduler.cs
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── EdgarIngestOrchestrator.cs
+│   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterService.cs
@@ -5494,6 +5507,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── BacktestRequest.cs
 │   │   ├── BacktestResult.cs
 │   │   ├── BacktestStage.cs
+│   │   ├── BacktestStageTelemetryDto.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
 │   │   ├── FillEvent.cs
@@ -5559,6 +5573,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── UserRole.cs
 │   │   ├── Backfill
 │   │   │   └── BackfillProgress.cs
+│   │   ├── Backtesting
+│   │   │   └── BacktestPreflightDtos.cs
 │   │   ├── Banking
 │   │   │   └── BankingModels.cs
 │   │   ├── Catalog
@@ -5664,6 +5680,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
@@ -5675,6 +5692,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterOptions.cs
 │   │   │   └── SecurityQueries.cs
 │   │   ├── Services
+│   │   │   ├── IBacktestPreflightService.cs
 │   │   │   └── IConnectivityProbeService.cs
 │   │   ├── Session
 │   │   │   └── CollectionSession.cs
@@ -5683,6 +5701,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   └── Workstation
+│   │       ├── BrokerageSyncDtos.cs
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
 │   │       ├── FundOperationsWorkspaceDtos.cs
@@ -5691,6 +5710,7 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       ├── StrategyRunReadModels.cs
+│   │       ├── TradingOperatorReadinessDtos.cs
 │   │       └── WorkflowSummaryDtos.cs
 │   ├── Meridian.Core
 │   │   ├── Config
@@ -5866,6 +5886,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FutureDetails.cs
 │   │   │   ├── OptionDetails.cs
 │   │   │   └── OptionGreeks.cs
+│   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
@@ -5997,8 +6018,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
 │   │   │   ├── Edgar
+│   │   │   │   ├── EdgarReferenceDataProvider.cs
+│   │   │   │   ├── EdgarSecurityDocumentParser.cs
 │   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
-│   │   │   │   └── EdgarSymbolSearchProvider.cs
+│   │   │   │   ├── EdgarSymbolSearchProvider.cs
+│   │   │   │   └── IEdgarReferenceDataProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -6343,6 +6367,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── JsonlReplayer.cs
 │   │   │   └── MemoryMappedJsonlReader.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── FileEdgarReferenceDataStore.cs
+│   │   │   ├── IEdgarReferenceDataStore.cs
 │   │   │   ├── ISecurityMasterEventStore.cs
 │   │   │   ├── ISecurityMasterSnapshotStore.cs
 │   │   │   ├── ISecurityMasterStore.cs
@@ -6369,6 +6395,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MaintenanceScheduler.cs
 │   │   │   ├── MetadataTagService.cs
 │   │   │   ├── ParquetConversionService.cs
+│   │   │   ├── QualityTrendStore.cs
 │   │   │   ├── QuotaEnforcementService.cs
 │   │   │   ├── RetentionComplianceReporter.cs
 │   │   │   ├── SourceRegistry.cs
@@ -6598,6 +6625,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── CronEndpoints.cs
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
+│   │   │   ├── EdgarReferenceDataEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
@@ -6647,11 +6675,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── DirectLendingJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BackfillCoordinator.cs
+│   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── GovernanceReportPackRepository.cs
 │   │   │   ├── SecurityMasterSecurityReferenceLookup.cs
 │   │   │   ├── SecurityMasterWorkbenchQueryService.cs
+│   │   │   ├── StrategyRunReviewPacketService.cs
+│   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
@@ -7150,6 +7181,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestMetricsEngineTests.cs
+│   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
@@ -7222,6 +7254,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Application
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
+│   │   │   │   ├── AutoGapRemediationServiceTests.cs
 │   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillStatusStoreTests.cs
@@ -7255,6 +7288,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── DryRunCommandTests.cs
 │   │   │   │   ├── HelpCommandTests.cs
 │   │   │   │   ├── PackageCommandsTests.cs
+│   │   │   │   ├── SecurityMasterCommandsEdgarTests.cs
 │   │   │   │   ├── SelfTestCommandTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
 │   │   │   │   └── ValidateConfigCommandTests.cs
@@ -7313,6 +7347,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── ProviderDegradationCalibrationTests.cs
 │   │   │   │   ├── ProviderDegradationScorerTests.cs
 │   │   │   │   ├── ProviderLatencyServiceTests.cs
+│   │   │   │   ├── QualityTrendCalculationTests.cs
 │   │   │   │   ├── SchemaValidationServiceTests.cs
 │   │   │   │   ├── SloDefinitionRegistryTests.cs
 │   │   │   │   ├── SpreadMonitorTests.cs
@@ -7339,11 +7374,13 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
+│   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   └── ProviderTrustScoringServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMaster
+│   │   │   │   ├── EdgarIngestOrchestratorTests.cs
 │   │   │   │   ├── SecurityMasterImportServiceTests.cs
 │   │   │   │   └── SecurityMasterMappingInteropTests.cs
 │   │   │   ├── Services
@@ -7435,6 +7472,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── Fixtures
@@ -7645,7 +7683,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── MmfRebuildTests.cs
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   └── Ui
+│   │       ├── BrokeragePortfolioSyncServiceTests.cs
 │   │       ├── DirectLendingEndpointsTests.cs
+│   │       ├── EdgarReferenceDataEndpointsTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
 │   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
@@ -7812,6 +7852,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-625 directories, 7047 files
+627 directories, 7085 files
 ```
 <!-- readme-tree end -->
