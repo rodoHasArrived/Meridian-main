@@ -37,7 +37,7 @@ Meridian should feel like one coherent operating platform rather than a collecti
 The target product is organized into four top-level product surfaces:
 
 | Surface | Purpose |
-|---------|---------|
+| --------- | --------- |
 | Research | Strategy ideation, data validation, backtesting, analytics, and experiment comparison |
 | Trading | Implementation, order workflow, execution monitoring, positions, and trade-management operations |
 | Data Operations | Providers, symbols, backfills, storage, replay, exports, and data quality |
@@ -48,7 +48,7 @@ These surfaces are user-facing shells, not isolated subsystems. They should shar
 ## 4. Capability Domains
 
 | Domain | Scope |
-|--------|-------|
+| -------- | ------- |
 | Front office | research, portfolio construction, implementation, order workflow, execution monitoring |
 | Middle office | positions, breaks, trade support, Security Master, lifecycle controls, cash oversight |
 | Back office | accounting, multi-ledger tracking, trial balance, reconciliation, reporting, audit support |
@@ -64,7 +64,7 @@ Status legend:
 - **Future**: acknowledged target area beyond the current blueprint slice
 
 | Capability | Domain | Current State | Target Phase | Notes |
-|------------|--------|---------------|--------------|-------|
+| ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
 | Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | In progress | Phase 1 | Vocabulary and shell are in place; richer workflow UX pending |
@@ -78,7 +78,7 @@ Status legend:
 | Multi-ledger accounting | Back office | Planned | Phase 3 | Requires ledger grouping, consolidation, and entity-aware views |
 | Trial balance and account-summary analysis | Back office | Planned | Phase 3 | Ledger read-model baseline exists; productization pending |
 | Cash-flow modeling and liquidity views | Middle office / Back office | Planned | Phase 3 | Depends on Security Master and ledger enrichment |
-| Reconciliation engine and break queues | Middle office / Back office | Planned | Phase 4 | Position, cash, ledger, and external-statement matching |
+| Reconciliation engine and break queues | Middle office / Back office | In progress | Phase 4 | Run-scoped reconciliation and a file-backed break queue exist; position, cash, custodian, and external-statement matching remain |
 | NAV, attribution, and governance exception workflows | Middle office / Back office | Planned | Phase 4 | Built on shared portfolio, ledger, and pricing data |
 | Investor, board, compliance, and fund-ops reporting | Back office | Planned | Phase 5 | Builds on export infrastructure plus governed report generation |
 | Compliance and policy monitoring | Middle office / Back office | Future | Phase 5 | Rule evaluation, mandate monitoring, attestations |

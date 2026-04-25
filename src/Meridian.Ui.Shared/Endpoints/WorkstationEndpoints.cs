@@ -1494,7 +1494,8 @@ public static class WorkstationEndpoints
             ? Array.Empty<StrategyPromotionRecord>()
             : await promotionService.GetPromotionHistoryAsync(ct).ConfigureAwait(false);
         var promotion = BuildPromotionReadiness(selectedRun, promotionHistory);
-        var workItems = BuildTradingReadinessWorkItems(activeSession, replay, controls, promotion, auditEntries);
+        var trustGate = await ResolveTrustGateReadinessAsync(context, ct).ConfigureAwait(false);
+        var workItems = BuildTradingReadinessWorkItems(activeSession, replay, controls, promotion, trustGate, auditEntries);
 
         return new TradingOperatorReadinessDto(
             AsOf: DateTimeOffset.UtcNow,
@@ -1503,12 +1504,23 @@ public static class WorkstationEndpoints
             Replay: replay,
             Controls: controls,
             Promotion: promotion,
+            TrustGate: trustGate,
             BrokerageSync: null,
             WorkItems: workItems,
             Warnings: workItems
                 .Where(static item => item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical)
                 .Select(static item => item.Detail)
                 .ToArray());
+    }
+
+    private static async Task<TradingTrustGateReadinessDto> ResolveTrustGateReadinessAsync(
+        HttpContext context,
+        CancellationToken ct)
+    {
+        var trustGateService = context.RequestServices.GetService<Dk1TrustGateReadinessService>();
+        return trustGateService is null
+            ? Dk1TrustGateReadinessService.CreateUnavailable("DK1 trust-gate packet service is not registered.")
+            : await trustGateService.GetCurrentAsync(ct).ConfigureAwait(false);
     }
 
     private static TradingPaperSessionReadinessDto BuildPaperSessionReadiness(
@@ -1657,6 +1669,7 @@ public static class WorkstationEndpoints
         TradingReplayReadinessDto? replay,
         TradingControlReadinessDto controls,
         TradingPromotionReadinessDto? promotion,
+        TradingTrustGateReadinessDto trustGate,
         IReadOnlyList<ExecutionAuditEntry> auditEntries)
     {
         var now = DateTimeOffset.UtcNow;
@@ -1751,6 +1764,39 @@ public static class WorkstationEndpoints
                 AuditReference: promotion.AuditReference));
         }
 
+        if (string.Equals(trustGate.Status, "packet-unavailable", StringComparison.OrdinalIgnoreCase))
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "dk1-trust-packet-unavailable",
+                Kind: OperatorWorkItemKindDto.ProviderTrustGate,
+                Label: "DK1 trust packet unavailable",
+                Detail: trustGate.Detail,
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now));
+        }
+        else if (!trustGate.ReadyForOperatorReview || trustGate.Blockers.Count > 0)
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "dk1-trust-packet-blocked",
+                Kind: OperatorWorkItemKindDto.ProviderTrustGate,
+                Label: "DK1 trust packet blocked",
+                Detail: trustGate.Detail,
+                Tone: OperatorWorkItemToneDto.Critical,
+                CreatedAt: now,
+                AuditReference: trustGate.PacketPath));
+        }
+        else if (trustGate.OperatorSignoffRequired && !IsOperatorSignoffComplete(trustGate.OperatorSignoffStatus))
+        {
+            items.Add(new OperatorWorkItemDto(
+                WorkItemId: "dk1-operator-signoff-pending",
+                Kind: OperatorWorkItemKindDto.ProviderTrustGate,
+                Label: "DK1 operator sign-off pending",
+                Detail: trustGate.Detail,
+                Tone: OperatorWorkItemToneDto.Warning,
+                CreatedAt: now,
+                AuditReference: trustGate.PacketPath));
+        }
+
         return items;
     }
 
@@ -1774,6 +1820,12 @@ public static class WorkstationEndpoints
     private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
         => approvalChecklist is { Count: > 0 } &&
            approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
+
+    private static bool IsOperatorSignoffComplete(string status) =>
+        string.Equals(status, "signed", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "approved", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "complete", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase);
 
     private static string? GetMetadata(ExecutionAuditEntry entry, string key)
     {

@@ -541,6 +541,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton<StrategyRunContinuityService>();
         services.AddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.AddSingleton<BrokeragePortfolioSyncService>();
+        services.AddSingleton(Dk1TrustGateReadinessOptions.Default);
+        services.AddSingleton<Dk1TrustGateReadinessService>();
         services.AddSingleton<TradingOperatorReadinessService>();
         services.AddSingleton<StrategyRunReviewPacketService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();

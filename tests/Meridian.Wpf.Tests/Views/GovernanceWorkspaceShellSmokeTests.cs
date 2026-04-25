@@ -37,6 +37,10 @@ public sealed class GovernanceWorkspaceShellSmokeTests
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\GovernanceWorkspaceShellPage.xaml"));
         var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\GovernanceWorkspaceShellPage.xaml.cs"));
 
+        xaml.Should().Contain("GovernanceHeroLaneText");
+        xaml.Should().Contain("GovernanceHeroActionTitleText");
+        xaml.Should().Contain("GovernanceHeroPrimaryActionButton");
+        xaml.IndexOf("GovernanceHeroLaneText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("OperationsLaneButton", StringComparison.Ordinal));
         xaml.Should().Contain("AccountingLaneSummaryText");
         xaml.Should().Contain("ReconciliationLaneSummaryText");
         xaml.Should().Contain("ReportingLaneSummaryText");
@@ -44,6 +48,8 @@ public sealed class GovernanceWorkspaceShellSmokeTests
 
         code.Should().Contain("GetGovernanceWorkflowSummaryAsync");
         code.Should().Contain("ApplyGovernanceLaneSummaries");
+        code.Should().Contain("UpdateGovernanceHero();");
+        code.Should().Contain("BuildLaneHeroState(");
         code.Should().Contain("SetLaneSummary(AccountingLaneSummaryText");
     }
 

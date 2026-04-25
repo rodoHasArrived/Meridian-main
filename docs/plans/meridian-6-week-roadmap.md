@@ -34,13 +34,13 @@ This plan starts from the current repo state:
 
 - the web and WPF workstation shells are active and already organized around `Research`, `Trading`, `Data Operations`, and `Governance`
 - the current working tree contains the WPF shell/navigation baseline in `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel`, deep-page hosting, context strips, shell/navigation smoke tests, and focused coverage for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, and the workspace shell context strip, so this window should validate workflow value rather than start a second desktop UX track
-- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, brokerage-sync, and operator-work-item posture, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
+- the paper-trading cockpit is partially productized, not greenfield, and now has a shared `/api/workstation/trading/readiness` contract for session, replay, control, promotion, DK1 trust-gate, brokerage-sync, and operator-work-item posture, with `PromotionApprovalChecklist` defining required review items for paper and live promotion approvals
 - shared `StrategyRun`, portfolio, and ledger read services already exist and feed workstation surfaces
 - promotion endpoints and workstation promotion surfaces are already in code
 - Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
 - governance already has concrete seams for reconciliation, cash-flow summaries, reporting profiles, and direct-lending foundations
 - the closed Wave 1 trust gate remains the first release gate for every downstream claim
-- DK1 status is active but not closed: the latest generated parity packet is `ready-for-operator-review`, while operator sign-off plus workflow-facing explainability/calibration review and shared interop readiness are still in progress / at risk in `docs/status/kernel-readiness-dashboard.md`; promotion handoff is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation DK2 remains not started
+- DK1 status is active but not closed: the latest generated parity packet is `ready-for-operator-review`, while operator sign-off plus workflow-facing explainability/calibration review and shared interop readiness are still in progress / at risk in `docs/status/kernel-readiness-dashboard.md`; promotion handoff is early in progress through cockpit audit-feedback hardening, export is early in progress through governed report-pack schema/version checks, and reconciliation DK2 is now early in progress through a file-backed break queue with review, resolve/dismiss, and audit-history routes
 
 ---
 
@@ -94,14 +94,14 @@ This plan starts from the current repo state:
 ### Outcome 4: Wave 4 governance work shows up as product, not just planning
 
 - Security Master remains the delivered baseline while account/entity, reconciliation, cash-flow, multi-ledger, and reporting-adjacent workflows deepen on top of it
-- the next governance slice is defined in terms of shared DTOs, read models, export seams, and operator surfaces rather than a parallel governance stack
+- the next governance slice is defined in terms of shared DTOs, read models, export seams, reconciliation break-queue state, and operator surfaces rather than a parallel governance stack
 
 ---
 
 ## Week-by-Week Plan
 
 | Week | Focus | Goals | Deliverables |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | DK1 / Wave 1 closeout confirmation | rerun the closed trust gate and remove planning contradictions around the active provider set and pilot replay/sample standard | refreshed validation summary with `pilotReplaySampleSet`; generated `ready-for-operator-review` DK1 parity packet; synchronized provider/runtime evidence list; explicit deferred-provider wording; dashboard evidence links; operator sign-off follow-up |
 | 2 | Wave 2 entry | keep the trust gate green while starting cockpit hardening | cockpit hardening checklist; operator acceptance targets tied back to the passing Wave 1 gate |
 | 3 | Wave 2 operator lane | tighten the existing trading cockpit into a more dependable operator workflow | session and replay acceptance criteria; promotion approval/rejection rationale checklist; cockpit operator-path checklist |
@@ -131,7 +131,7 @@ Priorities:
 - keep replay, session, audit, and risk behavior tied to realistic operator use
 - prefer reliability and workflow continuity over new cockpit surface area
 - define operator-visible acceptance criteria for the paper workflow already in code
-- keep the cockpit readiness contract aligned with DK1 acceptance language so unresolved session, replay, audit, promotion-review, brokerage-sync, or operator-work-item gaps are visible during daily operation
+- keep the cockpit readiness contract aligned with DK1 acceptance language so unresolved trust-gate sign-off, session, replay, audit, promotion-review, brokerage-sync, or operator-work-item gaps are visible during daily operation
 
 ### Workstream C: Wave 3 shared run / portfolio / ledger continuity
 

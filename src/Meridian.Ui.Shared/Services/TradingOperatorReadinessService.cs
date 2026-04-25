@@ -109,6 +109,7 @@ public sealed class TradingOperatorReadinessService
         var latestRun = await ResolveLatestRunAsync(ct).ConfigureAwait(false);
         var promotionRecords = await ResolvePromotionRecordsAsync(ct).ConfigureAwait(false);
         var promotion = BuildPromotion(latestRun, promotionRecords);
+        var trustGate = await ResolveTrustGateReadinessAsync(ct).ConfigureAwait(false);
         if (promotion is null)
         {
             AddWorkItem(
@@ -130,6 +131,8 @@ public sealed class TradingOperatorReadinessService
                 promotion.SourceRunId ?? promotion.TargetRunId,
                 auditReference: promotion.AuditReference);
         }
+
+        AddTrustGateWorkItem(workItems, trustGate);
 
         var brokerageStatus = await ResolveBrokerageStatusAsync(fundAccountId, ct).ConfigureAwait(false);
         if (brokerageStatus is not null && brokerageStatus.Health is not WorkstationBrokerageSyncHealth.Healthy)
@@ -180,6 +183,7 @@ public sealed class TradingOperatorReadinessService
             Replay: replay,
             Controls: controls,
             Promotion: promotion,
+            TrustGate: trustGate,
             BrokerageSync: brokerageStatus,
             WorkItems: workItems
                 .OrderByDescending(static item => item.Tone)
@@ -232,6 +236,14 @@ public sealed class TradingOperatorReadinessService
         return promotionService is null
             ? Array.Empty<StrategyPromotionRecord>()
             : await promotionService.GetPromotionHistoryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<TradingTrustGateReadinessDto> ResolveTrustGateReadinessAsync(CancellationToken ct)
+    {
+        var trustGateService = Resolve<Dk1TrustGateReadinessService>();
+        return trustGateService is null
+            ? Dk1TrustGateReadinessService.CreateUnavailable("DK1 trust-gate packet service is not registered.")
+            : await trustGateService.GetCurrentAsync(ct).ConfigureAwait(false);
     }
 
     private static TradingReplayReadinessDto? BuildReplay(
@@ -359,6 +371,51 @@ public sealed class TradingOperatorReadinessService
     private static bool HasApprovalChecklist(IReadOnlyList<string>? approvalChecklist)
         => approvalChecklist is { Count: > 0 } &&
            approvalChecklist.All(static item => !string.IsNullOrWhiteSpace(item));
+
+    private static void AddTrustGateWorkItem(
+        ICollection<OperatorWorkItemDto> workItems,
+        TradingTrustGateReadinessDto trustGate)
+    {
+        if (string.Equals(trustGate.Status, "packet-unavailable", StringComparison.OrdinalIgnoreCase))
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ProviderTrustGate,
+                "DK1 trust packet unavailable",
+                trustGate.Detail,
+                OperatorWorkItemToneDto.Warning);
+            return;
+        }
+
+        if (!trustGate.ReadyForOperatorReview || trustGate.Blockers.Count > 0)
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ProviderTrustGate,
+                "DK1 trust packet blocked",
+                trustGate.Detail,
+                OperatorWorkItemToneDto.Critical,
+                auditReference: trustGate.PacketPath);
+            return;
+        }
+
+        if (trustGate.OperatorSignoffRequired && !IsOperatorSignoffComplete(trustGate.OperatorSignoffStatus))
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.ProviderTrustGate,
+                "DK1 operator sign-off pending",
+                trustGate.Detail,
+                OperatorWorkItemToneDto.Warning,
+                auditReference: trustGate.PacketPath);
+        }
+    }
+
+    private static bool IsOperatorSignoffComplete(string status) =>
+        string.Equals(status, "signed", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "approved", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "complete", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase);
 
     private static string? GetMetadata(ExecutionAuditEntry entry, string key)
     {

@@ -10,12 +10,13 @@ The current WPF application already spans research, trading-adjacent, data-opera
 - **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
 - **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
 - **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
-- **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, and the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context
+- **Shell ergonomics** - the workstation header exposes quick shell-density switching while the persisted preference continues to round-trip through Settings, the recent-pages rail stays scoped to the active workspace so sidebar history matches the selected operator context, and the governance shell keeps the currently selected lane plus its next handoff visible above the queue wall
 
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
 Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
 `NotificationCenter` now supports history triage with search, unread-only filtering, and per-item acknowledgement so governance operators can work events as a queue instead of a flat feed.
+`GovernanceWorkspaceShellPage` now adds a selected-lane briefing card above the lane buttons so operators can keep the active queue, blocker, and next action visible before opening `Operations`, `Accounting`, `Reconciliation`, `Reporting`, or `Audit`.
 `DataOperationsWorkspaceShellPage` now opens with a scope-and-handoff briefing card so operators see the active operational focus before dropping into provider, backfill, storage, and export queues.
 
 ## Why WPF?

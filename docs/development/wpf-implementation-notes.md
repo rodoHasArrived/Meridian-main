@@ -58,6 +58,8 @@ Content Frame
 
 **Shared context-strip attention rail** — `WorkspaceShellContextStripControl` now promotes the highest-priority `Warning` or `Danger` badge into a dedicated second-row attention rail before the rest of the badge wall. The rail collapses when the shell context is healthy and prioritizes `Critical` / `Attention`, then `Environment`, `Freshness`, and `Alerts` so trust-state regressions do not get buried inside dense shell chrome.
 
+**Governance lane briefing card** — `GovernanceWorkspaceShellPage` now keeps the selected governance lane, blocker summary, and next handoff visible above the lane buttons. The hero state reuses the same fund-context, workflow-summary, reconciliation, reporting, and notification inputs already loaded for the shell, so lane switches update immediately without another service round-trip.
+
 **Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Security Master conflict operator lane** — the workstation conflict queue now groups open mismatches by security, scores severity and auto-resolve confidence from the selected field mismatch, and turns fund-review, reconciliation, cash-flow, and report-pack jumps on only when the active conflict actually affects those downstream workflows.

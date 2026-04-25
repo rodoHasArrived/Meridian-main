@@ -27,6 +27,21 @@ dotnet run --project src/Meridian/Meridian.csproj -- --help
 python3 build/python/cli/buildctl.py --help
 ```
 
+## Setup And Container Workflows
+
+```bash
+make check-deps
+make setup-config
+make install
+make install-native
+make install-docker
+make docker
+make docker-up
+make docker-logs
+make docker-down
+make docker-monitoring
+```
+
 ## Run And Host Workflows
 
 ```bash
@@ -36,13 +51,62 @@ make run
 make run-backfill SYMBOLS=AAPL,MSFT
 make run-selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
+dotnet run --project src/Meridian/Meridian.csproj -- --config config/appsettings.json
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 dotnet run --project src/Meridian/Meridian.csproj -- --check-config
 dotnet run --project src/Meridian/Meridian.csproj -- --show-config
 dotnet run --project src/Meridian/Meridian.csproj -- --watch-config
+dotnet run --project src/Meridian/Meridian.csproj -- --wizard
+dotnet run --project src/Meridian/Meridian.csproj -- --auto-config
+dotnet run --project src/Meridian/Meridian.csproj -- --detect-providers
+dotnet run --project src/Meridian/Meridian.csproj -- --generate-config --template minimal
+dotnet run --project src/Meridian/Meridian.csproj -- --generate-config-schema --output config/appsettings.schema.json
+dotnet run --project src/Meridian/Meridian.csproj -- --list-presets
+dotnet run --project src/Meridian/Meridian.csproj -- --preset researcher
 dotnet run --project src/Meridian/Meridian.csproj -- --recommend-providers
+dotnet run --project src/Meridian/Meridian.csproj -- --simulate-feed
+dotnet run --project src/Meridian/Meridian.csproj -- --selftest
+dotnet run --project src/Meridian/Meridian.csproj -- --dry-run --offline
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 ```
+
+## CLI Data Workflows
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-monitored
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-archived
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add AAPL,MSFT
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-add SPY --no-depth
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-import symbols.csv
+dotnet run --project src/Meridian/Meridian.csproj -- --symbols-export symbols.txt
+dotnet run --project src/Meridian/Meridian.csproj -- --symbol-status AAPL
+dotnet run --project src/Meridian/Meridian.csproj -- --query "last SPY"
+dotnet run --project src/Meridian/Meridian.csproj -- --query "count SPY" --from 2026-01-01 --to 2026-01-31
+dotnet run --project src/Meridian/Meridian.csproj -- --catalog symbols
+dotnet run --project src/Meridian/Meridian.csproj -- --catalog search "AAPL trades 2025"
+dotnet run --project src/Meridian/Meridian.csproj -- --catalog timeline --symbol AAPL
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2025-01-01 --backfill-to 2025-12-31
+dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backfill-symbols QQQ
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name market-data-archive
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-symbols AAPL,MSFT --package-from 2025-01-01
+dotnet run --project src/Meridian/Meridian.csproj -- --list-package ./packages/data.zip
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-package ./packages/data.zip
+dotnet run --project src/Meridian/Meridian.csproj -- --import-package ./packages/data.zip
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-schemas --strict-schemas
+dotnet run --project src/Meridian/Meridian.csproj -- --check-schemas --max-files 100
+dotnet run --project src/Meridian/Meridian.csproj -- --wal-repair --dry-run --output artifacts/wal-repair-report.txt
+dotnet run --project src/Meridian/Meridian.csproj -- --generate-loader python --output ./loaders
+```
+
+TODO: `src/Meridian.Application/Commands/EtlCommands.cs` exposes `--etl-import`,
+`--etl-export`, `--etl-roundtrip`, and `--etl-resume`, but `docs/HELP.md` does not yet document
+operator examples. Verify the intended ETL workflow before adding those as standard commands.
+
+TODO: `SecurityMasterCommands` and `ProviderCalibrationCommand` expose `--security-master-ingest`
+and `--calibrate-provider-degradation`, but their prerequisites are specialized. Verify current
+operator setup before adding short-form examples here.
 
 ## MCP Workflows
 
@@ -57,19 +121,23 @@ dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --confi
 make build
 make build-quick
 make lint
+make format
 make format-check
 make test
 make test-unit
 make test-fsharp
 make test-integration
 make test-all
+make install-hooks
 make pre-pr
 make pre-pr-full
 make watch
 make watch-build
+make clean
 make benchmark
 make bench-quick
 make bench-filter FILTER=*Collector*
+make publish-windows
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
@@ -156,25 +224,44 @@ run the packet generator directly only when rebuilding from an existing Wave 1 s
 
 ```bash
 make doctor
+make doctor-ci
 make doctor-quick
 make verify-setup
+make diagnose-build
 make collect-debug
+make collect-debug-minimal
+make build-binlog
 make validate-data
 make ai-arch-check
+make ai-verify
+make ai-maintenance-light
+make ai-maintenance-full
 make ai-docs-freshness
 make ai-docs-drift
 make ai-docs-sync-report
+make ai-docs-archive
 make verify-adrs
+make verify-contracts
 make verify-tooling-metadata
 make docs-all
 make skill-list
+make skill-resources SKILL=meridian-code-review
+make skill-run SKILL=meridian-code-review SCRIPT=validate-skill
 make skill-discover
+make health
+make status
+make app-metrics
+make version
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
 dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
 dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
 python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
 ```
+
+TODO: `make doctor-fix` exists, but current `make/diagnostics.mk` says auto-fix is not yet
+implemented and only delegates to `buildctl doctor`. Do not advertise it as a fix workflow until
+that changes.
 
 Do not add package versions directly to project files. Central package management lives in
 `Directory.Packages.props`.

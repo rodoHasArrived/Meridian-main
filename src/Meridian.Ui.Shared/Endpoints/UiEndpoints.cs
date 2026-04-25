@@ -119,6 +119,8 @@ public static class UiEndpoints
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
+        services.TryAddSingleton<Dk1TrustGateReadinessService>();
         services.TryAddSingleton<TradingOperatorReadinessService>();
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();

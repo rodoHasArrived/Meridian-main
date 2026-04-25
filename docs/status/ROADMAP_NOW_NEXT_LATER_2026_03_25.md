@@ -13,7 +13,7 @@ This document preserves the older Now / Next / Later shape for quick reading, bu
 ## How to Read This
 
 | Horizon | Meaning |
-|---------|---------|
+| --------- | --------- |
 | **Now** | Active delivery or active maintenance that directly supports core operator-readiness |
 | **Next** | Sequenced work that follows the Wave 2-4 operator-readiness path |
 | **Later** | Optional or later-wave work that should not distract from the current gates |
@@ -90,7 +90,7 @@ Security Master is now a delivered baseline, not a future standalone wave. Wave 
 
 - deepen account/entity, strategy-structure, multi-ledger, cash-flow, reconciliation, and report-pack workflows
 - keep Security Master as the authoritative instrument source for governance DTOs and services
-- make reconciliation casework and governed outputs durable rather than endpoint-local or preview-only
+- extend the delivered file-backed reconciliation break queue and governed report-pack artifact path into full durable casework, calibrated exception routing, and publishable governed outputs
 - reuse shared run, portfolio, ledger, export, and Security Master reference seams instead of creating a parallel governance stack
 
 **Exit gate:** Governance behaves like an operator workflow with durable queues, review surfaces, provenance, and publishable outputs.

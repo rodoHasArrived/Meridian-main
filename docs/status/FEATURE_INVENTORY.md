@@ -11,7 +11,7 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 ## Legend
 
 | Symbol | Meaning |
-|--------|---------|
+| -------- | --------- |
 | ✅ | Fully implemented and tested |
 | ⚠️ | Partially implemented — functional with caveats |
 | 🔑 | Requires external credentials / build flag |
@@ -23,7 +23,7 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 ## 1. Core Infrastructure
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Event Pipeline (`System.Threading.Channels`) | ✅ | Bounded channel, backpressure, 100 K capacity, nanosecond timing |
 | Injectable `IEventMetrics` | ✅ | Static dependency removed; `TracedEventMetrics` decorator available |
 | `CompositeSink` fan-out | ✅ | Per-sink fault isolation; JSONL + Parquet simultaneously |
@@ -42,7 +42,7 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 ## 2. Streaming Data Providers
 
 | Provider | Status | Remaining Work |
-|----------|--------|----------------|
+| ---------- | -------- | ---------------- |
 | **Alpaca** | ✅ | Credential validation, automatic resubscription on reconnect, quote routing |
 | **Interactive Brokers** | 🔑 | Real runtime requires `-p:DefineConstants=IBAPI` plus the official `IBApi` surface; non-`IBAPI` builds expose simulation/setup guidance instead of broker connectivity |
 | **Polygon** | ⚠️ | Real connection when API key present; committed replay fixtures close the parser path, while live reconnect/websocket throttling remain explicitly runtime-bounded |
@@ -68,7 +68,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 3. Historical Backfill Providers
 
 | Provider | Status | Notes |
-|----------|--------|-------|
+| ---------- | -------- | ------- |
 | Alpaca | ✅ | Daily bars, trades, quotes; credentials required |
 | Polygon | ✅ | Daily bars and aggregates; API key required |
 | Robinhood | 🔑 | Daily bars via unofficial Robinhood API; access token required |
@@ -94,7 +94,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 4. Symbol Search
 
 | Provider | Status | Notes |
-|----------|--------|-------|
+| ---------- | -------- | ------- |
 | Alpaca | ✅ | `AlpacaSymbolSearchProviderRefactored`; US equities + crypto |
 | Robinhood | ✅ | `RobinhoodSymbolSearchProvider`; public instruments API, no authentication required |
 | Finnhub | ✅ | `FinnhubSymbolSearchProviderRefactored`; US + international |
@@ -111,7 +111,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 5. Data Canonicalization
 
 | Component | Status | Notes |
-|-----------|--------|-------|
+| ----------- | -------- | ------- |
 | Design document & field audit | ✅ | `docs/architecture/deterministic-canonicalization.md` |
 | `MarketEvent` canonical fields | ✅ | `CanonicalSymbol`, `CanonicalizationVersion`, `CanonicalVenue`, `EffectiveSymbol` |
 | `EventCanonicalizer` implementation | ✅ | Symbol resolution, venue normalization, typed payload extraction |
@@ -134,7 +134,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 6. Storage & Data Management
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | JSONL storage sink | ✅ | Append-only, gzip-compressed, configurable naming conventions |
 | Parquet storage sink | ✅ | Columnar, compressed; enabled via `EnableParquetSink` config. Wave 1 repo-backed tests now cover L2 snapshot flush, final dispose flush, and atomic temp-file cleanup |
 | Tiered storage (hot/warm/cold) | ✅ | `TierMigrationService` with configurable retention per tier |
@@ -158,7 +158,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 7. Data Quality Monitoring
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Completeness scoring | ✅ | `CompletenessScoreCalculator`; expected vs. received events |
 | Gap analysis | ✅ | `GapAnalyzer`; liquidity-adjusted severity (Minor → Critical) |
 | Anomaly detection | ✅ | `AnomalyDetector`; price/volume outliers |
@@ -183,7 +183,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 8. API Surface (HTTP)
 
 | Area | Routes | Status |
-|------|--------|--------|
+| ------ | -------- | -------- |
 | Status & health | `/api/status`, `/api/health`, `/healthz`, `/readyz`, `/livez` | ✅ |
 | Configuration | `/api/config/*` (8 endpoints) | ✅ |
 | Providers | `/api/providers/*`, `/api/connections` | ✅ |
@@ -215,7 +215,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ### OpenAPI annotations
 
 | Endpoint family | Typed `Produces<T>` | Descriptions | Status |
-|-----------------|---------------------|--------------|--------|
+| ----------------- | --------------------- | -------------- | -------- |
 | Status | ✅ | ✅ | ✅ |
 | Health | ✅ | ✅ | ✅ |
 | Config | ✅ | ✅ | ✅ |
@@ -228,7 +228,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ## 9. Web Dashboard
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | HTML dashboard (auto-refreshing) | ✅ | `HtmlTemplateGenerator`; SSE-powered live updates |
 | Server-Sent Events stream | ✅ | `/api/events/stream`; 2-second push cycle |
 | Configuration wizard UI | ✅ | Interactive provider setup, credential entry, symbol config |
@@ -267,7 +267,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ### Pages with live service connections (Implemented)
 
 | Page | Primary Service | Function |
-|------|----------------|---------|
+| ------ | ---------------- | --------- |
 | DashboardPage | StatusService, ConnectionService | System overview, provider status |
 | BackfillPage | BackfillService, BackfillApiService | Trigger/schedule backfills |
 | DataSourcesPage | ConfigService, ProviderManagementService | Provider configuration |
@@ -337,7 +337,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 ### WPF MVVM progress
 
 | Area | Status | Notes |
-|------|--------|-------|
+| ------ | -------- | ------- |
 | `DashboardViewModel` | ✅ | Extracted from `DashboardPage` code-behind; `BindableBase`, bindable properties, timer management |
 | Remaining pages | 🔄 | Other pages still use code-behind for business logic; ViewModel extraction ongoing per ADR-017 |
 
@@ -346,7 +346,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 ## 11. CLI
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Real-time collection | ✅ | `--symbols`, `--no-trades`, `--no-depth`, `--depth-levels` |
 | Backfill | ✅ | `--backfill`, `--backfill-provider`, `--backfill-symbols`, `--backfill-from/to` |
 | Data packaging | ✅ | `--package`, `--import-package`, `--list-package`, `--validate-package` |
@@ -368,7 +368,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 ## 12. Observability & Operations
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Prometheus metrics export | ✅ | `/api/metrics`; event throughput, provider health, backpressure, error rates |
 | OpenTelemetry pipeline instrumentation | ✅ | `TracedEventMetrics` decorator; `Meridian.Pipeline` meter |
 | Activity spans (batch consume, backfill, WAL recovery) | ✅ | `MarketDataTracing` extension methods |
@@ -395,7 +395,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 ## 13. F# Domain & Calculations
 
 | Module | Status | Notes |
-|--------|--------|-------|
+| -------- | -------- | ------- |
 | `MarketEvents.fs` — F# event types | ✅ | Discriminated union: `Trade`, `Quote`, `DepthUpdate`, `Bar`, `Heartbeat` |
 | `Sides.fs` — bid/ask/neutral | ✅ | Type-safe aggressor side |
 | `Integrity.fs` — sequence validation | ✅ | Gap detection, out-of-order |
@@ -413,7 +413,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 ## 14. QuantConnect Lean Integration
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Custom data types | ✅ | `LeanDataTypes.cs` — `Trade`, `Quote`, `OrderBook` Lean wrappers |
 | `IDataProvider` implementation | ✅ | Reads stored JSONL/Parquet files as Lean data |
 | Integration page (WPF) | ✅ | `LeanIntegrationPage` wires `LeanIntegrationService` |
@@ -426,7 +426,7 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 Two MCP (Model Context Protocol) server projects provide AI-agent tooling over the Meridian platform.
 
 | Project | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | `Meridian.McpServer` | ✅ | Market-data–focused MCP server: `BackfillTools`, `ProviderTools`, `StorageTools`, `SymbolTools`; `MarketDataPrompts`, `MarketDataResources` |
 | `Meridian.Mcp` | ✅ | Repo-tooling MCP server: `AdrTools`, `AuditTools`, `ConventionTools`, `KnownErrorTools`, `ProviderTools`; ADR/convention/template resources and code-review/test-writer prompts |
 | MCP tests | ✅ | `tests/Meridian.McpServer.Tests/` — backfill tools and storage tools coverage |
@@ -436,7 +436,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 ## 15. Execution & Brokerage
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Paper trading gateway | ✅ | `PaperTradingGateway` in `Meridian.Execution`; zero-risk strategy validation |
 | Order management system | ✅ | `OrderManagementSystem`, `OrderLifecycleManager` |
 | Risk validation framework | ✅ | `CompositeRiskValidator` with `IRiskRule` implementations |
@@ -467,7 +467,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 ## 16. Testing
 
 | Test Project | Test Files | Methods | Focus |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `Meridian.Tests` | 266 | ~3,595 | Core: backfill, storage, pipeline, monitoring, providers, credentials, serialization, domain, integration endpoints, execution |
 | `Meridian.FSharp.Tests` | 10 | ~174 | F# domain validation, calculations, transforms, trading transitions, ledger, risk, direct lending interop |
 | `Meridian.Ui.Tests` | 55 | ~948 | UI services (API client, backfill, fixtures, forms, health, watchlist) |
@@ -482,7 +482,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 ### Key test infrastructure
 
 | Feature | Status |
-|---------|--------|
+| --------- | -------- |
 | `EndpointTestFixture` base (WebApplicationFactory) | ✅ |
 | Negative-path endpoint tests (40+) | ✅ |
 | Response schema validation tests (15+) | ✅ |
@@ -507,7 +507,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 ## 17. Configuration Schema Validation
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | `SchemaValidationService` — stored data format validation | ✅ | `--validate-schemas`, `--strict-schemas`, `--check-schemas` |
 | `SchemaVersionManager` | ✅ | Per-event-type schema versioning |
 | JSON Schema generation from C# config models | Complete | `--generate-config-schema` produces the checked-in `config/appsettings.schema.json`; sample config references it and CI validates drift |
@@ -519,7 +519,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 This section inventories the workflow-centric product model that now sits above the older page inventory.
 
 | Surface | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the remaining gap is deeper workspace-native shells and operator flows |
 | Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, and the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`; the shared trading-readiness endpoint gives the cockpit one acceptance contract, while cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently; further cross-links and workflow shells remain |
@@ -528,7 +528,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
-| Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
+| Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, Security Master coverage issue detection, and a file-backed reconciliation break queue now exist. The queue seeds run-scoped breaks and supports review, resolve/dismiss, and audit-history routes; broader non-run, external-statement/custodian, SLA, and calibrated exception workflows remain. |
 | Security Master platform baseline | Complete | The current Security Master mechanics are delivered and workstation productization is live: hardened WPF activation, canonical `WorkstationSecurityReference` coverage/provenance, and shared research/trading/governance/portfolio/ledger propagation |
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
 | Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
@@ -558,7 +558,7 @@ This section inventories the workflow-centric product model that now sits above 
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
 - Keep the delivered Security Master baseline central while Wave 4 governance work deepens account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows on top of it.
 - Treat [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md) as the delivered-baseline reference for Security Master mechanics; canonical wave status remains in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) and [`ROADMAP.md`](ROADMAP.md).
-- Expand the current reconciliation seam into explicit break queues, match rules, exception workflows, and non-run governance use cases.
+- Expand the current reconciliation seam from the delivered run-scoped break queue into richer match rules, calibrated exception workflows, external-statement/custodian coverage, and non-run governance use cases.
 - Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Expand report generation tools beyond the delivered trial-balance artifact slice into cash-flow, reconciliation-detail, portfolio, board, investor, compliance, and publication workflows.
 - Replace page-by-page mental models with workstation-native journeys for research, trading, data ops, and governance.
@@ -570,7 +570,7 @@ This section inventories the workflow-centric product model that now sits above 
 These areas are part of the documented implementation scope even though they are not yet productized in the current repo state.
 
 | Capability | Status | Notes |
-|------------|--------|-------|
+| ------------ | -------- | ------- |
 | QuantScript library/project | ✅ | `src/Meridian.QuantScript` — Roslyn scripting API, PriceSeries/ReturnSeries domain types, StatisticsEngine, BacktestProxy, QuantDataContext, PlotQueue |
 | QuantScript WPF editor/surface | ✅ | `QuantScriptPage.xaml` + `QuantScriptViewModel` — AvalonEdit editor, three-column layout, Console/Charts/Metrics/Trades/Diagnostics result tabs, ScottPlot charting |
 | QuantScript tests/sample scripts/docs | ✅ | `tests/Meridian.QuantScript.Tests` (compiler, runner, stats, plot-queue); `scripts/example-sharpe.csx` sample script |
@@ -592,19 +592,19 @@ These areas are part of the documented implementation scope even though they are
 ### High priority (blocking full provider coverage)
 
 | ID | Area | Effort | Description |
-|----|------|--------|-------------|
+| ---- | ------ | -------- | ------------- |
 | ✅ | Polygon validation | Medium | Recorded-session replay fixture validates trade, quote, and aggregate parsing without live network access |
 
 ### Medium priority (observability & developer experience)
 
 | ID | Area | Effort | Description |
-|----|------|--------|-------------|
+| ---- | ------ | -------- | ------------- |
 | ✅ | OTLP trace visualization docs | Low | `docs/development/otlp-trace-visualization.md` documents collector/export wiring and local Jaeger flow |
 
 ### Low priority (architecture debt)
 
 | ID | Area | Effort | Description |
-|----|------|--------|-------------|
+| ---- | ------ | -------- | ------------- |
 | H2 | Multi-instance coordination | High | Distributed locking for symbol subscriptions across multiple collector instances |
 | — | WPF ViewModel extraction | Medium | Extract remaining page code-behind logic into `BindableBase` ViewModels (ADR-017) |
 | — | DailySummaryWebhook state | Low | Persist `_dailyHistory` to disk using `MetadataTagService` save pattern |
@@ -638,6 +638,5 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-04-25*
-
+_Last Updated: 2026-04-25_
 

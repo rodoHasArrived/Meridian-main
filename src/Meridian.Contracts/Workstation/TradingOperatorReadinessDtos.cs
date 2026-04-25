@@ -10,7 +10,8 @@ public enum OperatorWorkItemKindDto
     BrokerageSync = 2,
     SecurityMasterCoverage = 3,
     ReconciliationBreak = 4,
-    ReportPackApproval = 5
+    ReportPackApproval = 5,
+    ProviderTrustGate = 6
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<OperatorWorkItemToneDto>))]
@@ -81,6 +82,22 @@ public sealed record TradingPromotionReadinessDto(
     string? ApprovedBy,
     IReadOnlyList<string>? ApprovalChecklist = null);
 
+public sealed record TradingTrustGateReadinessDto(
+    string GateId,
+    string Status,
+    bool ReadyForOperatorReview,
+    bool OperatorSignoffRequired,
+    string OperatorSignoffStatus,
+    DateTimeOffset? GeneratedAt,
+    string? PacketPath,
+    string? SourceSummary,
+    int RequiredSampleCount,
+    int ReadySampleCount,
+    int ValidatedEvidenceDocumentCount,
+    IReadOnlyList<string> RequiredOwners,
+    IReadOnlyList<string> Blockers,
+    string Detail);
+
 public sealed record TradingOperatorReadinessDto(
     DateTimeOffset AsOf,
     TradingPaperSessionReadinessDto? ActiveSession,
@@ -88,6 +105,7 @@ public sealed record TradingOperatorReadinessDto(
     TradingReplayReadinessDto? Replay,
     TradingControlReadinessDto Controls,
     TradingPromotionReadinessDto? Promotion,
+    TradingTrustGateReadinessDto TrustGate,
     WorkstationBrokerageSyncStatusDto? BrokerageSync,
     IReadOnlyList<OperatorWorkItemDto> WorkItems,
     IReadOnlyList<string> Warnings);

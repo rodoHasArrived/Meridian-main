@@ -67,6 +67,7 @@ The current working tree reinforces that direction rather than changing it. The 
 ## Active Gaps By Wave
 
 Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
+
 ### Wave 1: Closed provider confidence and checkpoint gate
 
 - Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
@@ -102,7 +103,7 @@ Operator-readiness language for Wave 2 should stay “in progress” until the f
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
 
 - Security Master is a delivered baseline, not an open foundation item
-- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
+- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows; the first reconciliation break-queue slice is now file-backed with review, resolve/dismiss, and audit-history routes, but tolerance calibration and generalized governance casework remain open
 - the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
 
 

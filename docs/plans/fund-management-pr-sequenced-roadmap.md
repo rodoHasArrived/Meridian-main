@@ -2,7 +2,7 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-09
+**Last Updated:** 2026-04-25
 **Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
 > **Retirement note (2026-04-09):** Browser workstation references in this roadmap, including any WPF/web alignment language carried over from earlier planning, are historical only. Current implementation should stay desktop-first and use the retained desktop-local API seams where needed.
@@ -28,7 +28,7 @@ The goal is to let multiple contributors work concurrently without repeatedly co
 ## Parallel Delivery Lanes
 
 | Lane | Theme | Primary write scope |
-|------|-------|---------------------|
+| ------ | ------- | --------------------- |
 | Lane A | Workstation and front-office UX | `src/Meridian.Wpf`, `src/Meridian.Ui.Services`, parts of `src/Meridian.Ui.Shared` |
 | Lane B | Shared contracts and orchestration | `src/Meridian.Contracts`, `src/Meridian.Strategies`, `src/Meridian.Application` |
 | Lane C | Governance and accounting kernel | `src/Meridian.FSharp`, `src/Meridian.FSharp.Ledger`, `src/Meridian.Ledger`, parts of `src/Meridian.Storage` |
@@ -45,7 +45,7 @@ The goal is to let multiple contributors work concurrently without repeatedly co
 ## PR Roadmap
 
 | PR | Title | Primary lane | Depends on | Can run with | Primary write scope |
-|----|-------|--------------|------------|--------------|---------------------|
+| ---- | ------- | -------------- | ------------ | -------------- | --------------------- |
 | PR-01 | Workspace shell hardening | Lane A | None | PR-02, PR-03 | `Meridian.Wpf`, `Meridian.Ui.Services` |
 | PR-02 | Shared run contract expansion | Lane B | None | PR-01, PR-03 | `Meridian.Contracts`, `Meridian.Strategies` |
 | PR-03 | Workstation bootstrap payload alignment | Lane B | None | PR-01, PR-02 | `Meridian.Ui.Shared`, `Meridian.Strategies`, `Meridian.Contracts` |
@@ -259,6 +259,8 @@ Broaden reconciliation from narrow event matching to fund-ops break logic.
 
 Add application-layer reconciliation runs, exception queues, and governance orchestration.
 
+**Current delivered slice (2026-04-25):** run-scoped reconciliation plus a file-backed break queue now exist with review, resolve/dismiss, and audit-history routes. Remaining PR-14 scope is richer matching, calibration, and external statement/custodian coverage.
+
 **Primary anchors**
 
 - new services near `src/Meridian.Application/Services/`
@@ -306,6 +308,8 @@ Build the orchestration layer above current analysis export services.
 
 Turn export formats into governed report packs.
 
+**Current delivered slice (2026-04-25):** persisted governed report-pack artifacts now carry the `governance-report-pack` contract and schema-version metadata across manifest, provenance, artifact metadata, history, and detail retrieval. Remaining PR-18 scope is broader templating and publication-grade packaging.
+
 **Primary anchors**
 
 - `src/Meridian.Storage/Export/AnalysisExportService.Formats.Xlsx.cs`
@@ -331,6 +335,8 @@ Attach replay, lineage, validation, and quality evidence to governed outputs.
 **Goal**
 
 Expose report-pack generation, preview, history, and download workflows.
+
+**Current delivered slice (2026-04-25):** `/api/fund-structure/report-pack-preview`, `/api/fund-structure/report-packs`, report-pack history, and report-pack detail routes exist for the local-first governed artifact baseline. Remaining PR-20 scope is workstation UX, approval/publication controls, and board/investor/compliance report-pack breadth.
 
 **Primary anchors**
 

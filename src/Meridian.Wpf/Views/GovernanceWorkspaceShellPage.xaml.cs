@@ -22,6 +22,14 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
     private readonly WorkstationWorkflowSummaryService? _workflowSummaryService;
     private GovernanceSubarea _selectedSubarea = GovernanceSubarea.Operations;
+    private FundProfileDetail? _lastProfile;
+    private FundOperationsWorkspaceDto? _lastWorkspace;
+    private WorkstationOperatingContext? _lastOperatingContext;
+    private WorkspaceWorkflowSummary? _lastWorkflow;
+    private IReadOnlyList<NotificationHistoryItem> _lastNotifications = Array.Empty<NotificationHistoryItem>();
+    private int _lastUnreadAlerts;
+    private string _heroPrimaryActionId = "SwitchContext";
+    private string _heroSecondaryActionId = "Diagnostics";
 
     public GovernanceWorkspaceShellPage(
         NavigationService navigationService,
@@ -112,6 +120,15 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 {
                     QueueSummaryText.Text = workflow.StatusDetail;
                 }
+
+                _lastProfile = null;
+                _lastWorkspace = null;
+                _lastOperatingContext = operatingContext;
+                _lastWorkflow = workflow;
+                _lastNotifications = notifications;
+                _lastUnreadAlerts = unreadAlerts;
+                UpdateGovernanceHero();
+
                 PopulateQueues([], [], [], [], []);
                 PopulateInspector(operatingContext, null, null, null, null, notifications);
                 return;
@@ -159,6 +176,15 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
                 BuildReportingQueue(profile, workspace),
                 BuildAuditQueue(reconciliation, notifications, unreadAlerts));
             ApplyGovernanceLaneSummaries(profile, workspace, governanceWorkflow, notifications, unreadAlerts);
+
+            _lastProfile = profile;
+            _lastWorkspace = workspace;
+            _lastOperatingContext = operatingContext;
+            _lastWorkflow = governanceWorkflow;
+            _lastNotifications = notifications;
+            _lastUnreadAlerts = unreadAlerts;
+            UpdateGovernanceHero();
+
             PopulateInspector(operatingContext, profile, ledger, reconciliation, cash, notifications);
         }
         catch (Exception ex)
@@ -204,6 +230,8 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     private void OpenProviderHealth_Click(object sender, RoutedEventArgs e) => ExecuteAction("ProviderHealth", navigate: false);
     private void OpenSystemHealth_Click(object sender, RoutedEventArgs e) => ExecuteAction("SystemHealth", navigate: false);
     private void OpenNotifications_Click(object sender, RoutedEventArgs e) => ExecuteAction("NotificationCenter", navigate: false);
+    private void OnGovernanceHeroPrimaryActionClick(object sender, RoutedEventArgs e) => ExecuteAction(_heroPrimaryActionId, navigate: false);
+    private void OnGovernanceHeroSecondaryActionClick(object sender, RoutedEventArgs e) => ExecuteAction(_heroSecondaryActionId, navigate: false);
     private void OpenOperationsLane_Click(object sender, RoutedEventArgs e) => SelectSubarea(GovernanceSubarea.Operations);
     private void OpenAccountingLane_Click(object sender, RoutedEventArgs e) => SelectSubarea(GovernanceSubarea.Accounting);
     private void OpenReconciliationLane_Click(object sender, RoutedEventArgs e) => SelectSubarea(GovernanceSubarea.Reconciliation);
@@ -458,6 +486,32 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             : new[] { new WorkspaceRecentItem { Title = profile is null ? "Select the active context" : "Audit trail ready", Detail = profile is null ? "A fund-linked operating context is the main trust signal for governance review. Choose the context before working breaks or approvals." : "Open the audit trail to inspect recent governance activity and sign-off context.", Meta = profile is null ? "Locked shell" : "No recent notifications", Tone = profile is null ? WorkspaceTone.Warning : WorkspaceTone.Info, ActionId = profile is null ? "SwitchContext" : "FundAuditTrail", ActionLabel = profile is null ? "Switch Context" : "Open Audit Trail" } };
     }
 
+    private void UpdateGovernanceHero()
+    {
+        var hero = BuildLaneHeroState(
+            _selectedSubarea,
+            _lastOperatingContext,
+            _lastProfile,
+            _lastWorkspace,
+            _lastWorkflow,
+            _lastNotifications,
+            _lastUnreadAlerts);
+
+        GovernanceHeroLaneText.Text = hero.LaneLabel;
+        GovernanceHeroSummaryText.Text = hero.Summary;
+        GovernanceHeroDetailText.Text = hero.Detail;
+        GovernanceHeroActionTitleText.Text = hero.HandoffTitle;
+        GovernanceHeroActionDetailText.Text = hero.HandoffDetail;
+        GovernanceHeroTargetText.Text = hero.TargetLabel;
+        GovernanceHeroPrimaryActionButton.Content = hero.PrimaryActionLabel;
+        GovernanceHeroSecondaryActionButton.Content = hero.SecondaryActionLabel;
+        GovernanceHeroSecondaryActionButton.Visibility = string.IsNullOrWhiteSpace(hero.SecondaryActionLabel)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        _heroPrimaryActionId = hero.PrimaryActionId;
+        _heroSecondaryActionId = hero.SecondaryActionId;
+    }
+
     private void RequestContextSelection()
         => RequestContextSelection(_fundContextService, _operatingContextService);
 
@@ -465,23 +519,14 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
     {
         _selectedSubarea = subarea;
         UpdateSubareaButtons();
+        UpdateGovernanceHero();
 
         if (_fundContextService.CurrentFundProfile is null)
         {
             return;
         }
 
-        var actionId = subarea switch
-        {
-            GovernanceSubarea.Operations => "FundLedger",
-            GovernanceSubarea.Accounting => "FundTrialBalance",
-            GovernanceSubarea.Reconciliation => "FundReconciliation",
-            GovernanceSubarea.Reporting => "FundCashFinancing",
-            GovernanceSubarea.Audit => "FundAuditTrail",
-            _ => "FundLedger"
-        };
-
-        ExecuteAction(actionId, navigate: false);
+        ExecuteAction(ResolveLanePrimaryActionId(subarea), navigate: false);
     }
 
     private void UpdateSubareaButtons()
@@ -504,4 +549,207 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         summaryText.Text = summary;
         detailText.Text = detail;
     }
+
+    internal static GovernanceLaneHeroState BuildLaneHeroState(
+        GovernanceSubarea subarea,
+        WorkstationOperatingContext? operatingContext,
+        FundProfileDetail? profile,
+        FundOperationsWorkspaceDto? workspace,
+        WorkspaceWorkflowSummary? workflow,
+        IReadOnlyList<NotificationHistoryItem> notifications,
+        int unreadAlerts)
+    {
+        var laneLabel = GetLaneLabel(subarea);
+
+        if (profile is null || workspace is null)
+        {
+            return new GovernanceLaneHeroState(
+                LaneLabel: laneLabel,
+                Summary: $"{laneLabel} review is waiting for a fund-linked context.",
+                Detail: GetLockedLaneDetail(subarea, operatingContext),
+                HandoffTitle: workflow?.StatusLabel ?? "Context required",
+                HandoffDetail: workflow?.StatusDetail ?? "Switch context to unlock governance queues for the selected lane.",
+                PrimaryActionId: "SwitchContext",
+                PrimaryActionLabel: "Switch Context",
+                SecondaryActionId: "Diagnostics",
+                SecondaryActionLabel: "Open Diagnostics",
+                TargetLabel: "Target page: Context selector");
+        }
+
+        var ledger = workspace.Ledger;
+        var reconciliation = workspace.Reconciliation;
+        var cash = workspace.CashFinancing;
+        var reporting = workspace.Reporting;
+        var latestNotification = notifications.FirstOrDefault();
+        var workflowBlockerCode = workflow?.PrimaryBlocker.Code;
+        var workflowCarriesReconciliationBlocker =
+            string.Equals(workflowBlockerCode, "as-of-drift", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(workflowBlockerCode, "missing-ledger", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(workflowBlockerCode, "missing-reconciliation", StringComparison.OrdinalIgnoreCase);
+
+        return subarea switch
+        {
+            GovernanceSubarea.Operations => new GovernanceLaneHeroState(
+                LaneLabel: laneLabel,
+                Summary: ledger.JournalEntryCount > 0
+                    ? $"{ledger.JournalEntryCount} journals ready for operations review"
+                    : "Operations snapshot pending",
+                Detail: $"{workspace.Workspace.TotalAccounts} linked account(s), {ledger.EntityCount} entities, and {ledger.VehicleCount} vehicles stay aligned inside the governance shell.",
+                HandoffTitle: ledger.JournalEntryCount > 0 ? "Open operations lane" : "Restore operations baseline",
+                HandoffDetail: ledger.JournalEntryCount > 0
+                    ? "Keep ledger, account, and bank posture docked before moving into accounting or reconciliation."
+                    : "Open operations first and confirm the shared ledger snapshot before downstream review.",
+                PrimaryActionId: "FundLedger",
+                PrimaryActionLabel: "Open Operations",
+                SecondaryActionId: "FundAccounts",
+                SecondaryActionLabel: "Accounts",
+                TargetLabel: "Target page: FundLedger"),
+            GovernanceSubarea.Accounting => new GovernanceLaneHeroState(
+                LaneLabel: laneLabel,
+                Summary: ledger.TrialBalance.Count > 0
+                    ? $"{ledger.TrialBalance.Count} trial-balance lines ready"
+                    : "Accounting snapshot pending",
+                Detail: ledger.TrialBalance.Count > 0
+                    ? $"{ledger.JournalEntryCount} journal(s) are available for continuity, accrual, and sign-off review."
+                    : "The accounting lane becomes actionable once the shared ledger snapshot is available.",
+                HandoffTitle: ledger.TrialBalance.Count > 0 ? "Open accounting lane" : "Wait for shared ledger data",
+                HandoffDetail: ledger.TrialBalance.Count > 0
+                    ? "Review journals, trial balance, and financing posture together before sign-off."
+                    : "Use operations first to restore the ledger baseline before accounting review.",
+                PrimaryActionId: "FundTrialBalance",
+                PrimaryActionLabel: "Open Accounting",
+                SecondaryActionId: ledger.TrialBalance.Count > 0 ? "FundCashFinancing" : "FundLedger",
+                SecondaryActionLabel: ledger.TrialBalance.Count > 0 ? "Reporting" : "Operations",
+                TargetLabel: "Target page: FundTrialBalance"),
+            GovernanceSubarea.Reconciliation => new GovernanceLaneHeroState(
+                LaneLabel: laneLabel,
+                Summary: reconciliation.OpenBreakCount > 0
+                    ? $"{reconciliation.OpenBreakCount} break(s) open"
+                    : workflowCarriesReconciliationBlocker
+                        ? workflow?.StatusLabel ?? "Reconciliation review pending"
+                        : "Matched and review-ready",
+                Detail: reconciliation.OpenBreakCount > 0
+                    ? workflow?.PrimaryBlocker.Detail ?? $"{reconciliation.OpenBreakCount} break(s) block governance sign-off until the queue is reviewed."
+                    : workflowCarriesReconciliationBlocker
+                        ? workflow?.PrimaryBlocker.Detail ?? "Reconciliation review is waiting on the current governance blocker."
+                        : $"{reconciliation.RunCount} reconciliation run(s) are linked for the current scope with {reconciliation.SecurityCoverageIssueCount} coverage issue(s).",
+                HandoffTitle: reconciliation.OpenBreakCount > 0
+                    ? "Review breaks before approval release"
+                    : workflowCarriesReconciliationBlocker
+                        ? workflow?.PrimaryBlocker.Label ?? "Resolve reconciliation blocker"
+                        : "Open reconciliation lane",
+                HandoffDetail: reconciliation.OpenBreakCount > 0
+                    ? "Inspect breaks, security coverage, and related audit evidence before releasing governance approvals."
+                    : workflowCarriesReconciliationBlocker
+                        ? workflow?.StatusDetail ?? "Reconciliation review should stay paused until the blocker clears."
+                        : "Matched runs, security coverage, and trial-balance continuity stay one action away from the same shell.",
+                PrimaryActionId: "FundReconciliation",
+                PrimaryActionLabel: reconciliation.OpenBreakCount > 0 ? "Review Breaks" : "Open Review",
+                SecondaryActionId: reconciliation.OpenBreakCount > 0 || reconciliation.SecurityCoverageIssueCount > 0 ? "FundAuditTrail" : "FundTrialBalance",
+                SecondaryActionLabel: reconciliation.OpenBreakCount > 0 || reconciliation.SecurityCoverageIssueCount > 0 ? "Audit Trail" : "Trial Balance",
+                TargetLabel: "Target page: FundReconciliation"),
+            GovernanceSubarea.Reporting => new GovernanceLaneHeroState(
+                LaneLabel: laneLabel,
+                Summary: reporting.ProfileCount > 0
+                    ? $"{reporting.ProfileCount} report profile(s) ready"
+                    : "Reporting handoff ready",
+                Detail: $"Cash {cash.TotalCash:C0}, financing {cash.FinancingCost:C0}, and {BuildReportPackTargetLabel(reporting)} stay aligned for operator handoff.",
+                HandoffTitle: reporting.ProfileCount > 0 ? "Prepare report pack" : "Open reporting lane",
+                HandoffDetail: reporting.ProfileCount > 0
+                    ? "Review cash posture first, then package board and operator outputs without leaving governance."
+                    : "Cash and financing posture are available even before dedicated report profiles are configured.",
+                PrimaryActionId: "FundCashFinancing",
+                PrimaryActionLabel: "Open Reporting",
+                SecondaryActionId: "FundReportPack",
+                SecondaryActionLabel: "Open Report Pack",
+                TargetLabel: "Target page: FundCashFinancing"),
+            GovernanceSubarea.Audit => new GovernanceLaneHeroState(
+                LaneLabel: laneLabel,
+                Summary: unreadAlerts > 0
+                    ? $"{unreadAlerts} unread alert(s)"
+                    : workflow?.Evidence.FirstOrDefault(static evidence => string.Equals(evidence.Label, "Audit", StringComparison.OrdinalIgnoreCase))?.Value ?? "Audit trail ready",
+                Detail: latestNotification is null
+                    ? "Audit evidence, alerts, and operator sign-off history remain attached to the current governance scope."
+                    : $"Latest governance signal: {latestNotification.Title} at {latestNotification.Timestamp:t}.",
+                HandoffTitle: unreadAlerts > 0 ? "Review unread alerts" : "Open audit trail",
+                HandoffDetail: unreadAlerts > 0
+                    ? "Keep alerts, diagnostics, and sign-off evidence together before releasing approvals."
+                    : "Use the audit trail to validate recent governance activity before the handoff leaves the shell.",
+                PrimaryActionId: "FundAuditTrail",
+                PrimaryActionLabel: "Open Audit",
+                SecondaryActionId: "NotificationCenter",
+                SecondaryActionLabel: "Open Alerts",
+                TargetLabel: "Target page: FundAuditTrail"),
+            _ => new GovernanceLaneHeroState(
+                LaneLabel: "Operations",
+                Summary: "Operations snapshot pending",
+                Detail: "Select a governance lane to continue.",
+                HandoffTitle: "Open operations lane",
+                HandoffDetail: "The governance shell defaults to the operations lane.",
+                PrimaryActionId: "FundLedger",
+                PrimaryActionLabel: "Open Operations",
+                SecondaryActionId: "FundAccounts",
+                SecondaryActionLabel: "Accounts",
+                TargetLabel: "Target page: FundLedger")
+        };
+    }
+
+    internal static string ResolveLanePrimaryActionId(GovernanceSubarea subarea) => subarea switch
+    {
+        GovernanceSubarea.Operations => "FundLedger",
+        GovernanceSubarea.Accounting => "FundTrialBalance",
+        GovernanceSubarea.Reconciliation => "FundReconciliation",
+        GovernanceSubarea.Reporting => "FundCashFinancing",
+        GovernanceSubarea.Audit => "FundAuditTrail",
+        _ => "FundLedger"
+    };
+
+    private static string GetLaneLabel(GovernanceSubarea subarea) => subarea switch
+    {
+        GovernanceSubarea.Operations => "Operations",
+        GovernanceSubarea.Accounting => "Accounting",
+        GovernanceSubarea.Reconciliation => "Reconciliation",
+        GovernanceSubarea.Reporting => "Reporting",
+        GovernanceSubarea.Audit => "Audit",
+        _ => "Operations"
+    };
+
+    private static string GetLockedLaneDetail(GovernanceSubarea subarea, WorkstationOperatingContext? operatingContext)
+    {
+        var scopePrefix = operatingContext is null
+            ? "Select a fund-linked context first."
+            : $"Link {operatingContext.DisplayName} to a fund profile first.";
+
+        return subarea switch
+        {
+            GovernanceSubarea.Operations => $"{scopePrefix} Operations, accounts, and banking review stay locked until then.",
+            GovernanceSubarea.Accounting => $"{scopePrefix} Trial-balance and journal review stay locked until then.",
+            GovernanceSubarea.Reconciliation => $"{scopePrefix} Break triage and security coverage review stay locked until then.",
+            GovernanceSubarea.Reporting => $"{scopePrefix} Cash, financing, and report-pack handoff stay locked until then.",
+            GovernanceSubarea.Audit => $"{scopePrefix} Audit evidence and approval history stay locked until then.",
+            _ => $"{scopePrefix} Governance queues stay locked until then."
+        };
+    }
+
+    private static string BuildReportPackTargetLabel(FundReportingSummaryDto reporting)
+    {
+        if (reporting.ReportPackTargets.Count == 0)
+        {
+            return "board and operator packs";
+        }
+
+        return string.Join(", ", reporting.ReportPackTargets);
+    }
+
+    internal sealed record GovernanceLaneHeroState(
+        string LaneLabel,
+        string Summary,
+        string Detail,
+        string HandoffTitle,
+        string HandoffDetail,
+        string PrimaryActionId,
+        string PrimaryActionLabel,
+        string SecondaryActionId,
+        string SecondaryActionLabel,
+        string TargetLabel);
 }

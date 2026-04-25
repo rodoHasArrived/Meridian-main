@@ -6,6 +6,7 @@
 **Status:** Proposed blueprint for productizing the `Research -> Trading -> Governance` operator journey
 
 > Companion to:
+>
 > - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
 > - [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md)
 > - [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md)
@@ -227,11 +228,12 @@ Governance already has:
 
 - fund-operations workspace projection in `FundOperationsWorkspaceReadService`
 - preview endpoint in `/api/fund-structure/report-pack-preview`
-- report-pack preview DTOs in `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs`
+- persisted governed artifact endpoint in `/api/fund-structure/report-packs`
+- report-pack preview, generation, artifact, provenance, history, and schema-version DTOs in `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs`
 
 Milestone 3 should extend, not fork, that path.
 
-`FundOperationsWorkspaceReadService` and `ReportGenerationService` should move from preview-only posture to governed artifact generation for fixed report-pack kinds first:
+`FundOperationsWorkspaceReadService` and the report-generation path have moved beyond preview-only into a local-first governed artifact baseline. The next step is broadening fixed report-pack kinds:
 
 - `board`
 - `investor`
@@ -368,7 +370,7 @@ public sealed record FundReportPackArtifactDto(
     bool ReadinessAccepted);
 ```
 
-`FundReportPackPreviewRequestDto` and `FundReportPackPreviewDto` stay contract-stable. Preview remains the compatibility lane; governed generation is additive.
+`FundReportPackPreviewRequestDto` and `FundReportPackPreviewDto` stay contract-stable. Preview remains the compatibility lane; governed artifact generation through `/api/fund-structure/report-packs` is additive.
 
 ### Endpoint additions
 
@@ -376,7 +378,7 @@ Additive endpoint surface:
 
 - `GET /api/workstation/research/templates`
 - `GET /api/workstation/runs/{runId}/comparison-bundle?otherRunId=...`
-- `POST /api/fund-structure/report-pack-generate`
+- `POST /api/fund-structure/report-packs`
 
 Compatibility requirements:
 
@@ -530,7 +532,7 @@ Suggested projects:
 - missing acceptance checks
 - missing Security Master coverage
 - empty-ledger and zero-fill edge cases
-- successful and rejected `report-pack-generate` requests
+- successful and rejected `/api/fund-structure/report-packs` requests
 - backward-compatible `report-pack-preview` requests
 
 ### WPF and workspace-shell tests
@@ -586,8 +588,8 @@ dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=tru
 
 ### Milestone 3: Governance artifact generation
 
-- Add `FundReportPackGenerateRequestDto`, `FundReportPackArtifactDto`, and `POST /api/fund-structure/report-pack-generate`.
-- Extend `FundOperationsWorkspaceReadService` and `ReportGenerationService` from preview-only to governed generation.
+- Extend the delivered `FundReportPackGenerateRequestDto`, artifact/provenance DTOs, and `POST /api/fund-structure/report-packs` path into broader governed report-pack kinds.
+- Extend `FundOperationsWorkspaceReadService` and report-generation orchestration beyond the current local-first governed artifact baseline.
 - Add `governance-report-review` preset.
 - Persist generated artifacts through the existing local-first storage posture.
 

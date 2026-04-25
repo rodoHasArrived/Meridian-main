@@ -52,7 +52,7 @@ The current repository now includes the first organization-rooted governance str
   - NAV attribution, report/export profile preview metadata, and local-first governed report-pack artifacts
   - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
 
-This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, and the first governed report-pack artifact generation path are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, broader board/investor/compliance templates, and publication/readiness controls still remain future implementation waves.
+This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, a fund-scoped workspace/report-preview API baseline, the first governed report-pack artifact generation path, and a file-backed reconciliation break queue for run-scoped breaks are now in place. Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation across external statements/custodians, broader board/investor/compliance templates, calibrated tolerance/severity routing, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
@@ -363,9 +363,11 @@ Suggested paths:
 ### Security Master drift
 
 Risk:
+
 - unresolved or stale instrument metadata pollutes cash-flow, reconciliation, and compliance outputs
 
 Mitigation:
+
 - explicit unresolved-state DTOs
 - governance break queues for missing metadata
 - report-pack warnings for degraded classification quality
@@ -373,9 +375,11 @@ Mitigation:
 ### Multi-ledger ambiguity
 
 Risk:
+
 - ledger grouping semantics drift across funds, sleeves, and legal entities
 
 Mitigation:
+
 - define `LedgerGroupId` and grouping rules centrally
 - keep consolidation logic in one kernel
 - test per-ledger and consolidated cases together
@@ -383,9 +387,11 @@ Mitigation:
 ### Reconciliation false positives
 
 Risk:
+
 - noisy break generation undermines trust
 
 Mitigation:
+
 - category-specific matching rules
 - confidence scores
 - manual resolution workflow with explicit status transitions
@@ -393,18 +399,22 @@ Mitigation:
 ### Reporting forked logic
 
 Risk:
+
 - report generation re-implements portfolio or ledger logic separately
 
 Mitigation:
+
 - force reports to consume shared governance DTOs and read services
 - keep formatting separate from calculation
 
 ### Overbuilding too early
 
 Risk:
+
 - trying to fully match enterprise fund admin systems before the foundations are stable
 
 Mitigation:
+
 - sequence the work strictly
 - treat the delivered Security Master seam plus multi-ledger and reconciliation kernels as the enabling path
 - delay advanced report polish until shared DTOs are stable
@@ -478,10 +488,12 @@ Current delivered slice: workstation `FundLedgerSummary` now carries both the se
 
 ### Phase F2.5: Reconciliation Engine
 
-- [ ] Define reconciliation DTOs and rule categories.
+Current delivered slice: run-scoped reconciliation service/history, Security Master coverage issue detection, and a file-backed break queue now exist. `/api/workstation/reconciliation/break-queue` plus review, resolve/dismiss, and audit routes seed and persist run-scoped breaks, but external-statement/custodian adapters, calibration, richer match rules, and generalized governance exception workflows remain open.
+
+- [x] Define reconciliation DTOs and rule categories.
 - [ ] Implement structured source adapters for ledger, portfolio, cash, and external statements.
 - [ ] Build F# reconciliation rule kernel and C# orchestration service.
-- [ ] Add break queue states, assignment, and resolution workflow.
+- [x] Add first break queue states, assignment, and resolution workflow for run-scoped breaks.
 - [ ] Add governance UI for unresolved breaks and matched items.
 - [ ] Add tests for matching, mismatching, partial matching, and break severity.
 
@@ -528,19 +540,19 @@ Current delivered slice: report-pack preview contracts, a shared preview endpoin
 
 ### Phase F6: Post-Trade Allocation and External Custodian Reconciliation
 
-*FundStudio source: rules-based post-trade allocation by strategy, trader, or tax lot; automated multi-prime reconciliation to reduce T+1 breaks.*
+_FundStudio source: rules-based post-trade allocation by strategy, trader, or tax lot; automated multi-prime reconciliation to reduce T+1 breaks._
 
 - [ ] Define `TradeAllocationRule` domain model and F# rule engine: allocation by strategy, tax lot, account, or trader.
 - [ ] Add `PostTradeAllocationService` to apply rules to fills from the execution layer and distribute quantities to fund/sleeve/account ledger lines.
 - [ ] Add workstation UI for reviewing and overriding allocations before confirmation.
 - [ ] Extend the existing reconciliation engine to accept external custodian position and cash statements as structured inputs (CSV, SWIFT MT940/942, or JSON adapters).
 - [ ] Add break classification and severity for internal-vs-custodian mismatches (quantity, settlement date, currency, instrument).
-- [ ] Add multi-custodian break queue with assignment and resolution workflow, targeting automated exception-based T+1 reconciliation.
+- [ ] Extend the run-scoped break queue into a multi-custodian break queue with assignment and resolution workflow, targeting automated exception-based T+1 reconciliation.
 - [ ] Add tests for allocation rule evaluation, custodian feed parsing, and break matching accuracy.
 
 ### Phase F7: Regulatory and Investor Reporting
 
-*FundStudio source: automated multi-fund NAV calculation; shadow-NAV; drag-and-drop report builder; automated distribution via portal or email; AIFMD Annex IV; SEC reporting data exports; locked periods; version control.*
+_FundStudio source: automated multi-fund NAV calculation; shadow-NAV; drag-and-drop report builder; automated distribution via portal or email; AIFMD Annex IV; SEC reporting data exports; locked periods; version control._
 
 - [ ] Define regulatory reporting domain models: `TransactionReportRecord`, `CostChargeDisclosureRecord`, `RegulatoryReportBatch`.
 - [ ] Implement MiFID II RTS 28 best-execution report generation (quarterly aggregation by venue and instrument class).
@@ -555,7 +567,7 @@ Current delivered slice: report-pack preview contracts, a shared preview endpoin
 
 ### Phase F8: Model Portfolio Management and Rebalancing
 
-*FundStudio source: discretionary mandate management with drift monitoring and rebalancing; cross-asset model portfolios for equity long/short, global macro, and credit strategies.*
+_FundStudio source: discretionary mandate management with drift monitoring and rebalancing; cross-asset model portfolios for equity long/short, global macro, and credit strategies._
 
 - [ ] Define `ModelPortfolio` domain model: target weights by instrument, asset class, duration bucket, or factor exposure.
 - [ ] Add drift monitoring service: compare current portfolio weights against model targets; compute absolute and relative drift per position.

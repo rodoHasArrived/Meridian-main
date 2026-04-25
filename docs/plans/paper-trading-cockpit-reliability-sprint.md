@@ -54,7 +54,7 @@ This sprint closes that gap with four explicit acceptance gates:
 ## Acceptance Gates
 
 | Gate | Exit Signal | Repo Seams | Blocking Failure Modes |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Replay confidence | Operators can verify a selected paper session and see whether replay matches current state after normal use and after restart. | `PaperSessionPersistenceService.VerifyReplayAsync`, `ExecutionEndpoints`, trading cockpit replay panel | replay mismatch with no surfaced reason; replay proves portfolio only but leaves operator blind to order-history drift; no durable audit of verification |
 | Session persistence | A paper session can be created, restored after restart, verified, and closed without losing symbol scope, order history, or ledger continuity. | `PaperSessionPersistenceService.InitialiseAsync`, session endpoints, session detail DTOs | session metadata survives but order or ledger continuity does not; order updates are not durably awaited; restore path cannot prove continuity |
 | Risk auditability | Every material order/control outcome is explainable by audited evidence visible from the cockpit. | `OrderManagementSystem`, `ExecutionAuditTrailService`, `ExecutionOperatorControlService`, trading-screen audit view | risk state only shown as summary copy; rejects or control blocks lack actor or scope; cockpit cannot see manual overrides or breaker state |
@@ -127,10 +127,11 @@ The cockpit should remain the orchestration surface, but it should read from sha
 - latest replay verification evidence from the execution audit trail
 - execution-control state, including circuit breaker and manual overrides
 - durable promotion decision state and trace completeness
+- DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet
 - optional brokerage sync status when a fund account is supplied
 - operator work items and warnings
 
-`GET /api/workstation/trading` also includes the same readiness payload so the web cockpit can render session, replay, audit/control, and promotion decisions from one operator-ready lane.
+`GET /api/workstation/trading` also includes the same readiness payload so the web cockpit can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
 
 #### `PaperSessionReplayVerificationDto`
 

@@ -89,6 +89,7 @@ public sealed class TradingWorkspaceShellPageTests
         code.Should().Contain("TradingOperatorReadinessService? operatorReadinessService = null");
         code.Should().Contain("GetTradingOperatorReadinessAsync");
         code.Should().Contain("ApplyOperatorReadiness(readiness);");
+        code.Should().Contain("DK1 trust gate");
         code.Should().Contain("Paper session, controls, brokerage sync, and Security Master coverage");
         code.Should().Contain("Brokerage sync evidence is unavailable.");
     }

@@ -495,10 +495,14 @@ public sealed class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_TradingReadiness_ShouldJoinSessionReplayAuditControlsAndPromotion()
     {
         var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness", Guid.NewGuid().ToString("N"));
+        var automationRoot = Path.Combine(rootPath, "provider-validation", "_automation");
+        WriteReadyDk1Packet(automationRoot);
 
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
+            services.AddSingleton(new Dk1TrustGateReadinessOptions(automationRoot));
+            services.AddSingleton<Dk1TrustGateReadinessService>();
             services.AddSingleton(_ => new ExecutionAuditTrailService(
                 new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
                 NullLogger<ExecutionAuditTrailService>.Instance));
@@ -575,6 +579,16 @@ public sealed class WorkstationEndpointsTests
         readiness.Promotion.ApprovedBy.Should().Be("ops.lead");
         readiness.Promotion.AuditReference.Should().Be(decision.AuditReference);
         readiness.Promotion.ApprovalChecklist.Should().BeEquivalentTo(PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper));
+        readiness.TrustGate.Status.Should().Be("ready-for-operator-review");
+        readiness.TrustGate.ReadyForOperatorReview.Should().BeTrue();
+        readiness.TrustGate.RequiredSampleCount.Should().Be(4);
+        readiness.TrustGate.ReadySampleCount.Should().Be(4);
+        readiness.TrustGate.ValidatedEvidenceDocumentCount.Should().Be(4);
+        readiness.TrustGate.OperatorSignoffStatus.Should().Be("pending");
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.Kind == OperatorWorkItemKindDto.ProviderTrustGate &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.Detail.Contains("sign-off remains pending", StringComparison.OrdinalIgnoreCase));
         readiness.WorkItems.Should().NotContain(item => item.Tone == OperatorWorkItemToneDto.Critical);
         readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PaperReplay);
         readiness.WorkItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.PromotionReview);
@@ -1718,6 +1732,42 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
         services.AddSingleton<WorkstationWorkflowSummaryService>();
+    }
+
+    private static void WriteReadyDk1Packet(string automationRoot)
+    {
+        var packetDirectory = Path.Combine(automationRoot, "unit-ready");
+        Directory.CreateDirectory(packetDirectory);
+        File.WriteAllText(
+            Path.Combine(packetDirectory, "dk1-pilot-parity-packet.json"),
+            """
+            {
+              "generatedAtUtc": "2026-04-25T20:28:38Z",
+              "sourceSummary": "artifacts/provider-validation/_automation/unit-ready/wave1-validation-summary.json",
+              "status": "ready-for-operator-review",
+              "sampleReview": {
+                "requiredCount": 4,
+                "samples": [
+                  { "id": "DK1-ALPACA-QUOTE-GOLDEN", "status": "ready" },
+                  { "id": "DK1-ALPACA-PARSER-EDGE-CASES", "status": "ready" },
+                  { "id": "DK1-ROBINHOOD-SUPPORTED-SURFACE", "status": "ready" },
+                  { "id": "DK1-YAHOO-HISTORICAL-FALLBACK", "status": "ready" }
+                ]
+              },
+              "evidenceDocuments": [
+                { "name": "DK1 pilot parity runbook", "status": "validated" },
+                { "name": "DK1 trust rationale mapping", "status": "validated" },
+                { "name": "DK1 baseline trust thresholds", "status": "validated" },
+                { "name": "Provider validation matrix", "status": "validated" }
+              ],
+              "operatorSignoff": {
+                "requiredOwners": [ "Data Operations", "Provider Reliability", "Trading" ],
+                "status": "pending",
+                "requiredBeforeDk1Exit": true
+              },
+              "blockers": []
+            }
+            """);
     }
 
     private static void RegisterSecurityMasterWorkbenchServices(

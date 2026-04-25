@@ -45,7 +45,7 @@ That means the opportunity order should stay delivery-aware: preserve the closed
 ### 3. Productize governance and fund operations on top of the delivered Security Master baseline
 
 - **Category:** flagship product capabilities
-- **Gap:** Security Master is already the authoritative instrument-definition seam, and governance-facing APIs and workstation surfaces exist, but the next real product layer still needs deeper account/entity structure, multi-ledger, cash-flow, reconciliation, and governed-output workflows.
+- **Gap:** Security Master is already the authoritative instrument-definition seam, and governance-facing APIs and workstation surfaces exist. The first governed report-pack artifact path and file-backed reconciliation break queue are now in code, but the next real product layer still needs deeper account/entity structure, multi-ledger, cash-flow, calibrated reconciliation casework, publication controls, and board/investor/compliance reporting workflows.
 - **User or operator value:** This extends Meridian from trading-workstation credibility into front-, middle-, and back-office continuity built on one shared instrument and record model.
 - **Dependency it unlocks:** Better reconciliations, stronger governed outputs, and a clearer fund-operations product story.
 - **Placement:** Near-term strategic wave, Wave 4.

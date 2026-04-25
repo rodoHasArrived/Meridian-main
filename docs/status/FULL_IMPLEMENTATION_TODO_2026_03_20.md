@@ -49,7 +49,7 @@ Closed platform work:
 - Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
 - `Backtest → Paper → Live` promotion workflow endpoints: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
 - Trading dashboard promotion gate now supports both **approval** and **rejection** decisions with explicit operator rationale fields wired to the promotion API
-- Wave 2 trading-readiness contract wired through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, covering session, replay, control, promotion, brokerage-sync, work-item, and warning posture
+- Wave 2 trading-readiness contract wired through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, covering session, replay, control, promotion, DK1 trust-gate packet/sign-off posture, brokerage-sync, work-item, and warning posture
 - Promotion approvals now use the canonical `PromotionApprovalChecklist`; `Backtest -> Paper` approvals require DK1 trust-packet, run-lineage, portfolio/ledger-continuity, and risk-control review, while `Paper -> Live` additionally requires live-override review
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
@@ -98,7 +98,7 @@ Goal: harden the existing execution primitives, brokerage adapters, and wired RE
 Open work:
 
 - tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result, required approval-checklist state, session state, replay state, brokerage-sync posture, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in the dashboard
+- expose promotion evaluation result, required approval-checklist state, session state, replay state, DK1 trust-gate packet/sign-off posture, brokerage-sync posture, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in the dashboard
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 
@@ -196,7 +196,7 @@ Primary anchors:
 - `src/Meridian.Contracts/SecurityMaster/`
 - `src/Meridian.Storage/SecurityMaster/`
 
-### Track G: QuantScript *(implemented)*
+### Track G: QuantScript _(implemented)_
 
 Goal: ship the QuantScript capability as a real project, not only a blueprint.
 
@@ -293,7 +293,7 @@ References:
 
 ## Recommended Delivery Order
 
-### Wave 1 *(closed, maintain)*
+### Wave 1 _(closed, maintain)_
 
 - Track A: Closed trust-gate maintenance
 
@@ -319,11 +319,11 @@ References:
 
 ### Optional Wave
 
-- Track G: QuantScript *(implemented — deeper workflow integration and sample scripts remain)*
+- Track G: QuantScript _(implemented — deeper workflow integration and sample scripts remain)_
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
 - Track J: Remaining structural/documentation closure
-- Track K: Phase 1.5 preferred/convertible equity domain extension *(F# domain layer — all acceptance criteria open)*
+- Track K: Phase 1.5 preferred/convertible equity domain extension _(F# domain layer — all acceptance criteria open)_
 
 ---
 

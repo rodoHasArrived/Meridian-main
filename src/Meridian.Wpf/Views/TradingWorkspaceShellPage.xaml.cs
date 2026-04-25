@@ -357,7 +357,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         }
         else
         {
-            RiskRailText.Text = "Paper session, controls, brokerage sync, and Security Master coverage are aligned for operator review.";
+            RiskRailText.Text = readiness.TrustGate.ReadyForOperatorReview
+                ? $"DK1 trust gate {readiness.TrustGate.Status}; {readiness.TrustGate.Detail}"
+                : "Paper session, controls, brokerage sync, and Security Master coverage are aligned for operator review.";
         }
 
         if (readiness.BrokerageSync is null)

@@ -38,7 +38,7 @@ This document therefore adds:
 3. concrete dependencies
 4. wave and workstream exit criteria
 
-**Current-state refresh (2026-04-25):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, and Wave 4 governance readiness remains dependent on durable casework, governed outputs, and shared projection paths.
+**Current-state refresh (2026-04-25):** the WPF shell/navigation baseline is now present enough to validate as a workflow consumer rather than planned shell plumbing, the Wave 1 trust gate remains closed, the latest DK1 pilot parity packet is ready for operator review with sign-off still pending, the first governed report-pack artifact path exists, and the first file-backed reconciliation break-queue slice now supports seeded run-scoped breaks, assignment, resolve/dismiss, and audit history. Wave 4 governance readiness remains dependent on generalized durable casework, calibrated tolerance/severity routing, governed output publication controls, and shared projection paths.
 
 It should be read with:
 
@@ -265,8 +265,9 @@ Finish governance and fund-operations productization by making casework, report 
 - **Repo anchors:** `src/Meridian.Application/Services/ReconciliationEngineService.cs`, `src/Meridian.Application/Services/GovernanceExceptionService.cs`, `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`
 - **Deliverables:**
   - persistent governance-exception repository
+  - expand the delivered file-backed reconciliation break queue beyond run-scoped seeded breaks
   - assignment, notes, reopen, dismiss, resolve, and SLA timestamps
-  - removal of endpoint-local break-queue state as the source of truth
+  - removal of endpoint-local or fixture break-queue state as the source of truth
 - **Exit criteria:**
   - reconciliation breaks survive restart with stable identifiers and state history
   - governance operators can assign, review, resolve, dismiss, and reopen exceptions durably
