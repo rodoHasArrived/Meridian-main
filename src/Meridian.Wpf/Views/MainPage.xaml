@@ -1259,7 +1259,8 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <Border Grid.Row="1"
+                        <Border x:Name="WorkflowSummaryStrip"
+                                Grid.Row="1"
                                 Grid.ColumnSpan="2"
                                 Margin="0,18,0,0"
                                 Padding="16"
@@ -1304,14 +1305,14 @@
                                                 <TextBlock FontSize="10"
                                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}">
                                                     <Run Text="Layout: " />
-                                                    <Run Text="{Binding DataContext.CurrentModeName, RelativeSource={RelativeSource AncestorType=Page}}" />
+                                                    <Run Text="{Binding DataContext.CurrentModeName, RelativeSource={RelativeSource AncestorType=Page}, Mode=OneWay}" />
                                                 </TextBlock>
                                             </Border>
                                             <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,8,8">
                                                 <TextBlock FontSize="10"
                                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}">
                                                     <Run Text="Density: " />
-                                                    <Run Text="{Binding DataContext.ShellDensityLabel, RelativeSource={RelativeSource AncestorType=Page}}" />
+                                                    <Run Text="{Binding DataContext.ShellDensityLabel, RelativeSource={RelativeSource AncestorType=Page}, Mode=OneWay}" />
                                                 </TextBlock>
                                             </Border>
                                         </WrapPanel>

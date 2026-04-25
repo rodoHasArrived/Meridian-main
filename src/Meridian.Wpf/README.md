@@ -6,7 +6,7 @@ This is the WPF (.NET 9) desktop application for Meridian. It is the primary des
 
 The current WPF application already spans research, trading-adjacent, data-operations, and governance-adjacent workflows:
 
-- **Research workflows** - dashboard, backtests, charts, replay, run comparison, RunMat, and Lean integration
+- **Research workflows** - portfolio operations dashboard, backtests, charts, replay, run comparison, RunMat, and Lean integration
 - **Trading-adjacent workflows** - live data, watchlists, order-book views, trading-hours awareness, and shared run drill-ins
 - **Data operations** - symbols, providers, backfills, schedules, storage, packaging, and export flows
 - **Governance-adjacent workflows** - portfolio and ledger drill-ins, diagnostics, provider health, retention, and settings
@@ -104,7 +104,7 @@ The application still contains many page-level screens, but the active desktop d
 
 Examples:
 
-- `Research`: `Dashboard`, `Backtest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
+- `Research`: `Dashboard` portfolio operations overview, `Backtest`, `StrategyRuns`, `LeanIntegration`, `Charts`, `RunMat`, `EventReplay`
 - `Trading`: `LiveData`, `StrategyRuns`, `RunPortfolio`, `RunLedger`, `OrderBook`, `PortfolioImport`, `TradingHours`, `Watchlist`
 - `Data Operations`: `Provider`, `Symbols`, `Backfill`, `Schedules`, `Storage`, `PackageManager`, `DataExport`
 - `Governance`: `GovernanceShell`, `FundAccounts`, `SecurityMaster`, `FundLedger`, `FundReconciliation`, `DataQuality`, `ProviderHealth`, `SystemHealth`, `Diagnostics`, `RetentionAssurance`, `AdminMaintenance`, `Settings`
@@ -129,6 +129,7 @@ Examples:
 - Keep business logic in services or view models instead of code-behind where practical.
 - Prefer extending shared run, portfolio, ledger, and workstation services before introducing parallel desktop-only models.
 - Treat the workstation categories as the user-facing source of truth even when legacy pages still exist underneath.
+- Keep workstation chrome aligned with the dark Meridian operator style: navy shell surfaces, cyan focus and selection accents, compact data cards, and dense panel layouts suited to repeated market-monitoring work.
 - Avoid `.Result` / `.Wait()` in UI-facing async paths; use `await` + cancellation tokens to prevent desktop deadlocks.
 
 ## Deployment

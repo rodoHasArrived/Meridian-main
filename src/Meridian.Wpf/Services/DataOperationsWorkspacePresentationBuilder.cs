@@ -14,7 +14,7 @@ public static class DataOperationsWorkspacePresentationBuilder
 {
     internal const string ProvidersUnavailableSummary = "No providers";
     internal const string BackfillUnavailableSummary = "No active backfill";
-    internal const string StorageUnavailableSummary = "Storage OK";
+    internal const string StorageUnavailableSummary = "No data";
 
     public static DataOperationsWorkspacePresentation Build(DataOperationsWorkspaceData data)
     {
@@ -65,7 +65,7 @@ public static class DataOperationsWorkspacePresentationBuilder
                 ? ($"{storageIssueCount} issues", WorkspaceTone.Warning)
                 : data.StorageStats is not null
                     ? ($"{data.StorageStats.UsedPercentage:F0}% used", WorkspaceTone.Info)
-                    : (StorageUnavailableSummary, WorkspaceTone.Success);
+                    : (StorageUnavailableSummary, WorkspaceTone.Neutral);
         var freshnessValue = data.ActiveSession is not null
             ? $"{data.ActiveSession.Name} active · {(data.ActiveSession.Provider ?? "No provider")}"
             : data.ProviderStatus?.IsConnected == true && !string.IsNullOrWhiteSpace(data.ProviderStatus.ActiveProvider)
@@ -344,7 +344,7 @@ public static class DataOperationsWorkspacePresentationBuilder
     {
         if (storageStats is null && storageHealth is null)
         {
-            return new WorkspaceQueueItem { Title = "Storage posture", Detail = "Storage stats are unavailable. Open Storage to inspect persistence health and reconnect the backend before the next export or package handoff.", StatusLabel = "Unavailable", CountLabel = "No stats", Tone = WorkspaceTone.Warning, PrimaryActionId = "Storage", PrimaryActionLabel = "Open Storage", SecondaryActionId = "PackageManager", SecondaryActionLabel = "Packages" };
+            return new WorkspaceQueueItem { Title = "Storage health", Detail = "Storage stats are unavailable. Open Storage to inspect persistence health and reconnect the backend before the next export or package handoff.", StatusLabel = "Unavailable", CountLabel = "No stats", Tone = WorkspaceTone.Warning, PrimaryActionId = "Storage", PrimaryActionLabel = "Open Storage", SecondaryActionId = "PackageManager", SecondaryActionLabel = "Packages" };
         }
 
         var statusLabel = criticalStorageIssueCount > 0 ? "Critical" : storageIssueCount > 0 ? "Review" : "Healthy";

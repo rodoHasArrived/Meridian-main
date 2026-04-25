@@ -106,6 +106,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public Frame ContentFrame => GetRequired<Frame>("ContentFrame");
 
+    public Page? InnermostContentPage => NavigationHostInspector.ResolveInnermostPage(ContentFrame.Content);
+
     public Border WorkflowSummaryStrip => GetRequired<Border>("WorkflowSummaryStrip");
 
     public ItemsControl WorkflowSummaryItemsControl => GetRequired<ItemsControl>("WorkflowSummaryItemsControl");
@@ -297,7 +299,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     {
         UpdateLayout();
 
-        foreach (var descendant in EnumerateDescendants(Page))
+        foreach (var descendant in EnumerateSearchRoots().SelectMany(EnumerateDescendants))
         {
             if (descendant is T typed &&
                 string.Equals(AutomationProperties.GetAutomationId(typed), automationId, StringComparison.Ordinal))
@@ -349,14 +351,41 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         RunMatUiAutomationFacade.DrainDispatcher();
     }
 
+    private IEnumerable<DependencyObject> EnumerateSearchRoots()
+    {
+        yield return Page;
+
+        if (NavigationHostInspector.ResolveInnermostContent(ContentFrame.Content) is DependencyObject hostedContent &&
+            !ReferenceEquals(hostedContent, Page))
+        {
+            yield return hostedContent;
+        }
+    }
+
     private static IEnumerable<DependencyObject> EnumerateDescendants(DependencyObject root)
     {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        yield return root;
+
+        var visualChildCount = root is Visual
+            ? VisualTreeHelper.GetChildrenCount(root)
+            : 0;
+
+        for (var i = 0; i < visualChildCount; i++)
         {
             var child = VisualTreeHelper.GetChild(root, i);
             yield return child;
 
             foreach (var descendant in EnumerateDescendants(child))
+            {
+                yield return descendant;
+            }
+        }
+
+        foreach (var logicalChild in LogicalTreeHelper.GetChildren(root).OfType<DependencyObject>())
+        {
+            yield return logicalChild;
+
+            foreach (var descendant in EnumerateDescendants(logicalChild))
             {
                 yield return descendant;
             }

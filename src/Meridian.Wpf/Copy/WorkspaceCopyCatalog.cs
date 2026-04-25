@@ -38,13 +38,13 @@ public static class WorkspaceCopyCatalog
         public static readonly WorkspaceDescriptorCopy Descriptor = new(
             WorkspaceId,
             "Trading",
-            "Live posture, order flow, execution, and risk-aware monitoring.",
-            "Operate the trading cockpit with explicit paper/live separation and audit reachability.",
+            "Live readiness, order flow, execution, and risk-aware monitoring.",
+            "Operate trading workflows with explicit paper/live separation and audit reachability.",
             "Live · Orders · Risk",
-            "Trading Cockpit");
+            "Trading Desk");
 
-        public const string ShellTitle = "Trading Cockpit";
-        public const string ShellSubtitle = "Risk-aware trading shell for live posture, blotter review, safe staging, and docked execution detail.";
+        public const string ShellTitle = "Trading Desk";
+        public const string ShellSubtitle = "Risk-aware trading shell for live readiness, blotter review, safe staging, and docked execution detail.";
         public const string PrimaryScopeLabel = "Desk";
     }
 
@@ -55,15 +55,15 @@ public static class WorkspaceCopyCatalog
             WorkspaceId,
             "Data Operations",
             "Providers, ingestion, storage, schedules, exports, and blocker visibility.",
-            "Operate the collection queue, freshness posture, and export pipeline from one workstation.",
+            "Operate collection queues, freshness checks, and exports from one workstation.",
             "Providers · Storage · Jobs",
             "Data Operations Workspace");
 
         public const string ShellTitle = "Data Operations Workspace";
-        public const string ShellSubtitle = "Provider freshness, backfill pressure, storage posture, and export job visibility in one fixed operator shell.";
+        public const string ShellSubtitle = "Provider freshness, backfill pressure, storage health, and export job visibility in one fixed operator shell.";
         public const string PrimaryScopeLabel = "Queue";
-        public const string DefaultScopeLabel = "Provider and storage posture";
-        public const string DefaultScopeSummary = "Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
+        public const string DefaultScopeLabel = "Provider and storage health";
+        public const string DefaultScopeSummary = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
     }
 
     public static class Governance
@@ -73,12 +73,12 @@ public static class WorkspaceCopyCatalog
             WorkspaceId,
             "Governance",
             "Controls, diagnostics, fund operations, reconciliation, and trust-critical review.",
-            "Operate accounts, ledger, reconciliation, and audit work from a single control surface.",
+            "Operate accounts, ledger, reconciliation, and audit work from a single review area.",
             "Ledger · Audit · Controls",
             "Governance Workspace");
 
         public const string ShellTitle = "Governance Workspace";
-        public const string ShellSubtitleNoFund = "Organization-aware review shell for operations, accounting, reconciliation, reporting, and audit posture.";
+        public const string ShellSubtitleNoFund = "Organization-aware review shell for operations, accounting, reconciliation, reporting, and audit readiness.";
         public const string ShellSubtitleFund = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.";
     }
 
@@ -115,7 +115,7 @@ public static class WorkspaceCopyCatalog
         new("governance.workspace.summary", Governance.Descriptor.Summary),
         new("governance.workspace.tile-summary", Governance.Descriptor.TileSummary),
         new("governance.shell.title", Governance.ShellTitle),
-        new("governance.shell.subtitle.no-fund", Governance.ShellSubtitleNoFund),
-        new("governance.shell.subtitle.fund", Governance.ShellSubtitleFund)
+        new("governance.shell.subtitle-no-fund", Governance.ShellSubtitleNoFund),
+        new("governance.shell.subtitle-fund", Governance.ShellSubtitleFund)
     ];
 }

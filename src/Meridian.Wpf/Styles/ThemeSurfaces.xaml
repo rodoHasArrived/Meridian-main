@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="clr-namespace:Meridian.Wpf.Views">
 
-    <!-- Premium cards: white/off-white bg, 8px radius, hairline border, subtle elevation shadow -->
+    <!-- Premium cards: dark navy surface, 8px radius, cyan-tinted hairline border. -->
     <Style x:Key="CardStyle" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
@@ -12,7 +12,7 @@
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#1A6BB5" BlurRadius="0" ShadowDepth="0" Opacity="0" />
+                <DropShadowEffect Color="#020812" BlurRadius="14" ShadowDepth="2" Direction="270" Opacity="0.28" />
             </Setter.Value>
         </Setter>
     </Style>
@@ -142,7 +142,7 @@
     </Style>
 
     <Style x:Key="CompactCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
@@ -151,21 +151,21 @@
 
     <!-- ElevatedCardStyle: subtle drop shadow for raised panel feel -->
     <Style x:Key="ElevatedSurfaceCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="20" />
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect Color="#1A2A4A" BlurRadius="18" ShadowDepth="2" Direction="270" Opacity="0.10" />
+                <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="2" Direction="270" Opacity="0.34" />
             </Setter.Value>
         </Setter>
     </Style>
 
     <!-- TerminalCardStyle: elevated surface for code/data panels -->
     <Style x:Key="TerminalCardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
@@ -173,27 +173,28 @@
     </Style>
 
     <Style x:Key="MetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Background" Value="{StaticResource ConsoleCardSurfaceRaisedBrush}" />
         <Setter Property="Padding" Value="18" />
     </Style>
 
     <!-- Metric cards: prominent left-accent bar, modern radii -->
     <Style x:Key="MetricCardSuccessStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
     </Style>
 
     <Style x:Key="MetricCardDangerStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
     </Style>
 
     <Style x:Key="MetricCardWarningStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
     </Style>
 
     <Style x:Key="MetricCardInfoStyle" TargetType="Border" BasedOn="{StaticResource MetricCardStyle}">
-        <Setter Property="BorderThickness" Value="4,1,1,1" />
+        <Setter Property="BorderThickness" Value="3,1,1,1" />
         <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
     </Style>
 
@@ -267,9 +268,22 @@
         <Setter Property="CornerRadius" Value="12" />
     </Style>
 
+    <Style x:Key="WorkspaceSummaryTileContentStyle" TargetType="StackPanel">
+        <Setter Property="MinWidth" Value="76" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
     <Style x:Key="WorkspaceWorkbenchCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="Padding" Value="20" />
         <Setter Property="CornerRadius" Value="14" />
+    </Style>
+
+    <Style x:Key="WorkspaceCardHeaderGridStyle" TargetType="Grid">
+        <Setter Property="Margin" Value="{StaticResource WorkspaceCardHeaderToBodyMargin}" />
+    </Style>
+
+    <Style x:Key="WorkspaceCardFooterPanelStyle" TargetType="WrapPanel">
+        <Setter Property="Margin" Value="0,14,0,0" />
     </Style>
 
     <Style x:Key="WorkspaceInspectorCardStyle" TargetType="Border" BasedOn="{StaticResource CompactCardStyle}">

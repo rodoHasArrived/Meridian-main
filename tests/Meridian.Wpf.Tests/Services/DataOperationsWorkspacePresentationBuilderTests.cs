@@ -241,18 +241,18 @@ public sealed class DataOperationsWorkspacePresentationBuilderTests
     {
         var presentation = DataOperationsWorkspacePresentationBuilder.Build(new DataOperationsWorkspaceData
         {
-            ScopeLabel = "Provider and storage posture",
-            ScopeSummary = "Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell.",
+            ScopeLabel = "Provider and storage health",
+            ScopeSummary = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.",
             RetrievedAt = new DateTimeOffset(2026, 04, 16, 14, 30, 00, TimeSpan.Zero)
         });
 
         presentation.Context.FreshnessValue.Should().Be("Awaiting live telemetry");
         presentation.Context.ReviewStateValue.Should().Be("Awaiting queue");
         presentation.Context.CriticalValue.Should().Be("No urgent blockers");
-        presentation.QueueScopeBadgeText.Should().Be("Provider and storage posture");
+        presentation.QueueScopeBadgeText.Should().Be("Provider and storage health");
 
-        presentation.SummaryProvidersText.Should().Be("No data");
-        presentation.SummaryBackfillText.Should().Be("Idle");
+        presentation.SummaryProvidersText.Should().Be("No providers");
+        presentation.SummaryBackfillText.Should().Be("No active backfill");
         presentation.SummaryStorageText.Should().Be("No data");
 
         presentation.ProviderQueueItems.Should().ContainSingle();

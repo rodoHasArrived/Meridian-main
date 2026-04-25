@@ -333,6 +333,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private async Task RunCurrentCellAsync(CancellationToken ct)
     {
+        if (!ValidateToolbarContext())
+            return;
+
         if (SelectedCell is null)
             return;
 
@@ -346,6 +349,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private async Task RunAllAsync(CancellationToken ct)
     {
+        if (!ValidateToolbarContext())
+            return;
+
         if (NotebookCells.Count == 0)
             return;
 
@@ -475,7 +481,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             _runStopwatch?.Stop();
             _elapsedTimer?.Stop();
             IsRunning = false;
-            ProgressFraction = 1.0;
+            if (succeeded)
+                ProgressFraction = 1.0;
 
             await PersistExecutionHistoryAsync(succeeded, latestRuntimeParameters, capturedBacktests, CancellationToken.None);
         }
@@ -994,8 +1001,43 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         _fileWatcher.Renamed += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
     }
 
-    private IReadOnlyDictionary<string, object?> BuildParameterDictionary() =>
-        Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.ParsedValue, StringComparer.OrdinalIgnoreCase);
+    private bool ValidateToolbarContext()
+    {
+        if (FromDate.Date <= ToDate.Date)
+            return true;
+
+        StatusText = "Invalid date range: from date must be on or before to date.";
+        Diagnostics.Add(new DiagnosticEntry("Validation", StatusText));
+        ActiveResultsTab = 2;
+        return false;
+    }
+
+    private IReadOnlyDictionary<string, object?> BuildParameterDictionary()
+    {
+        var parameters = Parameters.ToDictionary(
+            parameter => parameter.Name,
+            parameter => parameter.ParsedValue,
+            StringComparer.OrdinalIgnoreCase);
+
+        if (!string.IsNullOrWhiteSpace(AssetSymbol))
+            parameters["symbol"] = AssetSymbol.Trim().ToUpperInvariant();
+
+        parameters["from"] = DateOnly.FromDateTime(FromDate);
+        parameters["to"] = DateOnly.FromDateTime(ToDate);
+        parameters["interval"] = NormalizeInterval(SelectedInterval);
+        return parameters;
+    }
+
+    private static string NormalizeInterval(string? interval)
+    {
+        var trimmed = (interval ?? string.Empty).Trim();
+        if (trimmed.Length == 0)
+            return "daily";
+
+        var tokenEnd = trimmed.IndexOfAny([' ', '(']);
+        var token = tokenEnd > 0 ? trimmed[..tokenEnd] : trimmed;
+        return token.ToLowerInvariant();
+    }
 
     private Dictionary<string, string> BuildResolvedParameterSnapshot(IReadOnlyList<ParameterDescriptor> runtimeParameters)
     {

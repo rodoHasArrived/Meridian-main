@@ -6,6 +6,7 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -33,7 +34,7 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ViewModel.CurrentPageTag.Should().Be("RunMat");
             facade.ShellAutomationStateText.Text.Should().Be("RunMat");
-            facade.PageTitleText.Text.Should().Be("Run Mat");
+            facade.PageTitleText.Text.Should().Be("Run scripts");
             facade.CommandPaletteOverlay.Visibility.Should().Be(Visibility.Collapsed);
             AutomationProperties.GetAutomationId(facade.CommandPaletteTextBox).Should().Be("CommandPaletteInput");
         });
@@ -227,21 +228,16 @@ public sealed class MainPageUiWorkflowTests
             facade.OpenCommandPalettePage("FundReconciliation");
 
             await WaitForConditionAsync(() => facade.ViewModel.CurrentPageTag == "FundReconciliation").ConfigureAwait(true);
-            await WaitForConditionAsync(() =>
-            {
-                try
-                {
-                    return facade.FindDescendantByAutomationId<TextBlock>("GovernanceRouteBannerTitleText")
-                        .Text.Contains("Reconciliation", StringComparison.Ordinal);
-                }
-                catch
-                {
-                    return false;
-                }
-            }).ConfigureAwait(true);
+            var fundLedgerViewModel = facade.InnermostContentPage!.DataContext
+                .Should()
+                .BeOfType<FundLedgerViewModel>()
+                .Subject;
 
-            facade.FindDescendantByAutomationId<TextBlock>("GovernanceRouteBannerTitleText").Text.Should().Contain("Reconciliation");
-            facade.FindDescendantByAutomationId<TextBlock>("GovernanceWorkbenchTitleText").Text.Should().Contain("Reconciliation");
+            await WaitForConditionAsync(() =>
+                fundLedgerViewModel.RouteBannerTitleText.Contains("Reconciliation", StringComparison.Ordinal)).ConfigureAwait(true);
+
+            fundLedgerViewModel.RouteBannerTitleText.Should().Contain("Reconciliation");
+            fundLedgerViewModel.CurrentWorkbenchTitleText.Should().Contain("Reconciliation");
         });
     }
 

@@ -76,6 +76,13 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     public ObservableCollection<SymbolPerformanceItem> SymbolPerformanceItems { get; } = new();
     public ObservableCollection<SymbolFreshnessItem> SymbolFreshnessItems { get; } = new();
     public ObservableCollection<IntegrityEventItem> IntegrityEventItems { get; } = new();
+    public ObservableCollection<DashboardOperationsMetricItem> OperationsMetrics { get; } = new();
+    public ObservableCollection<DashboardDataQualityCategoryItem> DataQualityCategories { get; } = new();
+    public ObservableCollection<DashboardUpcomingMaturityItem> UpcomingMaturities { get; } = new();
+    public ObservableCollection<DashboardHoldingSnapshotItem> HoldingsSnapshotItems { get; } = new();
+    public ObservableCollection<DashboardServiceStatusItem> PortfolioDataServiceStatuses { get; } = new();
+
+    public string HoldingsSnapshotCountText => $"{HoldingsSnapshotItems.Count:N0} securities";
 
     // ── Metric-card properties ────────────────────────────────────────────────────
 
@@ -390,6 +397,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         // Observe collection changes to keep empty-state flags up to date.
         ActivityItems.CollectionChanged += (_, _) => IsNoActivityVisible = ActivityItems.Count == 0;
         IntegrityEventItems.CollectionChanged += (_, _) => IsNoIntegrityEventsVisible = IntegrityEventItems.Count == 0;
+        HoldingsSnapshotItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HoldingsSnapshotCountText));
 
         // Subscribe to service events.
         _messagingService.MessageReceived += OnMessageReceived;
@@ -405,7 +413,99 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
         _staleCheckTimer.Tick += OnStaleCheckTimerTick;
         _activityPollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
         _activityPollTimer.Tick += OnActivityPollTimerTick;
+
+        SeedOperationalDashboardData();
     }
+
+    private void SeedOperationalDashboardData()
+    {
+        var mutedBrush = _secondaryTextBrush;
+        var purpleBrush = (Brush)System.Windows.Application.Current.Resources["AccentPurpleBrush"];
+        var cyanBrush = (Brush)System.Windows.Application.Current.Resources["AccentCyanBrush"];
+        var successBackground = (Brush)System.Windows.Application.Current.Resources["BadgeSuccessBackgroundBrush"];
+        var successBorder = (Brush)System.Windows.Application.Current.Resources["BadgeSuccessBorderBrush"];
+        var warningBackground = (Brush)System.Windows.Application.Current.Resources["BadgeWarningBackgroundBrush"];
+        var warningBorder = (Brush)System.Windows.Application.Current.Resources["BadgeWarningBorderBrush"];
+        var dangerBackground = (Brush)System.Windows.Application.Current.Resources["BadgeDangerBackgroundBrush"];
+        var dangerBorder = (Brush)System.Windows.Application.Current.Resources["BadgeDangerBorderBrush"];
+        var infoBackground = (Brush)System.Windows.Application.Current.Resources["BadgeInfoBackgroundBrush"];
+        var infoBorder = (Brush)System.Windows.Application.Current.Resources["BadgeInfoBorderBrush"];
+
+        OperationsMetrics.Clear();
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Total Securities", Value = "24,816", Detail = "+128 added this month", AccentBrush = _infoBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Data Exceptions", Value = "37", Detail = "12 high priority", AccentBrush = _warningBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Unmapped Ratings", Value = "14", Detail = "Awaiting review", AccentBrush = purpleBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Last Import", Value = "7:42 AM", Detail = "12,480 records processed", AccentBrush = cyanBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Reconciliation Rate", Value = "98.7%", Detail = "Across current portfolio", AccentBrush = _successBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Stale Prices", Value = "22", Detail = "Older than tolerance", AccentBrush = mutedBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "NAIC Missing", Value = "9", Detail = "Filing-impact fields", AccentBrush = _errorBrush });
+        OperationsMetrics.Add(new DashboardOperationsMetricItem { Label = "Upcoming Maturities", Value = "46", Detail = "Next 90 days", AccentBrush = _infoBrush });
+
+        DataQualityCategories.Clear();
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Security master", Count = "12", Detail = "Missing identifiers or stale issuer terms", Completion = 93, StatusBrush = _warningBrush });
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Ratings", Count = "14", Detail = "Unmapped NAIC/S&P/Moody's/Fitch values", Completion = 88, StatusBrush = purpleBrush });
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Pricing", Count = "22", Detail = "Prices older than tolerance", Completion = 91, StatusBrush = mutedBrush });
+        DataQualityCategories.Add(new DashboardDataQualityCategoryItem { Category = "Accounting export", Count = "3", Detail = "Fields blocked from downstream export", Completion = 98, StatusBrush = _successBrush });
+
+        UpcomingMaturities.Clear();
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "US Treasury", MaturityDate = "2026-05-15", ParValue = "$18.2M", Status = "Ready", StatusBrush = _successBrush });
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "Federal Home Loan Bank", MaturityDate = "2026-06-03", ParValue = "$9.8M", Status = "Review", StatusBrush = _warningBrush });
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "JP Morgan Chase", MaturityDate = "2026-06-18", ParValue = "$7.5M", Status = "Ready", StatusBrush = _successBrush });
+        UpcomingMaturities.Add(new DashboardUpcomingMaturityItem { Issuer = "FNMA Pool", MaturityDate = "2026-07-01", ParValue = "$6.4M", Status = "Missing", StatusBrush = _errorBrush });
+
+        HoldingsSnapshotItems.Clear();
+        HoldingsSnapshotItems.Add(CreateHolding("91282CJN2", "US Treasury", "Treasury Note", "Bond", "AA+ / Aaa", "4.125%", "2028-01-31", "$32.0M", "$31.7M", "$32.4M", "+$0.7M", _successBrush, "VALID", successBackground, successBorder, _successBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("3130ATUC9", "Federal Home Loan Bank", "Callable Agency Note", "Agency", "AA+ / Aaa", "5.000%", "2029-06-14", "$18.5M", "$18.6M", "$18.2M", "-$0.4M", _errorBrush, "REVIEW", warningBackground, warningBorder, _warningBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("46647PBB1", "JP Morgan Chase", "Senior Unsecured Note", "Corporate", "A- / A1", "4.950%", "2030-07-22", "$11.0M", "$10.8M", "$11.3M", "+$0.5M", _successBrush, "VALID", successBackground, successBorder, _successBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("02007LAB3", "Ally Auto Receivables", "Auto Loan ABS 2024-A A3", "ABS", "AAA / Aaa", "5.310%", "2029-11-15", "$8.6M", "$8.5M", "$8.5M", "+$0.0M", _successBrush, "NEW", infoBackground, infoBorder, cyanBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("61747YFG5", "Morgan Stanley", "Subordinated Note", "Corporate", "BBB+ / A3", "4.210%", "2034-04-20", "$7.2M", "$7.1M", "$6.9M", "-$0.2M", _errorBrush, "STALE", infoBackground, infoBorder, mutedBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("17327CAN3", "Citigroup", "Fixed-to-Float Note", "Corporate", "BBB / Baa1", "6.270%", "2036-02-13", "$6.8M", "$6.7M", "$6.6M", "-$0.1M", _errorBrush, "VALID", successBackground, successBorder, _successBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("3622ABCD4", "GNMA Pool", "Mortgage Pass-Through", "MBS", "AA+ / Aaa", "3.500%", "2042-09-20", "$5.9M", "$5.6M", "$5.4M", "-$0.2M", _errorBrush, "MISSING", dangerBackground, dangerBorder, _errorBrush));
+        HoldingsSnapshotItems.Add(CreateHolding("78467VAF9", "SPDR S&P 500 ETF", "Common ETF Holding", "Equity", "N/A", "--", "--", "$4.2M", "$4.0M", "$4.5M", "+$0.5M", _successBrush, "LOCKED", infoBackground, infoBorder, purpleBrush));
+
+        PortfolioDataServiceStatuses.Clear();
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Pricing feed", State = "current", StatusBrush = _successBrush });
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Validation engine", State = "nominal", StatusBrush = _successBrush });
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Accounting export", State = "ready", StatusBrush = _successBrush });
+        PortfolioDataServiceStatuses.Add(new DashboardServiceStatusItem { ServiceName = "Reference data sync", State = "active", StatusBrush = _infoBrush });
+    }
+
+    private static DashboardHoldingSnapshotItem CreateHolding(
+        string cusip,
+        string issuer,
+        string description,
+        string assetClass,
+        string rating,
+        string coupon,
+        string maturity,
+        string parValue,
+        string bookValue,
+        string marketValue,
+        string unrealizedGainLoss,
+        Brush unrealizedGainLossBrush,
+        string dataStatus,
+        Brush dataStatusBackground,
+        Brush dataStatusBorderBrush,
+        Brush dataStatusForeground) =>
+        new()
+        {
+            Cusip = cusip,
+            Issuer = issuer,
+            Description = description,
+            AssetClass = assetClass,
+            Rating = rating,
+            Coupon = coupon,
+            Maturity = maturity,
+            ParValue = parValue,
+            BookValue = bookValue,
+            MarketValue = marketValue,
+            UnrealizedGainLoss = unrealizedGainLoss,
+            UnrealizedGainLossBrush = unrealizedGainLossBrush,
+            DataStatus = dataStatus,
+            DataStatusBackground = dataStatusBackground,
+            DataStatusBorderBrush = dataStatusBorderBrush,
+            DataStatusForeground = dataStatusForeground
+        };
 
     // ── Lifecycle (called by the Page) ────────────────────────────────────────────
 

@@ -189,12 +189,13 @@ public sealed class QuantScriptViewModelTests
             ConsoleOutput: "error",
             Metrics: Array.Empty<KeyValuePair<string, string>>(),
             Plots: Array.Empty<PlotRequest>(),
-            TradesSummary: Array.Empty<string>()));
+            TradesSummary: Array.Empty<string>(),
+            CapturedBacktests: Array.Empty<Meridian.Backtesting.Sdk.BacktestResult>(),
+            RuntimeParameters: Array.Empty<ParameterDescriptor>()));
         var vm = CreateVm(runner: runner);
 
-        var succeeded = await vm.RunAllCommand.ExecuteAsync(null);
+        await vm.RunAllCommand.ExecuteAsync(null);
 
-        succeeded.Should().BeFalse();
         vm.ProgressFraction.Should().BeLessThan(1.0);
         vm.StatusText.Should().NotStartWith("Completed");
     }
@@ -205,9 +206,8 @@ public sealed class QuantScriptViewModelTests
         var runner = new FakeScriptRunner().SetException(new OperationCanceledException());
         var vm = CreateVm(runner: runner);
 
-        var succeeded = await vm.RunAllCommand.ExecuteAsync(null);
+        await vm.RunAllCommand.ExecuteAsync(null);
 
-        succeeded.Should().BeFalse();
         vm.StatusText.Should().Be("Cancelled");
         vm.ProgressFraction.Should().BeLessThan(1.0);
     }

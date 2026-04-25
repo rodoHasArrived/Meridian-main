@@ -6,7 +6,7 @@ public static partial class ShellNavigationCatalog
 {
     private static readonly ShellPageDescriptor[] TradingPages =
     [
-        Page<TradingWorkspaceShellPage>("TradingShell", "Trading home", "Monitor markets, review orders, and track risk across active runs.", "trading", "Cockpit", "\uE945", 0, ShellNavigationVisibilityTier.Primary, ["trading", "home", "workspace", "monitor"], ["RunPortfolio", "PositionBlotter", "RunRisk", "FundPortfolio", "GovernanceShell"], ["TradingWorkspace"]),
+        Page<TradingWorkspaceShellPage>("TradingShell", "Trading home", "Monitor markets, review orders, and track risk across active runs.", "trading", "Desk", "\uE945", 0, ShellNavigationVisibilityTier.Primary, ["trading", "home", "workspace", "monitor"], ["RunPortfolio", "PositionBlotter", "RunRisk", "FundPortfolio", "GovernanceShell"], ["TradingWorkspace"]),
         Page<LiveDataViewerPage>("LiveData", "Live data", "Monitor streaming quotes, venue state, and feed health.", "trading", "Market Feed", "\uE9D2", 10, ShellNavigationVisibilityTier.Primary, ["streaming", "market", "feed", "monitor"], ["OrderBook", "PositionBlotter"], ["LiveDataViewer"]),
         Page<OrderBookPage>("OrderBook", "Order book", "Review depth and quote quality before sending orders.", "trading", "Market Feed", "\uE8FD", 20, ShellNavigationVisibilityTier.Primary, ["order book", "depth", "quotes"], ["LiveData", "PositionBlotter"]),
         Page<PositionBlotterPage>("PositionBlotter", "Position blotter", "Review open positions and realized or unrealized P&L.", "trading", "Execution", "\uE8FD", 30, ShellNavigationVisibilityTier.Primary, ["positions", "blotter", "pnl", "review"], ["RunPortfolio", "RunRisk", "RunLedger", "FundPortfolio"], ["Blotter"]),

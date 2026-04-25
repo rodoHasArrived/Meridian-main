@@ -69,7 +69,8 @@ public static class PlotRenderBehavior
 
         if (request.Series is not { Count: > 0 } &&
             request.MultiSeries is not { Count: > 0 } &&
-            request.HeatmapData is null)
+            request.HeatmapData is null &&
+            request.Candlestick is not { Count: > 0 })
         {
             wpfPlot.Refresh();
             return;

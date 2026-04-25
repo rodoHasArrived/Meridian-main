@@ -1481,7 +1481,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private void UpdateWorkbenchIdentity()
     {
-        var tab = Enum.IsDefined(typeof(FundOperationsTab), SelectedTabIndex)
+        var tab = SelectedTabIndex is >= byte.MinValue and <= byte.MaxValue &&
+                  Enum.IsDefined(typeof(FundOperationsTab), (byte)SelectedTabIndex)
             ? (FundOperationsTab)SelectedTabIndex
             : FundOperationsTab.Overview;
 

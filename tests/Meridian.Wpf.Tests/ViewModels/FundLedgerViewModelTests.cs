@@ -461,7 +461,7 @@ public sealed class FundLedgerViewModelTests
                 viewModel.ReportPackTrialBalanceLinesText.Should().NotBe("0");
                 viewModel.ReportPackGeneratedAtText.Should().NotBe("-");
                 viewModel.ReportPackAssetSections.Should().NotBeEmpty();
-                viewModel.ReportPackOwnershipText.Should().Contain("sign-off", StringComparison.OrdinalIgnoreCase);
+                viewModel.ReportPackOwnershipText.Should().Contain("sign-off");
                 viewModel.ReportPackSnapshotWarningText.Should().NotBeNullOrWhiteSpace();
             }
             finally
@@ -607,7 +607,8 @@ public sealed class FundLedgerViewModelTests
                 viewModel.SelectedLedgerDimensionDisplayText.Should().Be(entityView.DisplayName);
                 viewModel.VisibleTrialBalance.Should().OnlyContain(line => line.FinancialAccountId == accountId.ToString());
                 viewModel.VisibleJournal.Should().OnlyContain(line =>
-                    (line.FinancialAccountIds ?? []).Contains(accountId.ToString(), StringComparer.OrdinalIgnoreCase));
+                    line.FinancialAccountIds != null &&
+                    line.FinancialAccountIds.Contains(accountId.ToString(), StringComparer.OrdinalIgnoreCase));
             }
             finally
             {
@@ -635,7 +636,7 @@ public sealed class FundLedgerViewModelTests
             portfolioReadService,
             new NavAttributionService(securityMasterQuery),
             new ReportGenerationService(securityMasterQuery),
-            strategyReconciliationService);
+            strategyReconciliationService: strategyReconciliationService);
     }
 
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)

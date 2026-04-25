@@ -70,7 +70,7 @@ public sealed class MainShellViewModelTests
             vm.ActivateShell();
 
             vm.CurrentPageTag.Should().Be("ResearchShell");
-            vm.CurrentPageTitle.Should().Be("Research Workspace");
+            vm.CurrentPageTitle.Should().Be("Research Home");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -102,7 +102,7 @@ public sealed class MainShellViewModelTests
             vm.CommandPaletteQuery = "workspace";
 
             vm.CommandPalettePages.Should().NotBeEmpty();
-            vm.CommandPalettePages.First().PageTag.Should().Be("ResearchShell");
+            vm.CommandPalettePages.First().PageTag.Should().Be("Workspaces");
         });
     }
 
