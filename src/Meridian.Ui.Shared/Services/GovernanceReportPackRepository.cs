@@ -57,6 +57,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(artifacts);
+        EnsureWritableSnapshot(snapshot);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -96,6 +97,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
                     .OrderBy(static artifact => artifact.RelativePath, StringComparer.Ordinal)
                     .ToArray()
             };
+            EnsureWritableSnapshot(finalSnapshot);
 
             await AtomicFileWriter
                 .WriteAsync(
@@ -133,7 +135,7 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             foreach (var manifestPath in Directory.EnumerateFiles(fundDirectory, "manifest.json", SearchOption.AllDirectories))
             {
                 ct.ThrowIfCancellationRequested();
-                var snapshot = await TryReadSnapshotAsync(manifestPath, ct).ConfigureAwait(false);
+            var snapshot = await TryReadSnapshotAsync(manifestPath, ct).ConfigureAwait(false);
                 if (snapshot is null)
                 {
                     continue;
@@ -151,7 +153,8 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
                     AuditActor: snapshot.AuditActor,
                     ArtifactCount: snapshot.Artifacts.Count,
                     WarningCount: snapshot.Warnings.Count,
-                    RelativeManifestPath: ToRelativePath(manifestPath)));
+                    RelativeManifestPath: ToRelativePath(manifestPath),
+                    SchemaVersion: snapshot.SchemaVersion));
             }
 
             return history
@@ -203,7 +206,9 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             await using var stream = File.OpenRead(manifestPath);
             return await JsonSerializer
                 .DeserializeAsync<FundReportPackSnapshotDto>(stream, _jsonOptions, ct)
-                .ConfigureAwait(false);
+                .ConfigureAwait(false) is { } snapshot && IsReadableSnapshot(snapshot)
+                    ? snapshot
+                    : null;
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
@@ -224,7 +229,57 @@ public sealed class FileGovernanceReportPackRepository : IGovernanceReportPackRe
             Format: format,
             RelativePath: $"{fundKey}/{reportKey}/{fileName}",
             SizeBytes: content.LongLength,
-            ChecksumSha256: Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant());
+            ChecksumSha256: Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
+            SchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion);
+
+    private static void EnsureWritableSnapshot(FundReportPackSnapshotDto snapshot)
+    {
+        if (snapshot.Provenance is null)
+        {
+            throw new ArgumentException("Governance report-pack provenance is required.", nameof(snapshot));
+        }
+
+        if (snapshot.Artifacts is null)
+        {
+            throw new ArgumentException("Governance report-pack artifact metadata is required.", nameof(snapshot));
+        }
+
+        if (!string.Equals(snapshot.ContractName, GovernanceReportPackContract.ContractName, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"Governance report-pack contract must be '{GovernanceReportPackContract.ContractName}'.",
+                nameof(snapshot));
+        }
+
+        if (snapshot.SchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
+        {
+            throw new ArgumentException(
+                $"Governance report-pack schema version must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                nameof(snapshot));
+        }
+
+        if (snapshot.Provenance.SchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
+        {
+            throw new ArgumentException(
+                $"Governance report-pack provenance schema version must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                nameof(snapshot));
+        }
+
+        if (snapshot.Artifacts.Any(static artifact => artifact.SchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion))
+        {
+            throw new ArgumentException(
+                $"Governance report-pack artifact schema versions must be {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                nameof(snapshot));
+        }
+    }
+
+    private static bool IsReadableSnapshot(FundReportPackSnapshotDto snapshot) =>
+        string.Equals(snapshot.ContractName, GovernanceReportPackContract.ContractName, StringComparison.Ordinal)
+        && GovernanceReportPackContract.IsReadableSchemaVersion(snapshot.SchemaVersion)
+        && snapshot.Provenance is not null
+        && GovernanceReportPackContract.IsReadableSchemaVersion(snapshot.Provenance.SchemaVersion)
+        && snapshot.Artifacts is not null
+        && snapshot.Artifacts.All(static artifact => GovernanceReportPackContract.IsReadableSchemaVersion(artifact.SchemaVersion));
 
     private string ToRelativePath(string path) =>
         Path.GetRelativePath(_rootDirectory, path).Replace('\\', '/');

@@ -560,7 +560,8 @@ public static class FundStructureEndpoints
     {
         var parsed = valueSets
             .SelectMany(static values => values)
-            .SelectMany(static value => value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(static value => value is not null)
+            .SelectMany(static value => value!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .Where(static value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -600,6 +601,13 @@ public static class FundStructureEndpoints
             && request.Formats.Any(static format => !Enum.IsDefined(format)))
         {
             error = "One or more report-pack artifact formats are unsupported.";
+            return false;
+        }
+
+        if (request.ExpectedSchemaVersion is { } expectedSchemaVersion
+            && expectedSchemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
+        {
+            error = $"expectedSchemaVersion must be {GovernanceReportPackContract.CurrentSchemaVersion}.";
             return false;
         }
 

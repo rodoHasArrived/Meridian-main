@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Research, Desktop, Backtesting, API, and Architecture contributors
-**Last Updated:** 2026-04-13
-**Status:** Proposed focused blueprint for the next Research implementation slice
+**Last Updated:** 2026-04-25
+**Status:** Active focused blueprint for the next Research implementation slice; request-level batch sweeps and WPF Batch Backtest ViewModel coverage are now present, while real strategy selection, persisted sweep grouping, and stage-aware shared orchestration remain open
 
 > Companion to:
 > - [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md)
@@ -15,7 +15,7 @@
 
 This blueprint defines the next implementation slice for Meridian's Research workspace.
 
-The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps.
+The slice is intentionally narrower than full Backtest Studio unification. Its goal is to turn the current Research shell, backtest launcher, and batch backtest page into a workflow that researchers can trust and use repeatedly without falling back to ad hoc manual steps. As of 2026-04-25, the Batch Backtest page is no longer only a static demo: request-level parameter sweeps, progress/cancellation handling, result metric projection, and ViewModel tests are present. The remaining Research roadmap gap is to connect those controls to real strategy selection, persisted sweep grouping, and the shared run model.
 
 The slice delivers three user-facing outcomes:
 

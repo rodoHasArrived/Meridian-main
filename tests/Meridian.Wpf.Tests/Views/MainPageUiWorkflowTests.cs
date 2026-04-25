@@ -208,6 +208,29 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_RecentPagesRail_ShouldStayScopedToTheActiveWorkspace()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.OpenCommandPalettePage("Backtest");
+            facade.Click(facade.GovernanceWorkspaceButton);
+            facade.SelectWorkspaceNavigationPage(facade.WorkspacePrimaryNavList, "SecurityMaster");
+
+            facade.ViewModel.CurrentWorkspace.Should().Be("governance");
+            facade.RecentPagesSummaryText.Text.Should().Be("1 recent governance workflow");
+            facade.ViewModel.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
+
+            facade.Click(facade.ResearchWorkspaceButton);
+
+            facade.ViewModel.CurrentWorkspace.Should().Be("research");
+            facade.RecentPagesSummaryText.Text.Should().Be("1 recent research workflow");
+            facade.ViewModel.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
+        });
+    }
+
+    [Fact]
     public void MainPage_WorkflowSummaryStrip_ShouldRenderAndUpdateAfterContextSelection()
     {
         WpfTestThread.Run(async () =>

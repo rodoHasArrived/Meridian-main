@@ -174,6 +174,31 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void RecentPages_AreScopedToTheActiveWorkspace()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.ActivateShell();
+            vm.NavigateToPageCommand.Execute("Backtest");
+            vm.NavigateToPageCommand.Execute("GovernanceShell");
+            vm.NavigateToPageCommand.Execute("SecurityMaster");
+
+            vm.CurrentWorkspace.Should().Be("governance");
+            vm.RecentPages.Select(page => page.PageTag).Should().Equal("GovernanceShell");
+            vm.RecentPagesSummaryText.Should().Be("1 recent governance workflow");
+
+            vm.SelectWorkspaceCommand.Execute("research");
+
+            vm.CurrentWorkspace.Should().Be("research");
+            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.RecentPages.Select(page => page.PageTag).Should().Equal("Backtest");
+            vm.RecentPagesSummaryText.Should().Be("1 recent research workflow");
+        });
+    }
+
+    [Fact]
     public void NavigateToPageCommand_UpdatesCurrentPage()
     {
         WpfTestThread.Run(() =>

@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.SecurityMaster;
@@ -344,15 +345,21 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                 FundProfileId: fundProfileId,
                 AuditActor: "unit-test",
                 AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
-                CorrelationId: "corr-report-001"));
+                CorrelationId: "corr-report-001",
+                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion));
 
             snapshot.FundProfileId.Should().Be(fundProfileId);
+            snapshot.ContractName.Should().Be(GovernanceReportPackContract.ContractName);
+            snapshot.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
             snapshot.AuditActor.Should().Be("unit-test");
             snapshot.CorrelationId.Should().Be("corr-report-001");
             snapshot.Provenance.RelatedRunIds.Should().ContainSingle().Which.Should().Be("run-report-001");
+            snapshot.Provenance.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
             snapshot.Provenance.JournalEntryCount.Should().BeGreaterThan(0);
             snapshot.Provenance.LedgerEntryCount.Should().BeGreaterThan(0);
             snapshot.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
+            snapshot.Artifacts.Should().OnlyContain(artifact =>
+                artifact.SchemaVersion == GovernanceReportPackContract.CurrentSchemaVersion);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "asset-class-sections" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
@@ -377,6 +384,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                 .ContainSingle()
                 .Which;
             File.ReadAllText(manifestPath).Should().Contain(snapshot.ReportId.ToString());
+            File.ReadAllText(manifestPath).Should().Contain("\"schemaVersion\": 1");
+            File.ReadAllText(manifestPath).Should().Contain("\"contractName\": \"governance-report-pack\"");
 
             var trialBalanceCsv = snapshot.Artifacts.Single(artifact =>
                 artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
@@ -438,7 +447,83 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             var detail = await service.GetReportPackAsync(newer.ReportId);
             detail.Should().NotBeNull();
             detail!.ReportId.Should().Be(newer.ReportId);
+            detail.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
             detail.Artifacts.Should().NotBeEmpty();
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task GenerateReportPackAsync_WithUnsupportedExpectedSchemaVersion_ThrowsArgumentException()
+    {
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(
+                new InMemoryFundAccountService(),
+                new StrategyRunStore(),
+                CreateReportPackRepository(tempRoot));
+
+            var act = () => service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: "fund-schema-version",
+                AuditActor: "unit-test",
+                ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion + 1));
+
+            await act.Should()
+                .ThrowAsync<ArgumentException>()
+                .WithMessage("*Unsupported governance report-pack schema version*");
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task ReportPackRepository_WithFutureSchemaVersion_SkipsManifest()
+    {
+        var fundProfileId = $"fund-future-schema-{Guid.NewGuid():N}";
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-future-schema-001",
+            strategyId: "future-1",
+            strategyName: "Future Schema Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Future Schema Fund"));
+
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(
+                new InMemoryFundAccountService(),
+                strategyRepository,
+                CreateReportPackRepository(tempRoot));
+            var generated = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                Formats: [GovernanceReportArtifactFormatDto.Json]));
+            var manifestPath = Directory.EnumerateFiles(
+                    Path.Combine(tempRoot, "governance-report-packs"),
+                    "manifest.json",
+                    SearchOption.AllDirectories)
+                .Single();
+            var incompatible = generated with
+            {
+                SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion + 1
+            };
+
+            await File.WriteAllTextAsync(
+                manifestPath,
+                JsonSerializer.Serialize(incompatible, ReportPackJsonOptions()));
+
+            var history = await service.GetReportPackHistoryAsync(fundProfileId);
+            var detail = await service.GetReportPackAsync(generated.ReportId);
+
+            history.Should().BeEmpty();
+            detail.Should().BeNull();
         }
         finally
         {
@@ -519,6 +604,12 @@ public sealed class FundOperationsWorkspaceReadServiceTests
 
     private static FileGovernanceReportPackRepository CreateReportPackRepository(string tempRoot) =>
         new(tempRoot, NullLogger<FileGovernanceReportPackRepository>.Instance);
+
+    private static JsonSerializerOptions ReportPackJsonOptions() => new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
 
     private static string CreateTempDirectory()
     {

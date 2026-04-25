@@ -143,7 +143,8 @@ public sealed class FundStructureEndpointTests
             AuditActor: "endpoint-test",
             AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
             Currency: "USD",
-            CorrelationId: "endpoint-correlation");
+            CorrelationId: "endpoint-correlation",
+            ExpectedSchemaVersion: GovernanceReportPackContract.CurrentSchemaVersion);
 
         var response = await _client.PostAsJsonAsync(
             "/api/fund-structure/report-packs",
@@ -154,17 +155,23 @@ public sealed class FundStructureEndpointTests
 
         payload.Should().NotBeNull();
         payload!.FundProfileId.Should().Be(seed.FundProfileId);
+        payload.ContractName.Should().Be(GovernanceReportPackContract.ContractName);
+        payload.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
         payload.DisplayName.Should().Be(seed.DisplayName);
         payload.AuditActor.Should().Be("endpoint-test");
         payload.CorrelationId.Should().Be("endpoint-correlation");
+        payload.Provenance.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
         payload.Provenance.SourceSnapshotHash.Should().MatchRegex("^[a-f0-9]{64}$");
+        payload.Artifacts.Should().OnlyContain(artifact =>
+            artifact.SchemaVersion == GovernanceReportPackContract.CurrentSchemaVersion);
         payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
         payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
         payload.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "workbook" && artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
         payload.Artifacts.Should().OnlyContain(artifact =>
             !string.IsNullOrWhiteSpace(artifact.RelativePath)
             && artifact.SizeBytes > 0
-            && artifact.ChecksumSha256.Length == 64);
+            && artifact.ChecksumSha256.Length == 64
+            && artifact.SchemaVersion == GovernanceReportPackContract.CurrentSchemaVersion);
     }
 
     [Fact]
@@ -182,6 +189,7 @@ public sealed class FundStructureEndpointTests
         payload.Should().NotBeNull();
         payload!.Should().Contain(item => item.ReportId == generated.ReportId);
         payload.Single(item => item.ReportId == generated.ReportId).RelativeManifestPath.Should().EndWith("manifest.json");
+        payload.Single(item => item.ReportId == generated.ReportId).SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
     }
 
     [Fact]
@@ -195,6 +203,7 @@ public sealed class FundStructureEndpointTests
         var detail = await detailResponse.Content.ReadFromJsonAsync<FundReportPackSnapshotDto>();
         detail.Should().NotBeNull();
         detail!.ReportId.Should().Be(generated.ReportId);
+        detail.SchemaVersion.Should().Be(GovernanceReportPackContract.CurrentSchemaVersion);
 
         var missingResponse = await _client.GetAsync($"/api/fund-structure/report-packs/{Guid.NewGuid()}");
         missingResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -233,9 +242,18 @@ public sealed class FundStructureEndpointTests
                 auditActor = "endpoint-test",
                 formats = new[] { 999 }
             });
+        var unsupportedSchemaResponse = await _client.PostAsJsonAsync(
+            "/api/fund-structure/report-packs",
+            new
+            {
+                fundProfileId = "fund-bad-formats",
+                auditActor = "endpoint-test",
+                expectedSchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion + 1
+            });
 
         emptyFormatsResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         unsupportedFormatResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        unsupportedSchemaResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]

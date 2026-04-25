@@ -49,6 +49,8 @@ Closed platform work:
 - Paper-trading session management endpoints: `/api/execution/sessions` (create, list, detail, close)
 - `Backtest → Paper → Live` promotion workflow endpoints: `/api/promotion/evaluate/{runId}`, `/api/promotion/approve`, `/api/promotion/reject`, `/api/promotion/history`
 - Trading dashboard promotion gate now supports both **approval** and **rejection** decisions with explicit operator rationale fields wired to the promotion API
+- Wave 2 trading-readiness contract wired through `/api/workstation/trading/readiness` and `TradingOperatorReadinessDto`, covering session, replay, control, promotion, brokerage-sync, work-item, and warning posture
+- Promotion approvals now use the canonical `PromotionApprovalChecklist`; `Backtest -> Paper` approvals require DK1 trust-packet, run-lineage, portfolio/ledger-continuity, and risk-control review, while `Paper -> Live` additionally requires live-override review
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
 - Brokerage gateway framework complete: `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`, plus Alpaca/IB/StockSharp adapter implementations
@@ -60,7 +62,7 @@ Closed platform work:
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- current working-tree WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, and shell/navigation smoke coverage; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- current working-tree WPF shell consolidation now includes metadata-driven shell navigation, workspace shell pages, deep-page hosting, context strips, shell/navigation smoke coverage, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, and the workspace shell context strip; it should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
 - DK1 pilot parity now has an emitted Alpaca/Robinhood/Yahoo `pilotReplaySampleSet` contract plus generated parity-packet artifacts; the latest packet is `ready-for-operator-review`, and operator sign-off must stay synchronized across the validation script, provider matrix, runbook, and readiness dashboard
 - coordination services and lease/ownership primitives for future multi-instance work
@@ -96,7 +98,7 @@ Goal: harden the existing execution primitives, brokerage adapters, and wired RE
 Open work:
 
 - tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result, approval controls, session state, and execution-control state with clearer acceptance criteria in the dashboard
+- expose promotion evaluation result, required approval-checklist state, session state, replay state, brokerage-sync posture, operator work items, and execution-control state from the shared trading-readiness contract with clearer acceptance criteria in the dashboard
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 

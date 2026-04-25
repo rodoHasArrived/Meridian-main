@@ -20,6 +20,20 @@ public enum GovernanceReportArtifactFormatDto
 }
 
 /// <summary>
+/// Version contract for governed local report-pack exports.
+/// </summary>
+public static class GovernanceReportPackContract
+{
+    public const string ContractName = "governance-report-pack";
+    public const int CurrentSchemaVersion = 1;
+    public const int MinimumReadableSchemaVersion = 1;
+
+    public static bool IsReadableSchemaVersion(int schemaVersion) =>
+        schemaVersion >= MinimumReadableSchemaVersion
+        && schemaVersion <= CurrentSchemaVersion;
+}
+
+/// <summary>
 /// Query for the shared governance and fund-operations workspace projection.
 /// </summary>
 /// <remarks>
@@ -141,7 +155,8 @@ public sealed record FundReportPackGenerateRequestDto(
     string? Currency = null,
     string? CorrelationId = null,
     string? DecisionRationale = null,
-    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null);
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
+    int? ExpectedSchemaVersion = null);
 
 /// <summary>
 /// One persisted report-pack artifact and its integrity metadata.
@@ -151,7 +166,8 @@ public sealed record FundReportPackArtifactDto(
     GovernanceReportArtifactFormatDto Format,
     string RelativePath,
     long SizeBytes,
-    string ChecksumSha256);
+    string ChecksumSha256,
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
 
 /// <summary>
 /// Source lineage captured with a generated governance report pack.
@@ -165,7 +181,8 @@ public sealed record FundReportPackProvenanceDto(
     int OpenReconciliationBreakCount,
     int SecurityResolvedCount,
     int SecurityMissingCount,
-    string SourceSnapshotHash);
+    string SourceSnapshotHash,
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
 
 /// <summary>
 /// Immutable manifest for a generated governance report pack.
@@ -184,7 +201,9 @@ public sealed record FundReportPackSnapshotDto(
     string? DecisionRationale,
     FundReportPackProvenanceDto Provenance,
     IReadOnlyList<FundReportPackArtifactDto> Artifacts,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    string ContractName = GovernanceReportPackContract.ContractName,
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
 
 /// <summary>
 /// Lightweight row used when listing generated governance report packs.
@@ -201,4 +220,5 @@ public sealed record FundReportPackHistoryItemDto(
     string AuditActor,
     int ArtifactCount,
     int WarningCount,
-    string RelativeManifestPath);
+    string RelativeManifestPath,
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);

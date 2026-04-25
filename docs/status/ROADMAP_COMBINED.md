@@ -34,7 +34,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, and a WPF shell/navigation baseline organized around the four workspace model. The wave order remains simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, a delivered Security Master baseline, a Wave 2 trading-readiness contract with canonical promotion approval-checklist state, and a WPF shell/navigation baseline organized around the four workspace model with focused coverage for high-traffic pages and shell context strips. The wave order remains simple and consistent across the planning set:
 
 1. **Wave 1:** provider confidence and checkpoint evidence *(repo-closed, keep synchronized)*
 2. **Wave 2:** paper-trading cockpit hardening
@@ -60,7 +60,7 @@ This document keeps concise framing only; detailed readiness evidence remains in
 
 ### 1. Wave 2: Harden the paper-trading cockpit already in code
 
-The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, promotion checklist, brokerage-sync, and work-item posture; the next step is proving that contract through operator scenarios rather than treating the endpoint as completion.
+The paper-trading cockpit should move from "implemented" to "dependable." The current repo now has a shared trading-readiness contract for session, replay, controls, promotion checklist, brokerage-sync, and work-item posture, with `PromotionApprovalChecklist` defining the required review items for paper and live promotions; the next step is proving that contract through operator scenarios rather than treating the endpoint as completion.
 
 ### 2. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 

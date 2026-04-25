@@ -29,7 +29,7 @@ Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any 
 
 Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
-The current working tree reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, and shell smoke tests. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
+The current working tree reinforces that direction rather than changing it. The WPF workspace-shell baseline is present through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, deep-page hosting, shell-context strips, shell smoke tests, and focused tests for Batch Backtest, Position Blotter, Notification Center, Welcome, workspace queue tone styles, and workspace shell context-strip behavior. Workflow-level acceptance still belongs to Waves 2-4 rather than a separate desktop migration milestone.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
@@ -39,7 +39,7 @@ The current working tree reinforces that direction rather than changing it. The 
 | Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
 | Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
 | Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
-| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, promotion seam, and the shared trading-readiness contract are in code |
+| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, promotion seam, canonical promotion approval checklist, and the shared trading-readiness contract are in code |
 | Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; broader runtime proof remains open |
 | Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
 | Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |

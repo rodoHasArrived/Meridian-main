@@ -6,6 +6,7 @@ Keep it short and prefer the canonical Meridian guidance sources:
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/HELP.md` for verified operator and developer CLI workflows.
+- `docs/ai/navigation/README.md` for generated repo-navigation workflow guidance.
 - `docs/development/desktop-workflow-automation.md` for scripted WPF workflow runs.
 - `docs/status/provider-validation-matrix.md` for Wave 1 provider evidence gates.
 - `docs/status/dk1-pilot-parity-runbook.md` for the DK1 provider parity packet workflow.
@@ -29,14 +30,25 @@ python3 build/python/cli/buildctl.py --help
 ## Run And Host Workflows
 
 ```bash
+make setup-dev
 make quickstart
 make run
 make run-backfill SYMBOLS=AAPL,MSFT
 make run-selftest
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
+dotnet run --project src/Meridian/Meridian.csproj -- --check-config
 dotnet run --project src/Meridian/Meridian.csproj -- --show-config
+dotnet run --project src/Meridian/Meridian.csproj -- --watch-config
+dotnet run --project src/Meridian/Meridian.csproj -- --recommend-providers
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
+```
+
+## MCP Workflows
+
+```bash
+dotnet run --project src/Meridian.Mcp/Meridian.Mcp.csproj
+dotnet run --project src/Meridian.McpServer/Meridian.McpServer.csproj -- --config config/appsettings.json
 ```
 
 ## Build And Test
@@ -52,6 +64,12 @@ make test-fsharp
 make test-integration
 make test-all
 make pre-pr
+make pre-pr-full
+make watch
+make watch-build
+make benchmark
+make bench-quick
+make bench-filter FILTER=*Collector*
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
 python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Debug --verbosity quiet
@@ -151,6 +169,11 @@ make verify-tooling-metadata
 make docs-all
 make skill-list
 make skill-discover
+dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
+dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
+dotnet run --project src/Meridian/Meridian.csproj -- --error-codes
+python3 build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --summary
 ```
 
 Do not add package versions directly to project files. Central package management lives in

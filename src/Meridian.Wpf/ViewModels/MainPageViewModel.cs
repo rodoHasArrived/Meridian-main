@@ -666,6 +666,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            RefreshRecentPages();
             UpdateWorkflowPresentation();
             _ = RefreshShellContextAsync();
         }
@@ -881,6 +882,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         var recent = _navigationService.GetBreadcrumbs()
             .Select(entry => entry.PageTag)
             .Where(pageTag => !string.IsNullOrWhiteSpace(pageTag))
+            .Where(pageTag => string.Equals(InferWorkspaceFromPage(pageTag), CurrentWorkspace, StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Where(pageTag => !string.Equals(pageTag, CurrentPageTag, StringComparison.OrdinalIgnoreCase))
             .Take(6)

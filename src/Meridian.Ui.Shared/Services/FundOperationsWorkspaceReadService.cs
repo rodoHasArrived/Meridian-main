@@ -228,6 +228,7 @@ public sealed class FundOperationsWorkspaceReadService
 
         var repository = _reportPackRepository
             ?? throw new InvalidOperationException("Governance report-pack repository has not been configured.");
+        var schemaVersion = ResolveReportPackSchemaVersion(request.ExpectedSchemaVersion);
         var formats = NormalizeReportFormats(request.Formats);
         var normalizedFundProfileId = request.FundProfileId.Trim();
         var fundId = TranslateFundProfileId(normalizedFundProfileId);
@@ -280,7 +281,8 @@ public sealed class FundOperationsWorkspaceReadService
                 ledger,
                 reconciliation,
                 nav,
-                runs));
+                runs),
+            SchemaVersion: schemaVersion);
         var snapshot = new FundReportPackSnapshotDto(
             ReportId: report.ReportId,
             FundProfileId: normalizedFundProfileId,
@@ -299,7 +301,9 @@ public sealed class FundOperationsWorkspaceReadService
                 : request.DecisionRationale.Trim(),
             Provenance: provenance,
             Artifacts: [],
-            Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount));
+            Warnings: BuildReportPackWarnings(report, reconciliation, runs.Count, securityMissingCount),
+            ContractName: GovernanceReportPackContract.ContractName,
+            SchemaVersion: schemaVersion);
 
         return await repository
             .SaveAsync(snapshot, BuildReportPackArtifacts(report, formats, ct), ct)
@@ -874,6 +878,19 @@ public sealed class FundOperationsWorkspaceReadService
         }
 
         return formats;
+    }
+
+    private static int ResolveReportPackSchemaVersion(int? expectedSchemaVersion)
+    {
+        var schemaVersion = expectedSchemaVersion ?? GovernanceReportPackContract.CurrentSchemaVersion;
+        if (schemaVersion != GovernanceReportPackContract.CurrentSchemaVersion)
+        {
+            throw new ArgumentException(
+                $"Unsupported governance report-pack schema version '{schemaVersion}'. Current version is {GovernanceReportPackContract.CurrentSchemaVersion}.",
+                nameof(expectedSchemaVersion));
+        }
+
+        return schemaVersion;
     }
 
     private static IReadOnlyList<GovernanceReportPackArtifactContent> BuildReportPackArtifacts(

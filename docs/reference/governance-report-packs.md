@@ -2,7 +2,7 @@
 
 **Owner:** Governance / Fund Operations  
 **Scope:** Local workstation API and artifact contracts  
-**Status:** First governed artifact slice delivered
+**Status:** First governed artifact slice delivered; schema contract v1 frozen for DK2 pilot validation
 
 ---
 
@@ -33,6 +33,22 @@ Each package contains:
 - `report-pack.xlsx` when `Xlsx` is requested
 
 The API returns relative artifact paths rooted below `governance-report-packs`; it does not return download URLs.
+
+---
+
+## Schema Contract
+
+Governed report packs use the frozen local export contract:
+
+| Field | Value |
+| --- | --- |
+| `contractName` | `governance-report-pack` |
+| `schemaVersion` | `1` |
+| Minimum readable schema version | `1` |
+
+Generation requests may provide `expectedSchemaVersion`. When supplied, it must match the current schema version (`1`); unsupported versions return `400` from the API or `ArgumentException` from the service layer.
+
+The file repository validates the manifest, provenance payload, and artifact metadata before writing. It also skips incompatible future-version manifests during history/detail reads instead of mixing unknown contracts into DK2 pilot evidence.
 
 ---
 
@@ -69,6 +85,7 @@ Validation:
 | `currency` | No | Defaults from linked fund accounts, then `USD`. |
 | `correlationId` | No | Generated when omitted. |
 | `decisionRationale` | No | Optional audit note. |
+| `expectedSchemaVersion` | No | Must be `1` when supplied. |
 
 Supported `GovernanceReportArtifactFormatDto` values:
 
@@ -84,6 +101,8 @@ Supported `GovernanceReportArtifactFormatDto` values:
 
 Important fields:
 
+- `contractName`
+- `schemaVersion`
 - `reportId`
 - `fundProfileId`
 - `displayName`
@@ -105,6 +124,7 @@ Each `FundReportPackArtifactDto` includes:
 - `relativePath`
 - `sizeBytes`
 - `checksumSha256`
+- `schemaVersion`
 
 ---
 
@@ -112,6 +132,7 @@ Each `FundReportPackArtifactDto` includes:
 
 `FundReportPackProvenanceDto` captures:
 
+- schema version
 - related run ids
 - journal and ledger entry counts
 - trial-balance row count
