@@ -2104,7 +2104,7 @@ public static class WorkstationEndpoints
     }
 
     private static string FormatScore(double score)
-        => score.ToString("P0", CultureInfo.InvariantCulture);
+        => $"{(score * 100d).ToString("0", CultureInfo.InvariantCulture)}%";
 
     private static string BuildProviderGateImpact(double trustScore)
         => trustScore >= 0.90d

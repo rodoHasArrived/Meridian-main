@@ -40,6 +40,7 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [Environment Variables](environment-variables.md) | Credential and configuration reference |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
+| [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference |
 | [Export Preflight Rules](export-preflight-rules.md) | Export validation rule engine, rule IDs, and reuse pattern |
 | [Governance Report Packs](governance-report-packs.md) | Local-first fund-ops report-pack artifact routes, contracts, and storage layout |
 | [Backtest Preflight & Stage Telemetry](backtest-preflight-and-stage-telemetry.md) | Backtest trust-gate DTOs/service contract and stage-aware progress telemetry fields |

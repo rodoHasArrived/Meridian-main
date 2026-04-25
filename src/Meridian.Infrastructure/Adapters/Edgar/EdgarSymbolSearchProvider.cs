@@ -344,7 +344,7 @@ public sealed class EdgarSymbolSearchProvider : IFilterableSymbolSearchProvider,
                 Figi: null,
                 CompositeFigi: null,
                 Isin: null,
-                Cusip: sub.Ein,
+                Cusip: null,
                 Source: "edgar",
                 LastUpdated: DateTimeOffset.UtcNow
             );

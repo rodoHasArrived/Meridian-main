@@ -11,6 +11,7 @@ using Meridian.Contracts.Domain;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Store;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage;
 using Meridian.Storage.DirectLending;
@@ -90,6 +91,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         });
 
         services.AddSingleton<RateLimiter>(sp => new RateLimiter(5, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(0.5)));
+        services.TryAddSingleton<IEdgarReferenceDataStore, FileEdgarReferenceDataStore>();
+        services.TryAddSingleton<IEdgarReferenceDataProvider, EdgarReferenceDataProvider>();
+        services.TryAddSingleton<IEdgarIngestOrchestrator, EdgarIngestOrchestrator>();
 
         if (SecurityMasterStartup.IsConfigured())
         {

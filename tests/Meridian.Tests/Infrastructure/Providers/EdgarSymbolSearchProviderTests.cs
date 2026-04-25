@@ -255,6 +255,7 @@ public sealed class EdgarSymbolSearchProviderTests
         details.Name.Should().Be("MICROSOFT CORP");
         details.Exchange.Should().Be("Nasdaq");
         details.Sector.Should().Be("Prepackaged Software");
+        details.Cusip.Should().BeNull("SEC EIN values are tax identifiers and must not be mapped to CUSIP");
         details.Source.Should().Be("edgar");
     }
 
@@ -367,6 +368,7 @@ public sealed class EdgarSecurityMasterIngestProviderTests
         {
             r.SourceSystem.Should().Be("edgar");
             r.Identifiers.Should().Contain(id => id.Kind == SecurityIdentifierKind.Ticker);
+            r.Identifiers.Should().Contain(id => id.Kind == SecurityIdentifierKind.Cik && id.Provider == "edgar");
         });
     }
 

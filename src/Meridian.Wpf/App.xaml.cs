@@ -162,7 +162,7 @@ public partial class App : System.Windows.Application
         mainWindow.Show();
         mainWindow.ForceStartupWindowRecovery();
 
-        // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
+        // Register taskbar jump list tasks (Start Data Collection, Open Portfolio Operations, etc.).
         WpfServices.JumpListService.Instance.Register();
 
         // Begin listening for args forwarded from secondary instances (jump list re-launch).

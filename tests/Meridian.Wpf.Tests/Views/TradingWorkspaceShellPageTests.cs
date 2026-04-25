@@ -82,6 +82,18 @@ public sealed class TradingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldConsumeSharedOperatorReadiness()
+    {
+        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+
+        code.Should().Contain("TradingOperatorReadinessService? operatorReadinessService = null");
+        code.Should().Contain("GetTradingOperatorReadinessAsync");
+        code.Should().Contain("ApplyOperatorReadiness(readiness);");
+        code.Should().Contain("Paper session, controls, brokerage sync, and Security Master coverage");
+        code.Should().Contain("Brokerage sync evidence is unavailable.");
+    }
+
+    [Fact]
     public void TradingWorkspaceShellPageSource_ShouldPlaceDeskActionsAheadOfNarrativeSupportPanels()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));

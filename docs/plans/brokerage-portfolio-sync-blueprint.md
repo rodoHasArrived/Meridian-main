@@ -1,6 +1,6 @@
 # Brokerage Portfolio Sync Blueprint
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-25
 
 ## Summary
 
@@ -21,6 +21,45 @@ The key design decision is boundary discipline:
 - `Meridian.ProviderSdk` remains focused on market and historical data providers
 - `Meridian.Execution.Sdk` and brokerage adapters own external brokerage account-state ingestion
 - application and governance services own normalization, reconciliation, persistence, and projection into workstation workflows
+
+## Current Operator-Ready Slice
+
+The first implemented slice keeps WPF as the operator acceptance lane and treats Alpaca plugin
+checks as market-data evidence only. Brokerage/account continuity is read-side and Meridian-owned:
+
+- `src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs` defines account catalog, portfolio sync,
+  activity sync, balances, positions, orders, fills, and cash activity.
+- `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs` is the first concrete
+  adapter for Alpaca Trading API account, position, open-order, fill, and cash-activity reads.
+- `src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs` orchestrates local durable
+  sync using raw snapshots, normalized projections, cursors, stale-state detection, and
+  partial-failure reporting.
+- `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs` aggregates paper session,
+  replay verification, execution controls, promotion trace, brokerage sync freshness, Security
+  Master coverage, and operator work items for WPF and workstation APIs.
+- `src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs` exposes one run review packet
+  for Research, Trading, and Governance so run, portfolio, ledger, reconciliation, attribution, and
+  optional brokerage evidence use the same source.
+
+Implemented routes:
+
+- `GET /api/workstation/trading/readiness`
+- `GET /api/workstation/runs/{runId}/review-packet`
+- `GET /api/fund-accounts/brokerage-sync/accounts`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/status`
+- `POST /api/fund-accounts/{accountId}/brokerage-sync/run`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/positions`
+- `GET /api/fund-accounts/{accountId}/brokerage-sync/activity`
+
+Durable local storage now uses `%LocalAppData%/Meridian/workstation/brokerage-sync` by default:
+
+- raw provider snapshots: `raw/{provider}/{externalAccount}/{timestamp}.json`
+- normalized projections: `projections/{fundAccountId}/current.json`
+- sync cursors: `cursors/{fundAccountId}.json`
+
+This slice is intentionally not a live-trading readiness expansion. Sync failures, stale cursors,
+and Security Master gaps surface as operator warnings and work items; they do not authorize order
+routing.
 
 ## Scope
 
@@ -297,6 +336,16 @@ Target the narrowest useful validation surface per layer.
 
 - shared DTO projection tests for freshness and break summaries
 - WPF view-model tests that verify brokerage sync posture appears in fund-operations and governance flows without breaking current shell navigation
+
+Current focused coverage added with the operator-ready slice:
+
+- `BrokeragePortfolioSyncServiceTests` covers a normal operator sync with projection/cursor/raw
+  persistence, credential outage failure persistence, and cancellation before persistence.
+- `AlpacaBrokerageGatewayTests` covers Alpaca read-side account, balance, position, open-order,
+  fill, and cash-activity mapping through HTTP fixtures.
+- `TradingWorkspaceShellPageTests` includes source-level coverage that the WPF cockpit consumes
+  `TradingOperatorReadinessService`; current WPF test discovery should be checked before relying on
+  that project for executable assertions.
 
 Suggested validation commands:
 

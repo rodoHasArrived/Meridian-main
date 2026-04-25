@@ -310,6 +310,10 @@ public static class UiApiRoutes
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
+    public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
+    public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
+    public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
+    public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
 
     // Messaging endpoints
     public const string MessagingConfig = "/api/messaging/config";

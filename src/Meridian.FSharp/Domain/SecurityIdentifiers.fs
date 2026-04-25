@@ -27,6 +27,8 @@ type IdentifierKind =
     | PermTicker
     /// Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds.
     | Ric
+    /// SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.
+    | Cik
 
 type Identifier = {
     Kind: IdentifierKind
@@ -62,6 +64,7 @@ module SecurityIdentifier =
         | IdentifierKind.Valoren -> "Valoren"
         | IdentifierKind.PermTicker -> "PermTicker"
         | IdentifierKind.Ric -> "Ric"
+        | IdentifierKind.Cik -> "Cik"
 
     let isActiveAt asOf identifier =
         identifier.ValidFrom <= asOf

@@ -254,6 +254,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
         app.MapCredentialEndpoints(jsonOptions);
@@ -370,6 +371,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapEdgarReferenceDataEndpoints(jsonOptions);
 
         // Credential management endpoints
         app.MapCredentialEndpoints(jsonOptions);

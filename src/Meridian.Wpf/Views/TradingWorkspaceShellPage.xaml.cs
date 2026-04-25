@@ -299,12 +299,16 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             return;
         }
 
-        TradingStatusSummaryText.Text = readiness.Summary;
-        TradingStatusBadgeText.Text = readiness.IsOperatorReady ? "Ready" : "Attention";
+        var isOperatorReady = readiness.Warnings.Count == 0
+            && readiness.WorkItems.All(static item => item.Tone is not OperatorWorkItemToneDto.Warning and not OperatorWorkItemToneDto.Critical);
+        TradingStatusSummaryText.Text = readiness.ActiveSession is null
+            ? "No active paper session is ready for operator acceptance."
+            : $"Paper session {readiness.ActiveSession.SessionId} readiness, replay, controls, promotion, and brokerage continuity evidence.";
+        TradingStatusBadgeText.Text = isOperatorReady ? "Ready" : "Attention";
         ApplyTone(
             TradingStatusBadgeBorder,
             TradingStatusBadgeText,
-            readiness.IsOperatorReady ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning);
+            isOperatorReady ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning);
 
         ApplyStatusItem(
             PromotionStatusPill,
@@ -312,9 +316,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             PromotionStatusDetailText,
             new TradingWorkspaceStatusItem
             {
-                Label = readiness.Promotion?.StatusLabel ?? "Promotion evidence unavailable",
-                Detail = readiness.Promotion?.Detail ?? "Promotion posture has not been projected into shared readiness yet.",
-                Tone = readiness.Promotion?.NeedsReview == true ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info
+                Label = readiness.Promotion?.State ?? "Promotion decision required",
+                Detail = readiness.Promotion?.Reason ?? "Promotion posture has not been projected into shared readiness yet.",
+                Tone = readiness.Promotion?.RequiresReview == true ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info
             });
 
         ApplyStatusItem(
@@ -323,9 +327,11 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             AuditStatusDetailText,
             new TradingWorkspaceStatusItem
             {
-                Label = readiness.Controls?.ControlsReady == true ? "Controls ready" : "Controls need review",
-                Detail = readiness.Controls?.Summary ?? "Execution controls have not been projected into shared readiness yet.",
-                Tone = readiness.Controls?.ControlsReady == true ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning
+                Label = readiness.Controls.CircuitBreakerOpen ? "Controls blocked" : "Controls ready",
+                Detail = readiness.Controls.CircuitBreakerOpen
+                    ? readiness.Controls.CircuitBreakerReason ?? "Execution is blocked by an operator control."
+                    : $"{readiness.Controls.SymbolLimitCount} symbol limit(s), {readiness.Controls.ManualOverrideCount} manual override(s).",
+                Tone = readiness.Controls.CircuitBreakerOpen ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Success
             });
 
         ApplyStatusItem(
@@ -334,9 +340,15 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             ValidationStatusDetailText,
             new TradingWorkspaceStatusItem
             {
-                Label = readiness.Replay?.StatusLabel ?? "Replay evidence unavailable",
-                Detail = readiness.Replay?.Detail ?? "Paper replay verification has not produced shared readiness evidence yet.",
-                Tone = readiness.Replay?.HasMismatch == true ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info
+                Label = readiness.Replay is null
+                    ? "Replay evidence unavailable"
+                    : readiness.Replay.IsConsistent ? "Replay verified" : "Replay mismatch",
+                Detail = readiness.Replay is null
+                    ? "Paper replay verification has not produced shared readiness evidence yet."
+                    : readiness.Replay.IsConsistent
+                        ? $"{readiness.Replay.ComparedOrderCount} order(s), {readiness.Replay.ComparedFillCount} fill(s), and {readiness.Replay.ComparedLedgerEntryCount} ledger entry(s) verified."
+                        : readiness.Replay.MismatchReasons.FirstOrDefault() ?? "Paper replay verification recorded a mismatch.",
+                Tone = readiness.Replay?.IsConsistent == true ? TradingWorkspaceStatusTone.Success : TradingWorkspaceStatusTone.Warning
             });
 
         if (readiness.Warnings.Count > 0)
@@ -348,9 +360,16 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             RiskRailText.Text = "Paper session, controls, brokerage sync, and Security Master coverage are aligned for operator review.";
         }
 
-        DeskActionStatusText.Text = readiness.BrokerageSync is null
-            ? "Brokerage sync evidence is unavailable. Portfolio and cash continuity are based on local paper and ledger state only."
-            : $"Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {readiness.BrokerageSync.LastSuccessfulSyncUtc?.ToLocalTime():MMM dd HH:mm}; {readiness.BrokerageSync.PositionCount} position(s), {readiness.BrokerageSync.OpenOrderCount} open order(s).";
+        if (readiness.BrokerageSync is null)
+        {
+            DeskActionStatusText.Text = "Brokerage sync evidence is unavailable. Portfolio and cash continuity are based on local paper and ledger state only.";
+            return;
+        }
+
+        var syncAsOf = readiness.BrokerageSync.LastSuccessfulSyncAt is { } successfulSync
+            ? successfulSync.ToLocalTime().ToString("MMM dd HH:mm")
+            : "never";
+        DeskActionStatusText.Text = $"Brokerage sync {readiness.BrokerageSync.Health.ToString().ToLowerInvariant()} as of {syncAsOf}; {readiness.BrokerageSync.PositionCount} position(s), {readiness.BrokerageSync.OpenOrderCount} open order(s).";
     }
 
     private void UpdateActiveRun(ActiveRunContext? activeRun, TradingWorkspaceSummary? summary = null)

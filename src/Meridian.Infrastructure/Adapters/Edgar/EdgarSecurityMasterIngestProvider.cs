@@ -232,11 +232,11 @@ public sealed class EdgarSecurityMasterIngestProvider : IDisposable
         if (!string.IsNullOrWhiteSpace(entry.Cik))
         {
             identifiers.Add(new SecurityIdentifierDto(
-                Kind: SecurityIdentifierKind.ProviderSymbol,
+                Kind: SecurityIdentifierKind.Cik,
                 Value: entry.Cik.PadLeft(10, '0'),
                 IsPrimary: false,
                 ValidFrom: now,
-                Provider: "edgar-cik"));
+                Provider: "edgar"));
         }
 
         var commonTerms = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
