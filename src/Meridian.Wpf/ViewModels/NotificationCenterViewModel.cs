@@ -40,7 +40,8 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         get => _searchText;
         set
         {
-            if (SetProperty(ref _searchText, value))
+            var normalizedValue = value ?? string.Empty;
+            if (SetProperty(ref _searchText, normalizedValue) && !_suppressFilterRefresh)
                 ApplyFilters();
         }
     }
@@ -51,7 +52,7 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         get => _showUnreadOnly;
         set
         {
-            if (SetProperty(ref _showUnreadOnly, value))
+            if (SetProperty(ref _showUnreadOnly, value) && !_suppressFilterRefresh)
                 ApplyFilters();
         }
     }
@@ -60,9 +61,13 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     public bool ShowErrors
     {
         get => _showErrors;
-        private set
+        set
         {
-            if (SetProperty(ref _showErrors, value) && !_suppressFilterRefresh)
+            if (!SetProperty(ref _showErrors, value))
+                return;
+
+            OnPropertyChanged(nameof(AreAllTypesSelected));
+            if (!_suppressFilterRefresh)
                 ApplyFilters();
         }
     }
@@ -71,9 +76,13 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     public bool ShowWarnings
     {
         get => _showWarnings;
-        private set
+        set
         {
-            if (SetProperty(ref _showWarnings, value) && !_suppressFilterRefresh)
+            if (!SetProperty(ref _showWarnings, value))
+                return;
+
+            OnPropertyChanged(nameof(AreAllTypesSelected));
+            if (!_suppressFilterRefresh)
                 ApplyFilters();
         }
     }
@@ -82,9 +91,13 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     public bool ShowInfo
     {
         get => _showInfo;
-        private set
+        set
         {
-            if (SetProperty(ref _showInfo, value) && !_suppressFilterRefresh)
+            if (!SetProperty(ref _showInfo, value))
+                return;
+
+            OnPropertyChanged(nameof(AreAllTypesSelected));
+            if (!_suppressFilterRefresh)
                 ApplyFilters();
         }
     }
@@ -93,9 +106,13 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     public bool ShowSuccess
     {
         get => _showSuccess;
-        private set
+        set
         {
-            if (SetProperty(ref _showSuccess, value) && !_suppressFilterRefresh)
+            if (!SetProperty(ref _showSuccess, value))
+                return;
+
+            OnPropertyChanged(nameof(AreAllTypesSelected));
+            if (!_suppressFilterRefresh)
                 ApplyFilters();
         }
     }
@@ -103,6 +120,16 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     public bool HasUnreadNotifications => UnreadCount > 0;
     public bool CanMarkAllRead => UnreadCount > 0;
     public bool HasNotificationHistory => AllNotifications.Count > 0;
+    public bool AreAllTypesSelected
+    {
+        get => ShowErrors && ShowWarnings && ShowInfo && ShowSuccess;
+        set => SetTypeFilters(value, value, value, value);
+    }
+    public bool HasActiveFilters =>
+        ShowUnreadOnly
+        || !string.IsNullOrWhiteSpace(SearchText)
+        || !AreAllTypesSelected;
+    public bool HasFilterRecoveryAction => HasNotificationHistory && HasActiveFilters;
 
     public string HistorySummaryText => HasActiveFilters
         ? $"Showing {TotalCount} of {AllNotifications.Count} notification{(AllNotifications.Count == 1 ? string.Empty : "s")}"
@@ -116,6 +143,8 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
         ? "Clear the search term or widen the filters to see more notification history."
         : "Notifications about connection status, data quality, and system events will appear here.";
 
+    public IRelayCommand ClearHistoryFiltersCommand { get; }
+
     /// <summary>
     /// Fires when the grouped alerts display needs to be refreshed.
     /// Code-behind handles RefreshGroupedAlerts/RefreshAlertSummary (require FindResource).
@@ -128,6 +157,7 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     {
         _notificationService = notificationService;
         _alertService = alertService;
+        ClearHistoryFiltersCommand = new RelayCommand(ClearHistoryFilters, () => HasActiveFilters);
     }
 
     public void Start()
@@ -198,12 +228,28 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
     /// </summary>
     public void ApplyCheckboxFilters(bool showErrors, bool showWarnings, bool showInfo, bool showSuccess)
     {
+        SetTypeFilters(showErrors, showWarnings, showInfo, showSuccess);
+    }
+
+    public void ClearHistoryFilters()
+    {
+        if (!HasActiveFilters)
+            return;
+
         _suppressFilterRefresh = true;
-        ShowErrors = showErrors;
-        ShowWarnings = showWarnings;
-        ShowInfo = showInfo;
-        ShowSuccess = showSuccess;
-        _suppressFilterRefresh = false;
+        try
+        {
+            SearchText = string.Empty;
+            ShowUnreadOnly = false;
+            ShowErrors = true;
+            ShowWarnings = true;
+            ShowInfo = true;
+            ShowSuccess = true;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+        }
 
         ApplyFilters();
     }
@@ -346,19 +392,44 @@ public sealed class NotificationCenterViewModel : BindableBase, IDisposable
             || item.Type.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool HasActiveFilters =>
-        ShowUnreadOnly
-        || !string.IsNullOrWhiteSpace(SearchText)
-        || !(ShowErrors && ShowWarnings && ShowInfo && ShowSuccess);
+    private void SetTypeFilters(bool showErrors, bool showWarnings, bool showInfo, bool showSuccess)
+    {
+        var changed = ShowErrors != showErrors
+            || ShowWarnings != showWarnings
+            || ShowInfo != showInfo
+            || ShowSuccess != showSuccess;
+
+        if (!changed)
+            return;
+
+        _suppressFilterRefresh = true;
+        try
+        {
+            ShowErrors = showErrors;
+            ShowWarnings = showWarnings;
+            ShowInfo = showInfo;
+            ShowSuccess = showSuccess;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+        }
+
+        ApplyFilters();
+    }
 
     private void RaiseHistoryStateChanged()
     {
         OnPropertyChanged(nameof(HasUnreadNotifications));
         OnPropertyChanged(nameof(CanMarkAllRead));
         OnPropertyChanged(nameof(HasNotificationHistory));
+        OnPropertyChanged(nameof(AreAllTypesSelected));
+        OnPropertyChanged(nameof(HasActiveFilters));
+        OnPropertyChanged(nameof(HasFilterRecoveryAction));
         OnPropertyChanged(nameof(HistorySummaryText));
         OnPropertyChanged(nameof(EmptyStateTitle));
         OnPropertyChanged(nameof(EmptyStateDescription));
+        ClearHistoryFiltersCommand.NotifyCanExecuteChanged();
     }
 
     private static string FormatTimestamp(DateTime timestamp)

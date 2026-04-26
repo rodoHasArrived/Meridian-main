@@ -43,21 +43,6 @@ public partial class ActivityLogPage : Page
     private void OnPageUnloaded(object sender, RoutedEventArgs e) =>
         _viewModel.Stop();
 
-    private void Filter_Changed(object sender, SelectionChangedEventArgs e)
-    {
-        if (LevelFilterCombo is null || CategoryFilterCombo is null)
-            return;
-
-        if (LevelFilterCombo.SelectedItem is ComboBoxItem levelItem)
-            _viewModel.UpdateLevelFilter(levelItem.Content?.ToString() ?? "All");
-
-        if (CategoryFilterCombo.SelectedItem is ComboBoxItem categoryItem)
-            _viewModel.UpdateCategoryFilter(categoryItem.Content?.ToString() ?? "All");
-    }
-
-    private void Search_Changed(object sender, TextChangedEventArgs e) =>
-        _viewModel.UpdateSearch(SearchBox?.Text ?? string.Empty);
-
     private void Export_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new SaveFileDialog

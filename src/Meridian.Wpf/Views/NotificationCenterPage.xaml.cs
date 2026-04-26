@@ -14,7 +14,7 @@ namespace Meridian.Wpf.Views;
 /// <summary>
 /// Notification Center page for viewing and managing all application notifications.
 /// Code-behind handles only: DI wiring, alert group card building (uses FindResource),
-/// playbook display, snooze/suppress actions, and checkbox filter events.
+/// playbook display, and snooze/suppress actions.
 /// </summary>
 public partial class NotificationCenterPage : Page
 {
@@ -410,49 +410,6 @@ public partial class NotificationCenterPage : Page
         {
             _viewModel.MarkRead(item);
         }
-    }
-
-    private bool _suppressFilterEvents;
-    private void FilterChanged(object sender, RoutedEventArgs e)
-    {
-        if (FilterAllCheck is null ||
-            FilterErrorsCheck is null ||
-            FilterWarningsCheck is null ||
-            FilterInfoCheck is null ||
-            FilterSuccessCheck is null)
-        {
-            return;
-        }
-
-        if (_suppressFilterEvents)
-            return;
-
-        if (sender == FilterAllCheck)
-        {
-            var isChecked = FilterAllCheck.IsChecked == true;
-            _suppressFilterEvents = true;
-            FilterErrorsCheck.IsChecked = isChecked;
-            FilterWarningsCheck.IsChecked = isChecked;
-            FilterInfoCheck.IsChecked = isChecked;
-            FilterSuccessCheck.IsChecked = isChecked;
-            _suppressFilterEvents = false;
-        }
-        else
-        {
-            _suppressFilterEvents = true;
-            var allChecked = FilterErrorsCheck.IsChecked == true
-                && FilterWarningsCheck.IsChecked == true
-                && FilterInfoCheck.IsChecked == true
-                && FilterSuccessCheck.IsChecked == true;
-            FilterAllCheck.IsChecked = allChecked;
-            _suppressFilterEvents = false;
-        }
-
-        _viewModel.ApplyCheckboxFilters(
-            FilterErrorsCheck.IsChecked == true,
-            FilterWarningsCheck.IsChecked == true,
-            FilterInfoCheck.IsChecked == true,
-            FilterSuccessCheck.IsChecked == true);
     }
 
     private static string FormatTimestamp(DateTime timestamp)

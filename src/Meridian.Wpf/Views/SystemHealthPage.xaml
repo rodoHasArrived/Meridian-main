@@ -55,6 +55,117 @@
             </Grid>
             </Border>
 
+            <!-- System Health triage briefing -->
+            <Border x:Name="SystemHealthTriageBriefingCard"
+                    Style="{StaticResource CardStyle}"
+                    BorderBrush="{Binding SystemTriageAccentBrush}"
+                    BorderThickness="1"
+                    Margin="0,0,0,24"
+                    AutomationProperties.AutomationId="SystemHealthTriageBriefingCard"
+                    AutomationProperties.Name="{Binding SystemTriageTitle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Width="4"
+                            CornerRadius="4"
+                            Background="{Binding SystemTriageAccentBrush}"
+                            Margin="0,0,16,0" />
+
+                    <Border Grid.Column="1"
+                            Width="42"
+                            Height="42"
+                            CornerRadius="14"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            BorderBrush="{Binding SystemTriageAccentBrush}"
+                            BorderThickness="1"
+                            VerticalAlignment="Center"
+                            Margin="0,0,14,0">
+                        <TextBlock Text="{Binding SystemTriageIcon}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="20"
+                                   Foreground="{Binding SystemTriageAccentBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding SystemTriageTitle}"
+                                   FontSize="17"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   AutomationProperties.AutomationId="SystemHealthTriageTitleText" />
+                        <TextBlock Text="{Binding SystemTriageDetail}"
+                                   Margin="0,5,24,0"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SystemHealthTriageDetailText" />
+                        <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource NeutralBadgeStyle}"
+                                    Margin="0,0,8,6"
+                                    AutomationProperties.AutomationId="SystemHealthProviderSummaryChip">
+                                <TextBlock Text="{Binding SystemTriageProviderSummaryText}" FontSize="12" />
+                            </Border>
+                            <Border Style="{StaticResource NeutralBadgeStyle}"
+                                    Margin="0,0,8,6"
+                                    AutomationProperties.AutomationId="SystemHealthStorageSummaryChip">
+                                <TextBlock Text="{Binding SystemTriageStorageSummaryText}" FontSize="12" />
+                            </Border>
+                            <Border Style="{StaticResource NeutralBadgeStyle}"
+                                    Margin="0,0,8,6"
+                                    AutomationProperties.AutomationId="SystemHealthEventSummaryChip">
+                                <TextBlock Text="{Binding SystemTriageEventSummaryText}" FontSize="12" />
+                            </Border>
+                        </WrapPanel>
+                        <TextBlock Text="{Binding SystemTriageEvidenceText}"
+                                   Margin="0,4,0,0"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   AutomationProperties.AutomationId="SystemHealthTriageEvidenceText" />
+                    </StackPanel>
+
+                    <Border Grid.Column="3"
+                            CornerRadius="14"
+                            Padding="14,10"
+                            BorderBrush="{Binding SystemTriageAccentBrush}"
+                            BorderThickness="1"
+                            Background="{StaticResource PremiumPanelBrush}"
+                            VerticalAlignment="Center"
+                            MinWidth="180"
+                            MaxWidth="260"
+                            AutomationProperties.AutomationId="SystemHealthTriageHandoffPanel">
+                        <StackPanel>
+                            <TextBlock Text="Next handoff"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding SystemTriageActionText}"
+                                       Margin="0,3,0,0"
+                                       FontWeight="SemiBold"
+                                       Foreground="{Binding SystemTriageAccentBrush}"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="SystemHealthTriageActionText" />
+                            <TextBlock Text="Target"
+                                       Margin="0,8,0,0"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding SystemTriageTargetText}"
+                                       Margin="0,3,0,0"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       TextWrapping="Wrap"
+                                       AutomationProperties.AutomationId="SystemHealthTriageTargetText" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
             <!-- System Metrics Cards -->
             <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>

@@ -63,7 +63,16 @@ public sealed record TradingPaperSessionReadinessDto(
     int SymbolCount,
     int OrderCount,
     int PositionCount,
-    decimal? PortfolioValue);
+    decimal? PortfolioValue)
+{
+    public int FillCount { get; init; }
+
+    public int LedgerEntryCount { get; init; }
+
+    public DateTimeOffset? LastFillAt { get; init; }
+
+    public DateTimeOffset? LastOrderUpdatedAt { get; init; }
+}
 
 public sealed record TradingReplayReadinessDto(
     string SessionId,

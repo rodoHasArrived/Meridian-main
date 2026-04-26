@@ -3,7 +3,7 @@
 **Generated:** 2026-03-25
 **Refreshed:** 2026-04-26
 **Format:** Now / Next / Later compatibility view
-**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, cockpit readiness projection, Data Operations hero, Provider Health posture, Activity Log triage evidence, Watchlist posture evidence, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, demo-data fixture semantics, and active workstation/governance plans as of 2026-04-26
+**Basis:** `ROADMAP.md`, `PROGRAM_STATE.md`, `FEATURE_INVENTORY.md`, `production-status.md`, `kernel-readiness-dashboard.md`, provider validation evidence, packet-bound DK1 sign-off preflight, cockpit readiness projection, stable operator work-item IDs, Position Blotter selection review/action-readiness evidence, Data Operations hero, Provider Health posture, System Health triage evidence, Notification Center filter-recovery evidence, Activity Log triage evidence, Watchlist posture evidence, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, demo-data fixture semantics, and active workstation/governance plans as of 2026-04-26
 **Status:** Refreshed compatibility view. `ROADMAP.md` and `PROGRAM_STATE.md` remain the canonical wave and status sources.
 
 This document preserves the older Now / Next / Later shape for quick reading, but it no longer defines a separate roadmap. The active roadmap is the Wave 1-6 model in [`ROADMAP.md`](ROADMAP.md), with status labels and target dates sourced from [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
@@ -24,7 +24,7 @@ This document preserves the older Now / Next / Later shape for quick reading, bu
 
 | Wave | Status | Current meaning |
 | --- | --- | --- |
-| Wave 1 | Done | Closed provider-confidence, checkpoint, and Parquet evidence gate; keep synchronized through the matrix, validation script, DK1 sample-set evidence, generated parity packet, and pending operator sign-off. |
+| Wave 1 | Done | Closed provider-confidence, checkpoint, and Parquet evidence gate; keep synchronized through the matrix, validation script, DK1 sample-set evidence, generated parity packet, packet-bound sign-off template, and pending operator sign-off. |
 | Wave 2 | In Progress | Harden the existing paper-trading cockpit into a dependable operator workflow. |
 | Wave 3 | In Progress | Make shared run, portfolio, ledger, cash-flow, and reconciliation continuity feel like one product model. |
 | Wave 4 | In Progress | Productize governance and fund operations on top of the delivered Security Master baseline. |
@@ -45,23 +45,23 @@ Wave 1 is no longer an open broad provider push. The active gate is closed aroun
 - keep Robinhood explicitly bounded by committed runtime broker-session artifacts
 - keep Polygon, Interactive Brokers, NYSE, and StockSharp outside the active Wave 1 closure claim unless the matrix is intentionally widened
 - keep checkpoint reliability and Parquet L2 flush behavior tied to passing repo tests
-- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `provider-validation-matrix.md`, generated validation summaries, generated `ready-for-operator-review` parity packets, the DK1 pilot parity runbook, and the cockpit readiness projection synchronized around the emitted `pilotReplaySampleSet`
+- keep `scripts/dev/run-wave1-provider-validation.ps1`, `scripts/dev/generate-dk1-pilot-parity-packet.ps1`, `scripts/dev/prepare-dk1-operator-signoff.ps1`, `provider-validation-matrix.md`, generated validation summaries, generated `ready-for-operator-review` parity packets, packet-bound sign-off templates, the DK1 pilot parity runbook, and the cockpit readiness projection synchronized around the emitted `pilotReplaySampleSet`
 - keep the WPF Data Operations hero and Provider Health posture briefing aligned to shared provider, backfill, storage, session, and export state so they support operator handoffs without becoming separate readiness sources
 
-**Exit gate:** The matrix, roadmap, validation script output, DK1 runbook, generated parity packet, dashboard, and operator sign-off all describe the same active provider set and pilot replay/sample contract.
+**Exit gate:** The matrix, roadmap, validation script output, DK1 runbook, generated parity packet, packet-bound sign-off template, dashboard, and operator sign-off all describe the same active provider set and pilot replay/sample contract.
 
 ---
 
 ### 2. Wave 2 Paper-Trading Cockpit Hardening
 
-The execution, paper-session, promotion, risk, and brokerage seams are already in code. The WPF Trading shell also has a desk briefing hero that routes context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states from shared readiness inputs. The current gap is still operator dependability: restart safety, replay confidence, audit visibility, and promotion review clarity.
+The execution, paper-session, promotion, risk, and brokerage seams are already in code. The WPF Trading shell also has a desk briefing hero that routes context-required, replay-mismatch, replay-stale, controls-blocked, paper-review, and live-oversight states from shared readiness inputs. The current gap is still operator dependability: restart safety, replay confidence and freshness, audit visibility, and promotion review clarity.
 
 **Delivery scope:**
 
 - harden positions, orders, fills, sessions, replay, risk, and promotion flows already exposed through `/api/execution/*` and `/api/promotion/*`
-- keep `/api/workstation/trading/readiness` as the shared acceptance contract for paper-session state, replay consistency, execution controls, recent risk/control audit evidence, missing-field explainability warnings, promotion checklist state, brokerage-sync posture, and operator work items
-- use the local replay-audit metadata slice for durable readiness reconstruction of replay consistency, compared evidence counts, timestamps, and primary mismatch reason
-- keep the Trading desk briefing hero aligned to the shared active-run, workflow-summary, and operator-readiness lane instead of treating it as a separate readiness source
+- keep `/api/workstation/trading/readiness` as the shared acceptance contract for paper-session state, replay consistency and freshness, execution controls, recent risk/control audit evidence, missing-field explainability warnings, promotion checklist state, brokerage-sync posture, and stable operator work items
+- use the local replay-audit metadata slice for durable readiness reconstruction of replay consistency, compared evidence counts, timestamps, primary mismatch reason, and stale replay coverage after active-session fill/order/ledger counts diverge
+- keep the Trading desk briefing hero and Position Blotter selection-review rail aligned to the shared active-run, workflow-summary, and operator-readiness lane instead of treating them as separate readiness sources
 - keep `Backtest -> Paper` explicit, auditable, and reconstructable after restart
 - preserve operator rationale and blocking reasons for approvals and rejections
 - tie cockpit readiness to DK1 trust evidence instead of page count
@@ -102,7 +102,7 @@ Security Master is now a delivered baseline, not a future standalone wave. Wave 
 
 ### 5. WPF Workflow-First Validation
 
-The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, shell-context strips, the Trading desk briefing hero, the Research desk briefing hero, the Data Operations desk briefing hero, Provider Health posture briefing, Activity Log triage strip, Watchlist posture strip, neutral demo-data fixture cues, single-instance launch-argument forwarding, and shell/navigation smoke coverage.
+The WPF workspace shell baseline is present in code: workspace shell pages, `ShellNavigationCatalog`, `MainPageViewModel` orchestration, `DesktopLaunchArguments` startup/deep-link parsing, deep-page hosting, shell-context strips, the Trading desk briefing hero, Position Blotter selection review/action readiness, the Research desk briefing hero, the Data Operations desk briefing hero, Provider Health posture briefing, System Health triage briefing, Notification Center filter recovery, Activity Log triage strip, Watchlist posture strip, neutral demo-data fixture cues, single-instance launch-argument forwarding, and shell/navigation smoke coverage.
 
 This is a supporting track inside Waves 2-4, not a separate roadmap wave.
 

@@ -70,12 +70,14 @@ when all test steps pass.
    - Confirm evidence-document rows are `validated`, not merely present. The packet generator now checks required DK1 sample IDs, explainability payload fields/reason codes, baseline threshold metrics, and FP/FN review markers inside the linked docs.
 5. **Attach operator sign-off when approved**
    - Create the operator sign-off JSON template after Data Operations, Provider Reliability, and Trading have reviewed the packet:
-     `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
+     `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json`.
+   - Keep the generated `packetReview` block in the sign-off file. It binds approvals to the reviewed parity packet path, generated timestamp, status, sample counts, evidence-document counts, and explainability/calibration contract status.
    - Fill each required approval row with `signedBy`, `signedAtUtc`, an approved/signed `decision`, and `rationale`.
    - Validate the completed sign-off before regenerating the packet:
-     `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -Validate`.
+     `./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json -Validate`.
    - Regenerate the packet with `./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
    - Alternatively pass the same sign-off file through the full validation wrapper: `./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json`.
+   - The packet generator also checks the sign-off `packetReview` against the already generated packet before accepting it as DK1-exit evidence. Copied, stale, or unbound sign-off files write `operatorSignoff.packetBindingStatus=invalid`, `operatorSignoff.validForDk1Exit=false`, and fail regeneration.
    - Confirm `operatorSignoff.status` is `signed`, `signedOwners` contains all three required owners, and `missingOwners` is empty before claiming DK1 exit.
 6. **Publish parity packet**
    - Add links to output artifacts in the weekly DK1 review note and in the dashboard row.
@@ -116,6 +118,13 @@ Each approval must include `owner`, `signedBy`, `signedAtUtc`, an approved/signe
 `rationale`. The packet generator records partial sign-off as `operatorSignoff.status=partial` and
 lists the remaining owners in `operatorSignoff.missingOwners`.
 
+When the sign-off template is created with `-PacketPath`, it also contains a `packetReview` block.
+Validation with the same `-PacketPath` fails if the sign-off file was copied from another DK1 packet
+or if the packet is not `ready-for-operator-review` with ready samples, validated evidence
+documents, validated trust-rationale and baseline-threshold contracts, and no blockers.
+The DK1 packet generator enforces the same binding during regeneration, so `operatorSignoff.status`
+is not treated as `signed` for DK1 exit unless `packetBindingStatus` is `valid`.
+
 ---
 
 ## Pass / fail criteria
@@ -152,6 +161,7 @@ lists the remaining owners in `operatorSignoff.missingOwners`.
 - [ ] `wave1-validation-summary.md` linked.
 - [ ] `dk1-pilot-parity-packet.json` linked.
 - [ ] `dk1-pilot-parity-packet.md` linked.
+- [ ] Operator sign-off template generated with `-PacketPath` and packet binding retained.
 - [ ] `pilotReplaySampleSet` reviewed against the four DK1 samples.
 - [ ] Packet blockers reviewed and cleared, or explicitly carried into the DK1 weekly review.
 - [ ] Operator sign-off JSON attached when DK1 exit is requested.

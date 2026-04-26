@@ -161,6 +161,10 @@ function Get-ObjectPropertyValue {
         [Parameter(Mandatory)][string]$Name
     )
 
+    if ($Object -is [System.Collections.IDictionary] -and $Object.Contains($Name)) {
+        return $Object[$Name]
+    }
+
     if ($null -eq $Object -or -not ($Object.PSObject.Properties.Name -contains $Name)) {
         return $null
     }
@@ -178,10 +182,77 @@ function Test-ApprovedDecision {
     return @("approved", "signed", "complete", "completed") -contains $Decision.Trim().ToLowerInvariant()
 }
 
+function Get-ExistingPacketReview {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+
+    $packet = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
+    $sampleReview = Get-ObjectPropertyValue -Object $packet -Name "sampleReview"
+    $requiredSampleCountValue = Get-ObjectPropertyValue -Object $sampleReview -Name "requiredCount"
+    $requiredSampleCount = if ($null -ne $requiredSampleCountValue) { [int]$requiredSampleCountValue } else { 0 }
+    $samples = @(Get-ObjectPropertyValue -Object $sampleReview -Name "samples")
+    $readySampleCount = @(
+        $samples | Where-Object {
+            [string]::Equals(
+                [string](Get-ObjectPropertyValue -Object $_ -Name "status"),
+                "ready",
+                [System.StringComparison]::OrdinalIgnoreCase)
+        }
+    ).Count
+
+    $evidenceDocuments = @(Get-ObjectPropertyValue -Object $packet -Name "evidenceDocuments")
+    $validatedEvidenceDocumentCount = @(
+        $evidenceDocuments | Where-Object {
+            [string]::Equals(
+                [string](Get-ObjectPropertyValue -Object $_ -Name "status"),
+                "validated",
+                [System.StringComparison]::OrdinalIgnoreCase)
+        }
+    ).Count
+
+    $trustRationaleContract = Get-ObjectPropertyValue -Object $packet -Name "trustRationaleContract"
+    $baselineThresholdContract = Get-ObjectPropertyValue -Object $packet -Name "baselineThresholdContract"
+    $trustRationaleContractStatus = [string](Get-ObjectPropertyValue -Object $trustRationaleContract -Name "status")
+    $baselineThresholdContractStatus = [string](Get-ObjectPropertyValue -Object $baselineThresholdContract -Name "status")
+    $status = [string](Get-ObjectPropertyValue -Object $packet -Name "status")
+    $blockers = @(Get-ObjectPropertyValue -Object $packet -Name "blockers")
+
+    $samplesReady = $requiredSampleCount -gt 0 -and $readySampleCount -eq $requiredSampleCount
+    $documentsValidated = $evidenceDocuments.Count -gt 0 -and $validatedEvidenceDocumentCount -eq $evidenceDocuments.Count
+    $contractsValidated =
+        [string]::Equals($trustRationaleContractStatus, "validated", [System.StringComparison]::OrdinalIgnoreCase) -and
+        [string]::Equals($baselineThresholdContractStatus, "validated", [System.StringComparison]::OrdinalIgnoreCase)
+    $validForOperatorReview =
+        [string]::Equals($status, "ready-for-operator-review", [System.StringComparison]::OrdinalIgnoreCase) -and
+        $blockers.Count -eq 0 -and
+        $samplesReady -and
+        $documentsValidated -and
+        $contractsValidated
+
+    return [ordered]@{
+        path = ConvertTo-RelativePath -Path $Path
+        status = $status
+        generatedAtUtc = [string](Get-ObjectPropertyValue -Object $packet -Name "generatedAtUtc")
+        sourceSummary = [string](Get-ObjectPropertyValue -Object $packet -Name "sourceSummary")
+        sourceResult = [string](Get-ObjectPropertyValue -Object $packet -Name "sourceResult")
+        requiredSampleCount = $requiredSampleCount
+        readySampleCount = $readySampleCount
+        evidenceDocumentCount = $evidenceDocuments.Count
+        validatedEvidenceDocumentCount = $validatedEvidenceDocumentCount
+        trustRationaleContractStatus = $trustRationaleContractStatus
+        baselineThresholdContractStatus = $baselineThresholdContractStatus
+        validForOperatorReview = $validForOperatorReview
+    }
+}
+
 function Get-OperatorSignoffPacket {
     param(
         [string]$Path,
-        [Parameter(Mandatory)][string[]]$RequiredOwners
+        [Parameter(Mandatory)][string[]]$RequiredOwners,
+        [object]$ExpectedPacketReview = $null
     )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
@@ -193,6 +264,10 @@ function Get-OperatorSignoffPacket {
             missingOwners = $RequiredOwners
             completedAtUtc = $null
             sourcePath = $null
+            validForDk1Exit = $false
+            packetBindingStatus = "pending"
+            packetBindingMissingRequirements = @()
+            packetReview = $null
             approvals = @()
         }
     }
@@ -203,6 +278,7 @@ function Get-OperatorSignoffPacket {
     }
 
     $payload = Get-Content -Raw -LiteralPath $resolvedPath | ConvertFrom-Json
+    $payloadPacketReview = Get-ObjectPropertyValue -Object $payload -Name "packetReview"
     $approvalItems = @()
     if ($null -ne $payload -and $payload.PSObject.Properties.Name -contains "approvals") {
         $approvalItems = @($payload.approvals)
@@ -298,6 +374,45 @@ function Get-OperatorSignoffPacket {
         "pending"
     }
 
+    $packetBindingMissingRequirements = New-Object System.Collections.Generic.List[string]
+    if ($null -eq $payloadPacketReview) {
+        $packetBindingMissingRequirements.Add("packetReview")
+    }
+    elseif ($null -eq $ExpectedPacketReview) {
+        $packetBindingMissingRequirements.Add("reviewedPacket")
+    }
+    else {
+        $packetBindingComparisons = @(
+            @{ Name = "path"; Requirement = "packetPath" },
+            @{ Name = "generatedAtUtc"; Requirement = "packetGeneratedAtUtc" },
+            @{ Name = "status"; Requirement = "packetStatus" },
+            @{ Name = "sourceSummary"; Requirement = "packetSourceSummary" },
+            @{ Name = "sourceResult"; Requirement = "packetSourceResult" },
+            @{ Name = "requiredSampleCount"; Requirement = "packetRequiredSampleCount" },
+            @{ Name = "readySampleCount"; Requirement = "packetReadySampleCount" },
+            @{ Name = "evidenceDocumentCount"; Requirement = "packetEvidenceDocumentCount" },
+            @{ Name = "validatedEvidenceDocumentCount"; Requirement = "packetValidatedEvidenceDocumentCount" },
+            @{ Name = "trustRationaleContractStatus"; Requirement = "packetTrustRationaleContractStatus" },
+            @{ Name = "baselineThresholdContractStatus"; Requirement = "packetBaselineThresholdContractStatus" },
+            @{ Name = "validForOperatorReview"; Requirement = "packetReadyForOperatorReview" }
+        )
+
+        foreach ($comparison in $packetBindingComparisons) {
+            $name = [string]$comparison.Name
+            $expectedValue = Get-ObjectPropertyValue -Object $ExpectedPacketReview -Name $name
+            $actualValue = Get-ObjectPropertyValue -Object $payloadPacketReview -Name $name
+            if (-not [string]::Equals([string]$expectedValue, [string]$actualValue, [System.StringComparison]::OrdinalIgnoreCase)) {
+                $packetBindingMissingRequirements.Add([string]$comparison.Requirement)
+            }
+        }
+    }
+
+    $packetBindingStatus = if ($packetBindingMissingRequirements.Count -eq 0) { "valid" } else { "invalid" }
+    $validForDk1Exit = $status -eq "signed" -and $packetBindingStatus -eq "valid"
+    if (-not $validForDk1Exit -and $status -eq "signed") {
+        $status = "invalid"
+    }
+
     return [ordered]@{
         requiredOwners = $RequiredOwners
         status = $status
@@ -306,6 +421,10 @@ function Get-OperatorSignoffPacket {
         missingOwners = $missingOwners
         completedAtUtc = $completedAtUtc
         sourcePath = ConvertTo-RelativePath -Path $resolvedPath
+        validForDk1Exit = $validForDk1Exit
+        packetBindingStatus = $packetBindingStatus
+        packetBindingMissingRequirements = $packetBindingMissingRequirements.ToArray()
+        packetReview = $payloadPacketReview
         approvals = $approvalRows.ToArray()
     }
 }
@@ -510,7 +629,13 @@ foreach ($doc in $incompleteDocs) {
 }
 
 $packetStatus = if ($blockers.Count -eq 0) { "ready-for-operator-review" } else { "blocked" }
-$operatorSignoff = Get-OperatorSignoffPacket -Path $OperatorSignoffPath -RequiredOwners $requiredOperatorOwners
+$jsonPath = Join-Path $summaryDir "dk1-pilot-parity-packet.json"
+$mdPath = Join-Path $summaryDir "dk1-pilot-parity-packet.md"
+$reviewedPacket = Get-ExistingPacketReview -Path $jsonPath
+$operatorSignoff = Get-OperatorSignoffPacket `
+    -Path $OperatorSignoffPath `
+    -RequiredOwners $requiredOperatorOwners `
+    -ExpectedPacketReview $reviewedPacket
 
 $packet = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
@@ -560,8 +685,6 @@ $packet = [ordered]@{
     blockers = @($blockers)
 }
 
-$jsonPath = Join-Path $summaryDir "dk1-pilot-parity-packet.json"
-$mdPath = Join-Path $summaryDir "dk1-pilot-parity-packet.md"
 $packet | ConvertTo-Json -Depth 7 | Set-Content -Path $jsonPath
 
 $md = @(
@@ -637,6 +760,9 @@ $signedOwners = @($packet.operatorSignoff.signedOwners)
 $missingOwners = @($packet.operatorSignoff.missingOwners)
 $md += "- Signed owners: $(if ($signedOwners.Count -eq 0) { 'none' } else { $signedOwners -join ', ' })"
 $md += "- Missing owners: $(if ($missingOwners.Count -eq 0) { 'none' } else { $missingOwners -join ', ' })"
+$md += "- Packet binding status: $($packet.operatorSignoff.packetBindingStatus)"
+$packetBindingMissingRequirements = @($packet.operatorSignoff.packetBindingMissingRequirements)
+$md += "- Packet binding missing requirements: $(if ($packetBindingMissingRequirements.Count -eq 0) { 'none' } else { $packetBindingMissingRequirements -join ', ' })"
 
 $approvals = @($packet.operatorSignoff.approvals)
 if ($approvals.Count -gt 0) {
@@ -674,6 +800,23 @@ $md -join [Environment]::NewLine | Set-Content -Path $mdPath
 Write-Host "DK1 pilot parity packet written to:"
 Write-Host "  $jsonPath"
 Write-Host "  $mdPath"
+
+if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath) -and -not $packet.operatorSignoff.validForDk1Exit) {
+    $missingOwnersText = if ($packet.operatorSignoff.missingOwners.Count -eq 0) {
+        "none"
+    }
+    else {
+        $packet.operatorSignoff.missingOwners -join ", "
+    }
+    $packetBindingMissing = @($packet.operatorSignoff.packetBindingMissingRequirements)
+    $packetBindingDetail = if ($packetBindingMissing.Count -eq 0) {
+        "none"
+    }
+    else {
+        $packetBindingMissing -join ", "
+    }
+    throw "DK1 operator sign-off is not valid for DK1 exit. Missing owners: $missingOwnersText; packet binding requirements: $packetBindingDetail"
+}
 
 if ($packet.status -eq "blocked" -and -not $AllowFailedSummary) {
     throw "DK1 pilot parity packet is blocked: $($packet.blockers -join '; ')"

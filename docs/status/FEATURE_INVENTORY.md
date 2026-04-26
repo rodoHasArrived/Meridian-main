@@ -259,6 +259,8 @@ not the primary operator shell; WPF owns current workstation delivery.
 - `DataOperationsWorkspaceShellPage` now includes a data-operations desk briefing hero backed by `DataOperationsWorkspacePresentationBuilder`; it projects provider health, resumable backfills, storage health, collection sessions, export jobs, operational blockers, and next-handoff actions from shared service data.
 - `WatchlistPage` now includes watchlist posture guidance for saved list count, pinned list coverage, symbol coverage, visible search scope, and empty-state handoffs before an operator loads or imports symbol sets.
 - `ProviderHealthPage` now includes a provider-posture briefing that condenses stale snapshots, disconnected streaming sessions, mixed-provider states, and blocked backfill coverage into one next handoff before the operator scans individual provider cards.
+- `SystemHealthPage` now includes a system triage briefing that condenses provider health, storage posture, disk pressure, and retained event severity into one next handoff before the operator scans diagnostics panels.
+- `NotificationCenterPage` now supports history recovery when search, unread-only, or severity filters hide retained notifications; `NotificationCenterViewModel` resets those filters against the already-loaded history window.
 - `ActivityLogPage` now includes a triage strip that summarizes visible entries, retained error and warning counts, latest entry posture, and active filters before the operator scans retained log rows.
 - Fixture/offline workflow mode is explicitly separated from operational readiness: the shell presents deterministic fixture state as neutral demo data, while Data Operations carries environment-mode context when provider telemetry is absent.
 - Legacy deep pages now route through `WorkspaceDeepPageHostPage` in both standalone and docked presentations, so direct navigation and workspace docks share the same workspace title, reachability metadata, related-workflow chrome, and trust-state posture without removing the underlying page functionality.
@@ -273,7 +275,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 - Theme switching, notification center, info bar
 - Offline indicator (single notification + warning on backend unreachable)
 - Session state persistence (active workspace, last page, window bounds)
-- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, Provider Health posture-state tests, Activity Log triage-state tests, Watchlist posture-state tests, local single-instance mutex and launch-argument forwarding coverage, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
+- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, Provider Health posture-state tests, System Health triage-state tests, Activity Log triage-state tests, Watchlist posture-state tests, local single-instance mutex and launch-argument forwarding coverage, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
 
 ### Pages with live service connections (Implemented)
 
@@ -307,7 +309,7 @@ not the primary operator shell; WPF owns current workstation delivery.
 | ServiceManagerPage | BackendServiceManagerBase | Backend service status with control-lane and runtime inspector |
 | StorageOptimizationPage | StorageOptimizationAdvisorService | Storage optimization advice |
 | ArchiveHealthPage | ArchiveHealthService | Archive integrity status |
-| SystemHealthPage | SystemHealthService | Comprehensive health view |
+| SystemHealthPage | SystemHealthService | Comprehensive health view with triage briefing |
 | AdvancedAnalyticsPage | AdvancedAnalyticsServiceBase | Advanced analytics |
 | EventReplayPage | EventReplayService | Historical event replay |
 | ExportPresetsPage | ExportPresetServiceBase | Saved export profiles |
@@ -320,16 +322,16 @@ not the primary operator shell; WPF owns current workstation delivery.
 | TimeSeriesAlignmentPage | TimeSeriesAlignmentService | Multi-symbol time alignment |
 | WorkspacePage | WorkspaceService | Workspace management |
 
-### Trading workstation migration target (Planned / partially implemented)
+### Trading workstation migration target (Implemented baseline / workflow acceptance in progress)
 
-The current WPF app exposes broad capability coverage, but the active implementation wave reorganizes those capabilities into four workflow workspaces:
+The current WPF app exposes broad capability coverage and the active shell baseline now organizes those capabilities into four workflow workspaces:
 
 - **Research** - backtests, Lean engine flows, charts, replay, experiment comparison
 - **Trading** - live monitoring, orders, fills, positions, strategy operation
 - **Data Operations** - providers, symbols, backfills, schedules, storage, exports
 - **Governance** - portfolio, ledger, diagnostics, retention, notifications, and settings
 
-This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-3.
+This migration is tracked in [`../plans/trading-workstation-migration-blueprint.md`](../plans/trading-workstation-migration-blueprint.md) and [`ROADMAP.md`](ROADMAP.md) Waves 1-4. The remaining work is workflow acceptance and deeper cockpit/shared-model/governance continuity, not a new shell taxonomy migration.
 
 ### Shared run / portfolio / ledger / reconciliation baseline (In progress)
 
@@ -534,7 +536,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the Research shell now has a desk briefing hero for selected-run, run-detail, portfolio, and `Backtest -> Paper` promotion-review handoffs, while deeper research workflow acceptance and Backtest Studio unification remain open |
 | Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`, and the desk briefing hero projects context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight handoffs from shared readiness inputs; the shared trading-readiness endpoint gives the cockpit one acceptance contract with recent risk/control audit evidence and missing-field explainability warnings, while cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently, and the Data Operations shell now has a desk briefing hero for provider, backfill, storage, session, export, blocker, and next-handoff posture; deeper workflow acceptance and cross-workspace handoff proof remain open |
-| Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, and Security Master/reconciliation drill-ins are live; broader governance-first product flows remain incomplete |
+| Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, Security Master/reconciliation drill-ins are live, and Notification Center can recover hidden retained notification history after aggressive filters; broader governance-first product flows remain incomplete |
 | Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view`, `/api/fund-structure/report-pack-preview`, and `/api/fund-structure/report-packs` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, reporting previews, and local-first governed report-pack artifacts for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and broader board/investor/compliance packaging remain open. Guardrail: Security Master is the sole instrument source, and governance DTOs with instrument terms must carry Security Master identity/provenance references. Trial-balance and reconciliation symbol metadata now reuse canonical `WorkstationSecurityReference` records (same layer already used by run portfolio/ledger surfaces) rather than a separate classification-only projection. |
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
@@ -551,7 +553,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, replay-audit metadata, in-shell portfolio/accounting drill-ins, the WPF desk briefing hero, and a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/DK1 trust-gate/brokerage/work-item posture; cockpit hardening, broader broker validation, and stronger acceptance criteria remain |
+| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, replay-audit metadata with stale-coverage detection, in-shell portfolio/accounting drill-ins, Position Blotter grouped selection review/action-readiness evidence, the WPF desk briefing hero, and a shared `/api/workstation/trading/readiness` contract for session/replay/control/promotion/DK1 trust-gate/brokerage/work-item posture with stable work-item IDs; cockpit hardening, broader broker validation, and stronger acceptance criteria remain |
 | Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Endpoint layer and dashboard flows exist, and promotion approvals now carry an explicit approval checklist for DK1 trust packet, lineage, portfolio/ledger continuity, and risk-control review; safety-gated lifecycle hardening, broader operator acceptance, and full live-readiness remain open |
 
 ### Additional governance and platform tracks
@@ -565,14 +567,14 @@ This section inventories the workflow-centric product model that now sits above 
 
 ### Remaining work
 
-- Turn taxonomy alignment into true workspace-first shells with quick actions and cross-workflow entry points.
+- Validate the delivered workspace shells, command routing, and quick actions against high-traffic operator journeys instead of expanding shell taxonomy for its own sake.
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
 - Keep the delivered Security Master baseline central while Wave 4 governance work deepens account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows on top of it.
 - Treat [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md) as the delivered-baseline reference for Security Master mechanics; canonical wave status remains in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) and [`ROADMAP.md`](ROADMAP.md).
 - Expand the current reconciliation seam from the delivered run-scoped break queue into richer match rules, calibrated exception workflows, external-statement/custodian coverage, and non-run governance use cases.
 - Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Expand report generation tools beyond the delivered trial-balance artifact slice into cash-flow, reconciliation-detail, portfolio, board, investor, compliance, and publication workflows.
-- Replace page-by-page mental models with workstation-native journeys for research, trading, data ops, and governance.
+- Keep replacing page-by-page mental models with workstation-native journeys for research, trading, data ops, and governance, using the delivered shell baseline as the starting point.
 
 ---
 

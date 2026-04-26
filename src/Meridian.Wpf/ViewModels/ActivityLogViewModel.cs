@@ -46,6 +46,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private string _categoryFilter = "All";
     private string _searchText = string.Empty;
     private bool _offlineIndicatorShown;
+    private bool _suppressFilterRefresh;
 
     // ── Public collections ────────────────────────────────────────────────────────
 
@@ -87,6 +88,59 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private bool _isAutoScrollEnabled = true;
     public bool IsAutoScrollEnabled { get => _isAutoScrollEnabled; set => SetProperty(ref _isAutoScrollEnabled, value); }
 
+    public string LevelFilter
+    {
+        get => _levelFilter;
+        set
+        {
+            if (SetProperty(ref _levelFilter, NormalizeFilterValue(value)) && !_suppressFilterRefresh)
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public string CategoryFilter
+    {
+        get => _categoryFilter;
+        set
+        {
+            if (SetProperty(ref _categoryFilter, NormalizeFilterValue(value)) && !_suppressFilterRefresh)
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value ?? string.Empty) && !_suppressFilterRefresh)
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public bool HasLogHistory => _allLogs.Count > 0;
+
+    public bool HasActiveFilters =>
+        !string.Equals(LevelFilter, "All", StringComparison.OrdinalIgnoreCase) ||
+        !string.Equals(CategoryFilter, "All", StringComparison.OrdinalIgnoreCase) ||
+        !string.IsNullOrWhiteSpace(SearchText);
+
+    public bool HasFilterRecoveryAction => HasLogHistory && HasActiveFilters;
+
+    public string EmptyStateTitle => HasFilterRecoveryAction
+        ? "No log entries match the current filters"
+        : "No log entries to display";
+
+    public string EmptyStateDetail => HasFilterRecoveryAction
+        ? "Reset filters to return to the retained activity window."
+        : "Connect the backend or trigger a desktop workflow to populate retained activity.";
+
     // ── Event raised to signal the view to scroll ─────────────────────────────────
 
     /// <summary>Raised when a new log entry is prepended and auto-scroll is enabled.</summary>
@@ -95,6 +149,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     // ── Commands ──────────────────────────────────────────────────────────────────
 
     public IRelayCommand ClearCommand { get; }
+    public IRelayCommand ClearFiltersCommand { get; }
 
     // ─────────────────────────────────────────────────────────────────────────────
 
@@ -108,6 +163,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         _baseUrl = statusService.BaseUrl;
 
         ClearCommand = new RelayCommand(ExecuteClear);
+        ClearFiltersCommand = new RelayCommand(ClearFilters, () => HasActiveFilters);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += async (_, _) => await LoadLogsAsync();
@@ -135,20 +191,17 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     public void UpdateLevelFilter(string level)
     {
-        _levelFilter = level;
-        ApplyFilters();
+        LevelFilter = level;
     }
 
     public void UpdateCategoryFilter(string category)
     {
-        _categoryFilter = category;
-        ApplyFilters();
+        CategoryFilter = category;
     }
 
     public void UpdateSearch(string text)
     {
-        _searchText = text;
-        ApplyFilters();
+        SearchText = text;
     }
 
     // ── Export (called from code-behind after file dialog) ────────────────────────
@@ -375,6 +428,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
             : $"{FilteredLogs.Count} of {FormatEntryCount(_allLogs.Count)}";
         NoLogsVisible = FilteredLogs.Count == 0;
         UpdateTriageState();
+        RaiseFilterStateChanged();
     }
 
     private void ExecuteClear()
@@ -386,6 +440,26 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
             "Cleared",
             "Activity log has been cleared.",
             NotificationType.Info);
+    }
+
+    private void ClearFilters()
+    {
+        if (!HasActiveFilters)
+            return;
+
+        _suppressFilterRefresh = true;
+        try
+        {
+            LevelFilter = "All";
+            CategoryFilter = "All";
+            SearchText = string.Empty;
+        }
+        finally
+        {
+            _suppressFilterRefresh = false;
+        }
+
+        ApplyFilters();
     }
 
     private void UpdateTriageState()
@@ -453,6 +527,19 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     private static string FormatEntryCount(int count) =>
         $"{count} entr{(count == 1 ? "y" : "ies")}";
+
+    private void RaiseFilterStateChanged()
+    {
+        OnPropertyChanged(nameof(HasLogHistory));
+        OnPropertyChanged(nameof(HasActiveFilters));
+        OnPropertyChanged(nameof(HasFilterRecoveryAction));
+        OnPropertyChanged(nameof(EmptyStateTitle));
+        OnPropertyChanged(nameof(EmptyStateDetail));
+        ClearFiltersCommand.NotifyCanExecuteChanged();
+    }
+
+    private static string NormalizeFilterValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "All" : value;
 
     private static SolidColorBrush GetLevelBackground(string level) =>
         level.ToUpperInvariant() switch

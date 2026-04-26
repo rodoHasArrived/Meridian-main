@@ -104,6 +104,31 @@ public sealed class PaperSessionPersistenceServiceTests
         var service = Build();
         var dto = new CreatePaperSessionDto("strat-3", "Detail Test", 100_000m, ["AAPL", "MSFT"]);
         var summary = await service.CreateSessionAsync(dto);
+        var orderUpdatedAt = DateTimeOffset.UtcNow;
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "detail-order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 10m,
+            Status = OrderStatus.Filled,
+            CreatedAt = orderUpdatedAt.AddSeconds(-1),
+            LastUpdatedAt = orderUpdatedAt
+        });
+        await service.RecordFillAsync(summary.SessionId, new ExecutionReport
+        {
+            OrderId = "detail-order-1",
+            ReportType = ExecutionReportType.Fill,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 10m,
+            FilledQuantity = 10m,
+            FillPrice = 150m,
+            Timestamp = orderUpdatedAt
+        });
 
         var detail = service.GetSession(summary.SessionId);
 
@@ -111,7 +136,11 @@ public sealed class PaperSessionPersistenceServiceTests
         detail!.Summary.SessionId.Should().Be(summary.SessionId);
         detail.Symbols.Should().Equal("AAPL", "MSFT");
         detail.Portfolio.Should().NotBeNull();
-        detail.OrderHistory.Should().BeEmpty();
+        detail.OrderHistory.Should().ContainSingle();
+        detail.FillCount.Should().Be(1);
+        detail.LedgerEntryCount.Should().BeGreaterThan(0);
+        detail.LastFillAt.Should().NotBeNull();
+        detail.LastOrderUpdatedAt.Should().Be(orderUpdatedAt);
     }
 
     [Fact]

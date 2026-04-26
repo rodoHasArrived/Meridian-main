@@ -76,6 +76,99 @@ public sealed class NotificationCenterViewModelTests
         });
     }
 
+    [Fact]
+    public void ClearHistoryFiltersCommand_RestoresDefaultHistoryScope()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateViewModel();
+            SeedNotification(viewModel, "Order Reject", "AAPL order rejected by guardrail.", NotificationType.Error, isRead: false, historyIndex: 0, minutesAgo: 3);
+            SeedNotification(viewModel, "Backfill Complete", "MSFT repair finished.", NotificationType.Success, isRead: true, historyIndex: 1, minutesAgo: 15);
+
+            viewModel.ApplyCheckboxFilters(showErrors: true, showWarnings: false, showInfo: false, showSuccess: false);
+            viewModel.SearchText = "missing";
+            viewModel.ShowUnreadOnly = true;
+
+            viewModel.NoNotificationsVisible.Should().BeTrue();
+            viewModel.HasActiveFilters.Should().BeTrue();
+            viewModel.HasFilterRecoveryAction.Should().BeTrue();
+            viewModel.ClearHistoryFiltersCommand.CanExecute(null).Should().BeTrue();
+
+            viewModel.ClearHistoryFiltersCommand.Execute(null);
+
+            viewModel.SearchText.Should().BeEmpty();
+            viewModel.ShowUnreadOnly.Should().BeFalse();
+            viewModel.ShowErrors.Should().BeTrue();
+            viewModel.ShowWarnings.Should().BeTrue();
+            viewModel.ShowInfo.Should().BeTrue();
+            viewModel.ShowSuccess.Should().BeTrue();
+            viewModel.AreAllTypesSelected.Should().BeTrue();
+            viewModel.TotalCount.Should().Be(2);
+            viewModel.NoNotificationsVisible.Should().BeFalse();
+            viewModel.HistorySummaryText.Should().Be("2 notifications");
+            viewModel.HasActiveFilters.Should().BeFalse();
+            viewModel.HasFilterRecoveryAction.Should().BeFalse();
+            viewModel.ClearHistoryFiltersCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void AreAllTypesSelected_TogglesSeverityFiltersTogether()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var viewModel = CreateViewModel();
+            SeedNotification(viewModel, "Order Reject", "AAPL order rejected by guardrail.", NotificationType.Error, isRead: false, historyIndex: 0, minutesAgo: 3);
+            SeedNotification(viewModel, "Backfill Complete", "MSFT repair finished.", NotificationType.Success, isRead: false, historyIndex: 1, minutesAgo: 15);
+
+            viewModel.ApplyCheckboxFilters(showErrors: true, showWarnings: false, showInfo: false, showSuccess: false);
+
+            viewModel.AreAllTypesSelected = false;
+
+            viewModel.ShowErrors.Should().BeFalse();
+            viewModel.ShowWarnings.Should().BeFalse();
+            viewModel.ShowInfo.Should().BeFalse();
+            viewModel.ShowSuccess.Should().BeFalse();
+            viewModel.AreAllTypesSelected.Should().BeFalse();
+            viewModel.NoNotificationsVisible.Should().BeTrue();
+            viewModel.HistorySummaryText.Should().Be("Showing 0 of 2 notifications");
+            viewModel.ClearHistoryFiltersCommand.CanExecute(null).Should().BeTrue();
+
+            viewModel.AreAllTypesSelected = true;
+
+            viewModel.ShowErrors.Should().BeTrue();
+            viewModel.ShowWarnings.Should().BeTrue();
+            viewModel.ShowInfo.Should().BeTrue();
+            viewModel.ShowSuccess.Should().BeTrue();
+            viewModel.AreAllTypesSelected.Should().BeTrue();
+            viewModel.TotalCount.Should().Be(2);
+            viewModel.NoNotificationsVisible.Should().BeFalse();
+            viewModel.ClearHistoryFiltersCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void NotificationCenterPageSource_BindsHistoryFilterRecoveryAction()
+    {
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\NotificationCenterPage.xaml"));
+        var codeBehind = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\NotificationCenterPage.xaml.cs"));
+
+        xaml.Should().Contain("NotificationHistorySearchTextBox");
+        xaml.Should().Contain("NotificationHistoryUnreadOnlyCheckBox");
+        xaml.Should().Contain("NotificationHistoryResetFiltersButton");
+        xaml.Should().Contain("{Binding ClearHistoryFiltersCommand}");
+        xaml.Should().Contain("{Binding HasFilterRecoveryAction");
+        xaml.Should().Contain("{Binding AreAllTypesSelected, Mode=TwoWay");
+        xaml.Should().Contain("{Binding ShowErrors, Mode=TwoWay");
+        xaml.Should().Contain("{Binding ShowWarnings, Mode=TwoWay");
+        xaml.Should().Contain("{Binding ShowInfo, Mode=TwoWay");
+        xaml.Should().Contain("{Binding ShowSuccess, Mode=TwoWay");
+        xaml.Should().NotContain("Checked=\"FilterChanged\"");
+        xaml.Should().NotContain("Unchecked=\"FilterChanged\"");
+        codeBehind.Should().NotContain("FilterChanged");
+        codeBehind.Should().NotContain("ApplyCheckboxFilters(");
+    }
+
     private static NotificationCenterViewModel CreateViewModel()
         => new(WpfNotificationService.Instance, AlertService.Instance);
 
@@ -99,5 +192,22 @@ public sealed class NotificationCenterViewModelTests
             IsRead = isRead,
             HistoryIndex = historyIndex
         });
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }

@@ -177,6 +177,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj --logger "console;verbosity=normal"
 dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj --logger "console;verbosity=normal"
+python3 -m unittest tests/scripts/test_prepare_dk1_operator_signoff.py
 ```
 
 For concurrent automation, use an isolation key so builds write under `artifacts/bin/<key>/`
@@ -202,8 +203,11 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsT
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~TradingWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ResearchWorkspaceShellPageTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ProviderHealthViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SystemHealthViewModelTests|FullyQualifiedName~SystemHealthPageSmokeTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~ActivityLogViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~NotificationCenterViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~WatchlistViewModelTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~DataQualityViewModelCharacterizationTests|FullyQualifiedName~DataQualityPageSmokeTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~SingleInstanceServiceTests|FullyQualifiedName~DesktopWorkflowScriptTests" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
 pwsh -File ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup -NoFixture -ReuseExistingApp
@@ -232,8 +236,12 @@ Use the `capture-desktop-screenshots.ps1 -SkipBuild` form only after a Release W
 the `.github/workflows/refresh-screenshots.yml` desktop screenshot lane.
 Use the focused `ResearchWorkspaceShellPageTests` and `TradingWorkspaceShellPageTests` filters
 for WPF desk-briefing hero state changes before broadening to the full WPF test pass.
-Use `ProviderHealthViewModelTests`, `ActivityLogViewModelTests`, and `WatchlistViewModelTests` for
-provider-posture, support-triage, and watchlist-posture surface changes. Use
+Use `ProviderHealthViewModelTests`, `SystemHealthViewModelTests` plus `SystemHealthPageSmokeTests`,
+`ActivityLogViewModelTests`, `NotificationCenterViewModelTests`, and `WatchlistViewModelTests`
+for provider-posture, system-health triage, support-triage, notification-history recovery, and
+watchlist-posture surface changes. Use
+`DataQualityViewModelCharacterizationTests` plus `DataQualityPageSmokeTests` when changing Data
+Quality symbol-filter recovery or empty-state guidance. Use
 `SingleInstanceServiceTests` plus `DesktopWorkflowScriptTests` when changing launch/deep-link
 forwarding, shell automation markers, or isolated desktop workflow restore/build behavior.
 
@@ -267,10 +275,9 @@ TODO: `docs/operations/msix-packaging.md` documents `make desktop-publish`, but 
 `pwsh -File ./build/scripts/install/install.ps1 -Mode Desktop -SkipInstall` for desktop package
 builds unless the Make target is restored.
 
-TODO: `.github/workflows/refresh-screenshots.yml` still starts the retained web screenshot lane
-with `--ui`, but `CliModeResolver` rejects `--ui` as removed. Verify whether that lane should use
-`--mode desktop` or another retained-local-API fixture before documenting `--ui` as a standard
-workflow.
+`.github/workflows/refresh-screenshots.yml` is a WPF-only screenshot lane. It builds and launches
+the desktop shell in fixture mode through `scripts/dev/capture-desktop-screenshots.ps1`; do not
+restore the removed `--ui` web-dashboard path for screenshot refreshes.
 
 ## Paper Trading Readiness
 
@@ -287,6 +294,8 @@ The readiness endpoint is `GET /api/workstation/trading/readiness`. The broader 
 trading payload (`GET /api/workstation/trading`) embeds the same readiness data. The replay route,
 `GET /api/execution/sessions/{sessionId}/replay`, verifies a paper session replay and writes
 durable execution-audit evidence used to reconstruct replay readiness after restart.
+Replay readiness is stale if the active paper session's fill, order, or ledger-entry counts diverge
+from the latest verification audit; rerun replay verification before accepting cockpit readiness.
 Treat additive trading readiness DTO or enum changes as shared contract changes; the current
 payload includes execution-control evidence explainability, acceptance gates, and operator work
 items alongside session, replay, promotion, DK1 trust-gate, and brokerage-sync posture.
@@ -295,8 +304,8 @@ items alongside session, replay, promotion, DK1 trust-gate, and brokerage-sync p
 
 ```powershell
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1
-pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
-pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -Validate
+pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json
+pwsh ./scripts/dev/prepare-dk1-operator-signoff.ps1 -OutputPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json -PacketPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-pilot-parity-packet.json -Validate
 pwsh ./scripts/dev/run-wave1-provider-validation.ps1 -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json
 pwsh ./scripts/dev/generate-dk1-pilot-parity-packet.ps1 -SummaryJsonPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json -OperatorSignoffPath artifacts/provider-validation/_automation/<yyyy-mm-dd>/dk1-operator-signoff.json
@@ -307,9 +316,10 @@ This is the active Wave 1 gate for Alpaca, Robinhood, Yahoo, checkpoint reliabil
 proof. It writes summaries and DK1 parity packets under
 `artifacts/provider-validation/_automation/<yyyy-mm-dd>/`.
 `run-wave1-provider-validation.ps1` invokes `generate-dk1-pilot-parity-packet.ps1` when present;
-run the packet generator directly only when rebuilding from an existing Wave 1 summary. Pass
-the `prepare-dk1-operator-signoff.ps1` output through `-OperatorSignoffPath` after owner review so
-the packet records machine-readable sign-off status. A
+run the packet generator directly only when rebuilding from an existing Wave 1 summary. Generate
+and validate the sign-off template with `-PacketPath` so the retained `packetReview` binds owner
+approvals to the reviewed DK1 parity packet. Pass the `prepare-dk1-operator-signoff.ps1` output
+through `-OperatorSignoffPath` after owner review so the packet records machine-readable sign-off status. A
 `ready-for-operator-review` DK1 packet still requires signed owner evidence before DK1 exit.
 `build-ibapi-smoke.ps1` is a compile-only Interactive Brokers adapter smoke build that enables
 `EnableIbApiSmoke=true` on `src/Meridian.Infrastructure/Meridian.Infrastructure.csproj`.

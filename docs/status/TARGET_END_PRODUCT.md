@@ -1,7 +1,7 @@
 # Meridian - Target End Product
 
 **Last Updated:** 2026-04-26
-**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence, cockpit readiness projection, current WPF shell baseline, Trading/Research/Data Operations desk briefing heroes, Provider Health posture briefing, Activity Log triage, Watchlist posture, canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, workflow automation hardening, and demo-data fixture semantics
+**Status:** Current end-state product summary aligned to the canonical roadmap, DK1/DK2 readiness wrapper, DK1 parity-packet evidence with packet-bound sign-off preflight, cockpit readiness projection, current WPF shell baseline, Trading/Research/Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, canonical `ResearchShell` launch routing, single-instance launch-argument forwarding, workflow automation hardening, and demo-data fixture semantics
 
 ---
 
@@ -34,7 +34,7 @@ Research is where operators validate datasets, run experiments, compare results,
 
 ### Trading
 
-Trading is where operators run paper workflows, manage sessions, review orders and fills, monitor positions and exposure, and apply explicit promotion controls.
+Trading is where operators run paper workflows, manage sessions, review orders and fills, monitor positions and exposure through the blotter, and apply explicit promotion controls.
 
 ### Data Operations
 
@@ -50,11 +50,11 @@ Governance is where operators review Security Master coverage, portfolio and led
 
 - evidence-backed provider trust and checkpoint confidence
 - shared run history across backtest, paper, and live-aware modes
-- explicit `Backtest -> Paper -> Live` promotion workflow with auditability
+- explicit `Backtest -> Paper -> Live` promotion workflow with auditability, stable readiness work items, and operator-visible action readiness
 - portfolio, fills, attribution, ledger, cash-flow, and reconciliation visibility from the same run-centered model
 - the delivered Security Master baseline as the authoritative instrument-definition layer
 - governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
-- a primary WPF operator shell and retained local API/web support surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline plus Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, Activity Log triage, Watchlist posture, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, and clear demo-data fixture cues are present, while workflow-level acceptance remains tied to Waves 2-4
+- a primary WPF operator shell and retained local API/web support surfaces that reinforce the same operator model instead of diverging from it; the current WPF shell/navigation baseline plus Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, canonical workspace launch/deep-link routing, single-instance launch-argument forwarding, workflow automation hardening, and clear demo-data fixture cues are present, while workflow-level acceptance remains tied to Waves 2-4
 
 ---
 
@@ -62,7 +62,7 @@ Governance is where operators review Security Master coverage, portfolio and led
 
 ### Wave 1: Provider confidence and checkpoint evidence
 
-Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence. The current DK1 wrapper extends this into an Alpaca/Robinhood/Yahoo pilot parity packet with an emitted `pilotReplaySampleSet`, generated parity-packet artifacts, trust rationale mapping, threshold calibration, and operator sign-off.
+Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence. The current DK1 wrapper extends this into an Alpaca/Robinhood/Yahoo pilot parity packet with an emitted `pilotReplaySampleSet`, generated parity-packet artifacts, packet-bound sign-off preflight, trust rationale mapping, threshold calibration, and operator sign-off.
 
 ### Wave 2: Paper-trading cockpit hardening
 

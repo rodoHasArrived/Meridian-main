@@ -662,6 +662,69 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_TradingReadiness_ShouldRequireReplayRefreshWhenSessionChangesAfterVerification()
+    {
+        var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-stale-replay", Guid.NewGuid().ToString("N"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(_ => new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance));
+            services.AddSingleton<IPaperSessionStore>(_ => new JsonlFilePaperSessionStore(
+                Path.Combine(rootPath, "sessions"),
+                NullLogger<JsonlFilePaperSessionStore>.Instance));
+            services.AddSingleton<PaperSessionPersistenceService>(sp => new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance,
+                sp.GetRequiredService<IPaperSessionStore>(),
+                sp.GetRequiredService<ExecutionAuditTrailService>()));
+        });
+
+        var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
+        var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
+            StrategyId: "strat-stale-replay",
+            StrategyName: "Stale Replay",
+            InitialCash: 100_000m,
+            Symbols: ["AAPL", "MSFT"]));
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-before-replay", "AAPL", 10m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-before-replay", "AAPL", 10m, 190m));
+        var verification = await persistence.VerifyReplayAsync(session.SessionId);
+
+        await persistence.RecordOrderUpdateAsync(session.SessionId, CreateExecutionOrderState("order-after-replay", "MSFT", 5m));
+        await persistence.RecordFillAsync(session.SessionId, CreateExecutionFill("order-after-replay", "MSFT", 5m, 320m));
+
+        var readiness = await app
+            .GetTestClient()
+            .GetFromJsonAsync<TradingOperatorReadinessDto>(
+                "/api/workstation/trading/readiness",
+                ServerJsonOptions);
+
+        readiness.Should().NotBeNull();
+        readiness!.ActiveSession.Should().NotBeNull();
+        readiness.ActiveSession!.SessionId.Should().Be(session.SessionId);
+        readiness.ActiveSession.FillCount.Should().Be(2);
+        readiness.ActiveSession.OrderCount.Should().Be(2);
+        readiness.ActiveSession.LedgerEntryCount.Should().BeGreaterThan(verification!.ComparedLedgerEntryCount);
+        readiness.Replay.Should().NotBeNull();
+        readiness.Replay!.ComparedFillCount.Should().Be(1);
+        readiness.Replay.ComparedOrderCount.Should().Be(1);
+        readiness.Replay.VerificationAuditId.Should().Be(verification.VerificationAuditId);
+        readiness.OverallStatus.Should().Be(TradingAcceptanceGateStatusDto.ReviewRequired);
+        readiness.ReadyForPaperOperation.Should().BeFalse();
+        readiness.AcceptanceGates.Should().ContainSingle(gate =>
+            gate.GateId == "replay" &&
+            gate.Status == TradingAcceptanceGateStatusDto.ReviewRequired &&
+            gate.AuditReference == verification.VerificationAuditId &&
+            gate.Detail.Contains("stale", StringComparison.OrdinalIgnoreCase));
+        readiness.WorkItems.Should().ContainSingle(item =>
+            item.WorkItemId == $"paper-replay-stale-{session.SessionId.ToLowerInvariant()}" &&
+            item.Kind == OperatorWorkItemKindDto.PaperReplay &&
+            item.Tone == OperatorWorkItemToneDto.Warning &&
+            item.AuditReference == verification.VerificationAuditId &&
+            item.Detail.Contains("orders active=2, verified=1", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingReadiness_ShouldFlagUnexplainedRiskControlAuditEvidence()
     {
         var rootPath = Path.Combine(Path.GetTempPath(), "meridian-tests", "workstation-readiness-risk", Guid.NewGuid().ToString("N"));

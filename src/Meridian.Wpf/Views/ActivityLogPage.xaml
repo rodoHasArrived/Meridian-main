@@ -74,10 +74,14 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
                     <TextBlock Text="Level:" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="LevelFilterCombo" Width="120" SelectionChanged="Filter_Changed"
+                    <ComboBox x:Name="LevelFilterCombo" Width="120"
+                              SelectedValuePath="Content"
+                              SelectedValue="{Binding LevelFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                               Foreground="{DynamicResource ConsoleTextBrush}"
-                              BorderThickness="1" Padding="8,4">
+                              BorderThickness="1" Padding="8,4"
+                              AutomationProperties.AutomationId="ActivityLogLevelFilterCombo"
+                              AutomationProperties.Name="Activity log level filter">
                         <ComboBoxItem Content="All" IsSelected="True"/>
                         <ComboBoxItem Content="Info"/>
                         <ComboBoxItem Content="Warning"/>
@@ -90,10 +94,14 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <TextBlock Text="Category:" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <ComboBox x:Name="CategoryFilterCombo" Width="140" SelectionChanged="Filter_Changed"
+                    <ComboBox x:Name="CategoryFilterCombo" Width="140"
+                              SelectedValuePath="Content"
+                              SelectedValue="{Binding CategoryFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                               Foreground="{DynamicResource ConsoleTextBrush}"
-                              BorderThickness="1" Padding="8,4">
+                              BorderThickness="1" Padding="8,4"
+                              AutomationProperties.AutomationId="ActivityLogCategoryFilterCombo"
+                              AutomationProperties.Name="Activity log category filter">
                         <ComboBoxItem Content="All" IsSelected="True"/>
                         <ComboBoxItem Content="Connection"/>
                         <ComboBoxItem Content="Data"/>
@@ -104,10 +112,13 @@
                 </StackPanel>
 
                 <!-- Search -->
-                <TextBox x:Name="SearchBox" Grid.Column="4" TextChanged="Search_Changed"
+                <TextBox x:Name="SearchBox" Grid.Column="4"
+                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Background="{DynamicResource ConsoleBackgroundDarkBrush}"
                          Foreground="{DynamicResource ConsoleTextBrush}"
-                         BorderThickness="1" Padding="8,6">
+                         BorderThickness="1" Padding="8,6"
+                         AutomationProperties.AutomationId="ActivityLogSearchBox"
+                         AutomationProperties.Name="Search activity logs">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
                             <Style.Triggers>
@@ -295,10 +306,40 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <TextBlock Text="No log entries to display."
-                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding NoLogsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <StackPanel x:Name="ActivityLogEmptyStatePanel"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            MaxWidth="440"
+                            Visibility="{Binding NoLogsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="ActivityLogEmptyStatePanel">
+                    <TextBlock Text="&#xE946;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="42"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,14"/>
+                    <TextBlock Text="{Binding EmptyStateTitle}"
+                               Style="{StaticResource EmptyStateTitleStyle}"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding EmptyStateDetail}"
+                               Style="{StaticResource EmptyStateDescriptionStyle}"/>
+                    <Button x:Name="ActivityLogResetFiltersButton"
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,16,0,0"
+                            HorizontalAlignment="Center"
+                            Visibility="{Binding HasFilterRecoveryAction, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="ActivityLogResetFiltersButton"
+                            AutomationProperties.Name="Reset activity log filters">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconRefresh}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="14"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="Reset Filters" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

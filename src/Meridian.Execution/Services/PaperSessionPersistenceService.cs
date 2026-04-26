@@ -84,6 +84,8 @@ public sealed class PaperSessionPersistenceService
                 Portfolio = portfolio,
                 ReconstructedLedger = reconstructedLedger,
             };
+            foreach (var fill in fills)
+                session.FillHistory.Add(fill);
             foreach (var order in orders)
                 session.OrderHistory.Add(order);
 
@@ -208,7 +210,13 @@ public sealed class PaperSessionPersistenceService
             Summary: ToSummary(session),
             Symbols: session.Symbols.ToArray(),
             Portfolio: portfolioSnapshot,
-            OrderHistory: session.OrderHistory.ToArray());
+            OrderHistory: session.OrderHistory.ToArray(),
+            FillCount: session.FillHistory.Count,
+            LedgerEntryCount: GetLedger(sessionId)?.JournalEntryCount ?? 0,
+            LastFillAt: session.FillHistory.Count > 0
+                ? session.FillHistory.Max(static fill => fill.Timestamp)
+                : null,
+            LastOrderUpdatedAt: ResolveLastOrderUpdatedAt(session.OrderHistory));
     }
 
     /// <summary>Returns the portfolio state for a live session, or null.</summary>
@@ -265,6 +273,7 @@ public sealed class PaperSessionPersistenceService
         if (_sessions.TryGetValue(sessionId, out var session) && session.IsActive)
         {
             session.Portfolio?.ApplyFill(fill);
+            session.FillHistory.Add(fill);
         }
 
         if (_store is not null)
@@ -805,6 +814,18 @@ public sealed class PaperSessionPersistenceService
             ? debit - credit
             : credit - debit;
 
+    private static DateTimeOffset? ResolveLastOrderUpdatedAt(IReadOnlyList<OrderState> orderHistory)
+    {
+        if (orderHistory.Count == 0)
+        {
+            return null;
+        }
+
+        return orderHistory
+            .Select(static order => order.LastUpdatedAt ?? order.CreatedAt)
+            .Max();
+    }
+
     private sealed class PaperSession
     {
         public required string SessionId { get; init; }
@@ -817,6 +838,7 @@ public sealed class PaperSessionPersistenceService
         public List<string> Symbols { get; init; } = [];
         public PaperTradingPortfolio? Portfolio { get; init; }
         public List<OrderState> OrderHistory { get; } = [];
+        public List<ExecutionReport> FillHistory { get; } = [];
 
         /// <summary>
         /// Ledger reconstructed from persisted JSONL entries on load (closed sessions only).
@@ -851,7 +873,11 @@ public sealed record PaperSessionDetailDto(
     PaperSessionSummaryDto Summary,
     IReadOnlyList<string> Symbols,
     ExecutionPortfolioSnapshotDto? Portfolio,
-    IReadOnlyList<OrderState>? OrderHistory);
+    IReadOnlyList<OrderState>? OrderHistory,
+    int FillCount,
+    int LedgerEntryCount,
+    DateTimeOffset? LastFillAt,
+    DateTimeOffset? LastOrderUpdatedAt);
 
 /// <summary>Portfolio snapshot DTO for session detail.</summary>
 public sealed record ExecutionPortfolioSnapshotDto(

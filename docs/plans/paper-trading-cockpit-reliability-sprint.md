@@ -13,6 +13,7 @@ The repo already contains the main seams needed for an operator lane:
 - `src/Meridian.Execution/OrderManagementSystem.cs` audits order submission, rejection, and gateway-connect behavior.
 - `src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs` and `src/Meridian.Strategies/Services/PromotionService.cs` expose evaluation, approval, and promotion history seams.
 - `src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs` projects the latest generated DK1 parity packet into the cockpit readiness lane.
+- `scripts/dev/prepare-dk1-operator-signoff.ps1 -PacketPath` now binds the operator sign-off template to the reviewed parity packet, so stale or copied approvals cannot satisfy DK1 exit preflight.
 - `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` already surfaces sessions, replay, audit, and promotion controls in one cockpit.
 - `src/Meridian.Wpf/Views/TradingWorkspaceShellPage.xaml` now projects a Trading desk briefing hero from the same active-run, workflow-summary, and shared operator-readiness inputs.
 
@@ -131,7 +132,7 @@ The cockpit should remain the orchestration surface, and WPF shell elements such
 - latest replay verification evidence from the execution audit trail
 - execution-control state, including circuit breaker and manual overrides
 - durable promotion decision state and trace completeness
-- DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet
+- DK1 provider trust-gate packet posture, sample/evidence counts, blockers, and operator sign-off status from the generated parity packet plus packet-bound sign-off preflight
 - DK1 pilot sample rows, evidence-document rows, trust-rationale contract status, and baseline-threshold contract status so explainability/calibration review is visible from the same cockpit contract
 - explicit acceptance gates plus an overall readiness status / paper-operation readiness flag
 - recent risk/control audit evidence with actor, scope, rationale, and missing-field warnings
@@ -161,6 +162,7 @@ explain why a decision was allowed, rejected, or manually overridden.
 `GET /api/workstation/trading` also includes the same readiness payload so workstation consumers can render session, replay, DK1 trust-gate, audit/control, and promotion decisions from one operator-ready lane. When the generated DK1 packet is `ready-for-operator-review` but sign-off is still pending, the readiness payload adds a `ProviderTrustGate` work item instead of letting the cockpit look fully accepted.
 
 Replay readiness is rebuilt from durable execution-audit evidence, so replay verification audit entries persist `isConsistent`, compared fill/order/ledger counts, last-persisted timestamps, and the primary mismatch reason. This keeps the shared readiness lane specific after restart and when verification was triggered through the service layer instead of the endpoint wrapper.
+The replay gate now treats those compared counts as a freshness contract: if the active session's fill, order, or ledger-entry counts diverge after verification, the gate drops back to review-required and emits a stable `paper-replay-stale-{sessionId}` work item until replay verification is run again.
 
 #### `PaperSessionReplayVerificationDto`
 
@@ -293,6 +295,9 @@ Rejection uses the same operator-review packet shape through `RejectPromotionReq
 - maintain `tests/Meridian.Tests/Ui/ExecutionWriteEndpointsTests.cs`
   - session create, restore, replay verify, and close remain auditable end to end
   - replay verification audit entry returns a stable audit identifier
+- maintain `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
+  - trading readiness joins session, replay, audit/control, promotion, and DK1 trust state
+  - replay readiness becomes review-required when a session changes after its latest replay audit
 - maintain `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs`
   - promotion history survives service restart through the durable record store
   - approval record contains source run, target run, approver, reason, and audit reference

@@ -75,7 +75,7 @@ Status legend:
 | ------------ | -------- | --------------- | -------------- | ------- |
 | Market-data ingestion and storage | Cross-cutting platform | Implemented baseline | Phase 0 | Existing platform foundation |
 | Replay, export, diagnostics, observability | Cross-cutting platform | Implemented baseline | Phase 0 | Needed to support all later workflows |
-| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Provider Health posture, and Activity Log triage are present; workflow acceptance remains active Wave 2-4 work |
+| Workspace shell (`Research`, `Trading`, `Data Operations`, `Governance`) | Cross-cutting platform | Implemented baseline | Phase 1 | WPF shell/navigation baseline, context strips, command/search metadata, Trading/Research/Data Operations desk briefing heroes, Provider Health posture, System Health triage, Notification Center filter recovery, and Activity Log triage are present; workflow acceptance remains active Wave 2-4 work |
 | Shared run model across backtest, paper, and live history | Front office | In progress | Phase 1 | First WPF run browser/detail/portfolio/ledger flow exists |
 | Strategy research and backtesting | Front office | Implemented baseline | Phase 1 | Needs stronger shared-run UX and comparison flows |
 | Portfolio construction and implementation | Front office | In progress | Phase 2 | Needs stronger operator workflow, approvals, and cockpit UX |
@@ -173,7 +173,7 @@ The current repository already supports parts of the target vision:
 
 - ingestion, replay, storage, diagnostics, and export are in place
 - shared run, portfolio, and ledger read services already exist
-- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows, Trading/Research/Data Operations briefing surfaces, Provider Health posture, and Activity Log triage
+- WPF exposes a four-workspace shell baseline, run/portfolio/ledger/cash-flow drill-ins, Governance/Fund Ops routes, Security Master workflows, Trading/Research/Data Operations briefing surfaces, Provider Health posture, System Health triage, Notification Center filter recovery, and Activity Log triage
 - Security Master has contracts, services, storage, migrations, F# domain anchors, WPF drill-ins, conflict handling, corporate actions, trading parameters, and shared coverage/provenance propagation
 - fund-structure, account/entity, ledger-group, cash-flow, and governed report-pack seams are in code, with focused tests around fund structure, report-pack schema/version behavior, and Fund Operations projections
 - reconciliation now includes a file-backed break queue with review, resolve/dismiss, and audit-history routes, while broader external-account/custodian matching and calibrated casework remain open
@@ -217,7 +217,7 @@ These next steps keep the vision matrix aligned with the canonical Waves 2-4 pat
 
 1. Keep DK1 provider-trust parity, explainability, calibration, and operator sign-off visible in the trading readiness lane.
 2. Prove paper-session create, restore, replay, audit/control, and promotion-review continuity through repo-backed operator scenarios.
-3. Keep WPF Trading, Research, Data Operations, Provider Health, and Activity Log triage surfaces as consumers of shared readiness/run/provider/log contracts, not separate acceptance models.
+3. Keep WPF Trading, Research, Data Operations, Provider Health, System Health triage, Notification Center filter recovery, and Activity Log triage surfaces as consumers of shared readiness/run/provider/diagnostics/history/log contracts, not separate acceptance models.
 
 **Exit criteria**
 

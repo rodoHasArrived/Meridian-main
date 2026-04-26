@@ -78,6 +78,18 @@ public sealed class TradingOperatorReadinessService
                 auditReference: replay.VerificationAuditId,
                 workItemId: BuildWorkItemId("paper-replay-mismatch", replay.SessionId));
         }
+        else if (IsReplayCoverageStale(activeSession, replay))
+        {
+            AddWorkItem(
+                workItems,
+                OperatorWorkItemKindDto.PaperReplay,
+                "Paper replay verification stale",
+                BuildReplayCoverageDetail(activeSession, replay),
+                OperatorWorkItemToneDto.Warning,
+                replay.SessionId,
+                auditReference: replay.VerificationAuditId,
+                workItemId: BuildWorkItemId("paper-replay-stale", replay.SessionId));
+        }
 
         if (auditEntries.Count == 0)
         {
@@ -664,6 +676,17 @@ public sealed class TradingOperatorReadinessService
                 AuditReference: replay.VerificationAuditId);
         }
 
+        if (IsReplayCoverageStale(activeSession, replay))
+        {
+            return new TradingAcceptanceGateDto(
+                GateId: "replay",
+                Label: "Replay verified",
+                Status: TradingAcceptanceGateStatusDto.ReviewRequired,
+                Detail: BuildReplayCoverageDetail(activeSession, replay),
+                SessionId: replay.SessionId,
+                AuditReference: replay.VerificationAuditId);
+        }
+
         return new TradingAcceptanceGateDto(
             GateId: "replay",
             Label: "Replay verified",
@@ -671,6 +694,44 @@ public sealed class TradingOperatorReadinessService
             Detail: $"Compared {replay.ComparedFillCount} fill(s), {replay.ComparedOrderCount} order(s), and {replay.ComparedLedgerEntryCount} ledger entr{(replay.ComparedLedgerEntryCount == 1 ? "y" : "ies")}.",
             SessionId: replay.SessionId,
             AuditReference: replay.VerificationAuditId);
+    }
+
+    private static bool IsReplayCoverageStale(
+        TradingPaperSessionReadinessDto activeSession,
+        TradingReplayReadinessDto replay)
+        => !string.Equals(activeSession.SessionId, replay.SessionId, StringComparison.OrdinalIgnoreCase) ||
+           activeSession.FillCount != replay.ComparedFillCount ||
+           activeSession.OrderCount != replay.ComparedOrderCount ||
+           activeSession.LedgerEntryCount != replay.ComparedLedgerEntryCount;
+
+    private static string BuildReplayCoverageDetail(
+        TradingPaperSessionReadinessDto activeSession,
+        TradingReplayReadinessDto replay)
+    {
+        if (!string.Equals(activeSession.SessionId, replay.SessionId, StringComparison.OrdinalIgnoreCase))
+        {
+            return $"Replay verification covers session {replay.SessionId}, but the active paper session is {activeSession.SessionId}.";
+        }
+
+        var differences = new List<string>(capacity: 3);
+        if (activeSession.FillCount != replay.ComparedFillCount)
+        {
+            differences.Add($"fills active={activeSession.FillCount}, verified={replay.ComparedFillCount}");
+        }
+
+        if (activeSession.OrderCount != replay.ComparedOrderCount)
+        {
+            differences.Add($"orders active={activeSession.OrderCount}, verified={replay.ComparedOrderCount}");
+        }
+
+        if (activeSession.LedgerEntryCount != replay.ComparedLedgerEntryCount)
+        {
+            differences.Add($"ledger active={activeSession.LedgerEntryCount}, verified={replay.ComparedLedgerEntryCount}");
+        }
+
+        return differences.Count == 0
+            ? $"Replay verification for paper session {activeSession.SessionId} is no longer aligned with the active session."
+            : $"Replay verification for paper session {activeSession.SessionId} is stale ({string.Join("; ", differences)}). Run replay verification again before accepting cockpit readiness.";
     }
 
     private static TradingAcceptanceGateDto BuildAuditControlGate(
@@ -877,7 +938,13 @@ public sealed class TradingOperatorReadinessService
             SymbolCount: detail?.Symbols.Count ?? 0,
             OrderCount: detail?.OrderHistory?.Count ?? 0,
             PositionCount: detail?.Portfolio?.Positions.Count ?? 0,
-            PortfolioValue: detail?.Portfolio?.PortfolioValue);
+            PortfolioValue: detail?.Portfolio?.PortfolioValue)
+        {
+            FillCount = detail?.FillCount ?? 0,
+            LedgerEntryCount = detail?.LedgerEntryCount ?? 0,
+            LastFillAt = detail?.LastFillAt,
+            LastOrderUpdatedAt = detail?.LastOrderUpdatedAt
+        };
 
     private static void AddWorkItem(
         ICollection<OperatorWorkItemDto> workItems,

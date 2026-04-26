@@ -3,7 +3,7 @@
 **Owner:** Core Team
 **Audience:** Product, Architecture, Desktop, API, and Platform contributors
 **Last Updated:** 2026-04-26
-**Status:** Active blueprint — WPF shell/navigation baseline is implemented; DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero; Data Operations now has provider/backfill/storage/export handoff surfaces including Provider Health posture briefing, Activity Log triage is present for local operational review, Watchlist posture helps stage symbol sets before monitoring/research/trading handoffs, and desktop workflow automation now covers canonical launch/deep-link routing and single-instance argument forwarding; workflow validation and cockpit/shared-model/governance hardening remain in progress
+**Status:** Active blueprint — WPF shell/navigation baseline is implemented; DK1 trust-gate state and risk/control audit explainability now project into the trading readiness lane and WPF Trading desk briefing hero; DK1 sign-off templates can bind owner approvals to the reviewed parity packet; Data Operations now has provider/backfill/storage/export handoff surfaces including Provider Health posture briefing, System Health triage is present for diagnostics handoffs, Notification Center can recover hidden retained history after aggressive filters, Activity Log triage is present for local operational review, Watchlist posture helps stage symbol sets before monitoring/research/trading handoffs, and desktop workflow automation now covers canonical launch/deep-link routing and single-instance argument forwarding; workflow validation and cockpit/shared-model/governance hardening remain in progress
 
 ---
 
@@ -37,7 +37,7 @@ Meridian already contains strong underlying capabilities:
 - a double-entry ledger implementation
 - a broad WPF page inventory and supporting UI services
 
-However, those capabilities are still exposed through multiple page- and service-centric flows. The WPF shell now has a four-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, Activity Log triage, Watchlist posture, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that the active workflows are better, not just that the shell is more organized.
+However, those capabilities are still exposed through multiple page- and service-centric flows. The WPF shell now has a four-workspace baseline, metadata-driven navigation, command/search metadata, shared deep-page hosting, context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, smoke coverage, workflow page-state automation markers, corrected isolated restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage, but the product still needs to prove that the active workflows are better, not just that the shell is more organized.
 
 ### Current pain points
 
@@ -290,7 +290,7 @@ The standalone web dashboard has been retired. The remaining supporting surface 
 
 **Goal:** Make new functionality discoverable without requiring core engine rewrites.
 
-**Current status (2026-04-26):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, Activity Log triage, Watchlist posture, shell/navigation smoke tests, `ShellAutomationState` page-state confirmation, deterministic isolated workflow restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
+**Current status (2026-04-26):** Baseline implemented in WPF. `ShellNavigationCatalog`, workspace shell pages, command/search metadata, shared deep-page hosting, shell context strips, Trading, Research, and Data Operations desk briefing heroes, Provider Health posture briefing, System Health triage, Notification Center filter recovery, Activity Log triage, Watchlist posture, shell/navigation smoke tests, `ShellAutomationState` page-state confirmation, deterministic isolated workflow restore/build behavior, and local single-instance mutex plus launch-argument forwarding coverage are present. Continue validating this phase through active workflows rather than adding more navigation structure for its own sake.
 
 **Work**
 
@@ -454,6 +454,8 @@ The migration should be considered successful when the following are true:
 4. Tie cockpit acceptance to DK1 provider trust, replay/sample parity, promotion rationale, and session/replay reliability.
 5. Keep the Trading desk briefing hero consuming shared active-run, workflow-summary, and operator-readiness state, including risk/control audit explainability, rather than becoming a shell-local readiness model.
 6. Keep the Data Operations desk briefing hero and Provider Health posture briefing consuming shared provider, backfill, storage, session, and export state rather than becoming shell-local operational-readiness models.
-7. Keep Activity Log triage as supporting operational review evidence for errors, warnings, latest activity, and active filters, not a substitute for readiness gates.
-8. Keep Watchlist posture as symbol-set staging guidance for saved lists, pinned lists, search scope, and symbol coverage, not as a separate readiness gate.
-9. Prioritize Phase 2, Phase 4, and Phase 5 work that reduces page-local orchestration and strengthens shared contracts rather than broadening shell surface area.
+7. Keep System Health triage as diagnostics support evidence for provider, storage, and retained event posture, not a substitute for readiness gates or durable incident queues.
+8. Keep Notification Center filter recovery as governance/operator-triage support evidence for retained history recovery, not a substitute for durable work-item queues.
+9. Keep Activity Log triage as supporting operational review evidence for errors, warnings, latest activity, and active filters, not a substitute for readiness gates.
+10. Keep Watchlist posture as symbol-set staging guidance for saved lists, pinned lists, search scope, and symbol coverage, not as a separate readiness gate.
+11. Prioritize Phase 2, Phase 4, and Phase 5 work that reduces page-local orchestration and strengthens shared contracts rather than broadening shell surface area.

@@ -272,7 +272,8 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Column="0"
+                            <TextBox x:Name="NotificationHistorySearchTextBox"
+                                     Grid.Column="0"
                                      Width="280"
                                      Margin="0,0,12,0"
                                      Padding="10,6"
@@ -280,51 +281,50 @@
                                      Foreground="{DynamicResource ConsoleTextBrush}"
                                      BorderBrush="{DynamicResource ConsoleBorderBrush}"
                                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                     ToolTip="Search notification title, message, or type" />
+                                     ToolTip="Search notification title, message, or type"
+                                     AutomationProperties.AutomationId="NotificationHistorySearchTextBox"
+                                     AutomationProperties.Name="Search notification history" />
 
-                            <CheckBox Grid.Column="1"
+                            <CheckBox x:Name="NotificationHistoryUnreadOnlyCheckBox"
+                                      Grid.Column="1"
                                       Content="Unread only"
                                       IsChecked="{Binding ShowUnreadOnly}"
                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                      VerticalAlignment="Center" />
+                                      VerticalAlignment="Center"
+                                      AutomationProperties.AutomationId="NotificationHistoryUnreadOnlyCheckBox" />
                         </Grid>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0" VerticalAlignment="Bottom">
                         <CheckBox x:Name="FilterAllCheck"
                                   Content="All"
-                                  IsChecked="True"
+                                  IsChecked="{Binding AreAllTypesSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                  Checked="FilterChanged"
-                                  Unchecked="FilterChanged"
+                                  AutomationProperties.AutomationId="NotificationHistoryAllTypesCheckBox"
                                   Margin="0,0,16,0" />
                         <CheckBox x:Name="FilterErrorsCheck"
                                   Content="Errors"
-                                  IsChecked="True"
+                                  IsChecked="{Binding ShowErrors, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Foreground="{StaticResource ErrorColorBrush}"
-                                  Checked="FilterChanged"
-                                  Unchecked="FilterChanged"
+                                  AutomationProperties.AutomationId="NotificationHistoryErrorsCheckBox"
                                   Margin="0,0,16,0" />
                         <CheckBox x:Name="FilterWarningsCheck"
                                   Content="Warnings"
-                                  IsChecked="True"
+                                  IsChecked="{Binding ShowWarnings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Foreground="{StaticResource WarningColorBrush}"
-                                  Checked="FilterChanged"
-                                  Unchecked="FilterChanged"
+                                  AutomationProperties.AutomationId="NotificationHistoryWarningsCheckBox"
                                   Margin="0,0,16,0" />
                         <CheckBox x:Name="FilterInfoCheck"
                                   Content="Info"
-                                  IsChecked="True"
+                                  IsChecked="{Binding ShowInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Foreground="{StaticResource InfoColorBrush}"
-                                  Checked="FilterChanged"
-                                  Unchecked="FilterChanged"
+                                  AutomationProperties.AutomationId="NotificationHistoryInfoCheckBox"
                                   Margin="0,0,16,0" />
                         <CheckBox x:Name="FilterSuccessCheck"
                                   Content="Success"
-                                  IsChecked="True"
+                                  IsChecked="{Binding ShowSuccess, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Foreground="{StaticResource SuccessColorBrush}"
-                                  Checked="FilterChanged"
-                                  Unchecked="FilterChanged" />
+                                  AutomationProperties.AutomationId="NotificationHistorySuccessCheckBox" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -472,6 +472,22 @@
                                    Margin="0,0,0,8" />
                         <TextBlock Text="{Binding EmptyStateDescription}"
                                    Style="{StaticResource EmptyStateDescriptionStyle}" />
+                        <Button x:Name="NotificationHistoryResetFiltersButton"
+                                Command="{Binding ClearHistoryFiltersCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,16,0,0"
+                                HorizontalAlignment="Center"
+                                Visibility="{Binding HasFilterRecoveryAction, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="NotificationHistoryResetFiltersButton"
+                                AutomationProperties.Name="Reset notification history filters">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconRefresh}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           Margin="0,0,6,0" />
+                                <TextBlock Text="Reset Filters" />
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
             </Border>

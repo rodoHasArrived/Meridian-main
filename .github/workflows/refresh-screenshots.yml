@@ -1,12 +1,12 @@
-# Refresh UI Screenshots
+# Refresh WPF Desktop Screenshots
 #
-# Builds the Meridian web dashboard, starts it in default (no-provider) mode,
-# takes Playwright screenshots of the main pages, and commits the updated PNGs
-# back to docs/screenshots/.
+# Builds the Meridian WPF workstation in fixture mode, captures the desktop
+# screenshot catalog with scripts/dev/capture-desktop-screenshots.ps1, and
+# commits updated PNGs under docs/screenshots/desktop/.
 #
 # Triggered:
-#   - Weekly on Monday at 06:00 UTC (keep screenshots current after UI changes)
-#   - On push to main when dashboard HTML/CSS/JS or wwwroot assets change
+#   - Weekly on Monday at 06:00 UTC
+#   - On push to main when the WPF shell or desktop screenshot automation changes
 #   - Manually via workflow_dispatch
 
 name: Refresh UI Screenshots
@@ -18,11 +18,12 @@ on:
     branches:
       - main
     paths:
-      - 'src/Meridian/wwwroot/**'
-      - 'src/Meridian.Ui/**'
-      - 'src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs'
-      - 'src/Meridian.Ui.Shared/HtmlTemplateGenerator*.cs'
-      - 'src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs'
+      - '.github/workflows/refresh-screenshots.yml'
+      - 'config/appsettings.sample.json'
+      - 'scripts/dev/SharedBuild.ps1'
+      - 'scripts/dev/capture-desktop-screenshots.ps1'
+      - 'src/Meridian.Ui.Services/**'
+      - 'src/Meridian.Ui.Shared/**'
       - 'src/Meridian.Wpf/**'
   workflow_dispatch:
 
@@ -39,353 +40,20 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
-  UI_PORT: 8200
+  WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
+  WPF_CONFIGURATION: Release
+  WPF_FRAMEWORK: net9.0-windows10.0.19041.0
+  WPF_SCREENSHOT_OUTPUT: docs/screenshots/desktop
 
 jobs:
-  build-artifact:
-    name: Build Artifact
-    uses: ./.github/workflows/generate-build-artifact.yml
-
-  refresh:
-    name: Take screenshots
-    needs: [build-artifact]
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.build-artifact.outputs.artifact-name }}
-
-      - name: Copy sample config
-        run: cp config/appsettings.sample.json config/appsettings.json
-
-      - name: Start web dashboard (background)
-        env:
-          MDC_AUTH_MODE: optional
-        run: |
-          dotnet src/Meridian/bin/Release/net9.0/Meridian.dll \
-            --ui --http-port ${{ env.UI_PORT }} > /tmp/dashboard.log 2>&1 &
-          echo "MERIDIAN_PID=$!" >> "$GITHUB_ENV"
-
-      # Install Node.js and Playwright while the server warms up in the background.
-      # By the time the readiness check runs the server has had a significant head
-      # start, so the poll loop completes much faster (or instantly).
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: playwright-chromium-${{ runner.os }}-
-
-      - name: Install Playwright and Chromium
-        run: |
-          npm install playwright
-          npx playwright install chromium ${{ steps.playwright-cache.outputs.cache-hit != 'true' && '--with-deps' || '' }}
-
-      - name: Wait for dashboard to be ready
-        run: |
-          # 60 attempts × 1 s = 60 s total — same budget as before but with
-          # faster polling so we exit as soon as the server answers.
-          echo "Waiting for http://localhost:${{ env.UI_PORT }}/readyz ..."
-          for i in $(seq 1 60); do
-            if curl -sf "http://localhost:${{ env.UI_PORT }}/readyz" > /dev/null 2>&1; then
-              echo "Dashboard is up (attempt ${i})"
-              exit 0
-            fi
-            echo "Attempt ${i}/60 failed, retrying in 1 second..."
-            sleep 1
-          done
-          echo "::error::Dashboard did not become ready within 60 seconds"
-          echo "Checking process status:"
-          ps aux | grep -i meridian || true
-          echo "Checking port ${{ env.UI_PORT }}:"
-          netstat -tlnp 2>/dev/null | grep ${{ env.UI_PORT }} || echo "Port ${{ env.UI_PORT }} not listening"
-          echo "Dashboard log tail:"
-          tail -50 /tmp/dashboard.log || true
-          exit 1
-
-      - name: Write screenshot helper script
-        run: |
-          cat > take-screenshots.mjs << 'SCRIPT'
-          import { chromium } from 'playwright';
-
-          const BASE = process.env.UI_BASE;
-          const browser = await chromium.launch();
-          const context = await browser.newContext({
-            viewport: { width: 1400, height: 900 },
-            colorScheme: 'light',
-            locale: 'en-US'
-          });
-
-          // Stabilize a page: wait for network idle, fonts, then disable animations.
-          async function stabilizePage(page) {
-            await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
-            await page.evaluate(async () => {
-              if (document.fonts?.ready) await document.fonts.ready;
-            });
-            await page.addStyleTag({
-              content: `
-                *,
-                *::before,
-                *::after {
-                  animation: none !important;
-                  transition: none !important;
-                  caret-color: transparent !important;
-                }
-              `
-            });
-          }
-
-          // All screenshots to capture.
-          // Shots that share the same URL are taken from a single page load.
-          const SHOTS = [
-            // ── Main dashboard (/ ) ────────────────────────────────────────────
-            { name: 'dashboard',       path: 'docs/screenshots/01-dashboard.png',
-              url: `${BASE}/`, fullPage: true,
-              stableSelector: '[data-testid="dashboard-root"], main, body', waitMs: 150 },
-            { name: 'status-overview', path: 'docs/screenshots/04-status-overview.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#storage, body',     waitMs: 0, clipSelector: '#storage' },
-            { name: 'data-source',     path: 'docs/screenshots/05-data-source.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#datasource, body',  waitMs: 0, clipSelector: '#datasource' },
-            { name: 'data-sources',    path: 'docs/screenshots/06-data-sources.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#datasources, body', waitMs: 0, clipSelector: '#datasources' },
-            { name: 'backfill',        path: 'docs/screenshots/07-backfill.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#backfill, body',    waitMs: 0, clipSelector: '#backfill' },
-            { name: 'derivatives',     path: 'docs/screenshots/08-derivatives.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#derivatives, body', waitMs: 0, clipSelector: '#derivatives' },
-            { name: 'symbols',         path: 'docs/screenshots/09-symbols.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#symbols, body',     waitMs: 0, clipSelector: '#symbols' },
-            { name: 'status',          path: 'docs/screenshots/10-status-section.png',
-              url: `${BASE}/`, fullPage: false,
-              stableSelector: '#status, body',      waitMs: 0, clipSelector: '#status' },
-
-            // ── Login ─────────────────────────────────────────────────────────
-            { name: 'login',           path: 'docs/screenshots/11-login.png',
-              url: `${BASE}/login`, fullPage: true,
-              stableSelector: '.login-card', waitMs: 150 },
-
-            // ── Swagger ───────────────────────────────────────────────────────
-            { name: 'swagger',         path: 'docs/screenshots/03-swagger.png',
-              url: `${BASE}/swagger/index.html`, fullPage: true,
-              stableSelector: '#swagger-ui, body', waitMs: 150 },
-
-            // ── Workstation deep-links ────────────────────────────────────────
-            { name: 'workstation-trading',
-              path: 'docs/screenshots/12-workstation-trading.png',
-              url: `${BASE}/workstation/trading`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations',
-              path: 'docs/screenshots/13-workstation-data-operations.png',
-              url: `${BASE}/workstation/data-operations`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance',
-              path: 'docs/screenshots/14-workstation-governance.png',
-              url: `${BASE}/workstation/governance`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-trading-orders',
-              path: 'docs/screenshots/15-workstation-trading-orders.png',
-              url: `${BASE}/workstation/trading/orders`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-trading-positions',
-              path: 'docs/screenshots/16-workstation-trading-positions.png',
-              url: `${BASE}/workstation/trading/positions`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-trading-risk',
-              path: 'docs/screenshots/17-workstation-trading-risk.png',
-              url: `${BASE}/workstation/trading/risk`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations-providers',
-              path: 'docs/screenshots/18-workstation-data-operations-providers.png',
-              url: `${BASE}/workstation/data-operations/providers`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations-backfills',
-              path: 'docs/screenshots/19-workstation-data-operations-backfills.png',
-              url: `${BASE}/workstation/data-operations/backfills`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-data-operations-exports',
-              path: 'docs/screenshots/20-workstation-data-operations-exports.png',
-              url: `${BASE}/workstation/data-operations/exports`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance-ledger',
-              path: 'docs/screenshots/21-workstation-governance-ledger.png',
-              url: `${BASE}/workstation/governance/ledger`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance-reconciliation',
-              path: 'docs/screenshots/22-workstation-governance-reconciliation.png',
-              url: `${BASE}/workstation/governance/reconciliation`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-            { name: 'workstation-governance-security-master',
-              path: 'docs/screenshots/23-workstation-governance-security-master.png',
-              url: `${BASE}/workstation/governance/security-master`,
-              fullPage: true, stableSelector: 'main, body', waitMs: 500 },
-          ];
-
-          // Group shots by URL so each URL is loaded only once.
-          function groupByUrl(shots) {
-            const map = new Map();
-            for (const shot of shots) {
-              const list = map.get(shot.url) ?? [];
-              list.push(shot);
-              map.set(shot.url, list);
-            }
-            return map;
-          }
-
-          // Open one page per URL group, stabilize it, then capture every shot.
-          // All shots in a group share the same page load; the first shot's
-          // stableSelector is used as a proxy for overall page readiness since
-          // every group's first entry uses a broad selector ('body', 'main, body',
-          // or a data-testid that includes a 'body' fallback).
-          async function processGroup(url, shots) {
-            const page = await context.newPage();
-            try {
-              await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-              await page.waitForSelector(shots[0].stableSelector ?? 'body', { timeout: 20000 }).catch(() => {});
-              await stabilizePage(page);
-              // Honour the highest explicit waitMs in the group; default to 0 so
-              // that shots which set waitMs: 0 are not forced to wait 150 ms.
-              const maxWaitMs = Math.max(...shots.map(s => s.waitMs ?? 0));
-              if (maxWaitMs > 0) await page.waitForTimeout(maxWaitMs);
-
-              for (const { name, path, fullPage, clipSelector } of shots) {
-                try {
-                  if (clipSelector) {
-                    const locator = page.locator(clipSelector);
-                    await locator.scrollIntoViewIfNeeded().catch(() => {});
-                    await locator.screenshot({ path });
-                  } else {
-                    await page.screenshot({ path, fullPage: fullPage ?? true });
-                  }
-                  console.log(`✓ ${path}`);
-                } catch (err) {
-                  console.warn(`⚠ ${name}: ${err.message} — falling back to viewport screenshot`);
-                  await page.screenshot({ path, fullPage: false }).catch(
-                    fallbackErr => console.error(`✗ Fallback also failed for ${name}: ${fallbackErr.message}`)
-                  );
-                }
-              }
-            } finally {
-              await page.close();
-            }
-          }
-
-          // Run all URL groups concurrently.
-          const groups = groupByUrl(SHOTS);
-          const results = await Promise.allSettled(
-            [...groups.entries()].map(([url, shots]) => processGroup(url, shots))
-          );
-
-          await browser.close();
-
-          const failures = results.filter(r => r.status === 'rejected');
-          if (failures.length > 0) {
-            for (const f of failures) console.error('FAILED:', f.reason);
-            process.exit(1);
-          }
-          SCRIPT
-
-      - name: Take screenshots
-        env:
-          UI_BASE: http://localhost:${{ env.UI_PORT }}
-        run: |
-          set -euo pipefail
-          mkdir -p docs/screenshots
-          node take-screenshots.mjs
-          echo "Screenshots captured:"
-          ls -lh docs/screenshots/*.png
-
-      - name: Stop dashboard
-        if: always()
-        run: |
-          if [ -n "${MERIDIAN_PID:-}" ]; then
-            kill "$MERIDIAN_PID" 2>/dev/null || true
-          fi
-
-      - name: Commit updated screenshots
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: 'docs(screenshots): refresh UI screenshots'
-          file_pattern: docs/screenshots/*.png
-          commit_user_name: github-actions[bot]
-          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          push_options: '--force-with-lease'
-
-      - name: Write workflow summary
-        if: always()
-        run: |
-          {
-            echo "## UI Screenshot Refresh"
-            echo ""
-            echo "| Screenshot | File |"
-            echo "|-----------|------|"
-            echo "| Main Dashboard | \`docs/screenshots/01-dashboard.png\` |"
-            echo "| React Workstation Shell | \`docs/screenshots/02-workstation.png\` |"
-            echo "| Swagger API Docs | \`docs/screenshots/03-swagger.png\` |"
-            echo "| Storage Configuration | \`docs/screenshots/04-status-overview.png\` |"
-            echo "| Data Provider Selector | \`docs/screenshots/05-data-source.png\` |"
-            echo "| Data Sources Panel | \`docs/screenshots/06-data-sources.png\` |"
-            echo "| Historical Backfill | \`docs/screenshots/07-backfill.png\` |"
-            echo "| Derivatives Tracking | \`docs/screenshots/08-derivatives.png\` |"
-            echo "| Subscribed Symbols | \`docs/screenshots/09-symbols.png\` |"
-            echo "| Status & Activity Log | \`docs/screenshots/10-status-section.png\` |"
-            echo "| Login Page | \`docs/screenshots/11-login.png\` |"
-            echo "| Workstation – Trading | \`docs/screenshots/12-workstation-trading.png\` |"
-            echo "| Workstation – Data Operations | \`docs/screenshots/13-workstation-data-operations.png\` |"
-            echo "| Workstation – Governance | \`docs/screenshots/14-workstation-governance.png\` |"
-            echo "| Workstation – Trading: Orders | \`docs/screenshots/15-workstation-trading-orders.png\` |"
-            echo "| Workstation – Trading: Positions | \`docs/screenshots/16-workstation-trading-positions.png\` |"
-            echo "| Workstation – Trading: Risk | \`docs/screenshots/17-workstation-trading-risk.png\` |"
-            echo "| Workstation – Data Operations: Providers | \`docs/screenshots/18-workstation-data-operations-providers.png\` |"
-            echo "| Workstation – Data Operations: Backfills | \`docs/screenshots/19-workstation-data-operations-backfills.png\` |"
-            echo "| Workstation – Data Operations: Exports | \`docs/screenshots/20-workstation-data-operations-exports.png\` |"
-            echo "| Workstation – Governance: Ledger | \`docs/screenshots/21-workstation-governance-ledger.png\` |"
-            echo "| Workstation – Governance: Reconciliation | \`docs/screenshots/22-workstation-governance-reconciliation.png\` |"
-            echo "| Workstation – Governance: Security Master | \`docs/screenshots/23-workstation-governance-security-master.png\` |"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # WPF Desktop Application Screenshots
-  # Runs on windows-latest after the web job so commits don't conflict.
-  # Launches the WPF app in fixture mode (MDC_FIXTURE_MODE=1), navigates key
-  # pages via the built-in Command Palette, and captures full-window PNGs.
-  # ─────────────────────────────────────────────────────────────────────────
   desktop-screenshots:
-    name: WPF Desktop Screenshots
-    needs: refresh
+    name: Take WPF screenshots
     runs-on: windows-latest
-    timeout-minutes: 30
-
-    env:
-      WPF_PROJECT: src/Meridian.Wpf/Meridian.Wpf.csproj
+    timeout-minutes: 40
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          # Pull the latest commit so we build on top of web screenshots
-          ref: ${{ github.ref }}
 
       - name: Setup .NET with Cache
         uses: ./.github/actions/setup-dotnet-cache
@@ -393,30 +61,32 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache-suffix: desktop-screenshots
 
-      - name: Restore WPF dependencies
-        run: dotnet restore ${{ env.WPF_PROJECT }} -p:TargetFramework=net9.0-windows10.0.19041.0 --verbosity minimal
-
-      - name: Build WPF app (Release)
-        run: >
-          dotnet build ${{ env.WPF_PROJECT }}
-          -c Release --no-restore
-          -p:TargetFramework=net9.0-windows10.0.19041.0
-          --verbosity minimal
-
       - name: Copy sample config
         shell: pwsh
         run: Copy-Item config\appsettings.sample.json config\appsettings.json -Force
 
-      - name: Take WPF desktop screenshots
+      - name: Capture WPF desktop screenshots
         shell: pwsh
         env:
           MDC_FIXTURE_MODE: '1'
         run: |
           pwsh -File scripts/dev/capture-desktop-screenshots.ps1 `
-            -SkipBuild `
             -ProjectPath "${{ env.WPF_PROJECT }}" `
-            -Configuration Release `
-            -Framework net9.0-windows10.0.19041.0
+            -Configuration "${{ env.WPF_CONFIGURATION }}" `
+            -Framework "${{ env.WPF_FRAMEWORK }}" `
+            -OutputDir "${{ env.WPF_SCREENSHOT_OUTPUT }}"
+
+      - name: Upload WPF screenshot diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: wpf-desktop-screenshots
+          path: |
+            docs/screenshots/desktop/*.png
+            wpf-startup-stdout.log
+            wpf-startup-stderr.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Commit WPF desktop screenshots
         uses: stefanzweifel/git-auto-commit-action@v7
@@ -448,8 +118,16 @@ jobs:
             'Diagnostics'      , 'wpf-diagnostics.png'
             'Settings'         , 'wpf-settings.png'
           )
-          $lines = @('## WPF Desktop Screenshot Refresh', '', '| Page | File |', '|------|------|')
+
+          $lines = @(
+            '## WPF Desktop Screenshot Refresh'
+            ''
+            '| Page | File |'
+            '|------|------|'
+          )
+
           for ($i = 0; $i -lt $rows.Count; $i += 2) {
-            $lines += "| $($rows[$i]) | ``docs/screenshots/desktop/$($rows[$i+1])`` |"
+            $lines += "| $($rows[$i]) | ``docs/screenshots/desktop/$($rows[$i + 1])`` |"
           }
+
           $lines | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8

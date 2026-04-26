@@ -1,6 +1,6 @@
 # Codebase Audit and Cleanup Roadmap
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-04-26
 **Status:** Active cleanup backlog
 **Purpose:** Current cleanup and maintainability roadmap grounded in the repository as it exists today
 
@@ -53,14 +53,14 @@ Primary anchors:
 
 ### 2. WPF workflow cleanup
 
-The app now has shared run surfaces and updated workspace categories, but the shell still carries page-first structure and mixed implementation depth.
+The app now has shared run surfaces and a delivered four-workspace shell baseline, but workflow depth and implementation quality are still mixed across high-traffic pages.
 
 Open work:
 
-- continue moving from page-first navigation to true workspace-first shells
+- validate the delivered workspace shells against real Research, Trading, Data Operations, and Governance journeys
 - identify placeholder or low-value pages and either strengthen them or label/re-scope them
 - keep business logic moving out of page code-behind and into shared services/view models
-- make run, portfolio, and ledger flows feel like one workstation family rather than separate page islands
+- make run, portfolio, ledger, Position Blotter, and reconciliation flows feel like one workstation family rather than separate page islands
 
 Primary anchors:
 

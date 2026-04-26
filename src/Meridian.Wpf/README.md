@@ -15,9 +15,10 @@ The current WPF application already spans research, trading-adjacent, data-opera
 The repo now also includes persisted built-in workspace categories for `Research`, `Trading`, `Data Operations`, and `Governance`, plus shared run, portfolio, ledger, and early reconciliation seams that the desktop shell can grow into.
 
 Recent governance work is also moving older utility pages into shell-native workbenches. `FundAccounts` now participates in the governance shell with page-body metrics, account inspectors, provider-routing previews, and Security Master / historical-price / backfill posture surfaced directly from the shared `FundStructureSharedDataAccessDto` baseline.
-`NotificationCenter` now supports history triage with search, unread-only filtering, and per-item acknowledgement so governance operators can work events as a queue instead of a flat feed.
+`NotificationCenter` now supports history triage with search, unread-only filtering, directly bound severity filters, per-item acknowledgement, and a reset-filters recovery action so governance operators can work events as a queue instead of a flat feed.
 `ProviderHealth` now opens with a compact provider-posture briefing that turns connected/disconnected streaming counts, backfill availability, and stale snapshots into one next handoff before the operator scans individual provider cards.
-`ActivityLog` now keeps a compact triage strip above the virtualized event list so visible entries, retained errors, retained warnings, latest event time, and active filters stay visible while operators export or clear support traces.
+`SystemHealth` now opens with a triage briefing that folds provider health, storage pressure, corrupted/orphaned storage evidence, and retained event severity into one next handoff before the operator scans CPU, storage, and recent-event panels.
+`ActivityLog` now keeps a compact triage strip above the virtualized event list so visible entries, retained errors, retained warnings, latest event time, and active filters stay visible while operators export, clear, or reset filtered support traces.
 `Watchlist` now opens with a posture card that summarizes saved lists, pinned lists, symbol coverage, and current search scope before operators load, pin, create, or import a list.
 `GovernanceWorkspaceShellPage` now adds a selected-lane briefing card above the lane buttons so operators can keep the active queue, blocker, and next action visible before opening `Operations`, `Accounting`, `Reconciliation`, `Reporting`, or `Audit`.
 `DataOperationsWorkspaceShellPage` now opens with a scope-and-handoff briefing card plus compact provider, backfill, and storage health chips so operators see the active focus and readiness posture before dropping into the queue wall.
@@ -121,7 +122,9 @@ Examples:
 
 `PositionBlotter` includes a selected-position review rail for action eligibility, long/short exposure totals, and compact selected-row previews before batch flatten or upsize actions are submitted.
 `ProviderHealth` includes a provider-posture briefing ahead of the individual provider grids so stale snapshots, offline streaming sessions, mixed-provider states, and blocked backfill coverage produce one visible next handoff.
-`ActivityLog` includes a triage strip ahead of the virtualized log list so support workflows can see retained errors, warnings, the latest event, and active filter scope without scanning the whole trace.
+`SystemHealth` includes a triage briefing ahead of the resource metrics so provider, storage, and event posture produce one visible support handoff without another health fetch.
+`NotificationCenter` includes a reset-filters empty-state action and view-model-owned severity filter state so search, unread-only, and severity-filter misses can recover the retained history list without another service read or code-behind checkbox synchronization.
+`ActivityLog` includes a triage strip and reset-filters empty-state action ahead of the virtualized log list so support workflows can see retained errors, warnings, the latest event, and active filter scope, then recover hidden retained entries without another backend request.
 `Watchlist` includes a posture card and dynamic empty-state copy so search misses, unpinned libraries, and ready pinned lists each give the operator a clear next step.
 `DataQuality` distinguishes symbol search misses from an empty monitored-symbol library and exposes a `Clear Filter` recovery action in the Quality by Symbol panel.
 `TradingWorkspaceShellPage` now adds a desk-briefing hero above the workbench so context-required, replay-mismatch, controls-blocked, paper-review, and live-oversight states keep one primary handoff visible before the operator drops into blotter, risk, or audit surfaces.
